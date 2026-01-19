@@ -1,0 +1,92 @@
+
+# ======================================================
+# Monorepo Root Gitignore - Next.js + Expo + Turborepo
+# ======================================================
+
+# -------------------------
+# Node / pnpm
+# -------------------------
+node_modules/
+.pnpm-store/
+pnpm-debug.log*
+
+# -------------------------
+# Turbo / Build caching
+# -------------------------
+.turbo/
+turbo/
+**/.turbo/
+
+# -------------------------
+# Environment variables
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# -------------------------
+# Logs
+# -------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# -------------------------
+# Editor / OS
+# -------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# -------------------------
+# TypeScript build output
+# -------------------------
+dist/
+build/
+out/
+
+# -------------------------
+# Next.js (apps/web)
+# -------------------------
+.next/
+.next.old/
+next-env.d.ts
+vercel/
+.vercel/
+
+# -------------------------
+# Expo / React Native (apps/mobile)
+# -------------------------
+.expo/
+.expo-shared/
+expo-env.d.ts
+android/
+ios/
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+*.profile
+
+# Metro bundler cache
+.expo/web/cache/
+.metro/
+.expo/web-build/
+
+# -------------------------
+# Tests
+# -------------------------
+coverage/
+*.lcov
+
+# -------------------------
+# Misc
+# -------------------------
+npm-packages-offline-cache/
+.cache/
