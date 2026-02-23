@@ -58,6 +58,11 @@
     --woody-accent: #D66F5B;
     --woody-text: #5C3A3B;
     --woody-muted: #8B7355;
+    --woody-section-active: #e06b4f;         
+    --woody-section-hover: rgba(255,255,255,.08);
+    --woody-item-active: #e06b4f;            
+    --woody-item-hover: rgba(255,255,255,.08);
+    --woody-divider: rgba(255,255,255,.10);
     --background: #F9F0E0;
     --foreground: #5C3A3B;
     --card: oklch(1 0 0);

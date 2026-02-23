@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Rss, Flame, User, Users, Search, Bookmark, ChevronDown } from "lucide-react";
+import { Rss, Flame, User, Users, Search, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FeedFilter } from "../types";
 
@@ -23,9 +23,9 @@ const GAP_ITEMS = "gap-1";
 
 export interface SidebarProps {
   activeFilter: FeedFilter;
-  activeNav?: string; // para páginas fora do feed, ex: "comunidades"
+  activeNav?: string; // "comunidades" | "explorar" | "salvos"
   onFilterChange?: (filter: FeedFilter) => void;
-  onNavChange?: (id: string) => void; // "comunidades" | "explorar" | "salvos"
+  onNavChange?: (id: string) => void;
   className?: string;
 }
 
@@ -45,10 +45,10 @@ function NavButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-left text-sm transition-colors",
+        "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-sm transition-colors",
         isActive
-          ? "bg-[var(--woody-sidebar-active)] text-[var(--woody-sidebar-active-text,white)] font-semibold"
-          : "text-[var(--woody-sidebar-text-inactive)] font-medium hover:bg-white/10",
+          ? "bg-[var(--woody-item-active)] text-white font-semibold"
+          : "text-[var(--woody-sidebar-text-inactive)] font-medium hover:bg-[var(--woody-item-hover)]",
         className
       )}
     >
@@ -64,26 +64,21 @@ export function Sidebar({
   onNavChange,
   className,
 }: SidebarProps) {
-  // Determina qual seção deve estar aberta inicialmente com base no estado atual
-  const initialOpen: SectionKey = useMemo(() => {
+  const initialOpen: SectionKey | null = useMemo(() => {
     if (["trending", "forYou", "following"].includes(activeFilter)) return "feed";
     if (activeNav === "comunidades") return "comunidades";
     if (activeNav === "explorar") return "explorar";
     if (activeNav === "salvos") return "salvos";
-    return "feed";
+    return null;
   }, [activeFilter, activeNav]);
 
-  const [openSection, setOpenSection] = useState<SectionKey>(initialOpen);
+  const [openSection, setOpenSection] = useState<SectionKey | null>(initialOpen);
 
-  // Mantém o accordion sincronizado quando rota/estado externo mudar
   useEffect(() => {
     setOpenSection(initialOpen);
   }, [initialOpen]);
 
   const feedActiveId = ["trending", "forYou", "following"].includes(activeFilter) ? activeFilter : null;
-
-  const sectionButtonBase =
-    "flex items-center justify-between w-full px-3 py-2 rounded-md transition-colors";
 
   const SectionHeader = ({
     icon,
@@ -105,22 +100,14 @@ export function Sidebar({
         type="button"
         onClick={onClick}
         className={cn(
-          sectionButtonBase,
-          isActive ? "text-[var(--woody-sidebar-text)]" : "text-[var(--woody-sidebar-text)]/90",
-          "hover:bg-white/10"
+          "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors cursor-pointer",
+          isActive ? "bg-[var(--woody-section-active)] text-white" : "text-[var(--woody-sidebar-text)]",
+          !isActive && "hover:bg-[var(--woody-section-hover)]",
+          isOpen && !isActive && "bg-white/5"
         )}
       >
-        <div className="flex items-center gap-2.5">
-          <span className="shrink-0 text-[var(--woody-sidebar-text)]">{icon}</span>
-          <span className="font-semibold text-sm">{label}</span>
-        </div>
-
-        <ChevronDown
-          className={cn(
-            "size-4 text-[var(--woody-sidebar-text)] transition-transform",
-            isOpen ? "rotate-180" : "rotate-0"
-          )}
-        />
+        <span className="shrink-0 text-current">{icon}</span>
+        <span className="font-semibold text-sm">{label}</span>
       </button>
     );
   };
@@ -129,23 +116,23 @@ export function Sidebar({
     <aside
       className={cn(
         "hidden md:flex flex-col w-[260px] shrink-0 bg-[var(--woody-sidebar)]",
-        "shadow-[6px_0_18px_rgba(0,0,0,0.12)]", // sombra mais visível (a sua estava fraca)
+        "shadow-[6px_0_18px_rgba(0,0,0,0.12)]",
         className
       )}
     >
       <div className={cn("flex flex-col flex-1 min-h-0 py-4 px-3", GAP_SECTION)}>
-        {/* SEÇÃO FEED */}
+        {/* FEED */}
         <section className={cn("flex flex-col", GAP_ITEMS)}>
           <SectionHeader
             icon={<Rss className="size-5" />}
             label="Feed"
             sectionKey="feed"
             isActive={openSection === "feed"}
-            onClick={() => setOpenSection("feed")}
+            onClick={() => setOpenSection((prev) => (prev === "feed" ? null : "feed"))}
           />
 
           {openSection === "feed" && (
-            <div className="mt-1 flex flex-col gap-1 pl-1">
+            <div className="mt-2 flex flex-col gap-1 pl-6">
               {FEED_SUBITEMS.map((item) => {
                 const isActive = feedActiveId === item.filter;
                 return (
@@ -163,24 +150,20 @@ export function Sidebar({
           )}
         </section>
 
-        {/* DIVISÓRIA */}
-        <div className="border-t border-white/10" />
+        <div className="my-2 border-t border-[var(--woody-divider)]" />
 
-        {/* SEÇÃO COMUNIDADES */}
+        {/* COMUNIDADES */}
         <section className={cn("flex flex-col", GAP_ITEMS)}>
           <SectionHeader
             icon={<Users className="size-5" />}
             label="Comunidades"
             sectionKey="comunidades"
             isActive={openSection === "comunidades"}
-            onClick={() => {
-              setOpenSection("comunidades");
-              onNavChange?.("comunidades");
-            }}
+            onClick={() => setOpenSection((prev) => (prev === "comunidades" ? null : "comunidades"))}
           />
 
           {openSection === "comunidades" && (
-            <div className="mt-1 flex flex-col gap-1 pl-1">
+            <div className="mt-2 flex flex-col gap-1 pl-6">
               <NavButton
                 isActive={activeNav === "comunidades"}
                 onClick={() => onNavChange?.("comunidades")}
@@ -194,21 +177,18 @@ export function Sidebar({
           )}
         </section>
 
-        {/* SEÇÃO EXPLORAR */}
+        {/* EXPLORAR */}
         <section className={cn("flex flex-col", GAP_ITEMS)}>
           <SectionHeader
             icon={<Search className="size-5" />}
             label="Explorar"
             sectionKey="explorar"
             isActive={openSection === "explorar"}
-            onClick={() => {
-              setOpenSection("explorar");
-              onNavChange?.("explorar");
-            }}
+            onClick={() => setOpenSection((prev) => (prev === "explorar" ? null : "explorar"))}
           />
 
           {openSection === "explorar" && (
-            <div className="mt-1 flex flex-col gap-1 pl-1">
+            <div className="mt-2 flex flex-col gap-1 pl-6">
               <NavButton isActive={activeNav === "explorar"} onClick={() => onNavChange?.("explorar")}>
                 <span className="shrink-0 [&>svg]:size-4">
                   <Search className="size-4" />
@@ -219,21 +199,18 @@ export function Sidebar({
           )}
         </section>
 
-        {/* SEÇÃO SALVOS */}
+        {/* SALVOS */}
         <section className={cn("flex flex-col", GAP_ITEMS)}>
           <SectionHeader
             icon={<Bookmark className="size-5" />}
             label="Salvos"
             sectionKey="salvos"
             isActive={openSection === "salvos"}
-            onClick={() => {
-              setOpenSection("salvos");
-              onNavChange?.("salvos");
-            }}
+            onClick={() => setOpenSection((prev) => (prev === "salvos" ? null : "salvos"))}
           />
 
           {openSection === "salvos" && (
-            <div className="mt-1 flex flex-col gap-1 pl-1">
+            <div className="mt-2 flex flex-col gap-1 pl-6">
               <NavButton isActive={activeNav === "salvos"} onClick={() => onNavChange?.("salvos")}>
                 <span className="shrink-0 [&>svg]:size-4">
                   <Bookmark className="size-4" />
@@ -245,9 +222,8 @@ export function Sidebar({
         </section>
       </div>
 
-      {/* Rodapé (gato) */}
+      {/* Rodapé (gato) - mantém como estava */}
       <div className="p-4 flex justify-center opacity-80 shrink-0">
-        {/* mantém seu svg como está */}
         <svg width="120" height="80" viewBox="0 0 120 80" fill="none" className="opacity-80" aria-hidden>
           <rect x="10" y="45" width="100" height="8" rx="2" fill="#5D4E37" />
           <ellipse cx="35" cy="38" rx="12" ry="10" fill="#1a1a1a" />
