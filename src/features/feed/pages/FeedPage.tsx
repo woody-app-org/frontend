@@ -35,7 +35,7 @@ export function FeedPage() {
         />
 
         <div className="hidden md:block mb-4">
-          <h2 className="flex items-center gap-2 text-xl font-semibold text-[var(--woody-text)]">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-[var(--woody-text)]">
             Discussões em alta
             <Flame className="size-5 text-[var(--woody-accent)] shrink-0" />
           </h2>

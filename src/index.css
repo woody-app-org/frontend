@@ -5,6 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -48,6 +49,7 @@
 :root {
     --radius: 0.625rem;
     /* Woody palette */
+    --woody-header: #5a2430;
     --woody-nav: #2b463f;
     --woody-sidebar: #3f615a;
     --woody-sidebar-active: #e06b4f;
@@ -135,6 +137,8 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
-    }
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    font-weight: 500;
+  }
 }

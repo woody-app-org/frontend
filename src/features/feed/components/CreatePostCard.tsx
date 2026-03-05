@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { ImagePlus, Paperclip, Mic, AtSign, Smile } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,10 +7,58 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+// --- Helpers ---
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+// --- Mock (pronouns opcional para header) ---
+
 const MOCK_USER = {
   name: "Seu nome",
-  avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+  pronouns: undefined as string | undefined,
+  avatarUrl:
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
 };
+
+// --- Estilos padronizados (consistente com PostCard) ---
+
+const styles = {
+  card:
+    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] flex flex-col gap-0 py-0",
+  content: "px-4 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5",
+  header: "flex flex-row items-start gap-3",
+  headerLeft: "flex min-w-0 flex-1 items-start gap-3",
+  avatar: "size-9 shrink-0",
+  headerMeta: "min-w-0 flex-1",
+  authorName: "font-semibold text-[var(--woody-text)] text-[0.95rem] leading-tight truncate",
+  authorPronouns: "text-[var(--woody-muted)] text-xs",
+  formBlock: "flex-1 min-w-0 space-y-3 mt-3",
+  input:
+    "h-11 rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/20 focus-visible:border-[var(--woody-accent)]/30 transition-colors",
+  textarea:
+    "min-h-20 resize-none sm:resize-y rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] leading-relaxed focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/20 focus-visible:border-[var(--woody-accent)]/30 transition-colors",
+  toolbarRow: "flex items-center justify-between gap-3 pt-1",
+  toolbar: "flex items-center gap-0.5",
+  toolbarBtn:
+    "size-9 rounded-md text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)] transition-colors [&_svg]:size-4",
+  submitBtn:
+    "rounded-xl h-9 px-5 bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:bg-[var(--woody-nav)]/80 transition-colors disabled:opacity-50 disabled:pointer-events-none",
+} as const;
+
+const TOOLBAR_ACTIONS = [
+  { Icon: ImagePlus, ariaLabel: "Adicionar imagem" },
+  { Icon: Paperclip, ariaLabel: "Adicionar arquivo" },
+  { Icon: Mic, ariaLabel: "Áudio" },
+  { Icon: AtSign, ariaLabel: "Mencionar" },
+  { Icon: Smile, ariaLabel: "Emoji" },
+] as const;
 
 export interface CreatePostCardProps {
   onSubmit?: (topic: string, content: string) => void;
@@ -30,98 +77,76 @@ export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
     }
   };
 
-  const initials = MOCK_USER.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const isSubmitDisabled = !topic.trim() && !content.trim();
 
   return (
-    <Card
-      className={cn(
-        "border-[var(--woody-accent)]/20 bg-[var(--woody-card)]",
-        className
-      )}
-    >
-      <CardContent className="p-5">
-        <div className="flex gap-3">
-          <Avatar size="sm" className="size-9 shrink-0">
-            <AvatarImage src={MOCK_USER.avatarUrl} alt={MOCK_USER.name} />
-            <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0 space-y-3">
-            <Input
-              placeholder="Criar tópico"
-              value={topic}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTopic(e.target.value)}
-              className="bg-[var(--woody-bg)] border-[var(--woody-nav)]/20 text-[var(--woody-text)] placeholder:text-[var(--woody-muted)]"
-            />
-            <Textarea
-              placeholder="Lorem ipsum dolor sit amet consectetur adipiscing elit risus..."
-              value={content}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
-              rows={3}
-              className="min-h-20 resize-y bg-[var(--woody-bg)] border-[var(--woody-nav)]/20 text-[var(--woody-text)] placeholder:text-[var(--woody-muted)]"
-            />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 text-[var(--woody-muted)]">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  className="text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)]"
-                  aria-label="Adicionar imagem"
-                >
-                  <ImagePlus className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  className="text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)]"
-                  aria-label="Adicionar arquivo"
-                >
-                  <Paperclip className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  className="text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)]"
-                  aria-label="Áudio"
-                >
-                  <Mic className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  className="text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)]"
-                  aria-label="Mencionar"
-                >
-                  <AtSign className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  className="text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)]"
-                  aria-label="Emoji"
-                >
-                  <Smile className="size-4" />
-                </Button>
+    <Card className={cn(styles.card, className)}>
+      <CardContent className={styles.content}>
+        {/* Header (composer: avatar + nome + pronouns) */}
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <Avatar size="default" className={styles.avatar}>
+              <AvatarImage src={MOCK_USER.avatarUrl} alt={MOCK_USER.name} />
+              <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
+                {getInitials(MOCK_USER.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className={styles.headerMeta}>
+              <div className="flex flex-wrap items-baseline gap-1">
+                <span className={styles.authorName}>{MOCK_USER.name}</span>
+                {MOCK_USER.pronouns && (
+                  <>
+                    <span className={styles.authorPronouns}>•</span>
+                    <span className={cn(styles.authorPronouns, "truncate")}>
+                      {MOCK_USER.pronouns}
+                    </span>
+                  </>
+                )}
               </div>
-              <Button
-                type="button"
-                onClick={handleSubmit}
-                className="bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90"
-              >
-                Postar
-              </Button>
             </div>
+          </div>
+        </div>
+
+        {/* Inputs */}
+        <div className={styles.formBlock}>
+          <Input
+            placeholder="Criar tópico"
+            value={topic}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setTopic(e.target.value)}
+            className={styles.input}
+          />
+          <Textarea
+            placeholder="Lorem ipsum dolor sit amet consectetur adipiscing elit risus..."
+            value={content}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
+            rows={3}
+            className={styles.textarea}
+          />
+
+          {/* Toolbar + Botão Postar */}
+          <div className={styles.toolbarRow}>
+            <div className={styles.toolbar}>
+              {TOOLBAR_ACTIONS.map(({ Icon, ariaLabel }) => (
+                <Button
+                  key={ariaLabel}
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={styles.toolbarBtn}
+                  aria-label={ariaLabel}
+                >
+                  <Icon aria-hidden />
+                </Button>
+              ))}
+            </div>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitDisabled}
+              className={styles.submitBtn}
+            >
+              Postar
+            </Button>
           </div>
         </div>
       </CardContent>
