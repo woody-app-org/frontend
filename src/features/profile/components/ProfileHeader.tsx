@@ -7,19 +7,21 @@ import type { UserProfile } from "../types";
 const styles = {
   card:
     "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] overflow-hidden",
-  banner: "w-full h-28 sm:h-32 md:h-40 object-cover bg-[var(--woody-nav)]/10",
-  content: "px-4 md:px-6 pb-4 md:pb-6",
-  topRow: "flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4 -mt-12 sm:-mt-14 md:-mt-16",
+  bannerWrap: "w-full min-h-[10rem] sm:min-h-[12rem] md:min-h-[14rem] overflow-hidden",
+  banner: "w-full h-40 sm:h-48 md:h-56 min-h-[10rem] sm:min-h-[12rem] md:min-h-[14rem] object-cover bg-[var(--woody-nav)]/10",
+  content: "px-4 md:px-6 pt-2 pb-4 md:pb-6",
+  avatarRow: "flex -mt-14 sm:-mt-16 md:-mt-20",
   avatarWrap: "shrink-0",
   avatar:
     "size-20 sm:size-[5.5rem] md:size-24 rounded-full border-4 border-[var(--woody-card)] shadow-md ring-2 ring-[var(--woody-accent)]/10",
-  meta: "flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3",
+  infoRow: "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-4",
+  meta: "flex-1 min-w-0 flex flex-col gap-0.5",
   nameBlock: "min-w-0",
   name: "font-bold text-[var(--woody-text)] text-lg md:text-xl truncate",
   pronouns: "text-[var(--woody-muted)] text-sm",
   role: "text-[var(--woody-muted)] text-sm",
   location: "text-[var(--woody-muted)] text-sm",
-  tags: "flex flex-wrap gap-2 mt-1",
+  tags: "flex flex-wrap gap-2 mt-2",
   tag:
     "inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium bg-[var(--woody-nav)]/10 text-[var(--woody-text)] border border-[var(--woody-accent)]/15",
   followBtn:
@@ -44,7 +46,7 @@ export interface ProfileHeaderProps {
 export function ProfileHeader({ profile, className }: ProfileHeaderProps) {
   return (
     <Card className={cn(styles.card, className)}>
-      <div className="relative">
+      <div className={styles.bannerWrap}>
         {profile.bannerUrl ? (
           <img
             src={profile.bannerUrl}
@@ -56,7 +58,7 @@ export function ProfileHeader({ profile, className }: ProfileHeaderProps) {
         )}
       </div>
       <CardContent className={styles.content}>
-        <div className={styles.topRow}>
+        <div className={styles.avatarRow}>
           <div className={styles.avatarWrap}>
             <Avatar className={styles.avatar}>
               <AvatarImage src={profile.avatarUrl ?? undefined} alt={profile.name} />
@@ -65,6 +67,8 @@ export function ProfileHeader({ profile, className }: ProfileHeaderProps) {
               </AvatarFallback>
             </Avatar>
           </div>
+        </div>
+        <div className={styles.infoRow}>
           <div className={styles.meta}>
             <div className={styles.nameBlock}>
               <div className="flex flex-wrap items-baseline gap-1.5">
@@ -88,10 +92,10 @@ export function ProfileHeader({ profile, className }: ProfileHeaderProps) {
                 </div>
               )}
             </div>
-            <Button className={styles.followBtn} variant="secondary" size="sm">
-              {profile.isFollowing ? "Seguindo" : "Seguir"}
-            </Button>
           </div>
+          <Button className={styles.followBtn} variant="secondary" size="sm">
+            {profile.isFollowing ? "Seguindo" : "Seguir"}
+          </Button>
         </div>
         {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
       </CardContent>

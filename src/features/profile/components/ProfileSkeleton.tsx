@@ -11,7 +11,7 @@ export function ProfileSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn("space-y-4 md:space-y-6", className)}>
       <Card className={styles.card}>
-        <Skeleton className={cn("h-32 md:h-40 w-full rounded-t-2xl rounded-b-none", styles.skeleton)} />
+        <Skeleton className={cn("h-40 md:h-56 w-full rounded-t-2xl rounded-b-none", styles.skeleton)} />
         <CardContent className="p-4 md:p-6">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4">
             <Skeleton className={cn("size-20 md:size-24 rounded-full -mt-12 shrink-0 border-4 border-[var(--woody-card)]", styles.skeleton)} />

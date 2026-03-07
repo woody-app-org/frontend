@@ -123,17 +123,17 @@ export function FeedLayout({
               <Bell className="size-5" />
               <span className={styles.badge} aria-hidden />
             </button>
-            <button
-              type="button"
+            <Link
+              to="/profile/1"
               className={styles.avatarBtn}
-              aria-label="Perfil"
+              aria-label="Ir para meu perfil"
             >
               <img
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop"
                 alt=""
                 className={styles.avatarImg}
               />
-            </button>
+            </Link>
           </div>
         </div>
       </header>
