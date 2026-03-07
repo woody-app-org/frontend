@@ -116,7 +116,7 @@ export function Sidebar({
     <aside
       className={cn(
         "hidden md:flex flex-col w-[260px] shrink-0 bg-[var(--woody-sidebar)]",
-        "shadow-[6px_0_18px_rgba(0,0,0,0.12)]",
+        "shadow-[8px_0_20px_rgba(0,0,0,0.18),4px_0_12px_rgba(0,0,0,0.12)]",
         className
       )}
     >

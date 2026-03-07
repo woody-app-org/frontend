@@ -21,7 +21,9 @@ const styles = {
     "sticky top-0 z-50 w-full bg-[var(--woody-header)] text-white shrink-0",
   headerInner:
     "flex items-center justify-between h-14 md:h-16 px-3 md:px-6 gap-3 md:gap-4",
-  logo: "flex items-center shrink-0 md:w-[250px] md:justify-start",
+  logoArea:
+    "flex items-center shrink-0 h-full min-h-14 md:min-h-16 md:-ml-6 md:pl-6 md:w-[260px] md:bg-[var(--woody-header-logo)]",
+  logo: "flex items-center shrink-0 md:justify-start",
   logoText: "text-2xl font-bold tracking-tight text-white select-none",
   center: "hidden md:flex flex-1 justify-center items-center min-w-0 max-w-2xl mx-2",
   searchWrap: "relative flex-1 min-w-0 max-w-xl flex items-center",
@@ -60,13 +62,15 @@ export function FeedLayout({
     <div className={cn("min-h-screen flex flex-col bg-[var(--woody-bg)]", className)}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link
-            to="/"
-            className={styles.logo}
-            aria-label="Woody - Início"
-          >
-            <span className={styles.logoText}>W</span>
-          </Link>
+          <div className={styles.logoArea}>
+            <Link
+              to="/"
+              className={styles.logo}
+              aria-label="Woody - Início"
+            >
+              <span className={styles.logoText}>W</span>
+            </Link>
+          </div>
 
           <div className={styles.center}>
             <div className={styles.searchWrap}>
