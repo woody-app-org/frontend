@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -82,8 +83,8 @@ type UserItem = { id: string; name: string; avatarUrl: string };
 function UserRow({ user, className }: { user: UserItem; className?: string }) {
   return (
     <li>
-      <button
-        type="button"
+      <Link
+        to={`/profile/${user.id}`}
         className={cn(styles.item, styles.itemHover, className)}
         aria-label={`Ver perfil de ${user.name}`}
       >
@@ -94,7 +95,7 @@ function UserRow({ user, className }: { user: UserItem; className?: string }) {
           </AvatarFallback>
         </Avatar>
         <span className={styles.itemName}>{user.name}</span>
-      </button>
+      </Link>
     </li>
   );
 }

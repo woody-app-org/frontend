@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Heart, MessageCircle, MoreVertical, Pin, Flag, Clock } from "lucide-react";
 import {
   Card,
@@ -74,29 +75,35 @@ export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
     <Card className={cn(styles.card, className)}>
       <CardHeader className={styles.header}>
         <div className={styles.headerLeft}>
-          <Avatar size="default" className={styles.avatar}>
-            <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} />
-            <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className={styles.headerMeta}>
-            <div className="flex flex-wrap items-baseline gap-1">
-              <span className={styles.authorName}>{post.author.name}</span>
-              {post.author.pronouns && (
-                <>
-                  <span className={styles.authorPronouns}>•</span>
-                  <span className={cn(styles.authorPronouns, "truncate")}>
-                    {post.author.pronouns}
-                  </span>
-                </>
-              )}
+          <Link
+            to={`/profile/${post.author.id}`}
+            className="flex min-w-0 flex-1 items-start gap-3 rounded-md -m-1.5 p-1.5 hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
+            aria-label={`Ver perfil de ${post.author.name}`}
+          >
+            <Avatar size="default" className={styles.avatar}>
+              <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} />
+              <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className={styles.headerMeta}>
+              <div className="flex flex-wrap items-baseline gap-1">
+                <span className={styles.authorName}>{post.author.name}</span>
+                {post.author.pronouns && (
+                  <>
+                    <span className={styles.authorPronouns}>•</span>
+                    <span className={cn(styles.authorPronouns, "truncate")}>
+                      {post.author.pronouns}
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className={styles.timestamp}>
+                <Clock className="size-3 shrink-0" aria-hidden />
+                <span>{post.createdAt}</span>
+              </div>
             </div>
-            <div className={styles.timestamp}>
-              <Clock className="size-3 shrink-0" aria-hidden />
-              <span>{post.createdAt}</span>
-            </div>
-          </div>
+          </Link>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
