@@ -66,6 +66,15 @@
     --woody-item-active: #e06b4f;            
     --woody-item-hover: rgba(255,255,255,.08);
     --woody-divider: rgba(255,255,255,.10);
+    /* Auth (login/cadastro) - paleta do protótipo */
+    --auth-bg: #2D4F4F;
+    --auth-panel-beige: #EDE5DB;
+    --auth-panel-maroon: #6D3A4B;
+    --auth-button: #5F857B;
+    --auth-button-hover: #4f7269;
+    --auth-ornament: #B0C4B1;
+    --auth-text-on-maroon: #ffffff;
+    --auth-text-on-beige: #5C3A3B;
     --background: #F9F0E0;
     --foreground: #5C3A3B;
     --card: oklch(1 0 0);
