@@ -15,10 +15,10 @@ export interface AuthInputFieldProps
 const styles = {
   label: "block text-sm font-medium mb-1.5",
   inputMaroon:
-    "h-11 rounded-xl bg-[var(--auth-panel-beige)] text-[var(--auth-text-on-beige)] border-[var(--auth-panel-beige)] placeholder:text-[var(--auth-text-on-beige)]/70 focus-visible:ring-2 focus-visible:ring-[var(--auth-ornament)]/50",
+    "h-11 rounded-xl bg-white md:bg-[var(--auth-panel-beige)] text-[var(--auth-text-on-beige)] border border-[var(--woody-accent)]/15 md:border-[var(--auth-panel-beige)] placeholder:text-[var(--auth-text-on-beige)]/60 md:placeholder:text-[var(--auth-text-on-beige)]/70 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/40 md:focus-visible:ring-[var(--auth-ornament)]/50",
   inputBeige:
     "h-11 rounded-xl bg-white/90 text-[var(--auth-text-on-beige)] border-white/50 placeholder:text-[var(--auth-text-on-beige)]/60 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50",
-  error: "text-sm mt-1.5 text-red-200",
+  error: "text-sm mt-1.5 text-red-600 md:text-red-200",
 } as const;
 
 export const AuthInputField = forwardRef<HTMLInputElement, AuthInputFieldProps>(

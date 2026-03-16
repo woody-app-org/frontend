@@ -85,6 +85,7 @@ export function AuthPage() {
             onSubmitRegister={handleSubmitRegister}
             isSubmitting={isSubmitting}
             errorMessage={errorMessage}
+            onSwitchMode={handleSwitchMode}
           />
         }
       />
