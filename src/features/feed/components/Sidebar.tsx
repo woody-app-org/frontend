@@ -115,12 +115,12 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "hidden md:flex flex-col w-[260px] shrink-0 bg-[var(--woody-sidebar)]",
+        "hidden md:flex flex-col w-[260px] shrink-0 min-h-0 bg-[var(--woody-sidebar)]",
         "shadow-[8px_0_20px_rgba(0,0,0,0.18),4px_0_12px_rgba(0,0,0,0.12)]",
         className
       )}
     >
-      <div className={cn("flex flex-col flex-1 min-h-0 py-4 px-3", GAP_SECTION)}>
+      <div className={cn("flex flex-col flex-1 min-h-0 overflow-y-auto py-4 px-3", GAP_SECTION)}>
         {/* FEED */}
         <section className={cn("flex flex-col", GAP_ITEMS)}>
           <SectionHeader

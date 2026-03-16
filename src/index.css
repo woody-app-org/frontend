@@ -48,6 +48,10 @@
 
 :root {
     --radius: 0.625rem;
+    /* Layout: container principal (ajuste aqui para mudar respiro/largura) */
+    --layout-max-width: 1280px;
+    --layout-gutter: 1rem;
+    --layout-gap-columns: 0;
     /* Woody palette */
     --woody-header: #5a2430;
     --woody-header-logo: #39161d;
@@ -108,6 +112,20 @@
     --sidebar-ring: oklch(0.708 0 0);
 }
 
+@media (min-width: 768px) {
+  :root {
+    --layout-gutter: 1.5rem;
+    --layout-gap-columns: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --layout-gutter: 2rem;
+    --layout-gap-columns: 2rem;
+  }
+}
+
 .dark {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
@@ -151,4 +169,14 @@
     font-family: var(--font-sans);
     font-weight: 500;
   }
+}
+
+/* Scroll do feed: oculta a scrollbar; o scroll continua funcional (wheel/teclado).
+   Para exibir a scrollbar de novo: remova a classe .feed-scroll-area do <main> em FeedLayout
+   ou sobrescreva estas regras (ex.: .feed-scroll-area { scrollbar-width: thin; } e remova o ::-webkit-scrollbar). */
+.feed-scroll-area {
+  scrollbar-width: none;
+}
+.feed-scroll-area::-webkit-scrollbar {
+  display: none;
 }
