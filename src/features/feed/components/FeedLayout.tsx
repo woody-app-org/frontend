@@ -225,7 +225,7 @@ export function FeedLayout({
           </div>
           </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-[260px_1fr_320px] w-full gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start">
+          <div className="grid grid-cols-1 md:grid-cols-[250px_1fr_260px] lg:grid-cols-[250px_1fr_230px] w-full gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start">
             <Sidebar
               activeFilter={activeFilter}
               activeNav={activeNav}
