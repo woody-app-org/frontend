@@ -4,6 +4,7 @@ import { Search, Bell, MessageCircle } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { SearchModeSegment, type SearchMode } from "./SearchModeSegment";
 import { cn } from "@/lib/utils";
 
 export interface FeedLayoutProps {
@@ -37,11 +38,6 @@ const styles = {
   searchInput:
     "w-full h-9 md:h-10 pl-9 pr-4 rounded-full bg-white/10 border border-white/15 text-white placeholder:text-white/55 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25 transition-shadow",
   searchIcon: "absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/70 pointer-events-none",
-  segmentWrap:
-    "hidden lg:flex shrink-0 rounded-full bg-white/10 border border-white/15 p-1 ml-3",
-  segmentBtn: "rounded-full px-4 h-8 text-sm font-medium transition-colors",
-  segmentBtnActive: "bg-white text-[var(--woody-header)]",
-  segmentBtnInactive: "text-white/80 hover:bg-white/10",
   right: "flex items-center gap-1 md:gap-2 shrink-0 md:w-[320px] md:justify-end",
   iconBtn:
     "size-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0",
@@ -52,8 +48,6 @@ const styles = {
     "size-10 flex items-center justify-center rounded-full hover:bg-white/10 overflow-hidden ring-1 ring-white/15 shrink-0",
   avatarImg: "size-8 rounded-full object-cover",
 } as const;
-
-type SearchMode = "topics" | "people";
 
 const SCROLL_KEYS = [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp"] as const;
 const PAGE_SCROLL = 0.85;
@@ -161,28 +155,11 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
                   className={styles.searchInput}
                 />
               </div>
-              <div className={styles.segmentWrap}>
-                <button
-                  type="button"
-                  className={cn(
-                    styles.segmentBtn,
-                    searchMode === "topics" ? styles.segmentBtnActive : styles.segmentBtnInactive
-                  )}
-                  onClick={() => setSearchMode("topics")}
-                >
-                  Tópicos
-                </button>
-                <button
-                  type="button"
-                  className={cn(
-                    styles.segmentBtn,
-                    searchMode === "people" ? styles.segmentBtnActive : styles.segmentBtnInactive
-                  )}
-                  onClick={() => setSearchMode("people")}
-                >
-                  Pessoas
-                </button>
-              </div>
+              <SearchModeSegment
+                value={searchMode}
+                onChange={setSearchMode}
+                className="hidden lg:flex shrink-0 ml-3"
+              />
             </div>
 
             <div className={styles.right}>
