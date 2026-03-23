@@ -1,9 +1,9 @@
-import { Rss, Users, PlusSquare, Search, Bookmark } from "lucide-react";
+import { Home, Users, PlusSquare, Search, Bookmark } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { id: "feed", path: "/", label: "Feed", icon: Rss },
+  { id: "home", path: "/feed", label: "Home", icon: Home },
   { id: "comunidade", path: "/comunidade", label: "Comunidade", icon: Users },
   { id: "create", path: "/criar", label: "Criar", icon: PlusSquare },
   { id: "explorar", path: "/explorar", label: "Explorar", icon: Search },
@@ -26,7 +26,10 @@ export function MobileBottomNav({ className }: MobileBottomNavProps) {
       )}
     >
       {ITEMS.map((item) => {
-        const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
+        const isActive =
+          item.id === "home"
+            ? location.pathname === "/feed" || location.pathname === "/"
+            : location.pathname.startsWith(item.path);
         const Icon = item.icon;
         return (
           <button

@@ -25,12 +25,12 @@ export function ProfilePage() {
   } = useUserProfile(userId);
 
   if (!userId) {
-    navigate("/", { replace: true });
+    navigate("/feed", { replace: true });
     return null;
   }
 
   return (
-    <FeedLayout activeFilter="forYou" onFilterChange={() => {}}>
+    <FeedLayout>
       <div className="flex flex-col flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 py-4 md:py-5 pb-16 md:pb-6">
         {isLoading && <ProfileSkeleton />}
 
@@ -67,10 +67,10 @@ export function ProfilePage() {
             <p className="text-[var(--woody-muted)]">Perfil não encontrado.</p>
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/feed")}
               className="mt-4 text-sm font-medium text-[var(--woody-accent)] hover:underline"
             >
-              Voltar ao feed
+              Voltar ao início
             </button>
           </div>
         )}

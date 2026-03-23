@@ -5,12 +5,9 @@ import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { cn } from "@/lib/utils";
-import type { FeedFilter } from "../types";
 
 export interface FeedLayoutProps {
   children: React.ReactNode;
-  activeFilter: FeedFilter;
-  onFilterChange: (filter: FeedFilter) => void;
   className?: string;
 }
 
@@ -73,13 +70,7 @@ function isEditableElement(el: EventTarget | null): boolean {
   return tag === "input" || tag === "textarea" || tag === "select" || editable || role === "textbox";
 }
 
-export function FeedLayout({
-  children,
-  activeFilter,
-  onFilterChange,
-  className,
-}: FeedLayoutProps) {
-  const [activeNav, setActiveNav] = useState<string>("");
+export function FeedLayout({ children, className }: FeedLayoutProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<SearchMode>("people");
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
@@ -226,13 +217,7 @@ export function FeedLayout({
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-[250px_1fr_260px] lg:grid-cols-[250px_1fr_230px] w-full gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start">
-            <Sidebar
-              activeFilter={activeFilter}
-              activeNav={activeNav}
-              onFilterChange={onFilterChange}
-              onNavChange={setActiveNav}
-              className="md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:self-start"
-            />
+            <Sidebar className="md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:self-start" />
             <main className="min-w-0 flex flex-col pb-16 md:pb-0 pt-4 md:pt-5" aria-label="Feed principal">
               {children}
             </main>
