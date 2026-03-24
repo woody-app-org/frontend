@@ -112,6 +112,13 @@
     --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Mobile: menos respiro lateral para aproveitar a largura; scroll nativo no body (ver FeedLayout). */
+@media (max-width: 767px) {
+  :root {
+    --layout-gutter: 0.5rem;
+  }
+}
+
 @media (min-width: 768px) {
   :root {
     --layout-gutter: 1.5rem;
@@ -164,10 +171,17 @@
   * {
     @apply border-border outline-ring/50;
     }
+  html {
+    overflow-x: hidden;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
     font-weight: 500;
+    min-height: 100%;
+  }
+  #root {
+    min-height: 100%;
   }
 }
 

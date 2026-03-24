@@ -18,11 +18,16 @@ export interface FeedLayoutProps {
 const LAYOUT_CONTAINER =
   "w-full max-w-[var(--layout-max-width)] mx-auto px-[var(--layout-gutter)]";
 
-/** Raiz: altura fixa ao viewport em desktop. */
-const LAYOUT_ROOT = "min-h-screen md:h-screen md:overflow-hidden flex flex-col bg-[var(--woody-bg)]";
+/**
+ * Mobile: fluxo natural + scroll no documento (body).
+ * Desktop (md+): altura fixa ao viewport + scroll só no wrapper interno (scrollbar na lateral).
+ */
+const LAYOUT_ROOT =
+  "min-h-screen w-full flex flex-col bg-[var(--woody-bg)] md:h-screen md:min-h-0 md:overflow-hidden";
 
-/** Único scroll da página; em desktop scrollbar fica na lateral direita da viewport. */
-const SCROLL_WRAPPER = "flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden md:h-screen";
+/** Em mobile não usa overflow interno — evita “armadilha” sem altura definida + body bloqueado. */
+const SCROLL_WRAPPER =
+  "w-full flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden";
 
 const styles = {
   header:
@@ -69,18 +74,29 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
   const [searchMode, setSearchMode] = useState<SearchMode>("people");
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
 
-  // Trava scroll do body; apenas o wrapper (scrollbar na lateral direita) role.
+  // Só no desktop: trava scroll do body para o wrapper interno controlar (mobile usa scroll nativo).
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const mq = window.matchMedia("(min-width: 768px)");
+    const applyBodyOverflow = () => {
+      if (mq.matches) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "";
+      }
+    };
+    applyBodyOverflow();
+    mq.addEventListener("change", applyBodyOverflow);
     return () => {
-      document.body.style.overflow = prev;
+      mq.removeEventListener("change", applyBodyOverflow);
+      document.body.style.overflow = "";
     };
   }, []);
 
-  // Redireciona wheel para o scroll wrapper quando o cursor está sobre sidebar/header/painel (não sobre o feed).
+  // Redireciona wheel para o scroll wrapper (apenas desktop — touch não usa wheel).
   useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
     const handleWheel = (e: WheelEvent) => {
+      if (!mq.matches) return;
       const wrapper = scrollWrapperRef.current;
       if (!wrapper) return;
       const main = wrapper.querySelector("main");
@@ -93,9 +109,11 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
     return () => window.removeEventListener("wheel", handleWheel, { capture: true });
   }, []);
 
-  // Teclas de navegação (Space, PageDown, etc.) rolam o wrapper quando o foco não está em campo editável.
+  // Teclas de navegação rolam o wrapper (apenas desktop).
   useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!mq.matches) return;
       if (!isScrollKey(e.key)) return;
       if (isEditableElement(document.activeElement)) return;
 
