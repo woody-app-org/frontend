@@ -1,4 +1,6 @@
 import { HeartHandshake, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { woodyLayout, woodySurface } from "@/lib/woody-ui";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { CommunityCard } from "../components/CommunityCard";
 import { CommunitiesSection } from "../components/CommunitiesSection";
@@ -25,8 +27,19 @@ export function CommunitiesPage() {
 
   return (
     <FeedLayout>
-      <div className="mx-auto w-full max-w-6xl px-3 py-5 md:px-6 md:py-7 pb-20 md:pb-8">
-        <header className="relative mb-10 overflow-hidden rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] px-5 py-8 shadow-[0_1px_3px_rgba(92,58,59,0.06)] sm:px-8 sm:py-10 md:mb-12">
+      <div
+        className={cn(
+          "mx-auto w-full max-w-6xl pb-20 md:pb-8",
+          woodyLayout.pagePadWide,
+          woodyLayout.stackGapTight
+        )}
+      >
+        <header
+          className={cn(
+            woodySurface.cardHero,
+            "relative overflow-hidden px-5 py-8 sm:px-8 sm:py-10"
+          )}
+        >
           <div
             className="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-[var(--woody-nav)]/10 blur-2xl"
             aria-hidden
@@ -58,7 +71,7 @@ export function CommunitiesPage() {
           </div>
         </header>
 
-        <div className="flex flex-col gap-12 md:gap-14">
+        <div className={cn(woodyLayout.stackGap, "pt-1")}>
           <CommunitiesSection
             eyebrow="Em movimento"
             title="Comunidades em alta"

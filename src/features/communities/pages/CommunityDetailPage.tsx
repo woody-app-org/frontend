@@ -7,6 +7,8 @@ import {
   getPostsByCommunityId,
   isUserMemberOfCommunity,
 } from "@/domain/selectors";
+import { cn } from "@/lib/utils";
+import { woodyLayout } from "@/lib/woody-ui";
 import { COMMUNITIES_PAGE_VIEWER_ID } from "../lib/communitiesPageModel";
 import { CommunityHero } from "../components/CommunityHero";
 import { CommunityFeed } from "../components/CommunityFeed";
@@ -52,7 +54,12 @@ export function CommunityDetailPage() {
   if (!communitySlug) {
     return (
       <FeedLayout>
-        <div className="mx-auto flex max-w-6xl justify-center px-3 py-10 md:px-6 md:py-14 pb-20 md:pb-10">
+        <div
+          className={cn(
+            "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
+            woodyLayout.pagePadWide
+          )}
+        >
           <CommunityNotFound />
         </div>
       </FeedLayout>
@@ -62,7 +69,12 @@ export function CommunityDetailPage() {
   if (!community) {
     return (
       <FeedLayout>
-        <div className="mx-auto flex max-w-6xl justify-center px-3 py-10 md:px-6 md:py-14 pb-20 md:pb-10">
+        <div
+          className={cn(
+            "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
+            woodyLayout.pagePadWide
+          )}
+        >
           <CommunityNotFound />
         </div>
       </FeedLayout>
@@ -71,16 +83,20 @@ export function CommunityDetailPage() {
 
   return (
     <FeedLayout searchSourcePosts={posts}>
-      <div className="mx-auto w-full max-w-6xl px-3 py-4 md:px-6 md:py-6 pb-20 md:pb-8">
+      <div
+        className={cn(
+          "mx-auto w-full max-w-6xl flex flex-col gap-8 md:gap-10 pb-20 md:pb-8",
+          woodyLayout.pagePadWide
+        )}
+      >
         <CommunityHero
           community={community}
           isMember={isMember}
           displayMemberCount={displayMemberCount}
           onToggleMembership={toggleMembership}
-          className="mb-8 md:mb-10"
         />
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10 xl:gap-12">
           <CommunityFeed community={community} posts={posts} className="order-2 min-w-0 lg:order-1" />
 
           <aside className="order-1 flex min-w-0 flex-col gap-6 lg:order-2 lg:sticky lg:top-16 lg:self-start">

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { woodyFocus, woodyMotion, woodySurface } from "@/lib/woody-ui";
 import type { Community } from "@/domain/types";
 import { CommunityTag } from "./CommunityTag";
 import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
@@ -19,10 +20,10 @@ function formatMemberCount(n: number): string {
 
 const styles = {
   link: cn(
-    "group flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--woody-accent)]/20",
-    "bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] transition-all duration-200",
-    "hover:border-[var(--woody-accent)]/35 hover:shadow-[0_8px_24px_rgba(92,58,59,0.1)]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-bg)]"
+    woodySurface.card,
+    woodyMotion.cardHover,
+    woodyFocus.ring,
+    "group flex h-full flex-col overflow-hidden"
   ),
   coverWrap: "relative h-24 shrink-0 overflow-hidden sm:h-28",
   coverImg: "size-full object-cover transition duration-300 group-hover:scale-[1.03]",

@@ -4,21 +4,22 @@ import { ChevronRight, UsersRound } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { woodyFocus, woodySurface } from "@/lib/woody-ui";
 import type { Community } from "@/domain/types";
 import { getCommunitiesForUser } from "@/domain/selectors";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
 
 const styles = {
-  card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)]",
-  title: "text-base font-bold text-[var(--woody-text)]",
+  card: woodySurface.card,
+  title: "text-base font-bold tracking-tight text-[var(--woody-text)] sm:text-lg",
   subtitle: "text-xs text-[var(--woody-muted)] mt-1 leading-relaxed",
   grid: "grid grid-cols-1 gap-3 sm:grid-cols-2",
   item: cn(
+    woodyFocus.ring,
     "group flex min-w-0 items-center gap-3 rounded-xl border border-[var(--woody-accent)]/18",
-    "bg-[var(--woody-bg)]/50 px-3 py-2.5 transition-colors",
-    "hover:border-[var(--woody-accent)]/30 hover:bg-[var(--woody-nav)]/[0.07]",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
+    "bg-[var(--woody-bg)]/50 px-3 py-2.5 transition-[background-color,border-color] duration-200",
+    "hover:border-[var(--woody-accent)]/28 hover:bg-[var(--woody-nav)]/[0.07]",
+    "active:bg-[var(--woody-nav)]/[0.09]"
   ),
   avatar: "size-11 shrink-0 rounded-xl border border-[var(--woody-accent)]/15",
   name: "text-sm font-semibold text-[var(--woody-text)] truncate group-hover:text-[var(--woody-nav)] transition-colors",
@@ -27,12 +28,14 @@ const styles = {
     "rounded-full bg-[var(--woody-nav)]/12 px-2 py-0.5 text-[0.6875rem] font-semibold",
     "text-[var(--woody-text)] ring-1 ring-[var(--woody-accent)]/12"
   ),
-  emptyWrap:
-    "flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--woody-accent)]/25 bg-[var(--woody-bg)]/40 px-4 py-8 text-center",
+  emptyWrap: cn(
+    woodySurface.emptyDashed,
+    "flex flex-col items-center justify-center px-4 py-8 text-center"
+  ),
   emptyIcon: "mb-3 flex size-11 items-center justify-center rounded-2xl bg-[var(--woody-nav)]/10 text-[var(--woody-nav)]",
   emptyTitle: "text-sm font-semibold text-[var(--woody-text)]",
   emptyDesc: "mt-1.5 max-w-sm text-xs leading-relaxed text-[var(--woody-muted)]",
-} as const;
+};
 
 function initials(name: string): string {
   return name

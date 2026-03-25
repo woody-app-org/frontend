@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { Home, Search, UsersRound } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { woodyFocus } from "@/lib/woody-ui";
 
 export interface SidebarProps {
   className?: string;
@@ -28,6 +29,7 @@ export function Sidebar({ className, onOpenSearch, isSearchOpen }: SidebarProps)
           className={({ isActive }) =>
             cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-[background-color,color,box-shadow] duration-200",
+              woodyFocus.ringSidebar,
               isActive
                 ? "bg-[var(--woody-item-active)] text-white font-semibold shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
                 : "text-[var(--woody-sidebar-text-inactive)] font-medium hover:bg-[var(--woody-item-hover)]"
@@ -43,6 +45,7 @@ export function Sidebar({ className, onOpenSearch, isSearchOpen }: SidebarProps)
           className={({ isActive }) =>
             cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-[background-color,color,box-shadow] duration-200",
+              woodyFocus.ringSidebar,
               isActive
                 ? "bg-[var(--woody-item-active)] text-white font-semibold shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
                 : "text-[var(--woody-sidebar-text-inactive)] font-medium hover:bg-[var(--woody-item-hover)]"
@@ -58,6 +61,7 @@ export function Sidebar({ className, onOpenSearch, isSearchOpen }: SidebarProps)
           onClick={onOpenSearch}
           className={cn(
             "flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-[background-color,color,box-shadow] duration-200",
+            woodyFocus.ringSidebar,
             isSearchOpen
               ? "bg-[var(--woody-item-active)] text-white font-semibold shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
               : "text-[var(--woody-sidebar-text-inactive)] font-medium hover:bg-[var(--woody-item-hover)]"

@@ -10,6 +10,7 @@ import { FeedErrorState } from "../components/FeedErrorState";
 import { useFeed } from "../hooks/useFeed";
 import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { woodyLayout, woodySection } from "@/lib/woody-ui";
 import { getRecentPostsInUserCommunities, isUserMemberOfCommunity } from "@/domain/selectors";
 import {
   COMMUNITIES_PAGE_VIEWER_ID,
@@ -54,15 +55,20 @@ export function FeedPage() {
 
   return (
     <FeedLayout searchSourcePosts={posts}>
-      <div className="flex flex-col flex-1 max-w-3xl mx-auto w-full px-3 md:px-6 py-4 md:py-5">
-        <FeedTabs activeFilter={filter} onFilterChange={setFilter} className="mb-6" />
+      <div
+        className={cn(
+          "flex flex-col flex-1 max-w-3xl mx-auto w-full",
+          woodyLayout.pagePad,
+          woodyLayout.stackGap
+        )}
+      >
+        <FeedTabs activeFilter={filter} onFilterChange={setFilter} />
 
         <CommunitiesSection
           eyebrow="Explorar"
           title="Comunidades em destaque"
           description="Espaços moderados onde as conversas acontecem — entre para ver regras e participar."
           sectionId="feed-community-spotlight"
-          className="mb-10"
         >
           <CommunityCarousel ariaLabel="Comunidades em destaque na home">
             {spotlightCommunities.map((c) => (
@@ -83,7 +89,6 @@ export function FeedPage() {
             title="Posts das suas comunidades"
             description="Atividade recente nos grupos em que você já está — todo post continua ligado à sua comunidade de origem."
             sectionId="feed-my-communities-posts"
-            className="mb-10"
           >
             <ul className="space-y-4 list-none p-0 m-0 md:space-y-5">
               {postsFromMyCommunities.map((post) => (
@@ -105,7 +110,6 @@ export function FeedPage() {
             title="Sugestões para você"
             description="Comunidades que ainda não fazem parte do seu painel — boas para ampliar repertório com segurança."
             sectionId="feed-suggested-communities"
-            className="mb-10"
           >
             <CommunityCarousel ariaLabel="Sugestões de comunidades">
               {suggestedCommunities.map((c) => (
@@ -117,14 +121,14 @@ export function FeedPage() {
           </CommunitiesSection>
         ) : null}
 
-        <CreatePostCard className="mb-6" />
+        <CreatePostCard />
 
-        <div className="mb-4">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--woody-text)] md:text-xl">
+        <div>
+          <h2 className={cn(woodySection.title, "flex items-center gap-2")}>
             Discussões em alta
             <Flame className="size-5 text-[var(--woody-accent)] shrink-0" aria-hidden />
           </h2>
-          <p className="mt-1.5 text-sm leading-relaxed text-[var(--woody-muted)]">
+          <p className={woodySection.subtitle}>
             Tópicos do momento, reunindo várias comunidades — cada post mostra de onde veio.
           </p>
         </div>
@@ -137,7 +141,7 @@ export function FeedPage() {
           {!showInitialLoading && !error && !hasPosts && <FeedEmptyState />}
 
           {hasInlineError && (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">
+            <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-900 dark:text-amber-200">
               Não foi possível atualizar o feed agora. Exibindo os posts já carregados.
             </div>
           )}

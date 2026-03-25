@@ -9,6 +9,8 @@ import { ProfilePostsSection } from "../components/ProfilePostsSection";
 import { ProfileCommunitiesSection } from "../components/ProfileCommunitiesSection";
 import { ProfileSkeleton } from "../components/ProfileSkeleton";
 import { COMMUNITIES_PAGE_VIEWER_ID } from "@/features/communities/lib/communitiesPageModel";
+import { cn } from "@/lib/utils";
+import { woodyLayout } from "@/lib/woody-ui";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -33,7 +35,12 @@ export function ProfilePage() {
 
   return (
     <FeedLayout>
-      <div className="flex flex-col flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 py-4 md:py-5 pb-16 md:pb-6">
+      <div
+        className={cn(
+          "flex flex-col flex-1 w-full max-w-4xl mx-auto pb-16 md:pb-6",
+          woodyLayout.pagePad
+        )}
+      >
         {isLoading && <ProfileSkeleton />}
 
         {!isLoading && error && (
@@ -44,8 +51,8 @@ export function ProfilePage() {
           <>
             <ProfileHeader profile={profile} className="mb-4 md:mb-6" />
 
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6">
-              <div className="min-w-0 flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 md:gap-8">
+              <div className="min-w-0 flex flex-col gap-7 md:gap-8">
                 <ProfileAbout bio={profile.bio} />
                 <ProfileCommunitiesSection
                   userId={profile.id}

@@ -1,3 +1,4 @@
+import { woodySection } from "@/lib/woody-ui";
 import type { Community, Post } from "@/domain/types";
 import { PostCard } from "@/features/feed/components/PostCard";
 import { CommunitiesEmptyState } from "./CommunitiesEmptyState";
@@ -15,12 +16,12 @@ export function CommunityFeed({ community, posts, className }: CommunityFeedProp
       className={className}
       aria-labelledby="community-feed-heading"
     >
-      <div className="mb-5">
-        <h2 id="community-feed-heading" className="text-lg font-bold text-[var(--woody-text)] sm:text-xl">
+      <div className="mb-5 md:mb-6">
+        <h2 id="community-feed-heading" className={woodySection.title}>
           Discussões em {community.name}
         </h2>
-        <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--woody-muted)]">
-          Publicações deste espaço — moderadas e ligadas à comunidade{" "}
+        <p className={woodySection.subtitle}>
+          Publicações neste espaço seguro — ligadas à comunidade{" "}
           <span className="font-medium text-[var(--woody-text)]">“{community.name}”</span>.
         </p>
       </div>

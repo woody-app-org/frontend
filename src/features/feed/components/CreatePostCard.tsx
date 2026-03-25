@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { woodySurface } from "@/lib/woody-ui";
 import { getUserById } from "@/domain/selectors";
 
 // --- Helpers ---
@@ -22,8 +23,7 @@ function getInitials(name: string): string {
 // --- Estilos padronizados (consistente com PostCard) ---
 
 const styles = {
-  card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] flex flex-col gap-0 py-0",
+  card: cn(woodySurface.card, "flex flex-col gap-0 py-0 transition-shadow duration-200 hover:shadow-[0_4px_14px_rgba(92,58,59,0.06)]"),
   content: "px-4 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5",
   header: "flex flex-row items-start gap-3",
   headerLeft: "flex min-w-0 flex-1 items-start gap-3",
@@ -42,7 +42,7 @@ const styles = {
     "size-9 rounded-md text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)] transition-colors [&_svg]:size-4",
   submitBtn:
     "rounded-xl h-9 px-5 bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:bg-[var(--woody-nav)]/80 transition-colors disabled:opacity-50 disabled:pointer-events-none",
-} as const;
+};
 
 const TOOLBAR_ACTIONS = [
   { Icon: ImagePlus, ariaLabel: "Adicionar imagem" },

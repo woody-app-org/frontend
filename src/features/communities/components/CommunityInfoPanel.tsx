@@ -1,5 +1,6 @@
 import { ShieldCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { woodySurface } from "@/lib/woody-ui";
 import type { Community } from "@/domain/types";
 import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
 
@@ -8,10 +9,7 @@ export interface CommunityInfoPanelProps {
   className?: string;
 }
 
-const panel = cn(
-  "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] p-4 shadow-[0_1px_3px_rgba(92,58,59,0.06)]",
-  "sm:p-5"
-);
+const panel = cn(woodySurface.card, "p-4 sm:p-5");
 
 const RULE_ITEMS = [
   "Respeito e escuta ativa: este espaço é para mulheres se sentirem seguras para falar.",

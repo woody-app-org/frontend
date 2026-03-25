@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { woodySurface } from "@/lib/woody-ui";
 
 const styles = {
-  card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)]",
+  card: woodySurface.card,
   title: "text-base font-bold text-[var(--woody-text)]",
   content: "text-[var(--woody-text)]/90 text-sm leading-relaxed whitespace-pre-wrap break-words",
   readMore:

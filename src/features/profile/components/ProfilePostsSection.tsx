@@ -3,6 +3,7 @@ import { FeedEmptyState } from "@/features/feed/components/FeedEmptyState";
 import { FeedSkeleton } from "@/features/feed/components/FeedSkeleton";
 import { Pagination } from "@/features/feed/components/Pagination";
 import { cn } from "@/lib/utils";
+import { woodySection } from "@/lib/woody-ui";
 import type { Post } from "@/features/feed/types";
 
 const styles = {
@@ -27,8 +28,8 @@ export interface ProfilePostsSectionProps {
 
 const headerStyles = {
   wrap: "mb-4 md:mb-5",
-  title: "text-base font-bold text-[var(--woody-text)]",
-  desc: "mt-1.5 text-sm leading-relaxed text-[var(--woody-muted)]",
+  title: woodySection.title,
+  desc: woodySection.subtitle,
 } as const;
 
 export function ProfilePostsSection({

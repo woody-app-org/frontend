@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { woodySurface } from "@/lib/woody-ui";
 import type { User } from "@/domain/types";
 
 export interface CommunityMembersPreviewProps {
@@ -11,9 +12,7 @@ export interface CommunityMembersPreviewProps {
   className?: string;
 }
 
-const panel = cn(
-  "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] p-4 shadow-[0_1px_3px_rgba(92,58,59,0.06)] sm:p-5"
-);
+const panel = cn(woodySurface.card, "p-4 sm:p-5");
 
 function initials(name: string): string {
   return name

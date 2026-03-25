@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ChevronLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { woodyFocus, woodySurface } from "@/lib/woody-ui";
 import type { Community } from "@/domain/types";
 import { CommunityTag } from "./CommunityTag";
 import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
@@ -22,7 +23,10 @@ function formatMemberCount(n: number): string {
 }
 
 const styles = {
-  wrap: "relative overflow-hidden rounded-2xl border border-[var(--woody-accent)]/20 shadow-[0_8px_32px_rgba(92,58,59,0.12)]",
+  wrap: cn(
+    woodySurface.cardHero,
+    "relative overflow-hidden shadow-[0_8px_28px_rgba(92,58,59,0.11)]"
+  ),
   banner: "relative h-36 sm:h-44 md:h-52 w-full overflow-hidden",
   bannerImg: "size-full object-cover",
   bannerFallback:
@@ -31,8 +35,11 @@ const styles = {
     "pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--woody-card)] via-[var(--woody-card)]/40 to-transparent",
   backRow:
     "absolute left-0 right-0 top-0 z-20 flex items-center justify-between gap-2 px-3 pt-3 sm:px-4 sm:pt-4",
-  backLink:
-    "inline-flex items-center gap-1 rounded-lg bg-[var(--woody-card)]/90 px-2.5 py-1.5 text-xs font-semibold text-[var(--woody-text)] shadow-sm ring-1 ring-[var(--woody-accent)]/15 backdrop-blur-sm transition-colors hover:bg-[var(--woody-card)] sm:text-sm",
+  backLink: cn(
+    woodyFocus.ring,
+    "inline-flex items-center gap-1 rounded-lg bg-[var(--woody-card)]/90 px-2.5 py-1.5 text-xs font-semibold text-[var(--woody-text)]",
+    "shadow-sm ring-1 ring-[var(--woody-accent)]/15 backdrop-blur-sm transition-colors hover:bg-[var(--woody-card)] sm:text-sm"
+  ),
   body: "relative z-10 -mt-10 pb-5 sm:-mt-12 sm:pb-6 md:-mt-14 md:pb-8",
   bodyInner: "flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-8",
   identity: "flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-end sm:gap-5",
@@ -131,7 +138,10 @@ export function CommunityHero({
               variant="secondary"
               size="lg"
               onClick={onToggleMembership}
-              className={isMember ? styles.ctaLeave : styles.ctaJoin}
+              className={cn(
+                woodyFocus.ring,
+                isMember ? styles.ctaLeave : styles.ctaJoin
+              )}
             >
               {isMember ? "Sair da comunidade" : "Participar"}
             </Button>
