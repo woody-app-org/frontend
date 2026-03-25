@@ -25,6 +25,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      { path: "home", element: <Navigate to="/feed" replace /> },
       {
         path: "profile/:userId",
         element: (

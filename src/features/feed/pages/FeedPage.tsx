@@ -14,6 +14,8 @@ export function FeedPage() {
   const {
     posts,
     isLoading,
+    isRefreshing,
+    hasLoadedOnce,
     error,
     page,
     hasNextPage,
@@ -25,8 +27,13 @@ export function FeedPage() {
     refetch,
   } = useFeed();
 
+  const hasPosts = posts.length > 0;
+  const hasBlockingError = !hasPosts && !!error;
+  const hasInlineError = hasPosts && !!error;
+  const showInitialLoading = isLoading && !hasLoadedOnce;
+
   return (
-    <FeedLayout activeFilter={filter} onFilterChange={setFilter}>
+    <FeedLayout searchSourcePosts={posts}>
       <div className="flex flex-col flex-1 max-w-2xl mx-auto w-full px-3 md:px-6 py-4 md:py-5">
         <FeedTabs
           activeFilter={filter}
@@ -43,20 +50,30 @@ export function FeedPage() {
 
         <CreatePostCard className="mb-5" />
 
-        <section className="space-y-5">
-          {isLoading && <FeedSkeleton count={3} />}
+        <section className="relative space-y-5 min-h-[280px]">
+          {showInitialLoading && <FeedSkeleton count={3} />}
 
-          {!isLoading && error && (
-            <FeedErrorState message={error.message} onRetry={refetch} />
-          )}
+          {hasBlockingError && <FeedErrorState message={error?.message} onRetry={refetch} />}
 
-          {!isLoading && !error && posts.length === 0 && (
+          {!showInitialLoading && !error && !hasPosts && (
             <FeedEmptyState />
           )}
 
-          {!isLoading && !error && posts.length > 0 && (
+          {hasInlineError && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">
+              Não foi possível atualizar o feed agora. Exibindo os posts já carregados.
+            </div>
+          )}
+
+          {hasPosts && (
             <>
-              <ul className={cn("space-y-5 list-none p-0 m-0")}>
+              <ul
+                className={cn(
+                  "space-y-5 list-none p-0 m-0 transition-[opacity,transform,filter] duration-200 ease-out",
+                  isRefreshing && "opacity-60 translate-y-[2px] saturate-75"
+                )}
+                aria-busy={isRefreshing}
+              >
                 {posts.map((post) => (
                   <li key={post.id}>
                     <PostCard
@@ -75,6 +92,12 @@ export function FeedPage() {
                 onNext={nextPage}
               />
             </>
+          )}
+
+          {isRefreshing && hasPosts && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-20">
+              <div className="h-10 rounded-xl bg-gradient-to-b from-[var(--woody-bg)]/70 to-transparent" />
+            </div>
           )}
         </section>
       </div>

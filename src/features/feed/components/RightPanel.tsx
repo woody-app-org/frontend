@@ -58,7 +58,7 @@ function getInitials(name: string): string {
 
 const styles = {
   panel:
-    "hidden md:flex flex-col w-full min-w-0 bg-[var(--woody-bg)] border-l border-[var(--woody-nav)]/15",
+    "hidden md:flex flex-col w-full min-w-0 min-h-0 bg-[var(--woody-bg)] border-l border-[var(--woody-nav)]/15 overflow-y-auto",
   panelInner: "p-4 space-y-4",
   sectionTitle:
     "text-base font-bold text-[var(--woody-text)] mb-3",
