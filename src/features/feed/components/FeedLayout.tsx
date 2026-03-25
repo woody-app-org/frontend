@@ -66,6 +66,14 @@ function isEditableElement(el: EventTarget | null): boolean {
   return tag === "input" || tag === "textarea" || tag === "select" || editable || role === "textbox";
 }
 
+/** Modal/dialog em portal (fora de <main>): não interceptar wheel nem rolar o feed por baixo. */
+function isInsideDialogLayer(node: EventTarget | null): boolean {
+  if (!node || !(node instanceof Element)) return false;
+  return Boolean(
+    node.closest('[data-slot="dialog-content"]') || node.closest('[data-slot="dialog-overlay"]')
+  );
+}
+
 export function FeedLayout({ children, className, searchSourcePosts = [] }: FeedLayoutProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
@@ -93,6 +101,7 @@ export function FeedLayout({ children, className, searchSourcePosts = [] }: Feed
     const mq = window.matchMedia("(min-width: 768px)");
     const handleWheel = (e: WheelEvent) => {
       if (!mq.matches) return;
+      if (isInsideDialogLayer(e.target)) return;
       const wrapper = scrollWrapperRef.current;
       if (!wrapper) return;
       const main = wrapper.querySelector("main");
@@ -112,6 +121,7 @@ export function FeedLayout({ children, className, searchSourcePosts = [] }: Feed
       if (!mq.matches) return;
       if (!isScrollKey(e.key)) return;
       if (isEditableElement(document.activeElement)) return;
+      if (isInsideDialogLayer(document.activeElement)) return;
 
       const wrapper = scrollWrapperRef.current;
       if (!wrapper) return;
