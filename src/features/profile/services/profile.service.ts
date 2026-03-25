@@ -1,37 +1,53 @@
 import type { UserProfile, ProfilePostsResponse } from "../types";
-import { MOCK_USER_PROFILE, MOCK_PROFILE_POSTS } from "../mocks/profile.mock";
+import type { Post } from "@/domain/types";
+import { MOCK_USER_PROFILE } from "../mocks/profile.mock";
+import { getPostsByAuthorId, getUserById } from "@/domain/selectors";
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Busca perfil do usuário por ID.
- * Substituir por chamada à API quando o backend estiver disponível.
- */
+function profileFromSeedUser(userId: string): UserProfile | null {
+  const u = getUserById(userId);
+  if (!u) return null;
+  return {
+    id: u.id,
+    name: u.name,
+    username: u.username,
+    avatarUrl: u.avatarUrl,
+    pronouns: u.pronouns,
+    bannerUrl: null,
+    bio: u.bio ?? "",
+    socialLinks: [],
+    interests: [],
+    suggestions: [],
+  };
+}
+
 export async function getProfile(userId: string): Promise<UserProfile | null> {
-  await delay(500);
-  if (userId === "1") return MOCK_USER_PROFILE;
-  return null;
+  await delay(350);
+  if (MOCK_USER_PROFILE.id === userId) return MOCK_USER_PROFILE;
+  return profileFromSeedUser(userId);
 }
 
 /**
- * Busca posts do perfil com paginação.
- * Substituir por chamada à API quando o backend estiver disponível.
+ * Busca posts da usuária (todas as comunidades em que publicou), com paginação em cima do seed único.
  */
 export async function getProfilePosts(
-  _userId: string,
+  userId: string,
   page: number,
   pageSize: number = 10
 ): Promise<ProfilePostsResponse> {
   await delay(400);
-  const totalCount = MOCK_PROFILE_POSTS.length * 2;
+  const authorPosts = getPostsByAuthorId(userId);
+  const pool: Post[] = [
+    ...authorPosts,
+    ...authorPosts.map((p, i) => ({ ...p, id: `${p.id}-pprof-${i}` })),
+  ];
+  const totalCount = pool.length;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
-  const items = [
-    ...MOCK_PROFILE_POSTS,
-    ...MOCK_PROFILE_POSTS.map((p, i) => ({ ...p, id: `${p.id}-${i + 10}` })),
-  ].slice(start, end);
+  const items = pool.slice(start, end);
 
   return {
     items,

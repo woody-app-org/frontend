@@ -61,18 +61,26 @@ export async function searchByMode(params: {
 
   if (mode === "topics") {
     const posts = source.posts.filter((p) => {
+      const tagMatch =
+        p.tags?.some((t) => includesQuery(t, query)) ?? false;
       return (
         includesQuery(p.title ?? "", query) ||
         includesQuery(p.content ?? "", query) ||
-        includesQuery(p.topic ?? "", query) ||
-        includesQuery(p.author?.name ?? "", query)
+        includesQuery(p.community?.name ?? "", query) ||
+        includesQuery(p.author?.name ?? "", query) ||
+        includesQuery(p.author?.username ?? "", query) ||
+        tagMatch
       );
     });
     return { posts };
   }
 
   const people = uniquePeopleFromPosts(source.posts).filter((u) => {
-    return includesQuery(u.name ?? "", query) || includesQuery(u.pronouns ?? "", query);
+    return (
+      includesQuery(u.name ?? "", query) ||
+      includesQuery(u.username ?? "", query) ||
+      includesQuery(u.pronouns ?? "", query)
+    );
   });
   return { people };
 }

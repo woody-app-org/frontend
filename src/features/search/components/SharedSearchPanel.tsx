@@ -143,7 +143,7 @@ function TopicsResults({ posts }: { posts: Post[] }) {
           className="rounded-xl border border-black/10 bg-white/55 px-4 py-3 hover:bg-white/70 transition-colors"
         >
           <div className="text-sm font-semibold text-[var(--woody-text)] line-clamp-1">
-            {p.title || p.topic || "Tópico"}
+            {p.title || p.community?.name || "Discussão"}
           </div>
           <div className="mt-0.5 text-xs text-[var(--woody-muted)] line-clamp-1">
             {p.author?.name ? `por ${p.author.name}` : " "}

@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { RootRedirect } from "@/app/RootRedirect";
 import { FeedPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
+import { CommunitiesPage, CommunityDetailPage } from "@/features/communities";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "communities",
+        element: (
+          <ProtectedRoute>
+            <CommunitiesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "communities/:communitySlug",
+        element: (
+          <ProtectedRoute>
+            <CommunityDetailPage />
           </ProtectedRoute>
         ),
       },

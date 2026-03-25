@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { id: "home", path: "/feed", label: "Home", icon: Home },
-  { id: "comunidade", path: "/comunidade", label: "Comunidade", icon: Users },
+  { id: "comunidades", path: "/communities", label: "Comunidades", icon: Users },
   { id: "create", path: "/criar", label: "Criar", icon: PlusSquare },
   { id: "search", path: "/feed", label: "Busca", icon: Search },
   { id: "salvos", path: "/salvos", label: "Salvos", icon: Bookmark },
@@ -31,9 +31,11 @@ export function MobileBottomNav({ className, onOpenSearch, isSearchOpen }: Mobil
         const isActive =
           item.id === "home"
             ? location.pathname === "/feed" || location.pathname === "/"
-            : item.id === "search"
-              ? !!isSearchOpen
-              : location.pathname.startsWith(item.path);
+            : item.id === "comunidades"
+              ? location.pathname.startsWith("/communities")
+              : item.id === "search"
+                ? !!isSearchOpen
+                : location.pathname.startsWith(item.path);
         const Icon = item.icon;
         const isSearch = item.id === "search";
         return (

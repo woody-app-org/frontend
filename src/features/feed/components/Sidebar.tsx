@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Search } from "lucide-react";
+import { Home, Search, UsersRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SidebarProps {
@@ -36,6 +36,21 @@ export function Sidebar({ className, onOpenSearch, isSearchOpen }: SidebarProps)
         >
           <Home className="size-5 shrink-0" aria-hidden />
           Home
+        </NavLink>
+
+        <NavLink
+          to="/communities"
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-[background-color,color,box-shadow] duration-200",
+              isActive
+                ? "bg-[var(--woody-item-active)] text-white font-semibold shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                : "text-[var(--woody-sidebar-text-inactive)] font-medium hover:bg-[var(--woody-item-hover)]"
+            )
+          }
+        >
+          <UsersRound className="size-5 shrink-0" aria-hidden />
+          Comunidades
         </NavLink>
 
         <button

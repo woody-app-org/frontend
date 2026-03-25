@@ -138,9 +138,21 @@ export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
-          {post.topic && <span className={styles.pill}>{post.topic}</span>}
+          {post.community && (
+            <Link
+              to={`/communities/${post.community.slug}`}
+              className={cn(styles.pill, "hover:bg-[var(--woody-nav)]/25 transition-colors")}
+            >
+              {post.community.name}
+            </Link>
+          )}
+          {post.tags?.map((tag) => (
+            <span key={tag} className={styles.pill}>
+              {tag}
+            </span>
+          ))}
         </div>
-        <p className={cn(styles.content, (post.title || post.topic) && "mt-2")}>
+        <p className={cn(styles.content, (post.title || post.community || post.tags?.length) && "mt-2")}>
           {post.content}
         </p>
         {post.imageUrl && (
