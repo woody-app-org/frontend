@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import type { AuthUser } from "../types";
 import { getAuthUser, loginMock, logoutMock, registerMock } from "../services/auth.service";
 import type { LoginCredentials, RegisterCredentials } from "../types";
@@ -22,13 +15,8 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setUser(getAuthUser());
-    setIsLoading(false);
-  }, []);
+  const [user, setUser] = useState<AuthUser | null>(() => getAuthUser());
+  const isLoading = false;
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const u = await loginMock(credentials);
@@ -59,6 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/** Hook de contexto (export nomeado intencional). */
+// eslint-disable-next-line react-refresh/only-export-components -- hook pareia com AuthProvider
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
