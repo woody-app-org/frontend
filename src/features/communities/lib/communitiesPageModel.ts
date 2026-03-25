@@ -1,0 +1,56 @@
+import type { Community, CommunityCategory } from "@/domain/types";
+import { SEED_COMMUNITIES } from "@/domain/mocks/seed";
+import { getCommunitiesForUser } from "@/domain/selectors";
+
+/** Usuária mock “atual” alinhada ao composer do feed e ao perfil principal. */
+export const COMMUNITIES_PAGE_VIEWER_ID = "1";
+
+const CATEGORY_LABELS: Record<CommunityCategory, string> = {
+  bemestar: "Bem-estar",
+  carreira: "Carreira",
+  cultura: "Cultura",
+  seguranca: "Segurança",
+  outro: "Outras",
+};
+
+export function getCommunityCategoryLabel(category: CommunityCategory): string {
+  return CATEGORY_LABELS[category] ?? category;
+}
+
+/** “Em alta”: ordena por engajamento proxy (membros); estável para futura troca por API. */
+export function getTrendingCommunities(): Community[] {
+  return [...SEED_COMMUNITIES].sort((a, b) => b.memberCount - a.memberCount);
+}
+
+export function getMyCommunities(userId: string): Community[] {
+  return getCommunitiesForUser(userId);
+}
+
+/** Comunidades que a usuária ainda não entrou — pode ficar vazio se já participar de todas (mock). */
+export function getSuggestedCommunitiesForUser(userId: string): Community[] {
+  const joined = new Set(getCommunitiesForUser(userId).map((c) => c.id));
+  return SEED_COMMUNITIES.filter((c) => !joined.has(c.id));
+}
+
+export interface CategoryGroup {
+  category: CommunityCategory;
+  label: string;
+  communities: Community[];
+}
+
+export function getCommunitiesGroupedByCategory(): CategoryGroup[] {
+  const map = new Map<CommunityCategory, Community[]>();
+  for (const c of SEED_COMMUNITIES) {
+    const list = map.get(c.category) ?? [];
+    list.push(c);
+    map.set(c.category, list);
+  }
+  const order: CommunityCategory[] = ["carreira", "bemestar", "cultura", "seguranca", "outro"];
+  return order
+    .filter((cat) => (map.get(cat)?.length ?? 0) > 0)
+    .map((category) => ({
+      category,
+      label: getCommunityCategoryLabel(category),
+      communities: map.get(category)!,
+    }));
+}
