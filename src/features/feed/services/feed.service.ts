@@ -1,26 +1,54 @@
 import type { Post } from "@/domain/types";
-import { getAllSeedPostsEnriched } from "@/domain/selectors";
+import { getAllSeedPostsEnriched, getCommunityIdsForUser, getFollowingUserIds } from "@/domain/selectors";
+import { COMMUNITIES_PAGE_VIEWER_ID } from "@/features/communities/lib/communitiesPageModel";
 import type { PaginatedResponse, FeedFilter } from "../types";
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function expandFeedPool(base: Post[]): Post[] {
-  return [
-    ...base,
-    ...base.map((p, i) => ({ ...p, id: `${p.id}-dup1-${i}` })),
-    ...base.map((p, i) => ({ ...p, id: `${p.id}-dup2-${i}` })),
-  ];
+function engagementScore(p: Post): number {
+  return p.likesCount + p.commentsCount * 2;
 }
 
-export async function getFeed(
-  page: number,
-  _filter: FeedFilter
-): Promise<PaginatedResponse<Post>> {
-  await delay(600);
+function applyFeedFilter(all: Post[], filter: FeedFilter, viewerId: string): Post[] {
+  switch (filter) {
+    case "trending":
+      return [...all].sort((a, b) => engagementScore(b) - engagementScore(a));
+    case "forYou": {
+      const mine = new Set(getCommunityIdsForUser(viewerId));
+      const fromJoined = all
+        .filter((p) => mine.has(p.communityId))
+        .sort((a, b) => engagementScore(b) - engagementScore(a));
+      const discover = all
+        .filter((p) => !mine.has(p.communityId))
+        .sort((a, b) => engagementScore(b) - engagementScore(a));
+      const seen = new Set<string>();
+      const merged: Post[] = [];
+      for (const p of [...fromJoined, ...discover]) {
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        merged.push(p);
+      }
+      return merged;
+    }
+    case "following": {
+      const following = new Set(getFollowingUserIds(viewerId));
+      return all
+        .filter((p) => following.has(p.author.id))
+        .sort((a, b) => engagementScore(b) - engagementScore(a));
+    }
+    default:
+      return all;
+  }
+}
 
-  const pool = expandFeedPool(getAllSeedPostsEnriched());
+export async function getFeed(page: number, filter: FeedFilter): Promise<PaginatedResponse<Post>> {
+  await delay(420);
+
+  const viewerId = COMMUNITIES_PAGE_VIEWER_ID;
+  const all = getAllSeedPostsEnriched();
+  const pool = applyFeedFilter(all, filter, viewerId);
   const pageSize = 10;
   const totalCount = pool.length;
   const start = (page - 1) * pageSize;

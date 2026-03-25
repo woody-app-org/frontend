@@ -24,6 +24,8 @@ export interface ProfilePostsSectionProps {
   /** Título da seção (bloco “Posts / Publicações”). */
   sectionTitle?: string;
   sectionDescription?: string;
+  /** Esconde título e descrição (ex.: abas do perfil). */
+  hideSectionHeader?: boolean;
 }
 
 const headerStyles = {
@@ -45,8 +47,9 @@ export function ProfilePostsSection({
   className,
   sectionTitle = "Publicações",
   sectionDescription = "Posts publicados em comunidades — cada um mostra o espaço de origem.",
+  hideSectionHeader = false,
 }: ProfilePostsSectionProps) {
-  const header = (
+  const header = hideSectionHeader ? null : (
     <div className={headerStyles.wrap}>
       <h2 className={headerStyles.title}>{sectionTitle}</h2>
       {sectionDescription ? <p className={headerStyles.desc}>{sectionDescription}</p> : null}

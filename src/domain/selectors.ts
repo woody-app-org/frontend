@@ -1,5 +1,12 @@
 import type { Community, Membership, Post, PostCommunityPreview, User } from "./types";
-import { SEED_COMMUNITIES, SEED_MEMBERSHIPS, SEED_POSTS, SEED_USERS, type SeedPost } from "./mocks/seed";
+import {
+  SEED_COMMUNITIES,
+  SEED_FOLLOWS,
+  SEED_MEMBERSHIPS,
+  SEED_POSTS,
+  SEED_USERS,
+  type SeedPost,
+} from "./mocks/seed";
 
 const communityById = new Map(SEED_COMMUNITIES.map((c) => [c.id, c]));
 
@@ -79,6 +86,11 @@ export function getCommunitiesForUser(userId: string): Community[] {
 
 export function isUserMemberOfCommunity(userId: string, communityId: string): boolean {
   return SEED_MEMBERSHIPS.some((m) => m.userId === userId && m.communityId === communityId);
+}
+
+/** IDs de usuárias que `followerId` segue (mock). */
+export function getFollowingUserIds(followerId: string): string[] {
+  return [...new Set(SEED_FOLLOWS.filter((f) => f.followerId === followerId).map((f) => f.followingId))];
 }
 
 /** Usuárias que participam da comunidade (mock por membership; futuro: API). */

@@ -10,6 +10,8 @@ export interface CommunityCardProps {
   community: Community;
   /** Se a usuária já participa (texto do CTA). */
   isMember?: boolean;
+  /** Cards mais altos e avatares maiores (ex.: grids de descoberta no desktop). */
+  visualWeight?: "default" | "emphasis";
   className?: string;
 }
 
@@ -26,15 +28,25 @@ const styles = {
     "group flex h-full flex-col overflow-hidden"
   ),
   coverWrap: "relative h-24 shrink-0 overflow-hidden sm:h-28",
+  coverWrapEmphasis:
+    "relative h-28 shrink-0 overflow-hidden sm:h-32 md:h-40 lg:h-[10.5rem]",
   coverImg: "size-full object-cover transition duration-300 group-hover:scale-[1.03]",
   coverFallback: "size-full bg-gradient-to-br from-[var(--woody-nav)]/25 to-[var(--woody-accent)]/20",
   coverGradient:
     "pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--woody-card)]/90 via-transparent to-transparent",
   avatarWrap: "relative -mt-9 ml-4 flex items-end sm:-mt-10 sm:ml-5",
+  avatarWrapEmphasis:
+    "relative -mt-11 ml-4 flex items-end sm:-mt-12 sm:ml-5 md:-mt-14 md:ml-6",
   avatar: "size-14 shrink-0 rounded-2xl border-[3px] border-[var(--woody-card)] object-cover shadow-md sm:size-16",
+  avatarEmphasis:
+    "size-16 shrink-0 rounded-2xl border-[3px] border-[var(--woody-card)] object-cover shadow-md sm:size-[4.25rem] md:size-20 md:border-[4px]",
   avatarFallback: cn(
     "flex size-14 shrink-0 items-center justify-center rounded-2xl border-[3px] border-[var(--woody-card)]",
     "bg-[var(--woody-nav)]/15 text-sm font-bold text-[var(--woody-text)] sm:size-16"
+  ),
+  avatarFallbackEmphasis: cn(
+    "flex size-16 shrink-0 items-center justify-center rounded-2xl border-[3px] border-[var(--woody-card)]",
+    "bg-[var(--woody-nav)]/15 text-sm font-bold text-[var(--woody-text)] sm:size-[4.25rem] md:size-20 md:border-[4px]"
   ),
   body: "flex min-h-0 flex-1 flex-col px-4 pb-4 pt-1 sm:px-5 sm:pb-5",
   title: "line-clamp-2 text-base font-bold leading-snug text-[var(--woody-text)] sm:text-[1.05rem]",
@@ -54,9 +66,15 @@ const styles = {
   ),
 } as const;
 
-export function CommunityCard({ community, isMember = false, className }: CommunityCardProps) {
+export function CommunityCard({
+  community,
+  isMember = false,
+  visualWeight = "default",
+  className,
+}: CommunityCardProps) {
   const to = `/communities/${community.slug}`;
   const categoryLabel = getCommunityCategoryLabel(community.category);
+  const emphasis = visualWeight === "emphasis";
   const initials = community.name
     .split(" ")
     .map((w) => w[0])
@@ -68,7 +86,7 @@ export function CommunityCard({ community, isMember = false, className }: Commun
 
   return (
     <Link to={to} className={cn(styles.link, "h-full", className)}>
-      <div className={styles.coverWrap}>
+      <div className={emphasis ? styles.coverWrapEmphasis : styles.coverWrap}>
         {community.coverUrl ? (
           <img
             src={community.coverUrl}
@@ -82,18 +100,23 @@ export function CommunityCard({ community, isMember = false, className }: Commun
         <div className={styles.coverGradient} aria-hidden />
       </div>
 
-      <div className={styles.avatarWrap}>
+      <div className={emphasis ? styles.avatarWrapEmphasis : styles.avatarWrap}>
         {community.avatarUrl ? (
-          <img src={community.avatarUrl} alt="" className={styles.avatar} loading="lazy" />
+          <img
+            src={community.avatarUrl}
+            alt=""
+            className={emphasis ? styles.avatarEmphasis : styles.avatar}
+            loading="lazy"
+          />
         ) : (
-          <span className={styles.avatarFallback} aria-hidden>
+          <span className={emphasis ? styles.avatarFallbackEmphasis : styles.avatarFallback} aria-hidden>
             {initials}
           </span>
         )}
       </div>
 
-      <div className={styles.body}>
-        <h3 className={styles.title}>{community.name}</h3>
+      <div className={cn(styles.body, emphasis && "sm:px-6 sm:pb-6 md:pt-2")}>
+        <h3 className={cn(styles.title, emphasis && "md:text-lg")}>{community.name}</h3>
         <p className={styles.desc}>{community.description}</p>
 
         <div className={styles.metaRow}>

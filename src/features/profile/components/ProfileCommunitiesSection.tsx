@@ -52,6 +52,8 @@ export interface ProfileCommunitiesSectionProps {
   isOwnProfile?: boolean;
   /** Primeiro nome ou apelido para texto na terceira pessoa. */
   shortName?: string;
+  /** Sem `Card` externo — útil dentro de abas. */
+  bare?: boolean;
   className?: string;
 }
 
@@ -62,6 +64,7 @@ export function ProfileCommunitiesSection({
   userId,
   isOwnProfile = false,
   shortName,
+  bare = false,
   className,
 }: ProfileCommunitiesSectionProps) {
   const communities = useMemo(() => getCommunitiesForUser(userId), [userId]);
@@ -69,6 +72,37 @@ export function ProfileCommunitiesSection({
   const blurb = isOwnProfile
     ? "Espaços onde você conversa e constrói vínculos na Woody."
     : `Espaços onde ${shortName ?? "esta pessoa"} participa na Woody.`;
+
+  const body =
+    communities.length === 0 ? (
+      <div className={styles.emptyWrap}>
+        <div className={styles.emptyIcon}>
+          <UsersRound className="size-5" aria-hidden />
+        </div>
+        <p className={styles.emptyTitle}>Nenhuma comunidade ainda</p>
+        <p className={styles.emptyDesc}>
+          Quando houver participação em grupos, eles aparecerão aqui — parte central da identidade na
+          plataforma.
+        </p>
+      </div>
+    ) : (
+      <ul className={cn(styles.grid, "list-none p-0 m-0")}>
+        {communities.map((c) => (
+          <li key={c.id}>
+            <ProfileCommunityCompactLink community={c} />
+          </li>
+        ))}
+      </ul>
+    );
+
+  if (bare) {
+    return (
+      <div className={cn("space-y-3", className)}>
+        <p className={styles.subtitle}>{blurb}</p>
+        {body}
+      </div>
+    );
+  }
 
   return (
     <Card className={cn(styles.card, className)}>
@@ -78,28 +112,7 @@ export function ProfileCommunitiesSection({
         </h2>
         <p className={styles.subtitle}>{blurb}</p>
       </CardHeader>
-      <CardContent className="pt-0">
-        {communities.length === 0 ? (
-          <div className={styles.emptyWrap}>
-            <div className={styles.emptyIcon}>
-              <UsersRound className="size-5" aria-hidden />
-            </div>
-            <p className={styles.emptyTitle}>Nenhuma comunidade ainda</p>
-            <p className={styles.emptyDesc}>
-              Quando houver participação em grupos, eles aparecerão aqui — parte central da identidade na
-              plataforma.
-            </p>
-          </div>
-        ) : (
-          <ul className={cn(styles.grid, "list-none p-0 m-0")}>
-            {communities.map((c) => (
-              <li key={c.id}>
-                <ProfileCommunityCompactLink community={c} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
+      <CardContent className="pt-0">{body}</CardContent>
     </Card>
   );
 }

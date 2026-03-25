@@ -6,12 +6,10 @@ import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { cn } from "@/lib/utils";
 import { SearchModal } from "@/features/search/components/SearchModal";
-import type { Post } from "../types";
 
 export interface FeedLayoutProps {
   children: React.ReactNode;
   className?: string;
-  searchSourcePosts?: Post[];
 }
 
 // --- Estilos do header (evitar classes gigantes no JSX) ---
@@ -74,7 +72,7 @@ function isInsideDialogLayer(node: EventTarget | null): boolean {
   );
 }
 
-export function FeedLayout({ children, className, searchSourcePosts = [] }: FeedLayoutProps) {
+export function FeedLayout({ children, className }: FeedLayoutProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -215,11 +213,7 @@ export function FeedLayout({ children, className, searchSourcePosts = [] }: Feed
 
       <MobileBottomNav onOpenSearch={() => setIsSearchOpen(true)} isSearchOpen={isSearchOpen} />
 
-      <SearchModal
-        open={isSearchOpen}
-        onOpenChange={setIsSearchOpen}
-        sourcePosts={searchSourcePosts}
-      />
+      <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
     </div>
   );
 }

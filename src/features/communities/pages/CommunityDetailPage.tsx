@@ -82,7 +82,7 @@ export function CommunityDetailPage() {
   }
 
   return (
-    <FeedLayout searchSourcePosts={posts}>
+    <FeedLayout>
       <div
         className={cn(
           "mx-auto w-full max-w-6xl flex flex-col gap-8 md:gap-10 pb-20 md:pb-8",

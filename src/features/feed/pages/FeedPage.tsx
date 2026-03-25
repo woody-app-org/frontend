@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { FeedLayout } from "../components/FeedLayout";
 import { FeedTabs } from "../components/FeedTabs";
 import { CreatePostCard } from "../components/CreatePostCard";
@@ -7,31 +6,35 @@ import { Pagination } from "../components/Pagination";
 import { FeedSkeleton } from "../components/FeedSkeleton";
 import { FeedEmptyState } from "../components/FeedEmptyState";
 import { FeedErrorState } from "../components/FeedErrorState";
+import { FeedCommunityContextStrip } from "../components/FeedCommunityContextStrip";
 import { useFeed } from "../hooks/useFeed";
-import { Flame } from "lucide-react";
+import { Flame, Compass, UserRoundCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyLayout, woodySection } from "@/lib/woody-ui";
-import { getRecentPostsInUserCommunities, isUserMemberOfCommunity } from "@/domain/selectors";
-import {
-  COMMUNITIES_PAGE_VIEWER_ID,
-  getSuggestedCommunitiesForUser,
-  getTrendingCommunities,
-} from "@/features/communities/lib/communitiesPageModel";
-import { CommunitiesSection } from "@/features/communities/components/CommunitiesSection";
-import { CommunityCarousel } from "@/features/communities/components/CommunityCarousel";
-import { CommunityCard } from "@/features/communities/components/CommunityCard";
+import type { FeedFilter } from "../types";
 
-const CAROUSEL_ITEM = "min-w-[min(88vw,300px)] shrink-0 snap-start md:min-w-0";
+const FEED_HEADLINES: Record<
+  FeedFilter,
+  { title: string; subtitle: string; icon: typeof Flame }
+> = {
+  trending: {
+    title: "Em alta entre as comunidades",
+    subtitle: "Publicações com mais conversa agora — sempre com contexto do grupo de origem.",
+    icon: Flame,
+  },
+  forYou: {
+    title: "Para você",
+    subtitle: "Prioriza os grupos em que você participa e abre espaço para novas descobertas.",
+    icon: Compass,
+  },
+  following: {
+    title: "Das pessoas que você segue",
+    subtitle: "Atualizações das perfis que você acompanha na plataforma.",
+    icon: UserRoundCheck,
+  },
+};
 
 export function FeedPage() {
-  const viewerId = COMMUNITIES_PAGE_VIEWER_ID;
-  const spotlightCommunities = useMemo(() => getTrendingCommunities(), []);
-  const suggestedCommunities = useMemo(() => getSuggestedCommunitiesForUser(viewerId), [viewerId]);
-  const postsFromMyCommunities = useMemo(
-    () => getRecentPostsInUserCommunities(viewerId, 4),
-    [viewerId]
-  );
-
   const {
     posts,
     isLoading,
@@ -52,9 +55,20 @@ export function FeedPage() {
   const hasBlockingError = !hasPosts && !!error;
   const hasInlineError = hasPosts && !!error;
   const showInitialLoading = isLoading && !hasLoadedOnce;
+  const headline = FEED_HEADLINES[filter];
+  const HeadlineIcon = headline.icon;
+
+  const emptyState =
+    filter === "following"
+      ? {
+          title: "Nenhuma publicação de quem você segue",
+          description:
+            "Siga mais perfis ou volte ao “Em alta” / “Para você”. As pessoas que você acompanha ainda não têm posts recentes no mock.",
+        }
+      : undefined;
 
   return (
-    <FeedLayout searchSourcePosts={posts}>
+    <FeedLayout>
       <div
         className={cn(
           "flex flex-col flex-1 max-w-3xl mx-auto w-full",
@@ -64,73 +78,14 @@ export function FeedPage() {
       >
         <FeedTabs activeFilter={filter} onFilterChange={setFilter} />
 
-        <CommunitiesSection
-          eyebrow="Explorar"
-          title="Comunidades em destaque"
-          description="Espaços moderados onde as conversas acontecem — entre para ver regras e participar."
-          sectionId="feed-community-spotlight"
-        >
-          <CommunityCarousel ariaLabel="Comunidades em destaque na home">
-            {spotlightCommunities.map((c) => (
-              <div key={c.id} className={CAROUSEL_ITEM}>
-                <CommunityCard
-                  community={c}
-                  isMember={isUserMemberOfCommunity(viewerId, c.id)}
-                  className="h-full"
-                />
-              </div>
-            ))}
-          </CommunityCarousel>
-        </CommunitiesSection>
-
-        {postsFromMyCommunities.length > 0 ? (
-          <CommunitiesSection
-            eyebrow="Seus espaços"
-            title="Posts das suas comunidades"
-            description="Atividade recente nos grupos em que você já está — todo post continua ligado à sua comunidade de origem."
-            sectionId="feed-my-communities-posts"
-          >
-            <ul className="space-y-4 list-none p-0 m-0 md:space-y-5">
-              {postsFromMyCommunities.map((post) => (
-                <li key={post.id}>
-                  <PostCard
-                    post={post}
-                    onPin={(id) => console.log("Pin", id)}
-                    onReport={(id) => console.log("Report", id)}
-                  />
-                </li>
-              ))}
-            </ul>
-          </CommunitiesSection>
-        ) : null}
-
-        {suggestedCommunities.length > 0 ? (
-          <CommunitiesSection
-            eyebrow="Descubra"
-            title="Sugestões para você"
-            description="Comunidades que ainda não fazem parte do seu painel — boas para ampliar repertório com segurança."
-            sectionId="feed-suggested-communities"
-          >
-            <CommunityCarousel ariaLabel="Sugestões de comunidades">
-              {suggestedCommunities.map((c) => (
-                <div key={c.id} className={CAROUSEL_ITEM}>
-                  <CommunityCard community={c} isMember={false} className="h-full" />
-                </div>
-              ))}
-            </CommunityCarousel>
-          </CommunitiesSection>
-        ) : null}
-
         <CreatePostCard />
 
         <div>
           <h2 className={cn(woodySection.title, "flex items-center gap-2")}>
-            Discussões em alta
-            <Flame className="size-5 text-[var(--woody-accent)] shrink-0" aria-hidden />
+            {headline.title}
+            <HeadlineIcon className="size-5 text-[var(--woody-accent)] shrink-0" aria-hidden />
           </h2>
-          <p className={woodySection.subtitle}>
-            Tópicos do momento, reunindo várias comunidades — cada post mostra de onde veio.
-          </p>
+          <p className={woodySection.subtitle}>{headline.subtitle}</p>
         </div>
 
         <section className="relative space-y-5 min-h-[280px]">
@@ -138,7 +93,9 @@ export function FeedPage() {
 
           {hasBlockingError && <FeedErrorState message={error?.message} onRetry={refetch} />}
 
-          {!showInitialLoading && !error && !hasPosts && <FeedEmptyState />}
+          {!showInitialLoading && !error && !hasPosts && (
+            <FeedEmptyState title={emptyState?.title} description={emptyState?.description} />
+          )}
 
           {hasInlineError && (
             <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-900 dark:text-amber-200">
@@ -181,6 +138,8 @@ export function FeedPage() {
             </div>
           )}
         </section>
+
+        <FeedCommunityContextStrip className="mt-2" />
       </div>
     </FeedLayout>
   );

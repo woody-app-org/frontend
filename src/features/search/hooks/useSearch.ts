@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Post, User } from "@/features/feed/types";
-import { searchByMode, type SearchMode, type SearchSource } from "../services/search.service";
+import type { Community, Post, User } from "@/domain/types";
+import { searchByMode, type SearchMode } from "../services/search.service";
 
 export interface UseSearchParams {
   query: string;
   mode: SearchMode;
-  source: SearchSource;
   debounceMs?: number;
 }
 
@@ -13,12 +12,14 @@ export interface UseSearchReturn {
   isLoading: boolean;
   posts: Post[];
   people: User[];
+  communities: Community[];
 }
 
-export function useSearch({ query, mode, source, debounceMs = 200 }: UseSearchParams): UseSearchReturn {
+export function useSearch({ query, mode, debounceMs = 200 }: UseSearchParams): UseSearchReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [people, setPeople] = useState<User[]>([]);
+  const [communities, setCommunities] = useState<Community[]>([]);
   const lastReq = useRef(0);
 
   const effectiveQuery = useMemo(() => query.trim(), [query]);
@@ -30,21 +31,27 @@ export function useSearch({ query, mode, source, debounceMs = 200 }: UseSearchPa
       setIsLoading(false);
       setPosts([]);
       setPeople([]);
+      setCommunities([]);
       return;
     }
 
     setIsLoading(true);
     const t = window.setTimeout(async () => {
       try {
-        const result = await searchByMode({ query: effectiveQuery, mode, source });
+        const result = await searchByMode({ query: effectiveQuery, mode });
         if (lastReq.current !== reqId) return;
-
-        if (mode === "topics") {
+        if (mode === "posts") {
           setPosts((result as { posts: Post[] }).posts ?? []);
           setPeople([]);
-        } else {
+          setCommunities([]);
+        } else if (mode === "people") {
           setPeople((result as { people: User[] }).people ?? []);
           setPosts([]);
+          setCommunities([]);
+        } else {
+          setCommunities((result as { communities: Community[] }).communities ?? []);
+          setPosts([]);
+          setPeople([]);
         }
       } finally {
         if (lastReq.current === reqId) setIsLoading(false);
@@ -52,8 +59,7 @@ export function useSearch({ query, mode, source, debounceMs = 200 }: UseSearchPa
     }, debounceMs);
 
     return () => window.clearTimeout(t);
-  }, [debounceMs, effectiveQuery, mode, source]);
+  }, [debounceMs, effectiveQuery, mode]);
 
-  return { isLoading, posts, people };
+  return { isLoading, posts, people, communities };
 }
-

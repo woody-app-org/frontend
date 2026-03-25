@@ -1,5 +1,4 @@
 import type { UserProfile, ProfilePostsResponse } from "../types";
-import type { Post } from "@/domain/types";
 import { MOCK_USER_PROFILE } from "../mocks/profile.mock";
 import { getPostsByAuthorId, getUserById } from "@/domain/selectors";
 
@@ -39,11 +38,7 @@ export async function getProfilePosts(
   pageSize: number = 10
 ): Promise<ProfilePostsResponse> {
   await delay(400);
-  const authorPosts = getPostsByAuthorId(userId);
-  const pool: Post[] = [
-    ...authorPosts,
-    ...authorPosts.map((p, i) => ({ ...p, id: `${p.id}-pprof-${i}` })),
-  ];
+  const pool = getPostsByAuthorId(userId);
   const totalCount = pool.length;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;

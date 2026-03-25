@@ -1,20 +1,29 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { FeedErrorState } from "@/features/feed/components/FeedErrorState";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { ProfileHeader } from "../components/ProfileHeader";
-import { ProfileAbout } from "../components/ProfileAbout";
-import { ProfileSidebar } from "../components/ProfileSidebar";
-import { ProfilePostsSection } from "../components/ProfilePostsSection";
 import { ProfileCommunitiesSection } from "../components/ProfileCommunitiesSection";
+import { ProfilePostsSection } from "../components/ProfilePostsSection";
+import { ProfileOverviewTab } from "../components/ProfileOverviewTab";
 import { ProfileSkeleton } from "../components/ProfileSkeleton";
 import { COMMUNITIES_PAGE_VIEWER_ID } from "@/features/communities/lib/communitiesPageModel";
 import { cn } from "@/lib/utils";
-import { woodyLayout } from "@/lib/woody-ui";
+import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
+
+type ProfileTab = "posts" | "communities" | "about";
+
+const TABS: { id: ProfileTab; label: string }[] = [
+  { id: "posts", label: "Posts" },
+  { id: "communities", label: "Comunidades" },
+  { id: "about", label: "Sobre" },
+];
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const [tab, setTab] = useState<ProfileTab>("posts");
   const {
     profile,
     posts,
@@ -33,32 +42,59 @@ export function ProfilePage() {
     return null;
   }
 
+  const activeIndex = Math.max(0, TABS.findIndex((t) => t.id === tab));
+
   return (
     <FeedLayout>
       <div
         className={cn(
-          "flex flex-col flex-1 w-full max-w-4xl mx-auto pb-16 md:pb-6",
+          "flex flex-col flex-1 w-full max-w-3xl mx-auto pb-16 md:pb-6",
           woodyLayout.pagePad
         )}
       >
         {isLoading && <ProfileSkeleton />}
 
-        {!isLoading && error && (
-          <FeedErrorState message={error.message} onRetry={refetch} />
-        )}
+        {!isLoading && error && <FeedErrorState message={error.message} onRetry={refetch} />}
 
         {!isLoading && !error && profile && (
           <>
-            <ProfileHeader profile={profile} className="mb-4 md:mb-6" />
+            <ProfileHeader profile={profile} className="mb-5 md:mb-6" />
 
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 md:gap-8">
-              <div className="min-w-0 flex flex-col gap-7 md:gap-8">
-                <ProfileAbout bio={profile.bio} />
-                <ProfileCommunitiesSection
-                  userId={profile.id}
-                  isOwnProfile={profile.id === COMMUNITIES_PAGE_VIEWER_ID}
-                  shortName={profile.name.split(/\s+/)[0]}
-                />
+            <div
+              className={cn(
+                "relative mb-6 grid grid-cols-3 gap-1 p-1 rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-card)]/75",
+                "shadow-[0_1px_3px_rgba(92,58,59,0.05)]"
+              )}
+              role="tablist"
+              aria-label="Seções do perfil"
+            >
+              <span
+                aria-hidden
+                className="absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/3)] rounded-lg bg-[var(--woody-nav)] shadow-[0_6px_16px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out"
+                style={{ transform: `translateX(${activeIndex * 100}%)` }}
+              />
+              {TABS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === t.id}
+                  onClick={() => setTab(t.id)}
+                  className={cn(
+                    woodyFocus.ring,
+                    "relative z-10 min-w-0 py-2.5 px-1 sm:px-3 rounded-lg text-sm transition-colors duration-200",
+                    tab === t.id
+                      ? "text-white font-semibold"
+                      : "bg-transparent text-[var(--woody-text)]/85 font-medium hover:text-[var(--woody-text)]"
+                  )}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="min-w-0">
+              {tab === "posts" ? (
                 <ProfilePostsSection
                   posts={posts}
                   isLoading={false}
@@ -69,9 +105,20 @@ export function ProfilePage() {
                   onNextPage={nextPage}
                   onPin={(id) => console.log("Pin", id)}
                   onReport={(id) => console.log("Report", id)}
+                  hideSectionHeader
                 />
-              </div>
-              <ProfileSidebar profile={profile} />
+              ) : null}
+
+              {tab === "communities" ? (
+                <ProfileCommunitiesSection
+                  userId={profile.id}
+                  isOwnProfile={profile.id === COMMUNITIES_PAGE_VIEWER_ID}
+                  shortName={profile.name.split(/\s+/)[0]}
+                  bare
+                />
+              ) : null}
+
+              {tab === "about" ? <ProfileOverviewTab profile={profile} /> : null}
             </div>
           </>
         )}
