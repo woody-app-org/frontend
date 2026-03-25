@@ -6,15 +6,17 @@ const ITEMS = [
   { id: "home", path: "/feed", label: "Home", icon: Home },
   { id: "comunidade", path: "/comunidade", label: "Comunidade", icon: Users },
   { id: "create", path: "/criar", label: "Criar", icon: PlusSquare },
-  { id: "explorar", path: "/explorar", label: "Explorar", icon: Search },
+  { id: "search", path: "/feed", label: "Busca", icon: Search },
   { id: "salvos", path: "/salvos", label: "Salvos", icon: Bookmark },
 ];
 
 export interface MobileBottomNavProps {
   className?: string;
+  onOpenSearch?: () => void;
+  isSearchOpen?: boolean;
 }
 
-export function MobileBottomNav({ className }: MobileBottomNavProps) {
+export function MobileBottomNav({ className, onOpenSearch, isSearchOpen }: MobileBottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -29,13 +31,22 @@ export function MobileBottomNav({ className }: MobileBottomNavProps) {
         const isActive =
           item.id === "home"
             ? location.pathname === "/feed" || location.pathname === "/"
-            : location.pathname.startsWith(item.path);
+            : item.id === "search"
+              ? !!isSearchOpen
+              : location.pathname.startsWith(item.path);
         const Icon = item.icon;
+        const isSearch = item.id === "search";
         return (
           <button
             key={item.id}
             type="button"
-            onClick={() => navigate(item.path)}
+            onClick={() => {
+              if (isSearch) {
+                onOpenSearch?.();
+                return;
+              }
+              navigate(item.path);
+            }}
             className={cn(
               "flex flex-col items-center justify-center gap-0.5 py-1 px-2 min-w-[56px] rounded-lg transition-colors",
               isActive

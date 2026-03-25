@@ -1,15 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Bell, MessageCircle } from "lucide-react";
+import { Bell, MessageCircle } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { SearchModeSegment, type SearchMode } from "./SearchModeSegment";
 import { cn } from "@/lib/utils";
+import { SearchModal } from "@/features/search/components/SearchModal";
+import type { Post } from "../types";
 
 export interface FeedLayoutProps {
   children: React.ReactNode;
   className?: string;
+  searchSourcePosts?: Post[];
 }
 
 // --- Estilos do header (evitar classes gigantes no JSX) ---
@@ -38,11 +40,6 @@ const styles = {
     "flex items-center shrink-0 h-full min-h-14 md:min-h-16 md:w-[260px] md:bg-[var(--woody-header-logo)]",
   logo: "flex items-center shrink-0 md:justify-start",
   logoText: "text-2xl font-bold tracking-tight text-white select-none",
-  center: "hidden md:flex flex-1 justify-center items-center min-w-0 max-w-2xl mx-2",
-  searchWrap: "relative flex-1 min-w-0 max-w-xl flex items-center",
-  searchInput:
-    "w-full h-9 md:h-10 pl-9 pr-4 rounded-full bg-white/10 border border-white/15 text-white placeholder:text-white/55 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25 transition-shadow",
-  searchIcon: "absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/70 pointer-events-none",
   right: "flex items-center gap-1 md:gap-2 shrink-0 md:w-[320px] md:justify-end",
   iconBtn:
     "size-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0",
@@ -69,9 +66,8 @@ function isEditableElement(el: EventTarget | null): boolean {
   return tag === "input" || tag === "textarea" || tag === "select" || editable || role === "textbox";
 }
 
-export function FeedLayout({ children, className }: FeedLayoutProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchMode, setSearchMode] = useState<SearchMode>("people");
+export function FeedLayout({ children, className, searchSourcePosts = [] }: FeedLayoutProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
 
   // Só no desktop: trava scroll do body para o wrapper interno controlar (mobile usa scroll nativo).
@@ -162,24 +158,6 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
               </Link>
             </div>
 
-            <div className={styles.center}>
-              <div className={styles.searchWrap}>
-                <Search className={styles.searchIcon} />
-                <input
-                  type="search"
-                  placeholder="Buscar..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className={styles.searchInput}
-                />
-              </div>
-              <SearchModeSegment
-                value={searchMode}
-                onChange={setSearchMode}
-                className="hidden lg:flex shrink-0 ml-3"
-              />
-            </div>
-
             <div className={styles.right}>
               <button
                 type="button"
@@ -212,7 +190,11 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-[250px_1fr_260px] lg:grid-cols-[250px_1fr_230px] w-full gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start">
-            <Sidebar className="md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:self-start" />
+            <Sidebar
+              className="md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:self-start"
+              onOpenSearch={() => setIsSearchOpen(true)}
+              isSearchOpen={isSearchOpen}
+            />
             <main className="min-w-0 flex flex-col pb-16 md:pb-0 pt-4 md:pt-5" aria-label="Feed principal">
               {children}
             </main>
@@ -221,7 +203,13 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
         </div>
       </div>
 
-      <MobileBottomNav />
+      <MobileBottomNav onOpenSearch={() => setIsSearchOpen(true)} isSearchOpen={isSearchOpen} />
+
+      <SearchModal
+        open={isSearchOpen}
+        onOpenChange={setIsSearchOpen}
+        sourcePosts={searchSourcePosts}
+      />
     </div>
   );
 }

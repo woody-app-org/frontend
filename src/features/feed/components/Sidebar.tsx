@@ -1,13 +1,15 @@
 import { NavLink } from "react-router-dom";
-import { Home } from "lucide-react";
+import { Home, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SidebarProps {
   className?: string;
+  onOpenSearch?: () => void;
+  isSearchOpen?: boolean;
 }
 
 /** Navegação macro do app: apenas áreas principais (ex.: Home). Filtros do feed ficam na área central. */
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, onOpenSearch, isSearchOpen }: SidebarProps) {
   return (
     <aside
       className={cn(
@@ -35,6 +37,22 @@ export function Sidebar({ className }: SidebarProps) {
           <Home className="size-5 shrink-0" aria-hidden />
           Home
         </NavLink>
+
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-[background-color,color,box-shadow] duration-200",
+            isSearchOpen
+              ? "bg-[var(--woody-item-active)] text-white font-semibold shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+              : "text-[var(--woody-sidebar-text-inactive)] font-medium hover:bg-[var(--woody-item-hover)]"
+          )}
+          aria-label="Abrir busca"
+          aria-pressed={!!isSearchOpen}
+        >
+          <Search className="size-5 shrink-0" aria-hidden />
+          Busca
+        </button>
       </nav>
 
       <div className="p-4 flex justify-center opacity-80 shrink-0">

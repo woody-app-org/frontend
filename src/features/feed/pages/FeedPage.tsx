@@ -33,7 +33,7 @@ export function FeedPage() {
   const showInitialLoading = isLoading && !hasLoadedOnce;
 
   return (
-    <FeedLayout>
+    <FeedLayout searchSourcePosts={posts}>
       <div className="flex flex-col flex-1 max-w-2xl mx-auto w-full px-3 md:px-6 py-4 md:py-5">
         <FeedTabs
           activeFilter={filter}
