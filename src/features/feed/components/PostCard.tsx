@@ -61,9 +61,20 @@ export interface PostCardProps {
   onPin?: (postId: string) => void;
   onReport?: (postId: string) => void;
   className?: string;
+  /**
+   * `community`: chip da comunidade como indicador (sem link), adequado à página da própria comunidade.
+   * @default "feed"
+   */
+  postListingContext?: "feed" | "community";
 }
 
-export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
+export function PostCard({
+  post,
+  onPin,
+  onReport,
+  className,
+  postListingContext = "feed",
+}: PostCardProps) {
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -138,14 +149,24 @@ export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
-          {post.community && (
-            <Link
-              to={`/communities/${post.community.slug}`}
-              className={cn(styles.pill, "hover:bg-[var(--woody-nav)]/25 transition-colors")}
-            >
-              {post.community.name}
-            </Link>
-          )}
+          {post.community &&
+            (postListingContext === "community" ? (
+              <span
+                className={cn(
+                  styles.pill,
+                  "ring-1 ring-[var(--woody-nav)]/20 bg-[var(--woody-nav)]/12 text-[var(--woody-text)]"
+                )}
+              >
+                {post.community.name}
+              </span>
+            ) : (
+              <Link
+                to={`/communities/${post.community.slug}`}
+                className={cn(styles.pill, "hover:bg-[var(--woody-nav)]/25 transition-colors")}
+              >
+                {post.community.name}
+              </Link>
+            ))}
           {post.tags?.map((tag) => (
             <span key={tag} className={styles.pill}>
               {tag}

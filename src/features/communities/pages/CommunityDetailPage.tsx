@@ -1,63 +1,93 @@
-import { useParams, Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
-import { PostCard } from "@/features/feed/components/PostCard";
-import { getCommunityBySlug, getPostsByCommunityId } from "@/domain/selectors";
+import {
+  getCommunityBySlug,
+  getCommunityMemberUsers,
+  getPostsByCommunityId,
+  isUserMemberOfCommunity,
+} from "@/domain/selectors";
+import { COMMUNITIES_PAGE_VIEWER_ID } from "../lib/communitiesPageModel";
+import { CommunityHero } from "../components/CommunityHero";
+import { CommunityFeed } from "../components/CommunityFeed";
+import { CommunityInfoPanel } from "../components/CommunityInfoPanel";
+import { CommunityMembersPreview } from "../components/CommunityMembersPreview";
+import { CommunityNotFound } from "../components/CommunityNotFound";
 
 /**
- * Detalhe da comunidade por slug (rota: `/communities/:communitySlug`).
+ * Detalhe da comunidade por slug (`/communities/:communitySlug`).
  */
 export function CommunityDetailPage() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
-  const community = communitySlug ? getCommunityBySlug(communitySlug) : undefined;
-  const posts = community ? getPostsByCommunityId(community.id) : [];
+  const community = useMemo(
+    () => (communitySlug ? getCommunityBySlug(communitySlug) : undefined),
+    [communitySlug]
+  );
+  const posts = useMemo(
+    () => (community ? getPostsByCommunityId(community.id) : []),
+    [community]
+  );
+  const members = useMemo(
+    () => (community ? getCommunityMemberUsers(community.id) : []),
+    [community]
+  );
+
+  const viewerId = COMMUNITIES_PAGE_VIEWER_ID;
+  const seedIsMember = community ? isUserMemberOfCommunity(viewerId, community.id) : false;
+  const [isMember, setIsMember] = useState(seedIsMember);
+
+  useEffect(() => {
+    setIsMember(community ? isUserMemberOfCommunity(viewerId, community.id) : false);
+  }, [community, viewerId]);
+
+  const displayMemberCount = community
+    ? community.memberCount +
+      (isMember === seedIsMember ? 0 : isMember ? 1 : -1)
+    : 0;
+
+  const toggleMembership = useCallback(() => {
+    setIsMember((prev) => !prev);
+  }, []);
+
+  if (!communitySlug) {
+    return (
+      <FeedLayout>
+        <div className="mx-auto flex max-w-6xl justify-center px-3 py-10 md:px-6 md:py-14 pb-20 md:pb-10">
+          <CommunityNotFound />
+        </div>
+      </FeedLayout>
+    );
+  }
+
+  if (!community) {
+    return (
+      <FeedLayout>
+        <div className="mx-auto flex max-w-6xl justify-center px-3 py-10 md:px-6 md:py-14 pb-20 md:pb-10">
+          <CommunityNotFound />
+        </div>
+      </FeedLayout>
+    );
+  }
 
   return (
     <FeedLayout searchSourcePosts={posts}>
-      <div className="flex flex-col flex-1 max-w-2xl mx-auto w-full px-3 md:px-6 py-4 md:py-5 pb-16 md:pb-5">
-        {!community ? (
-          <div className="text-center py-12">
-            <p className="text-[var(--woody-muted)]">Comunidade não encontrada.</p>
-            <Link
-              to="/communities"
-              className="text-sm font-medium text-[var(--woody-accent)] mt-4 inline-block hover:underline"
-            >
-              Ver todas as comunidades
-            </Link>
-          </div>
-        ) : (
-          <>
-            <Link
-              to="/communities"
-              className="text-sm text-[var(--woody-nav)] mb-4 inline-block hover:underline"
-            >
-              ← Comunidades
-            </Link>
-            <header className="mb-6">
-              <h1 className="text-xl font-bold text-[var(--woody-text)]">{community.name}</h1>
-              <p className="text-sm text-[var(--woody-muted)] mt-2">{community.description}</p>
-              <p className="text-xs text-[var(--woody-muted)] mt-2">
-                {community.memberCount} membros{community.tags.length ? ` · ${community.tags.join(", ")}` : ""}
-              </p>
-            </header>
-            <section aria-label="Posts da comunidade" className="space-y-5">
-              {posts.length === 0 ? (
-                <p className="text-sm text-[var(--woody-muted)]">Ainda não há posts nesta comunidade.</p>
-              ) : (
-                <ul className="space-y-5 list-none p-0 m-0">
-                  {posts.map((post) => (
-                    <li key={post.id}>
-                      <PostCard
-                        post={post}
-                        onPin={(id) => console.log("Pin", id)}
-                        onReport={(id) => console.log("Report", id)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </>
-        )}
+      <div className="mx-auto w-full max-w-6xl px-3 py-4 md:px-6 md:py-6 pb-20 md:pb-8">
+        <CommunityHero
+          community={community}
+          isMember={isMember}
+          displayMemberCount={displayMemberCount}
+          onToggleMembership={toggleMembership}
+          className="mb-8 md:mb-10"
+        />
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10">
+          <CommunityFeed community={community} posts={posts} className="order-2 min-w-0 lg:order-1" />
+
+          <aside className="order-1 flex min-w-0 flex-col gap-6 lg:order-2 lg:sticky lg:top-16 lg:self-start">
+            <CommunityInfoPanel community={community} />
+            <CommunityMembersPreview members={members} />
+          </aside>
+        </div>
       </div>
     </FeedLayout>
   );

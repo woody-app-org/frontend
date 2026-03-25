@@ -64,3 +64,13 @@ export function getCommunitiesForUser(userId: string): Community[] {
   const idSet = new Set(getCommunityIdsForUser(userId));
   return SEED_COMMUNITIES.filter((c) => idSet.has(c.id));
 }
+
+export function isUserMemberOfCommunity(userId: string, communityId: string): boolean {
+  return SEED_MEMBERSHIPS.some((m) => m.userId === userId && m.communityId === communityId);
+}
+
+/** Usuárias que participam da comunidade (mock por membership; futuro: API). */
+export function getCommunityMemberUsers(communityId: string): User[] {
+  const ids = [...new Set(SEED_MEMBERSHIPS.filter((m) => m.communityId === communityId).map((m) => m.userId))];
+  return ids.map((id) => getUserById(id)).filter((u): u is User => u != null);
+}

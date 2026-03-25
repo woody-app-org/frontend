@@ -13,11 +13,13 @@ export {
   getCommunityById,
   getCommunityBySlug,
   getCommunityIdsForUser,
+  getCommunityMemberUsers,
   getMembershipsForUser,
   getPostCommunityPreview,
   getPostsByAuthorId,
   getPostsByCommunityId,
   getUserById,
+  isUserMemberOfCommunity,
   enrichPost,
   postCommunityPreviewFromCommunity,
 } from "./selectors";
