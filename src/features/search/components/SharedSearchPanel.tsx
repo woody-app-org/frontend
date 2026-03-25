@@ -13,6 +13,8 @@ export interface SharedSearchPanelProps {
   autoFocusRef?: React.RefObject<HTMLInputElement | null>;
   sourcePosts: Post[];
   className?: string;
+  /** Quando true (ex.: dentro do modal), a lista de resultados rola dentro do painel em vez de expandir a página. */
+  scrollableResults?: boolean;
 }
 
 export function SharedSearchPanel({
@@ -23,6 +25,7 @@ export function SharedSearchPanel({
   autoFocusRef,
   sourcePosts,
   className,
+  scrollableResults = false,
 }: SharedSearchPanelProps) {
   const fallbackRef = useRef<HTMLInputElement | null>(null);
   const inputRef = autoFocusRef ?? fallbackRef;
@@ -37,8 +40,14 @@ export function SharedSearchPanel({
   const hasResults = mode === "topics" ? posts.length > 0 : people.length > 0;
 
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
-      <div className="relative">
+    <div
+      className={cn(
+        "flex flex-col gap-4",
+        scrollableResults && "min-h-0 flex-1",
+        className
+      )}
+    >
+      <div className="relative shrink-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--woody-muted)] pointer-events-none" />
         <input
           ref={inputRef}
@@ -65,13 +74,21 @@ export function SharedSearchPanel({
         value={mode}
         onChange={onModeChange}
         className={cn(
-          "w-full max-w-[360px] self-start",
+          "w-full max-w-[360px] self-start shrink-0",
           // no modal o fundo do pill precisa “assentar” no card bege
           "bg-black/5 border-black/10 [&>button]:text-[var(--woody-text)] [&>button[aria-selected='false']]:text-[var(--woody-muted)]"
         )}
       />
 
-      <div className="min-h-[240px]">
+      <div
+        className={cn(
+          scrollableResults
+            ? "min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] pr-1"
+            : "min-h-[240px]"
+        )}
+        role="region"
+        aria-label="Resultados da busca"
+      >
         {!hasQuery ? (
           <EmptyState
             title="Comece a buscar"

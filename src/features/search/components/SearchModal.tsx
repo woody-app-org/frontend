@@ -34,9 +34,15 @@ export function SearchModal({ open, onOpenChange, sourcePosts, className }: Sear
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("p-0 overflow-hidden", className)} aria-label="Buscar">
-        <div className="p-4 sm:p-6">
-          <DialogHeader className="mb-4">
+      <DialogContent
+        className={cn(
+          "flex min-h-0 max-h-[min(90dvh,880px)] flex-col gap-0 overflow-hidden p-0",
+          className
+        )}
+        aria-label="Buscar"
+      >
+        <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 sm:p-6">
+          <DialogHeader className="mb-0 shrink-0">
             <div className="min-w-0">
               <DialogTitle className="text-[var(--woody-header)]">{title}</DialogTitle>
               <div className="mt-1 text-sm text-[var(--woody-muted)]">
@@ -66,6 +72,7 @@ export function SearchModal({ open, onOpenChange, sourcePosts, className }: Sear
             onModeChange={setMode}
             autoFocusRef={inputRef}
             sourcePosts={sourcePosts}
+            scrollableResults
           />
         </div>
       </DialogContent>
