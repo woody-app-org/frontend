@@ -20,7 +20,16 @@ export interface ProfilePostsSectionProps {
   onPin?: (postId: string) => void;
   onReport?: (postId: string) => void;
   className?: string;
+  /** Título da seção (bloco “Posts / Publicações”). */
+  sectionTitle?: string;
+  sectionDescription?: string;
 }
+
+const headerStyles = {
+  wrap: "mb-4 md:mb-5",
+  title: "text-base font-bold text-[var(--woody-text)]",
+  desc: "mt-1.5 text-sm leading-relaxed text-[var(--woody-muted)]",
+} as const;
 
 export function ProfilePostsSection({
   posts,
@@ -33,21 +42,37 @@ export function ProfilePostsSection({
   onPin,
   onReport,
   className,
+  sectionTitle = "Publicações",
+  sectionDescription = "Posts publicados em comunidades — cada um mostra o espaço de origem.",
 }: ProfilePostsSectionProps) {
+  const header = (
+    <div className={headerStyles.wrap}>
+      <h2 className={headerStyles.title}>{sectionTitle}</h2>
+      {sectionDescription ? <p className={headerStyles.desc}>{sectionDescription}</p> : null}
+    </div>
+  );
+
   if (isLoading) {
-    return <FeedSkeleton count={3} className={className} />;
+    return (
+      <div className={className}>
+        {header}
+        <FeedSkeleton count={3} />
+      </div>
+    );
   }
 
   if (posts.length === 0) {
     return (
-      <FeedEmptyState
-        className={cn(className, "py-8")}
-      />
+      <div className={className}>
+        {header}
+        <FeedEmptyState className="py-8" />
+      </div>
     );
   }
 
   return (
     <section className={cn("space-y-5", className)}>
+      {header}
       <ul className={styles.list}>
         {posts.map((post) => (
           <li key={post.id}>

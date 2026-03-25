@@ -6,7 +6,9 @@ import { ProfileHeader } from "../components/ProfileHeader";
 import { ProfileAbout } from "../components/ProfileAbout";
 import { ProfileSidebar } from "../components/ProfileSidebar";
 import { ProfilePostsSection } from "../components/ProfilePostsSection";
+import { ProfileCommunitiesSection } from "../components/ProfileCommunitiesSection";
 import { ProfileSkeleton } from "../components/ProfileSkeleton";
+import { COMMUNITIES_PAGE_VIEWER_ID } from "@/features/communities/lib/communitiesPageModel";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -43,8 +45,13 @@ export function ProfilePage() {
             <ProfileHeader profile={profile} className="mb-4 md:mb-6" />
 
             <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6">
-              <div className="min-w-0 flex flex-col">
-                <ProfileAbout bio={profile.bio} className="mb-6" />
+              <div className="min-w-0 flex flex-col gap-6">
+                <ProfileAbout bio={profile.bio} />
+                <ProfileCommunitiesSection
+                  userId={profile.id}
+                  isOwnProfile={profile.id === COMMUNITIES_PAGE_VIEWER_ID}
+                  shortName={profile.name.split(/\s+/)[0]}
+                />
                 <ProfilePostsSection
                   posts={posts}
                   isLoading={false}
