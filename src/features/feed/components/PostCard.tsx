@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Post } from "../types";
+import { PostCommunityContextBar } from "./PostCommunityContextBar";
 
 // --- Helpers ---
 
@@ -27,7 +28,7 @@ function formatCount(count: number): string {
 
 const styles = {
   card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] flex flex-col gap-0 px-4 pt-3 pb-3 sm:px-4",
+    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] flex flex-col gap-0 px-4 pt-3 pb-3 sm:px-4 overflow-hidden",
   header:
     "flex flex-row items-start justify-between gap-3 p-0",
   headerLeft: "flex min-w-0 flex-1 items-start gap-3",
@@ -84,7 +85,10 @@ export function PostCard({
 
   return (
     <Card className={cn(styles.card, className)}>
-      <CardHeader className={styles.header}>
+      {post.community ? (
+        <PostCommunityContextBar preview={post.community} variant={postListingContext} />
+      ) : null}
+      <CardHeader className={cn(styles.header, post.community && "pt-3")}>
         <div className={styles.headerLeft}>
           <Link
             to={`/profile/${post.author.id}`}
@@ -149,31 +153,13 @@ export function PostCard({
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
-          {post.community &&
-            (postListingContext === "community" ? (
-              <span
-                className={cn(
-                  styles.pill,
-                  "ring-1 ring-[var(--woody-nav)]/20 bg-[var(--woody-nav)]/12 text-[var(--woody-text)]"
-                )}
-              >
-                {post.community.name}
-              </span>
-            ) : (
-              <Link
-                to={`/communities/${post.community.slug}`}
-                className={cn(styles.pill, "hover:bg-[var(--woody-nav)]/25 transition-colors")}
-              >
-                {post.community.name}
-              </Link>
-            ))}
           {post.tags?.map((tag) => (
             <span key={tag} className={styles.pill}>
               {tag}
             </span>
           ))}
         </div>
-        <p className={cn(styles.content, (post.title || post.community || post.tags?.length) && "mt-2")}>
+        <p className={cn(styles.content, (post.title || post.tags?.length) && "mt-2")}>
           {post.content}
         </p>
         {post.imageUrl && (

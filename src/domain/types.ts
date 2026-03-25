@@ -40,6 +40,8 @@ export interface PostCommunityPreview {
   id: string;
   slug: string;
   name: string;
+  avatarUrl: string | null;
+  category: CommunityCategory;
 }
 
 export interface Post {

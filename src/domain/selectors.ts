@@ -16,7 +16,13 @@ export function getCommunityBySlug(slug: string): Community | undefined {
 }
 
 export function postCommunityPreviewFromCommunity(c: Community): PostCommunityPreview {
-  return { id: c.id, slug: c.slug, name: c.name };
+  return {
+    id: c.id,
+    slug: c.slug,
+    name: c.name,
+    avatarUrl: c.avatarUrl,
+    category: c.category,
+  };
 }
 
 export function getPostCommunityPreview(communityId: string): PostCommunityPreview | undefined {
@@ -42,6 +48,12 @@ export function enrichPost(raw: SeedPost): Post {
 
 export function getAllSeedPostsEnriched(): Post[] {
   return SEED_POSTS.map((p) => enrichPost(p));
+}
+
+/** Posts recentes apenas das comunidades em que a usuária participa (mock). */
+export function getRecentPostsInUserCommunities(userId: string, limit = 5): Post[] {
+  const allowed = new Set(getCommunityIdsForUser(userId));
+  return getAllSeedPostsEnriched().filter((p) => allowed.has(p.communityId)).slice(0, limit);
 }
 
 export function getPostsByCommunityId(communityId: string): Post[] {

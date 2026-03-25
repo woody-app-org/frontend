@@ -1,20 +1,13 @@
 import type { Community, CommunityCategory } from "@/domain/types";
+import { getCommunityCategoryLabel as getCommunityCategoryLabelFromDomain } from "@/domain/categoryLabels";
 import { SEED_COMMUNITIES } from "@/domain/mocks/seed";
 import { getCommunitiesForUser } from "@/domain/selectors";
 
 /** Usuária mock “atual” alinhada ao composer do feed e ao perfil principal. */
 export const COMMUNITIES_PAGE_VIEWER_ID = "1";
 
-const CATEGORY_LABELS: Record<CommunityCategory, string> = {
-  bemestar: "Bem-estar",
-  carreira: "Carreira",
-  cultura: "Cultura",
-  seguranca: "Segurança",
-  outro: "Outras",
-};
-
 export function getCommunityCategoryLabel(category: CommunityCategory): string {
-  return CATEGORY_LABELS[category] ?? category;
+  return getCommunityCategoryLabelFromDomain(category);
 }
 
 /** “Em alta”: ordena por engajamento proxy (membros); estável para futura troca por API. */

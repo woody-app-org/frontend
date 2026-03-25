@@ -7,8 +7,10 @@ export type {
   PostCommunityPreview,
   User,
 } from "./types";
+export { getCommunityCategoryLabel } from "./categoryLabels";
 export {
   getAllSeedPostsEnriched,
+  getRecentPostsInUserCommunities,
   getCommunitiesForUser,
   getCommunityById,
   getCommunityBySlug,

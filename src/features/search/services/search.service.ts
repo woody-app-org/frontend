@@ -1,4 +1,5 @@
 import type { Post, User } from "@/features/feed/types";
+import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -63,13 +64,17 @@ export async function searchByMode(params: {
     const posts = source.posts.filter((p) => {
       const tagMatch =
         p.tags?.some((t) => includesQuery(t, query)) ?? false;
+      const categoryMatch =
+        p.community != null &&
+        includesQuery(getCommunityCategoryLabel(p.community.category), query);
       return (
         includesQuery(p.title ?? "", query) ||
         includesQuery(p.content ?? "", query) ||
         includesQuery(p.community?.name ?? "", query) ||
         includesQuery(p.author?.name ?? "", query) ||
         includesQuery(p.author?.username ?? "", query) ||
-        tagMatch
+        tagMatch ||
+        categoryMatch
       );
     });
     return { posts };
