@@ -11,11 +11,17 @@ export interface LoginCredentials {
   password: string;
 }
 
+/** Payload de cadastro (onboarding completo ou futura API). */
 export interface RegisterCredentials {
   username: string;
   email: string;
   password: string;
-  confirmPassword: string;
+  /** Apenas dígitos (11). */
+  cpf: string;
+  /** ISO `YYYY-MM-DD`. */
+  birthDate: string;
+  /** Opcional: data URL ou URL pública após upload. */
+  avatarUrl?: string;
 }
 
 export interface AuthState {

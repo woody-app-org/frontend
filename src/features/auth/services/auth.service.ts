@@ -46,6 +46,7 @@ export async function registerMock(
     username: credentials.username.trim(),
     email: credentials.email.trim(),
     name: credentials.username.trim(),
+    avatarUrl: credentials.avatarUrl ?? undefined,
   };
   setStoredUser(user);
   return user;

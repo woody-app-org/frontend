@@ -24,9 +24,16 @@ export function OnboardingFlow() {
     return <Navigate to="/auth/onboarding/1" replace />;
   }
 
+  const wideSteps = step >= 4 && step <= 5;
+
   return (
     <AuthLayout>
-      <div className="w-full max-w-lg flex flex-col gap-4 md:gap-5 flex-1 md:flex-initial min-h-0">
+      <div
+        className={cn(
+          "w-full flex flex-col gap-4 md:gap-5 flex-1 md:flex-initial min-h-0 transition-[max-width] duration-300",
+          wideSteps ? "max-w-3xl" : "max-w-lg"
+        )}
+      >
         <div className="flex items-center shrink-0">
           <button
             type="button"

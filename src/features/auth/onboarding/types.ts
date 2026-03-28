@@ -1,16 +1,17 @@
-import type { RegisterFormData } from "../lib/validation";
+import type { OnboardingAccountFormData } from "./account.validation";
 
 /**
  * Rascunho do cadastro entre etapas.
- * Em produção: evitar persistir senha em sessionStorage — usar sessão no servidor após etapa 1.
+ * Em produção: não persistir senha nem CPF em sessionStorage — usar sessão no servidor após etapa 1.
  */
 export type OnboardingDraft = {
-  account?: RegisterFormData;
+  account?: OnboardingAccountFormData;
   emailVerified?: boolean;
-  /** Data URL mockada ou vazio até integrar upload */
+  /** Data URL da foto ou null se removeu / não enviou */
   profilePhotoDataUrl?: string | null;
-  /** IDs mockados de interesses */
+  /** Usuária optou por pular foto nesta sessão */
+  skippedProfilePhoto?: boolean;
   interestIds?: string[];
-  /** Slugs mockados de comunidades sugeridas */
-  communitySlugs?: string[];
+  /** IDs de comunidades que a usuária “entrou” durante o onboarding (mock). */
+  joinedCommunityIds?: string[];
 };
