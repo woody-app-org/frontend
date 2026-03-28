@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { UserRound } from "lucide-react";
 import { AuthInputField } from "../../components/AuthInputField";
 import {
   onboardingAccountSchema,
@@ -9,6 +11,8 @@ import {
 } from "../account.validation";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
+import { mockPersistAccountStep } from "../services/onboardingActionsMock";
+import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +22,7 @@ import { cn } from "@/lib/utils";
 export function OnboardingStepAccount() {
   const { draft, updateDraft } = useOnboardingDraftContext();
   const { goNext } = useOnboardingNavigation();
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<OnboardingAccountFormData>({
     resolver: zodResolver(onboardingAccountSchema),
@@ -32,21 +37,32 @@ export function OnboardingStepAccount() {
     },
   });
 
-  const onSubmit = form.handleSubmit((data) => {
-    updateDraft({ account: data });
-    goNext();
+  const { errors, touchedFields } = form.formState;
+  const w = form.watch();
+
+  const onSubmit = form.handleSubmit(async (data) => {
+    setIsSaving(true);
+    try {
+      await mockPersistAccountStep(data);
+      updateDraft({ account: data });
+      goNext();
+    } finally {
+      setIsSaving(false);
+    }
   });
 
-  const canAdvance = form.formState.isValid && !form.formState.isSubmitting;
+  const canAdvance = form.formState.isValid && !form.formState.isSubmitting && !isSaving;
 
   return (
     <div>
-      <h1 className={onboardingStyles.stepTitle}>Vamos criar sua conta</h1>
-      <p className={onboardingStyles.stepLead}>
-        Poucos dados, bem organizados. Você pode voltar e ajustar antes de concluir.
-      </p>
+      <OnboardingStepHeader
+        icon={UserRound}
+        title="Vamos criar sua conta"
+        lead="Poucos dados, em blocos claros. Você pode voltar e ajustar antes de concluir."
+        trustNote="Seus dados são tratados com cuidado. Na versão final, etapas sensíveis ficarão protegidas no servidor."
+      />
 
-      <form onSubmit={onSubmit} className="space-y-6" noValidate>
+      <form onSubmit={onSubmit} className="space-y-7 sm:space-y-8" noValidate>
         <div>
           <p className={onboardingStyles.sectionLabel}>Como vamos te chamar</p>
           <div className={onboardingStyles.sectionCard}>
@@ -56,8 +72,10 @@ export function OnboardingStepAccount() {
               type="text"
               autoComplete="username"
               variant="maroon"
+              hint="Público na Woody — evite dados muito pessoais."
+              valid={!!touchedFields.username && !errors.username && w.username.length > 0}
               {...form.register("username")}
-              error={form.formState.errors.username?.message}
+              error={errors.username?.message}
             />
             <AuthInputField
               label="E-mail"
@@ -65,8 +83,10 @@ export function OnboardingStepAccount() {
               type="email"
               autoComplete="email"
               variant="maroon"
+              hint="Usaremos para login e avisos importantes."
+              valid={!!touchedFields.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(w.email)}
               {...form.register("email")}
-              error={form.formState.errors.email?.message}
+              error={errors.email?.message}
             />
           </div>
         </div>
@@ -80,8 +100,10 @@ export function OnboardingStepAccount() {
               type="password"
               autoComplete="new-password"
               variant="maroon"
+              hint="Combine letras e números para mais segurança."
+              valid={!!touchedFields.password && !errors.password && w.password.length >= 6}
               {...form.register("password")}
-              error={form.formState.errors.password?.message}
+              error={errors.password?.message}
             />
           </div>
         </div>
@@ -89,41 +111,53 @@ export function OnboardingStepAccount() {
         <div>
           <p className={onboardingStyles.sectionLabel}>Sobre você</p>
           <div className={onboardingStyles.sectionCard}>
-            <Controller
-              name="cpf"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <AuthInputField
-                  label="CPF"
-                  placeholder="000.000.000-00"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  variant="maroon"
-                  value={formatCpfDisplay(field.value)}
-                  onChange={(e) => field.onChange(stripCpfDigits(e.target.value))}
-                  onBlur={field.onBlur}
-                  name={field.name}
-                  ref={field.ref}
-                  error={fieldState.error?.message}
-                />
-              )}
-            />
-            <AuthInputField
-              label="Data de nascimento"
-              type="date"
-              autoComplete="bday"
-              variant="maroon"
-              {...form.register("birthDate")}
-              error={form.formState.errors.birthDate?.message}
-            />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
+              <Controller
+                name="cpf"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <AuthInputField
+                    label="CPF"
+                    placeholder="000.000.000-00"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    variant="maroon"
+                    hint="Validamos o formato. Na API real, siga LGPD e políticas de armazenamento."
+                    valid={
+                      !!touchedFields.cpf && !fieldState.error && stripCpfDigits(field.value).length === 11
+                    }
+                    value={formatCpfDisplay(field.value)}
+                    onChange={(e) => field.onChange(stripCpfDigits(e.target.value))}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                    error={fieldState.error?.message}
+                  />
+                )}
+              />
+              <AuthInputField
+                label="Data de nascimento"
+                type="date"
+                autoComplete="bday"
+                variant="maroon"
+                valid={!!touchedFields.birthDate && !errors.birthDate && !!w.birthDate}
+                {...form.register("birthDate")}
+                error={errors.birthDate?.message}
+              />
+            </div>
           </div>
         </div>
 
         <div className={onboardingStyles.footerRow}>
           <span className="hidden sm:block" />
-          <button type="submit" disabled={!canAdvance} className={cn(onboardingStyles.primaryBtn, "sm:ml-auto")}>
-            Continuar
+          <button
+            type="submit"
+            disabled={!canAdvance}
+            className={cn(onboardingStyles.primaryBtn, "sm:ml-auto")}
+            aria-busy={isSaving}
+          >
+            {isSaving ? "Salvando..." : "Continuar"}
           </button>
         </div>
       </form>

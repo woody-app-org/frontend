@@ -4,6 +4,8 @@ import { Camera, ImagePlus, Loader2, X } from "lucide-react";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
 import { ONBOARDING_MAX_IMAGE_BYTES } from "../constants";
+import { mockProcessProfileImageLocal } from "../services/onboardingActionsMock";
+import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +46,7 @@ export function OnboardingStepProfilePhoto() {
       setIsLoading(true);
       try {
         const url = await readFileAsDataUrl(file);
+        await mockProcessProfileImageLocal(url);
         updateDraft({ profilePhotoDataUrl: url, skippedProfilePhoto: false });
       } catch {
         setError("Não foi possível carregar a imagem. Tente outro arquivo.");
@@ -88,10 +91,12 @@ export function OnboardingStepProfilePhoto() {
 
   return (
     <div>
-      <h1 className={onboardingStyles.stepTitle}>Sua foto de perfil</h1>
-      <p className={onboardingStyles.stepLead}>
-        Uma imagem ajuda outras mulheres a reconhecer você com carinho. Se preferir, pode adicionar depois.
-      </p>
+      <OnboardingStepHeader
+        icon={Camera}
+        title="Sua foto de perfil"
+        lead="Uma imagem ajuda outras mulheres a te reconhecer com carinho. Você pode pular e adicionar depois."
+        trustNote="Só você escolhe quando e como aparecer. Na versão final, o upload será criptografado em trânsito."
+      />
 
       <input
         ref={inputRef}
@@ -114,26 +119,29 @@ export function OnboardingStepProfilePhoto() {
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
         className={cn(
-          "relative rounded-2xl border-2 border-dashed transition-[border-color,background-color,transform] duration-200",
+          "relative rounded-2xl border-2 border-dashed transition-[border-color,background-color,transform] duration-300 ease-out",
           dragOver
-            ? "border-[var(--auth-button)] bg-[var(--auth-button)]/10 scale-[1.01]"
-            : "border-white/25 bg-[var(--auth-panel-beige)]/[0.06]",
-          "p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[200px]"
+            ? "border-[var(--auth-button)] bg-[var(--auth-button)]/12 scale-[1.01] shadow-md"
+            : "border-white/22 bg-[var(--auth-panel-beige)]/[0.05]",
+          "p-6 sm:p-9 flex flex-col items-center justify-center text-center min-h-[220px] sm:min-h-[240px]"
         )}
       >
         {isLoading ? (
-          <Loader2 className="size-10 animate-spin text-[var(--auth-text-on-maroon)]/70" aria-hidden />
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="size-10 animate-spin text-[var(--auth-text-on-maroon)]/75" aria-hidden />
+            <p className="text-xs text-[var(--auth-text-on-maroon)]/70">Processando imagem…</p>
+          </div>
         ) : preview ? (
-          <div className="relative w-full max-w-[200px]">
+          <div className="relative w-full max-w-[220px]">
             <img
               src={preview}
               alt="Pré-visualização da foto de perfil"
-              className="mx-auto size-40 rounded-full object-cover border-4 border-white/20 shadow-lg"
+              className="mx-auto size-40 sm:size-44 rounded-full object-cover border-4 border-white/25 shadow-lg ring-1 ring-black/10"
             />
             <button
               type="button"
               onClick={clearPhoto}
-              className="absolute -right-1 -top-1 flex size-9 items-center justify-center rounded-full bg-[var(--auth-panel-maroon)] border-2 border-white/30 text-white shadow-md hover:bg-black/30 transition-colors"
+              className="absolute -right-0.5 -top-0.5 flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full bg-[var(--auth-panel-maroon)] border-2 border-white/35 text-white shadow-md hover:bg-black/35 active:scale-95 transition-[colors,transform] duration-200"
               aria-label="Remover foto"
             >
               <X className="size-4" />
@@ -141,19 +149,19 @@ export function OnboardingStepProfilePhoto() {
           </div>
         ) : (
           <>
-            <div className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/12">
+            <div className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/12 ring-1 ring-white/10">
               <ImagePlus className="size-7 text-[var(--auth-text-on-maroon)]/85" aria-hidden />
             </div>
-            <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]">
+            <p className="text-sm font-medium text-[var(--auth-text-on-maroon)] px-2">
               Arraste uma imagem ou escolha do dispositivo
             </p>
-            <p className="mt-1 text-xs text-[var(--auth-text-on-maroon)]/65">JPG, PNG ou WebP · até 5 MB</p>
+            <p className="mt-1.5 text-xs text-[var(--auth-text-on-maroon)]/65">JPG, PNG ou WebP · até 5 MB</p>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className={cn(onboardingStyles.secondaryBtn, "mt-5 inline-flex items-center gap-2")}
+              className={cn(onboardingStyles.secondaryBtn, "mt-6 inline-flex items-center justify-center gap-2")}
             >
-              <Camera className="size-4" aria-hidden />
+              <Camera className="size-4 shrink-0" aria-hidden />
               Selecionar foto
             </button>
           </>
@@ -166,14 +174,14 @@ export function OnboardingStepProfilePhoto() {
         </p>
       )}
 
-      <div className={cn(onboardingStyles.footerRow, "mt-8")}>
-        <button type="button" onClick={skip} className={onboardingStyles.secondaryBtn}>
+      <div className={cn(onboardingStyles.footerRow, "mt-8 gap-3")}>
+        <button type="button" onClick={skip} className={cn(onboardingStyles.secondaryBtn, "sm:flex-1")}>
           Pular por agora
         </button>
         <button
           type="button"
           onClick={continueWithPhoto}
-          className={onboardingStyles.primaryBtn}
+          className={cn(onboardingStyles.primaryBtn, "sm:flex-1")}
           disabled={!preview}
         >
           Continuar

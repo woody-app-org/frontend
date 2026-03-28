@@ -17,6 +17,16 @@ import {
 /** Número de etapas do onboarding (alinhado ao roadmap do produto). */
 export const ONBOARDING_TOTAL_STEPS = 6;
 
+/** Títulos curtos por etapa (progresso + leitores de tela). */
+export const ONBOARDING_STEP_LABELS: Record<number, string> = {
+  1: "Conta",
+  2: "E-mail",
+  3: "Foto",
+  4: "Interesses",
+  5: "Comunidades",
+  6: "Boas-vindas",
+};
+
 export const ONBOARDING_DRAFT_STORAGE_KEY = "woody_onboarding_draft";
 
 /** Código fixo mockado para a etapa de verificação de e-mail (substituir por API). */

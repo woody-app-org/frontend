@@ -30,7 +30,7 @@ export function OnboardingFlow() {
     <AuthLayout>
       <div
         className={cn(
-          "w-full flex flex-col gap-4 md:gap-5 flex-1 md:flex-initial min-h-0 transition-[max-width] duration-300",
+          "w-full flex flex-col gap-3 sm:gap-4 md:gap-5 flex-1 md:flex-initial min-h-0 transition-[max-width] duration-500 ease-out",
           wideSteps ? "max-w-3xl" : "max-w-lg"
         )}
       >
@@ -39,13 +39,13 @@ export function OnboardingFlow() {
             type="button"
             onClick={goBack}
             className={cn(
-              "inline-flex items-center gap-2 text-sm font-medium text-[var(--auth-text-on-beige)] md:text-white/90",
-              "rounded-lg px-2 py-1.5 -ml-2 hover:bg-black/5 md:hover:bg-white/10 transition-colors duration-200",
+              "inline-flex items-center gap-2 min-h-10 text-sm font-medium text-[var(--auth-text-on-beige)] md:text-white/90",
+              "rounded-xl px-2.5 py-2 -ml-1 hover:bg-black/5 md:hover:bg-white/10 active:scale-[0.99] transition-[colors,transform] duration-200 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50"
             )}
           >
             <ArrowLeft className="size-4 shrink-0" aria-hidden />
-            {step <= 1 ? "Início" : "Etapa anterior"}
+            {step <= 1 ? "Início" : "Voltar"}
           </button>
         </div>
 
@@ -55,8 +55,8 @@ export function OnboardingFlow() {
           key={pathname}
           className={cn(
             "rounded-2xl md:rounded-3xl bg-[var(--auth-panel-maroon)] text-[var(--auth-text-on-maroon)]",
-            "p-4 sm:p-6 md:p-8 shadow-none md:shadow-xl flex-1 min-h-0 overflow-y-auto",
-            "animate-in fade-in zoom-in-95 duration-300"
+            "p-4 sm:p-6 md:p-8 shadow-none md:shadow-lg md:ring-1 md:ring-black/5 flex-1 min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain",
+            "animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out"
           )}
         >
           <Outlet />

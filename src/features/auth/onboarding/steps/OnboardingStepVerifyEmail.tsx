@@ -9,10 +9,16 @@ import { MOCK_EMAIL_VERIFICATION_CODE } from "../constants";
 import { emailVerificationCodeSchema, type EmailVerificationCodeFormData } from "../validation";
 import { mockSendVerificationCode, mockVerifyEmailCode } from "../services/emailVerificationMock";
 import { OnboardingCodeInput } from "../components/OnboardingCodeInput";
+import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 
 const RESEND_COOLDOWN_S = 45;
+const ADVANCE_DELAY_MS = 520;
+
+function pause(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 /**
  * Etapa 2 — verificação de e-mail (handlers mockados substituíveis por API).
@@ -25,6 +31,7 @@ export function OnboardingStepVerifyEmail() {
   const [isSending, setIsSending] = useState(false);
   const [sendFeedback, setSendFeedback] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const [isAdvancing, setIsAdvancing] = useState(false);
   const initialSendDone = useRef(false);
 
   const form = useForm<EmailVerificationCodeFormData>({
@@ -49,7 +56,7 @@ export function OnboardingStepVerifyEmail() {
     setSendFeedback(null);
     try {
       await mockSendVerificationCode(email);
-      setSendFeedback("Código reenviado. Confira sua caixa de entrada (mock).");
+      setSendFeedback("Se não aparecer na caixa de entrada, confira o spam.");
       setCooldown(RESEND_COOLDOWN_S);
     } finally {
       setIsSending(false);
@@ -75,7 +82,10 @@ export function OnboardingStepVerifyEmail() {
         setVerifyError(result.error ?? "Não foi possível verificar.");
         return;
       }
+      setIsVerifying(false);
       updateDraft({ emailVerified: true });
+      setIsAdvancing(true);
+      await pause(ADVANCE_DELAY_MS);
       goNext();
     } finally {
       setIsVerifying(false);
@@ -83,25 +93,34 @@ export function OnboardingStepVerifyEmail() {
   });
 
   const handleResend = async () => {
-    if (cooldown > 0 || isSending || isVerifying) return;
+    if (cooldown > 0 || isSending || isVerifying || isAdvancing) return;
     await runSendCode();
   };
 
   return (
-    <div>
-      <div className="mb-5 flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/12 text-[var(--auth-text-on-maroon)]">
-        <Mail className="size-6 opacity-90" aria-hidden />
-      </div>
-      <h1 className={onboardingStyles.stepTitle}>Confirme seu e-mail</h1>
-      <p className={onboardingStyles.stepLead}>
-        Enviamos um código de 6 dígitos para{" "}
-        <span className="font-semibold text-[var(--auth-text-on-maroon)]">{draft.account.email}</span>.
-        Insira abaixo para seguir em segurança.
-      </p>
+    <div className="relative">
+      {isAdvancing ? (
+        <div
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-[var(--auth-panel-maroon)]/92 text-center px-4 py-10 backdrop-blur-[2px] animate-in fade-in duration-300"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <Loader2 className="size-9 animate-spin text-[var(--auth-text-on-maroon)]" aria-hidden />
+          <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]">Preparando a próxima etapa…</p>
+          <p className="text-xs text-[var(--auth-text-on-maroon)]/70 max-w-xs">Quase lá. Só um instante.</p>
+        </div>
+      ) : null}
 
-      <div className="mb-6 rounded-xl border border-dashed border-white/20 bg-[var(--auth-panel-beige)]/[0.06] px-3 py-2.5 text-center text-xs text-[var(--auth-text-on-maroon)]/75">
-        Ambiente de demonstração: use o código{" "}
-        <span className="font-mono font-semibold">{MOCK_EMAIL_VERIFICATION_CODE}</span>
+      <OnboardingStepHeader
+        icon={Mail}
+        title="Confirme seu e-mail"
+        lead={`Enviamos um código de 6 dígitos para ${draft.account.email}. Insira abaixo para seguir com segurança.`}
+        trustNote="Ninguém vê este código além de você. Na versão final, ele expira após alguns minutos."
+      />
+
+      <div className={cn(onboardingStyles.demoCallout, "mb-6")}>
+        Demonstração: código <span className="font-mono font-semibold">{MOCK_EMAIL_VERIFICATION_CODE}</span>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-6">
@@ -115,7 +134,7 @@ export function OnboardingStepVerifyEmail() {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-[var(--auth-text-on-maroon)]/90 mb-3">
+          <label className="block text-sm font-medium text-[var(--auth-text-on-maroon)]/90 mb-3" htmlFor="otp-0">
             Código de verificação
           </label>
           <Controller
@@ -125,8 +144,9 @@ export function OnboardingStepVerifyEmail() {
               <OnboardingCodeInput
                 value={field.value}
                 onChange={(v) => field.onChange(v)}
-                disabled={isVerifying}
+                disabled={isVerifying || isAdvancing}
                 hasError={!!fieldState.error || !!verifyError}
+                isComplete={codeValid && !verifyError && !isVerifying}
               />
             )}
           />
@@ -141,7 +161,7 @@ export function OnboardingStepVerifyEmail() {
           <button
             type="button"
             onClick={() => void handleResend()}
-            disabled={cooldown > 0 || isSending || isVerifying}
+            disabled={cooldown > 0 || isSending || isVerifying || isAdvancing}
             className={onboardingStyles.ghostBtn}
           >
             {isSending ? (
@@ -156,7 +176,9 @@ export function OnboardingStepVerifyEmail() {
             )}
           </button>
           {sendFeedback && !isSending ? (
-            <p className="text-xs text-[var(--auth-text-on-maroon)]/70 sm:text-right">{sendFeedback}</p>
+            <p className="text-xs text-[var(--auth-text-on-maroon)]/70 sm:text-right max-w-[16rem] sm:max-w-none leading-snug">
+              {sendFeedback}
+            </p>
           ) : null}
         </div>
 
@@ -164,7 +186,7 @@ export function OnboardingStepVerifyEmail() {
           <span />
           <button
             type="submit"
-            disabled={!codeValid || isVerifying}
+            disabled={!codeValid || isVerifying || isAdvancing}
             className={cn(onboardingStyles.primaryBtn, "inline-flex items-center justify-center gap-2")}
           >
             {isVerifying ? (

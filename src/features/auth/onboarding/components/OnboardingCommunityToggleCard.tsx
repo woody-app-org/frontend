@@ -35,12 +35,12 @@ export function OnboardingCommunityToggleCard({
   return (
     <div
       className={cn(
-        "flex flex-col rounded-2xl border border-white/14 bg-[var(--auth-panel-beige)]/[0.06] overflow-hidden transition-[box-shadow,border-color,transform] duration-200",
-        joined && "ring-2 ring-[var(--auth-button)]/55 border-[var(--auth-button)]/40 shadow-md",
-        !disabled && "hover:border-white/28"
+        "flex flex-col rounded-2xl border border-white/14 bg-[var(--auth-panel-beige)]/[0.06] overflow-hidden transition-[box-shadow,border-color,transform] duration-200 ease-out",
+        joined && "ring-2 ring-[var(--auth-button)]/50 border-[var(--auth-button)]/38 shadow-md",
+        !disabled && "hover:border-white/26 motion-safe:hover:-translate-y-px"
       )}
     >
-      <div className="relative h-20 sm:h-22 shrink-0">
+      <div className="relative h-[4.75rem] sm:h-[5.25rem] shrink-0">
         {community.coverUrl ? (
           <img src={community.coverUrl} alt="" className="size-full object-cover" loading="lazy" />
         ) : (
@@ -90,7 +90,7 @@ export function OnboardingCommunityToggleCard({
           onClick={onToggle}
           disabled={disabled}
           className={cn(
-            "mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-[colors,transform] duration-200 active:scale-[0.99]",
+            "mt-3 min-h-11 inline-flex w-full items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-sm font-semibold transition-[colors,transform,box-shadow] duration-200 ease-out active:scale-[0.99]",
             joined
               ? "bg-[var(--auth-button)]/25 text-[var(--auth-text-on-maroon)] border border-[var(--auth-button)]/50"
               : "bg-[var(--auth-button)] text-white hover:bg-[var(--auth-button-hover)] border border-transparent",

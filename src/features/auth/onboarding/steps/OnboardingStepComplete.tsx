@@ -3,6 +3,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { Heart, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useOnboardingDraftContext } from "../OnboardingContext";
+import { buildRegisterCredentialsFromDraft } from "../lib/buildOnboardingPayload";
+import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 
@@ -17,20 +19,15 @@ export function OnboardingStepComplete() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const account = draft.account;
+  const displayName = account?.username?.split(/[._-]/)[0] ?? account?.username ?? "";
 
   const handleFinish = useCallback(async () => {
-    if (!account) return;
+    const credentials = buildRegisterCredentialsFromDraft(draft);
+    if (!credentials) return;
     setErrorMessage(null);
     setIsSubmitting(true);
     try {
-      await registerUser({
-        username: account.username,
-        email: account.email,
-        password: account.password,
-        cpf: account.cpf,
-        birthDate: account.birthDate,
-        avatarUrl: draft.profilePhotoDataUrl ?? undefined,
-      });
+      await registerUser(credentials);
       resetDraft();
       navigate("/feed", { replace: true });
     } catch (err) {
@@ -40,7 +37,7 @@ export function OnboardingStepComplete() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [account, draft.profilePhotoDataUrl, navigate, registerUser, resetDraft]);
+  }, [draft, navigate, registerUser, resetDraft]);
 
   if (!account) {
     return <Navigate to="/auth/onboarding/1" replace />;
@@ -48,25 +45,24 @@ export function OnboardingStepComplete() {
 
   return (
     <div className="text-center sm:text-left">
-      <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[var(--auth-button)]/35 to-[var(--auth-panel-beige)]/15 text-[var(--auth-text-on-maroon)] sm:mx-0">
-        <Heart className="size-8 fill-[var(--auth-button)]/30" aria-hidden />
+      <div className="mx-auto mb-4 flex size-[3.75rem] items-center justify-center rounded-3xl bg-gradient-to-br from-[var(--auth-button)]/35 to-[var(--auth-panel-beige)]/12 text-[var(--auth-text-on-maroon)] ring-1 ring-white/10 sm:mx-0 motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:duration-500">
+        <Heart className="size-8 fill-[var(--auth-button)]/25" aria-hidden />
       </div>
 
-      <h1 className={cn(onboardingStyles.stepTitle, "text-2xl md:text-3xl")}>
-        Seja muito bem-vinda, {account.username.split(" ")[0] ?? account.username}
-      </h1>
-      <p className={onboardingStyles.stepLead}>
-        A Woody é um espaço seguro para mulheres trocarem experiências, apoiarem umas às outras e crescerem com
-        leveza. Aqui o respeito vem primeiro — e você faz parte disso.
-      </p>
+      <OnboardingStepHeader
+        title={`Seja muito bem-vinda, ${displayName}`}
+        lead="A Woody é um espaço seguro para mulheres trocarem experiências, apoiarem umas às outras e crescerem com leveza. Aqui o respeito vem primeiro."
+        trustNote="Seu perfil e suas escolhas continuam sob seu controle depois que você entrar."
+        className="!mb-5 sm:!mb-6"
+      />
 
-      <div className="my-6 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--auth-panel-beige)]/12 px-3 py-1.5 text-xs font-medium text-[var(--auth-text-on-maroon)]/90">
+      <div className="my-5 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--auth-panel-beige)]/12 px-3 py-1.5 text-xs font-medium text-[var(--auth-text-on-maroon)]/90 ring-1 ring-white/10">
           <Sparkles className="size-3.5" aria-hidden />
           Conta quase pronta
         </span>
         {draft.joinedCommunityIds && draft.joinedCommunityIds.length > 0 ? (
-          <span className="inline-flex rounded-full bg-[var(--auth-button)]/20 px-3 py-1.5 text-xs font-medium text-[var(--auth-text-on-maroon)]">
+          <span className="inline-flex rounded-full bg-[var(--auth-button)]/18 px-3 py-1.5 text-xs font-medium text-[var(--auth-text-on-maroon)] ring-1 ring-[var(--auth-button)]/25">
             {draft.joinedCommunityIds.length}{" "}
             {draft.joinedCommunityIds.length === 1 ? "comunidade" : "comunidades"} para explorar
           </span>
@@ -74,17 +70,22 @@ export function OnboardingStepComplete() {
       </div>
 
       {errorMessage && (
-        <p className="mb-4 text-sm text-red-200 bg-red-900/35 rounded-xl px-3 py-2.5 border border-red-400/20 text-left" role="alert">
+        <p
+          className="mb-4 text-sm text-red-200 bg-red-900/35 rounded-xl px-3 py-2.5 border border-red-400/20 text-left"
+          role="alert"
+        >
           {errorMessage}
         </p>
       )}
 
-      <div className="rounded-2xl border border-white/12 bg-[var(--auth-panel-beige)]/[0.07] px-4 py-5 sm:px-6 text-sm text-[var(--auth-text-on-maroon)]/85 leading-relaxed">
-        Ao entrar, você verá o feed e poderá ajustar perfil, notificações e privacidade quando quiser. Tudo isso
-        poderá ser sincronizado com o backend na próxima fase do produto.
+      <div className="rounded-2xl border border-white/10 bg-[var(--auth-panel-beige)]/[0.06] px-4 py-5 sm:px-6 text-sm text-[var(--auth-text-on-maroon)]/84 leading-relaxed shadow-sm">
+        Ao entrar, você verá o feed e poderá ajustar perfil, notificações e privacidade. Na integração com o
+        backend, interesses e entradas em comunidades podem ser sincronizados logo após a sessão — a estrutura já
+        está separada em <span className="font-medium opacity-90">cadastro</span> e{" "}
+        <span className="font-medium opacity-90">dados complementares</span>.
       </div>
 
-      <div className={cn(onboardingStyles.footerRow, "mt-8 justify-center sm:justify-end")}>
+      <div className={cn(onboardingStyles.footerRow, "mt-8 justify-center sm:justify-end border-t-0 pt-2")}>
         <button
           type="button"
           onClick={handleFinish}

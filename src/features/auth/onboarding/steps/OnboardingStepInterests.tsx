@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
 import { ONBOARDING_INTERESTS } from "../constants";
+import { mockPersistInterests } from "../services/onboardingActionsMock";
+import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +15,7 @@ import { cn } from "@/lib/utils";
 export function OnboardingStepInterests() {
   const { draft, updateDraft } = useOnboardingDraftContext();
   const { goNext } = useOnboardingNavigation();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const selected = new Set(draft.interestIds ?? []);
 
@@ -29,16 +33,29 @@ export function OnboardingStepInterests() {
   const count = selected.size;
   const canContinue = count >= 1;
 
+  const handleContinue = async () => {
+    if (!canContinue) return;
+    setIsSyncing(true);
+    try {
+      await mockPersistInterests([...selected]);
+      goNext();
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div>
-      <h1 className={onboardingStyles.stepTitle}>O que mais te move?</h1>
-      <p className={onboardingStyles.stepLead}>
-        Escolha um ou mais temas. Usamos isso para sugerir comunidades e conteúdo com mais carinho para você.
-      </p>
+      <OnboardingStepHeader
+        icon={Sparkles}
+        title="O que mais te move?"
+        lead="Escolha um ou mais temas. Isso ajuda a sugerir comunidades e conteúdo com mais acerto para você."
+        trustNote="Você pode mudar seus interesses depois nas configurações do perfil."
+      />
 
-      <p className={cn(onboardingStyles.selectedBadge, "mb-4")} aria-live="polite">
+      <p className={cn(onboardingStyles.selectedBadge, "mb-3 sm:mb-4")} aria-live="polite">
         {count === 0
-          ? "Selecione pelo menos um interesse"
+          ? "Selecione pelo menos um tema"
           : `${count} ${count === 1 ? "tema selecionado" : "temas selecionados"}`}
       </p>
 
@@ -51,6 +68,7 @@ export function OnboardingStepInterests() {
               key={item.id}
               type="button"
               onClick={() => toggle(item.id)}
+              aria-pressed={isOn}
               className={cn(
                 onboardingStyles.interestCard,
                 isOn && onboardingStyles.interestCardSelected,
@@ -72,17 +90,17 @@ export function OnboardingStepInterests() {
                   </span>
                   <span
                     className={cn(
-                      "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border transition-all duration-200",
+                      "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border transition-all duration-200 ease-out",
                       isOn
                         ? "border-[var(--auth-button)] bg-[var(--auth-button)] text-white scale-100 opacity-100"
-                        : "border-white/25 opacity-60 scale-95"
+                        : "border-white/22 opacity-55 scale-95"
                     )}
                     aria-hidden
                   >
                     <Check className={cn("size-3.5", !isOn && "opacity-0")} />
                   </span>
                 </span>
-                <span className="mt-1 block text-xs text-[var(--auth-text-on-maroon)]/70 leading-relaxed">
+                <span className="mt-1 block text-xs text-[var(--auth-text-on-maroon)]/68 leading-relaxed">
                   {item.subtitle}
                 </span>
               </span>
@@ -93,8 +111,14 @@ export function OnboardingStepInterests() {
 
       <div className={onboardingStyles.footerRow}>
         <span />
-        <button type="button" onClick={goNext} disabled={!canContinue} className={onboardingStyles.primaryBtn}>
-          Continuar
+        <button
+          type="button"
+          onClick={() => void handleContinue()}
+          disabled={!canContinue || isSyncing}
+          className={onboardingStyles.primaryBtn}
+          aria-busy={isSyncing}
+        >
+          {isSyncing ? "Salvando…" : "Continuar"}
         </button>
       </div>
     </div>

@@ -3,6 +3,13 @@ import type { OnboardingAccountFormData } from "./account.validation";
 /**
  * Rascunho do cadastro entre etapas.
  * Em produção: não persistir senha nem CPF em sessionStorage — usar sessão no servidor após etapa 1.
+ *
+ * Mapa rápido → API:
+ * - `account` → criação de conta / registro
+ * - `emailVerified` → fluxo verify-email
+ * - `profilePhotoDataUrl` → upload de avatar
+ * - `interestIds` → PATCH interesses
+ * - `joinedCommunityIds` → joins em comunidades
  */
 export type OnboardingDraft = {
   account?: OnboardingAccountFormData;

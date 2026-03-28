@@ -6,6 +6,8 @@ export interface OnboardingCodeInputProps {
   onChange: (digits: string) => void;
   disabled?: boolean;
   hasError?: boolean;
+  /** Código completo e sem erro — feedback visual suave. */
+  isComplete?: boolean;
   idPrefix?: string;
 }
 
@@ -19,6 +21,7 @@ export function OnboardingCodeInput({
   onChange,
   disabled,
   hasError,
+  isComplete = false,
   idPrefix = "otp",
 }: OnboardingCodeInputProps) {
   const refs = useRef<(HTMLInputElement | null)[]>([]);
@@ -103,12 +106,14 @@ export function OnboardingCodeInput({
           aria-invalid={hasError}
           className={cn(
             "size-11 sm:size-12 rounded-xl border bg-[var(--auth-panel-beige)]/90 text-center text-lg font-semibold tabular-nums",
-            "text-[var(--auth-text-on-beige)] shadow-inner transition-[border-color,box-shadow,transform] duration-200",
+            "text-[var(--auth-text-on-beige)] shadow-inner transition-[border-color,box-shadow,transform] duration-200 ease-out",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/55 focus-visible:border-[var(--auth-button)]",
             "disabled:opacity-45 disabled:cursor-not-allowed",
             hasError
               ? "border-red-400/80 ring-1 ring-red-400/30"
-              : "border-[var(--woody-accent)]/20"
+              : isComplete && digits.length === LENGTH
+                ? "border-[var(--auth-button)]/45 ring-1 ring-[var(--auth-button)]/20"
+                : "border-[var(--woody-accent)]/20"
           )}
           onChange={(e) => handleChange(i, e.target.value)}
           onKeyDown={(e) => handleKeyDown(i, e)}
