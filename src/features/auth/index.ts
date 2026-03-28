@@ -1,8 +1,13 @@
-export { AuthPage } from "./pages/AuthPage";
+export { AuthEntryPage } from "./pages/AuthEntryPage";
+export { LoginPage } from "./pages/LoginPage";
 export { AuthProvider, useAuth } from "./context/AuthContext";
 export { AuthLayout } from "./components/AuthLayout";
 export { AuthCard } from "./components/AuthCard";
-export { AuthForm } from "./components/AuthForm";
-export { AuthSwitchPanel } from "./components/AuthSwitchPanel";
+export { LoginForm } from "./components/LoginForm";
+export { AuthPromoPanel } from "./components/AuthPromoPanel";
 export { AuthInputField } from "./components/AuthInputField";
-export type { AuthMode, AuthUser, LoginCredentials, RegisterCredentials } from "./types";
+export { OnboardingProvider, useOnboardingDraftContext } from "./onboarding/OnboardingContext";
+export { useOnboardingDraftContext as useOnboarding } from "./onboarding/OnboardingContext";
+export { OnboardingFlow } from "./onboarding/OnboardingFlow";
+export type { OnboardingDraft } from "./onboarding/types";
+export type { AuthUser, LoginCredentials, RegisterCredentials } from "./types";

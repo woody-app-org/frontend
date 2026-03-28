@@ -1,5 +1,3 @@
-export type AuthMode = "login" | "register";
-
 export interface AuthUser {
   id: string;
   username: string;
