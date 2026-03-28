@@ -3,6 +3,7 @@ import { FeedEmptyState } from "@/features/feed/components/FeedEmptyState";
 import { FeedSkeleton } from "@/features/feed/components/FeedSkeleton";
 import { Pagination } from "@/features/feed/components/Pagination";
 import { cn } from "@/lib/utils";
+import { woodySection } from "@/lib/woody-ui";
 import type { Post } from "@/features/feed/types";
 
 const styles = {
@@ -20,7 +21,18 @@ export interface ProfilePostsSectionProps {
   onPin?: (postId: string) => void;
   onReport?: (postId: string) => void;
   className?: string;
+  /** Título da seção (bloco “Posts / Publicações”). */
+  sectionTitle?: string;
+  sectionDescription?: string;
+  /** Esconde título e descrição (ex.: abas do perfil). */
+  hideSectionHeader?: boolean;
 }
+
+const headerStyles = {
+  wrap: "mb-4 md:mb-5",
+  title: woodySection.title,
+  desc: woodySection.subtitle,
+} as const;
 
 export function ProfilePostsSection({
   posts,
@@ -33,21 +45,38 @@ export function ProfilePostsSection({
   onPin,
   onReport,
   className,
+  sectionTitle = "Publicações",
+  sectionDescription = "Posts publicados em comunidades — cada um mostra o espaço de origem.",
+  hideSectionHeader = false,
 }: ProfilePostsSectionProps) {
+  const header = hideSectionHeader ? null : (
+    <div className={headerStyles.wrap}>
+      <h2 className={headerStyles.title}>{sectionTitle}</h2>
+      {sectionDescription ? <p className={headerStyles.desc}>{sectionDescription}</p> : null}
+    </div>
+  );
+
   if (isLoading) {
-    return <FeedSkeleton count={3} className={className} />;
+    return (
+      <div className={className}>
+        {header}
+        <FeedSkeleton count={3} />
+      </div>
+    );
   }
 
   if (posts.length === 0) {
     return (
-      <FeedEmptyState
-        className={cn(className, "py-8")}
-      />
+      <div className={className}>
+        {header}
+        <FeedEmptyState className="py-8" />
+      </div>
     );
   }
 
   return (
     <section className={cn("space-y-5", className)}>
+      {header}
       <ul className={styles.list}>
         {posts.map((post) => (
           <li key={post.id}>

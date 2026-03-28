@@ -6,9 +6,33 @@ import { Pagination } from "../components/Pagination";
 import { FeedSkeleton } from "../components/FeedSkeleton";
 import { FeedEmptyState } from "../components/FeedEmptyState";
 import { FeedErrorState } from "../components/FeedErrorState";
+import { FeedCommunityContextStrip } from "../components/FeedCommunityContextStrip";
 import { useFeed } from "../hooks/useFeed";
-import { Flame } from "lucide-react";
+import { Flame, Compass, UserRoundCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { woodyLayout, woodySection } from "@/lib/woody-ui";
+import type { FeedFilter } from "../types";
+
+const FEED_HEADLINES: Record<
+  FeedFilter,
+  { title: string; subtitle: string; icon: typeof Flame }
+> = {
+  trending: {
+    title: "Em alta entre as comunidades",
+    subtitle: "Publicações com mais conversa agora — sempre com contexto do grupo de origem.",
+    icon: Flame,
+  },
+  forYou: {
+    title: "Para você",
+    subtitle: "Prioriza os grupos em que você participa e abre espaço para novas descobertas.",
+    icon: Compass,
+  },
+  following: {
+    title: "Das pessoas que você segue",
+    subtitle: "Atualizações das perfis que você acompanha na plataforma.",
+    icon: UserRoundCheck,
+  },
+};
 
 export function FeedPage() {
   const {
@@ -31,24 +55,38 @@ export function FeedPage() {
   const hasBlockingError = !hasPosts && !!error;
   const hasInlineError = hasPosts && !!error;
   const showInitialLoading = isLoading && !hasLoadedOnce;
+  const headline = FEED_HEADLINES[filter];
+  const HeadlineIcon = headline.icon;
+
+  const emptyState =
+    filter === "following"
+      ? {
+          title: "Nenhuma publicação de quem você segue",
+          description:
+            "Siga mais perfis ou volte ao “Em alta” / “Para você”. As pessoas que você acompanha ainda não têm posts recentes no mock.",
+        }
+      : undefined;
 
   return (
-    <FeedLayout searchSourcePosts={posts}>
-      <div className="flex flex-col flex-1 max-w-2xl mx-auto w-full px-3 md:px-6 py-4 md:py-5">
-        <FeedTabs
-          activeFilter={filter}
-          onFilterChange={setFilter}
-          className="mb-4"
-        />
+    <FeedLayout>
+      <div
+        className={cn(
+          "flex flex-col flex-1 max-w-3xl mx-auto w-full",
+          woodyLayout.pagePad,
+          woodyLayout.stackGap
+        )}
+      >
+        <FeedTabs activeFilter={filter} onFilterChange={setFilter} />
 
-        <div className="hidden md:block mb-4">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-[var(--woody-text)]">
-            Discussões em alta
-            <Flame className="size-5 text-[var(--woody-accent)] shrink-0" />
+        <CreatePostCard />
+
+        <div>
+          <h2 className={cn(woodySection.title, "flex items-center gap-2")}>
+            {headline.title}
+            <HeadlineIcon className="size-5 text-[var(--woody-accent)] shrink-0" aria-hidden />
           </h2>
+          <p className={woodySection.subtitle}>{headline.subtitle}</p>
         </div>
-
-        <CreatePostCard className="mb-5" />
 
         <section className="relative space-y-5 min-h-[280px]">
           {showInitialLoading && <FeedSkeleton count={3} />}
@@ -56,11 +94,11 @@ export function FeedPage() {
           {hasBlockingError && <FeedErrorState message={error?.message} onRetry={refetch} />}
 
           {!showInitialLoading && !error && !hasPosts && (
-            <FeedEmptyState />
+            <FeedEmptyState title={emptyState?.title} description={emptyState?.description} />
           )}
 
           {hasInlineError && (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">
+            <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-900 dark:text-amber-200">
               Não foi possível atualizar o feed agora. Exibindo os posts já carregados.
             </div>
           )}
@@ -100,6 +138,8 @@ export function FeedPage() {
             </div>
           )}
         </section>
+
+        <FeedCommunityContextStrip className="mt-2" />
       </div>
     </FeedLayout>
   );

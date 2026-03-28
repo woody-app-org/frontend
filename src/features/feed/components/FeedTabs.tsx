@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { woodyFocus } from "@/lib/woody-ui";
 import type { FeedFilter } from "../types";
 
 const TABS: { id: FeedFilter; label: string }[] = [
@@ -22,7 +23,7 @@ export function FeedTabs({ activeFilter, onFilterChange, className }: FeedTabsPr
   return (
     <div
       className={cn(
-        "relative grid grid-cols-3 gap-1.5 p-1.5 rounded-xl border border-black/5 bg-[var(--woody-bg)]/90 shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
+        "relative grid grid-cols-3 gap-1.5 p-1.5 rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-card)]/75 shadow-[0_1px_3px_rgba(92,58,59,0.05)]",
         className
       )}
       role="tablist"
@@ -41,7 +42,8 @@ export function FeedTabs({ activeFilter, onFilterChange, className }: FeedTabsPr
           role="tab"
           aria-selected={activeFilter === tab.id}
           className={cn(
-            "relative z-10 min-w-0 py-2.5 px-3 rounded-lg text-sm transition-colors duration-200",
+            "relative z-10 min-w-0 py-2.5 px-2 sm:px-3 rounded-lg text-sm transition-colors duration-200",
+            woodyFocus.ring,
             activeFilter === tab.id
               ? "text-white font-semibold"
               : "bg-transparent text-[var(--woody-text)]/85 font-medium hover:text-[var(--woody-text)]"

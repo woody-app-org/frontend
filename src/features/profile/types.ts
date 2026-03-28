@@ -1,4 +1,4 @@
-import type { Post, User } from "@/features/feed/types";
+import type { Post, User } from "@/domain/types";
 
 /** Link de rede social / conexão do perfil */
 export interface SocialLink {
@@ -39,7 +39,7 @@ export interface UserProfile {
   isFollowing?: boolean;
 }
 
-/** Resposta paginada de posts do perfil (reutiliza Post do feed) */
+/** Resposta paginada de posts do perfil */
 export interface ProfilePostsResponse {
   items: Post[];
   page: number;
@@ -63,5 +63,4 @@ export interface UseUserProfileReturn {
   refetch: () => void;
 }
 
-// Re-export para uso no perfil (evita acoplamento direto ao feed)
 export type { Post, User };

@@ -1,74 +1,59 @@
-import type { PaginatedResponse, Post, FeedFilter } from "../types";
-
-const MOCK_USER = {
-  id: "1",
-  name: "Seu nome",
-  avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-  pronouns: "ela/dela",
-};
-
-const MOCK_POSTS: Post[] = [
-  {
-    id: "1",
-    author: MOCK_USER,
-    title: "Tópico",
-    content:
-      "A great book and a great coffee! What a way to begin the day :)",
-    imageUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop",
-    topic: "Tópico",
-    createdAt: "2h atrás",
-    likesCount: 3500,
-    commentsCount: 3500,
-  },
-  {
-    id: "2",
-    author: {
-      id: "2",
-      name: "Débora da Silva",
-      avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
-    },
-    title: "Lorem ipsum mipus merol remips hanrs?",
-    content:
-      "Lorem ipsum dolor sit amet consectetur adipiscing elit risus potenti sagittis lacus tempor.",
-    imageUrl: null,
-    createdAt: "2h atrás",
-    likesCount: 42,
-    commentsCount: 12,
-  },
-  {
-    id: "3",
-    author: MOCK_USER,
-    title: "Tópico",
-    content:
-      "A great book and a great coffee! What a way to begin the day :)",
-    imageUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop",
-    topic: "Tópico",
-    createdAt: "5h atrás",
-    likesCount: 1200,
-    commentsCount: 89,
-  },
-];
+import type { Post } from "@/domain/types";
+import { getAllSeedPostsEnriched, getCommunityIdsForUser, getFollowingUserIds } from "@/domain/selectors";
+import { COMMUNITIES_PAGE_VIEWER_ID } from "@/features/communities/lib/communitiesPageModel";
+import type { PaginatedResponse, FeedFilter } from "../types";
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function getFeed(
-  page: number,
-  _filter: FeedFilter
-): Promise<PaginatedResponse<Post>> {
-  await delay(600);
+function engagementScore(p: Post): number {
+  return p.likesCount + p.commentsCount * 2;
+}
 
+function applyFeedFilter(all: Post[], filter: FeedFilter, viewerId: string): Post[] {
+  switch (filter) {
+    case "trending":
+      return [...all].sort((a, b) => engagementScore(b) - engagementScore(a));
+    case "forYou": {
+      const mine = new Set(getCommunityIdsForUser(viewerId));
+      const fromJoined = all
+        .filter((p) => mine.has(p.communityId))
+        .sort((a, b) => engagementScore(b) - engagementScore(a));
+      const discover = all
+        .filter((p) => !mine.has(p.communityId))
+        .sort((a, b) => engagementScore(b) - engagementScore(a));
+      const seen = new Set<string>();
+      const merged: Post[] = [];
+      for (const p of [...fromJoined, ...discover]) {
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        merged.push(p);
+      }
+      return merged;
+    }
+    case "following": {
+      const following = new Set(getFollowingUserIds(viewerId));
+      return all
+        .filter((p) => following.has(p.author.id))
+        .sort((a, b) => engagementScore(b) - engagementScore(a));
+    }
+    default:
+      return all;
+  }
+}
+
+export async function getFeed(page: number, filter: FeedFilter): Promise<PaginatedResponse<Post>> {
+  await delay(420);
+
+  const viewerId = COMMUNITIES_PAGE_VIEWER_ID;
+  const all = getAllSeedPostsEnriched();
+  const pool = applyFeedFilter(all, filter, viewerId);
   const pageSize = 10;
-  const totalCount = MOCK_POSTS.length * 3;
+  const totalCount = pool.length;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
-  const items = [...MOCK_POSTS, ...MOCK_POSTS.map((p, i) => ({ ...p, id: `${p.id}-${i + 10}` })), ...MOCK_POSTS.map((p, i) => ({ ...p, id: `${p.id}-${i + 20}` }))].slice(
-    start,
-    end
-  );
+  const items = pool.slice(start, end);
 
   return {
     items,

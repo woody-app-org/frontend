@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { woodyMotion, woodySurface } from "@/lib/woody-ui";
 import type { Post } from "../types";
+import { PostCommunityContextBar } from "./PostCommunityContextBar";
 
 // --- Helpers ---
 
@@ -26,8 +28,11 @@ function formatCount(count: number): string {
 // --- Estilos padronizados (evitar classes gigantes inline) ---
 
 const styles = {
-  card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] flex flex-col gap-0 px-4 pt-3 pb-3 sm:px-4",
+  card: cn(
+    woodySurface.card,
+    woodyMotion.postCardHover,
+    "flex flex-col gap-0 px-4 pt-3 pb-3 sm:px-4 overflow-hidden"
+  ),
   header:
     "flex flex-row items-start justify-between gap-3 p-0",
   headerLeft: "flex min-w-0 flex-1 items-start gap-3",
@@ -52,7 +57,7 @@ const styles = {
     "flex items-center gap-5 mt-3 pt-0.5 text-[var(--woody-muted)]",
   footerItem:
     "flex items-center gap-1.5 text-xs transition-colors rounded-md py-1 px-1.5 -mx-1.5 hover:text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/5 [&_svg]:size-3.5",
-} as const;
+};
 
 // --- Component ---
 
@@ -61,9 +66,20 @@ export interface PostCardProps {
   onPin?: (postId: string) => void;
   onReport?: (postId: string) => void;
   className?: string;
+  /**
+   * `community`: chip da comunidade como indicador (sem link), adequado à página da própria comunidade.
+   * @default "feed"
+   */
+  postListingContext?: "feed" | "community";
 }
 
-export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
+export function PostCard({
+  post,
+  onPin,
+  onReport,
+  className,
+  postListingContext = "feed",
+}: PostCardProps) {
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -73,7 +89,10 @@ export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
 
   return (
     <Card className={cn(styles.card, className)}>
-      <CardHeader className={styles.header}>
+      {post.community ? (
+        <PostCommunityContextBar preview={post.community} variant={postListingContext} />
+      ) : null}
+      <CardHeader className={cn(styles.header, post.community && "pt-3")}>
         <div className={styles.headerLeft}>
           <Link
             to={`/profile/${post.author.id}`}
@@ -138,9 +157,13 @@ export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
-          {post.topic && <span className={styles.pill}>{post.topic}</span>}
+          {post.tags?.map((tag) => (
+            <span key={tag} className={styles.pill}>
+              {tag}
+            </span>
+          ))}
         </div>
-        <p className={cn(styles.content, (post.title || post.topic) && "mt-2")}>
+        <p className={cn(styles.content, (post.title || post.tags?.length) && "mt-2")}>
           {post.content}
         </p>
         {post.imageUrl && (

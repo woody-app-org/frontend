@@ -1,4 +1,7 @@
-import type { Post, User } from "@/features/feed/types";
+import type { Community, Post, User } from "@/domain/types";
+import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
+import { getAllSeedPostsEnriched } from "@/domain/selectors";
+import { SEED_COMMUNITIES, SEED_USERS } from "@/domain/mocks/seed";
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -17,9 +20,9 @@ function includesQuery(haystack: string, query: string): boolean {
   return normalize(haystack).includes(normalize(query));
 }
 
-export type SearchMode = "topics" | "people";
+export type SearchMode = "posts" | "people" | "communities";
 
-export interface SearchTopicsResult {
+export interface SearchPostsResult {
   posts: Post[];
 }
 
@@ -27,53 +30,64 @@ export interface SearchPeopleResult {
   people: User[];
 }
 
-export interface SearchResultByMode {
-  topics: SearchTopicsResult;
-  people: SearchPeopleResult;
-}
-
-export interface SearchSource {
-  posts: Post[];
-}
-
-function uniquePeopleFromPosts(posts: Post[]): User[] {
-  const map = new Map<string, User>();
-  for (const p of posts) {
-    if (!p.author?.id) continue;
-    map.set(p.author.id, p.author);
-  }
-  return [...map.values()];
+export interface SearchCommunitiesResult {
+  communities: Community[];
 }
 
 export async function searchByMode(params: {
   query: string;
   mode: SearchMode;
-  source: SearchSource;
-}): Promise<SearchTopicsResult | SearchPeopleResult> {
-  const { query, mode, source } = params;
+}): Promise<SearchPostsResult | SearchPeopleResult | SearchCommunitiesResult> {
+  const { query, mode } = params;
+  await delay(260);
 
-  // Mantém UX consistente com “loading” real, mesmo em mock.
-  await delay(250);
-
-  if (!query.trim()) {
-    return mode === "topics" ? { posts: [] } : { people: [] };
+  const q = query.trim();
+  if (!q) {
+    if (mode === "posts") return { posts: [] };
+    if (mode === "people") return { people: [] };
+    return { communities: [] };
   }
 
-  if (mode === "topics") {
-    const posts = source.posts.filter((p) => {
+  if (mode === "posts") {
+    const posts = getAllSeedPostsEnriched().filter((p) => {
+      const tagMatch = p.tags?.some((t) => includesQuery(t, q)) ?? false;
+      const categoryMatch =
+        p.community != null && includesQuery(getCommunityCategoryLabel(p.community.category), q);
       return (
-        includesQuery(p.title ?? "", query) ||
-        includesQuery(p.content ?? "", query) ||
-        includesQuery(p.topic ?? "", query) ||
-        includesQuery(p.author?.name ?? "", query)
+        includesQuery(p.title ?? "", q) ||
+        includesQuery(p.content ?? "", q) ||
+        includesQuery(p.community?.name ?? "", q) ||
+        includesQuery(p.author?.name ?? "", q) ||
+        includesQuery(p.author?.username ?? "", q) ||
+        tagMatch ||
+        categoryMatch
       );
     });
     return { posts };
   }
 
-  const people = uniquePeopleFromPosts(source.posts).filter((u) => {
-    return includesQuery(u.name ?? "", query) || includesQuery(u.pronouns ?? "", query);
-  });
-  return { people };
-}
+  if (mode === "people") {
+    const people = SEED_USERS.filter((u) => {
+      return (
+        includesQuery(u.name ?? "", q) ||
+        includesQuery(u.username ?? "", q) ||
+        includesQuery(u.bio ?? "", q) ||
+        includesQuery(u.pronouns ?? "", q)
+      );
+    });
+    return { people };
+  }
 
+  const communities = SEED_COMMUNITIES.filter((c) => {
+    const tagMatch = c.tags.some((t) => includesQuery(t, q));
+    const cat = getCommunityCategoryLabel(c.category);
+    return (
+      includesQuery(c.name, q) ||
+      includesQuery(c.slug, q) ||
+      includesQuery(c.description, q) ||
+      includesQuery(cat, q) ||
+      tagMatch
+    );
+  });
+  return { communities };
+}

@@ -3,20 +3,18 @@ import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { Post } from "@/features/feed/types";
 import type { SearchMode } from "@/features/feed/components/SearchModeSegment";
 import { SharedSearchPanel } from "./SharedSearchPanel";
 
 export interface SearchModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  sourcePosts: Post[];
   className?: string;
 }
 
-export function SearchModal({ open, onOpenChange, sourcePosts, className }: SearchModalProps) {
+export function SearchModal({ open, onOpenChange, className }: SearchModalProps) {
   const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<SearchMode>("people");
+  const [mode, setMode] = useState<SearchMode>("posts");
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -28,8 +26,6 @@ export function SearchModal({ open, onOpenChange, sourcePosts, className }: Sear
     return () => window.clearTimeout(t);
   }, [open]);
 
-  // Quando fechar, mantém estado (boa UX); mas se quiser resetar no futuro:
-  // useEffect(() => { if (!open) setQuery(""); }, [open]);
   const title = useMemo(() => "Busca", []);
 
   return (
@@ -46,7 +42,7 @@ export function SearchModal({ open, onOpenChange, sourcePosts, className }: Sear
             <div className="min-w-0">
               <DialogTitle className="text-[var(--woody-header)]">{title}</DialogTitle>
               <div className="mt-1 text-sm text-[var(--woody-muted)]">
-                Tópicos e pessoas, no mesmo lugar.
+                Postagens, pessoas e comunidades — um único lugar.
               </div>
             </div>
             <DialogClose asChild>
@@ -71,7 +67,6 @@ export function SearchModal({ open, onOpenChange, sourcePosts, className }: Sear
             mode={mode}
             onModeChange={setMode}
             autoFocusRef={inputRef}
-            sourcePosts={sourcePosts}
             scrollableResults
           />
         </div>
@@ -79,4 +74,3 @@ export function SearchModal({ open, onOpenChange, sourcePosts, className }: Sear
     </Dialog>
   );
 }
-
