@@ -53,7 +53,12 @@ export const onboardingAccountSchema = z.object({
   password: z
     .string()
     .min(1, "Senha é obrigatória")
-    .min(PASSWORD_MIN_LENGTH, `Senha deve ter no mínimo ${PASSWORD_MIN_LENGTH} caracteres`),
+    .min(PASSWORD_MIN_LENGTH, `Senha deve ter no mínimo ${PASSWORD_MIN_LENGTH} caracteres`)
+    .regex(/[A-Z]/, "Inclua pelo menos uma letra maiúscula")
+    .regex(
+      /[^A-Za-z0-9\s]/,
+      "Inclua pelo menos um caractere especial (ex.: ! @ # $ % & *)"
+    ),
   cpf: z
     .string()
     .min(1, "CPF é obrigatório")

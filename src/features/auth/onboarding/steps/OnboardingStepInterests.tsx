@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { Check, Sparkles } from "lucide-react";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
-import { ONBOARDING_INTERESTS } from "../constants";
+import { ONBOARDING_INTERESTS, ONBOARDING_MAX_INTERESTS } from "../constants";
 import { mockPersistInterests } from "../services/onboardingActionsMock";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
@@ -16,6 +16,7 @@ export function OnboardingStepInterests() {
   const { draft, updateDraft } = useOnboardingDraftContext();
   const { goNext } = useOnboardingNavigation();
   const [isSyncing, setIsSyncing] = useState(false);
+  const [limitMessage, setLimitMessage] = useState(false);
 
   const selected = new Set(draft.interestIds ?? []);
 
@@ -25,13 +26,23 @@ export function OnboardingStepInterests() {
 
   const toggle = (id: string) => {
     const next = new Set(selected);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
+    if (next.has(id)) {
+      next.delete(id);
+      setLimitMessage(false);
+    } else {
+      if (next.size >= ONBOARDING_MAX_INTERESTS) {
+        setLimitMessage(true);
+        window.setTimeout(() => setLimitMessage(false), 2800);
+        return;
+      }
+      next.add(id);
+      setLimitMessage(false);
+    }
     updateDraft({ interestIds: [...next] });
   };
 
   const count = selected.size;
-  const canContinue = count >= 1;
+  const canContinue = count >= 1 && count <= ONBOARDING_MAX_INTERESTS;
 
   const handleContinue = async () => {
     if (!canContinue) return;
@@ -44,24 +55,36 @@ export function OnboardingStepInterests() {
     }
   };
 
+  const instructionText =
+    count === 0
+      ? `SELECIONE DE 1 A ${ONBOARDING_MAX_INTERESTS} TEMAS`
+      : count >= ONBOARDING_MAX_INTERESTS
+        ? `${ONBOARDING_MAX_INTERESTS} TEMAS — LIMITE ATINGIDO`
+        : `${count} ${count === 1 ? "TEMA" : "TEMAS"} SELECIONADO${count === 1 ? "" : "S"} (ATÉ ${ONBOARDING_MAX_INTERESTS})`;
+
   return (
     <div>
       <OnboardingStepHeader
         icon={Sparkles}
         title="O que mais te move?"
-        lead="Escolha um ou mais temas. Isso ajuda a sugerir comunidades e conteúdo com mais acerto para você."
+        lead={`Escolha entre 1 e ${ONBOARDING_MAX_INTERESTS} temas. Isso ajuda a sugerir comunidades e conteúdo com mais acerto para você.`}
         trustNote="Você pode mudar seus interesses depois nas configurações do perfil."
       />
 
-      <p className={cn(onboardingStyles.selectedBadge, "mb-3 sm:mb-4")} aria-live="polite">
-        {count === 0
-          ? "Selecione pelo menos um tema"
-          : `${count} ${count === 1 ? "tema selecionado" : "temas selecionados"}`}
+      <p className={cn(onboardingStyles.prominentInstruction)} aria-live="polite">
+        {instructionText}
       </p>
+
+      {limitMessage ? (
+        <p className="mb-3 text-xs font-medium text-[var(--auth-text-on-maroon)]/95 sm:text-sm" role="status">
+          Você já escolheu {ONBOARDING_MAX_INTERESTS} temas. Desmarque um para trocar.
+        </p>
+      ) : null}
 
       <div className={onboardingStyles.interestGrid}>
         {ONBOARDING_INTERESTS.map((item) => {
           const isOn = selected.has(item.id);
+          const atCap = !isOn && selected.size >= ONBOARDING_MAX_INTERESTS;
           const Icon = item.Icon;
           return (
             <button
@@ -69,9 +92,11 @@ export function OnboardingStepInterests() {
               type="button"
               onClick={() => toggle(item.id)}
               aria-pressed={isOn}
+              disabled={atCap}
               className={cn(
                 onboardingStyles.interestCard,
                 isOn && onboardingStyles.interestCardSelected,
+                atCap && "opacity-45 cursor-not-allowed",
                 "text-left"
               )}
             >

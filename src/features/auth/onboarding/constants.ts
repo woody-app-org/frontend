@@ -34,6 +34,9 @@ export const MOCK_EMAIL_VERIFICATION_CODE = "424242";
 
 export const ONBOARDING_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+/** Máximo de interesses selecionáveis na etapa 4. */
+export const ONBOARDING_MAX_INTERESTS = 5;
+
 export interface OnboardingInterestDefinition {
   id: string;
   label: string;

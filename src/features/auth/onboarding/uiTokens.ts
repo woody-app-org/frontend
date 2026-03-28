@@ -27,6 +27,9 @@ export const onboardingStyles = {
     "flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--auth-panel-beige)]/12 text-[var(--auth-text-on-maroon)] transition-[colors,transform] duration-200 group-hover:bg-[var(--auth-panel-beige)]/20 motion-safe:group-hover:scale-[1.03]",
   selectedBadge:
     "text-[11px] font-semibold text-[var(--auth-button)] tracking-wide",
+  /** Instrução destacada (ex.: regras de seleção de interesses). */
+  prominentInstruction:
+    "text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--auth-text-on-maroon)]/85 mb-3 sm:mb-4 leading-relaxed",
   demoCallout:
     "rounded-xl border border-dashed border-white/18 bg-[var(--auth-panel-beige)]/[0.05] px-3 py-2.5 text-center text-[11px] sm:text-xs text-[var(--auth-text-on-maroon)]/72",
 } as const;

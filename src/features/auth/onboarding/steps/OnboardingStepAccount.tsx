@@ -3,6 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserRound } from "lucide-react";
 import { AuthInputField } from "../../components/AuthInputField";
+import { PASSWORD_MIN_LENGTH } from "../../constants";
 import {
   onboardingAccountSchema,
   formatCpfDisplay,
@@ -96,12 +97,18 @@ export function OnboardingStepAccount() {
           <div className={onboardingStyles.sectionCard}>
             <AuthInputField
               label="Senha"
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Ex.: MinhaSenh@1"
               type="password"
               autoComplete="new-password"
               variant="maroon"
-              hint="Combine letras e números para mais segurança."
-              valid={!!touchedFields.password && !errors.password && w.password.length >= 6}
+              hint={`NO MÍNIMO ${PASSWORD_MIN_LENGTH} CARACTERES, 1 LETRA MAIÚSCULA E 1 CARACTERE ESPECIAL (!@#…)`}
+              valid={
+                !!touchedFields.password &&
+                !errors.password &&
+                w.password.length >= PASSWORD_MIN_LENGTH &&
+                /[A-Z]/.test(w.password) &&
+                /[^A-Za-z0-9\s]/.test(w.password)
+              }
               {...form.register("password")}
               error={errors.password?.message}
             />
@@ -111,7 +118,7 @@ export function OnboardingStepAccount() {
         <div>
           <p className={onboardingStyles.sectionLabel}>Sobre você</p>
           <div className={onboardingStyles.sectionCard}>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 sm:items-start">
               <Controller
                 name="cpf"
                 control={form.control}
@@ -123,7 +130,6 @@ export function OnboardingStepAccount() {
                     inputMode="numeric"
                     autoComplete="off"
                     variant="maroon"
-                    hint="Validamos o formato. Na API real, siga LGPD e políticas de armazenamento."
                     valid={
                       !!touchedFields.cpf && !fieldState.error && stripCpfDigits(field.value).length === 11
                     }

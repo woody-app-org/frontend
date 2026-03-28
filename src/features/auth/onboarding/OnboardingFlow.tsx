@@ -30,7 +30,7 @@ export function OnboardingFlow() {
     <AuthLayout>
       <div
         className={cn(
-          "w-full flex flex-col gap-3 sm:gap-4 md:gap-5 flex-1 md:flex-initial min-h-0 transition-[max-width] duration-500 ease-out",
+          "w-full flex flex-col gap-3 sm:gap-4 md:gap-5 transition-[max-width] duration-500 ease-out",
           wideSteps ? "max-w-3xl" : "max-w-lg"
         )}
       >
@@ -55,7 +55,7 @@ export function OnboardingFlow() {
           key={pathname}
           className={cn(
             "rounded-2xl md:rounded-3xl bg-[var(--auth-panel-maroon)] text-[var(--auth-text-on-maroon)]",
-            "p-4 sm:p-6 md:p-8 shadow-none md:shadow-lg md:ring-1 md:ring-black/5 flex-1 min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain",
+            "p-4 sm:p-6 md:p-8 shadow-none md:shadow-lg md:ring-1 md:ring-black/5 overflow-x-hidden",
             "animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out"
           )}
         >

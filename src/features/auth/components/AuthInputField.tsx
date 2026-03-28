@@ -18,7 +18,11 @@ export interface AuthInputFieldProps
 
 const styles = {
   label: "block text-sm font-medium mb-1.5",
-  hint: "text-xs text-[var(--auth-text-on-beige)]/70 md:text-[var(--auth-text-on-beige)]/65 mb-1.5 leading-snug",
+  /** Sobre fundo bege / inputs claros (ex.: painel login). */
+  hintOnBeige: "text-xs text-[var(--auth-text-on-beige)]/80 md:text-[var(--auth-text-on-beige)]/75 mb-1.5 leading-snug font-medium",
+  /** Sobre fundo bordô / painel marrom — mesma hierarquia dos títulos de bloco (ex.: “Como vamos te chamar”). */
+  hintOnMaroon:
+    "text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--auth-text-on-maroon)]/80 mb-2 leading-relaxed",
   inputMaroon:
     "h-11 rounded-xl bg-white md:bg-[var(--auth-panel-beige)] text-[var(--auth-text-on-beige)] border border-[var(--woody-accent)]/15 md:border-[var(--auth-panel-beige)] placeholder:text-[var(--auth-text-on-beige)]/60 md:placeholder:text-[var(--auth-text-on-beige)]/70 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/40 md:focus-visible:ring-[var(--auth-ornament)]/50 transition-[border-color,box-shadow] duration-200",
   inputMaroonValid:
@@ -55,7 +59,7 @@ export const AuthInputField = forwardRef<HTMLInputElement, AuthInputFieldProps>(
           {label}
         </label>
         {hint ? (
-          <p id={hintId} className={styles.hint}>
+          <p id={hintId} className={variant === "maroon" ? styles.hintOnMaroon : styles.hintOnBeige}>
             {hint}
           </p>
         ) : null}
