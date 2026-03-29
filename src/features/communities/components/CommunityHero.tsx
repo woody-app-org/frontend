@@ -1,21 +1,29 @@
 import { Link } from "react-router-dom";
-import { ChevronLeft, Lock, Settings2, Users } from "lucide-react";
+import { ChevronLeft, Lock, Settings2, UserCog, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodySurface } from "@/lib/woody-ui";
-import type { Community } from "@/domain/types";
+import type { CommunityMembershipStatusResult } from "@/domain/permissions";
+import type { Community, JoinRequest } from "@/domain/types";
 import { CommunityTag } from "./CommunityTag";
 import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
 
 export interface CommunityHeroProps {
   community: Community;
+  viewerId: string;
   isMember: boolean;
-  /** Contagem exibida (inclui ajuste optimista ao participar/sair no mock). */
-  displayMemberCount: number;
-  onToggleMembership: () => void;
-  /** Dona ou admin com permissão de edição (mock). */
+  membershipStatus: CommunityMembershipStatusResult;
+  joinRequest: JoinRequest | null;
+  memberCount: number;
+  onLeave: () => void | Promise<void>;
+  onJoinPublic: () => void | Promise<void>;
+  onRequestJoin: () => void | Promise<void>;
+  ctaBusy?: boolean;
+  accessNotice?: string | null;
   canManage?: boolean;
   onManageCommunity?: () => void;
+  canManageMembers?: boolean;
+  onManageMembers?: () => void;
   className?: string;
 }
 
@@ -74,17 +82,66 @@ const styles = {
     "h-11 w-full min-w-[180px] rounded-xl border-[var(--woody-nav)]/35 px-6 font-semibold sm:w-auto",
     "bg-[var(--woody-card)] text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10"
   ),
+  ctaMuted: cn(
+    "h-11 w-full min-w-[180px] rounded-xl border-[var(--woody-accent)]/25 px-6 font-semibold sm:w-auto",
+    "bg-[var(--woody-card)]/80 text-[var(--woody-muted)]"
+  ),
 } as const;
+
+function resolvePrimaryCta(
+  community: Community,
+  isMember: boolean,
+  membershipStatus: CommunityMembershipStatusResult,
+  joinRequest: JoinRequest | null,
+  onLeave: () => void | Promise<void>,
+  onJoinPublic: () => void | Promise<void>,
+  onRequestJoin: () => void | Promise<void>
+): {
+  label: string;
+  onClick: () => void | Promise<void>;
+  variant: "join" | "leave" | "muted";
+  disabled: boolean;
+} {
+  if (isMember) {
+    return { label: "Sair da comunidade", onClick: onLeave, variant: "leave", disabled: false };
+  }
+  if (membershipStatus === "banned") {
+    return { label: "Acesso restrito", onClick: () => {}, variant: "muted", disabled: true };
+  }
+  if (community.visibility === "public") {
+    return { label: "Participar", onClick: onJoinPublic, variant: "join", disabled: false };
+  }
+
+  const pendingJr = joinRequest?.status === "pending";
+  const pendingMs = membershipStatus === "pending";
+  if (pendingJr || pendingMs) {
+    return { label: "Solicitação enviada", onClick: () => {}, variant: "muted", disabled: true };
+  }
+  if (joinRequest?.status === "rejected") {
+    return { label: "Solicitar novamente", onClick: onRequestJoin, variant: "join", disabled: false };
+  }
+  return { label: "Solicitar entrada", onClick: onRequestJoin, variant: "join", disabled: false };
+}
 
 export function CommunityHero({
   community,
+  viewerId: _viewerId,
   isMember,
-  displayMemberCount,
-  onToggleMembership,
+  membershipStatus,
+  joinRequest,
+  memberCount,
+  onLeave,
+  onJoinPublic,
+  onRequestJoin,
+  ctaBusy = false,
+  accessNotice,
   canManage = false,
   onManageCommunity,
+  canManageMembers = false,
+  onManageMembers,
   className,
 }: CommunityHeroProps) {
+  void _viewerId;
   const categoryLabel = getCommunityCategoryLabel(community.category);
   const initials = community.name
     .split(" ")
@@ -92,6 +149,23 @@ export function CommunityHero({
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  const cta = resolvePrimaryCta(
+    community,
+    isMember,
+    membershipStatus,
+    joinRequest,
+    onLeave,
+    onJoinPublic,
+    onRequestJoin
+  );
+
+  const ctaClass =
+    cta.variant === "leave"
+      ? styles.ctaLeave
+      : cta.variant === "muted"
+        ? styles.ctaMuted
+        : styles.ctaJoin;
 
   return (
     <div className={cn(styles.wrap, className)}>
@@ -133,7 +207,7 @@ export function CommunityHero({
                 ) : null}
                 <span className={styles.members}>
                   <Users className="size-4 shrink-0 opacity-85" aria-hidden />
-                  {formatMemberCount(displayMemberCount)}
+                  {formatMemberCount(memberCount)}
                 </span>
               </div>
               <p className={styles.desc}>{community.description}</p>
@@ -160,27 +234,48 @@ export function CommunityHero({
                 Gerenciar comunidade
               </Button>
             ) : null}
+            {canManageMembers && onManageMembers ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                onClick={onManageMembers}
+                className={cn(woodyFocus.ring, styles.ctaManage, "mb-2")}
+              >
+                <UserCog className="size-5 shrink-0 opacity-90" aria-hidden />
+                Membros e acessos
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="secondary"
               size="lg"
-              onClick={onToggleMembership}
-              className={cn(
-                woodyFocus.ring,
-                isMember ? styles.ctaLeave : styles.ctaJoin
-              )}
+              disabled={cta.disabled || ctaBusy}
+              onClick={() => void cta.onClick()}
+              className={cn(woodyFocus.ring, ctaClass)}
             >
-              {isMember ? "Sair da comunidade" : "Participar"}
+              {ctaBusy ? "Aguarde…" : cta.label}
             </Button>
+            {accessNotice ? (
+              <p className="mb-1 max-w-[260px] text-center text-xs font-medium text-red-600 dark:text-red-400 md:text-left">
+                {accessNotice}
+              </p>
+            ) : null}
             {canManage ? (
-              <p className="mb-2 max-w-[240px] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:text-left">
-                O botão acima abre o painel administrativo (edição do espaço).
+              <p className="mb-1 max-w-[240px] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:text-left">
+                Configurações do espaço e moderadora ao lado.
               </p>
             ) : null}
             <p className="mt-0 max-w-[220px] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:text-left">
+              {community.visibility === "private" && !isMember && membershipStatus !== "banned"
+                ? "Comunidade privada: sua entrada pode depender de aprovação."
+                : null}
+              {community.visibility === "private" && !isMember && membershipStatus !== "banned" ? " " : ""}
               {isMember
                 ? "Você recebe atualizações e pode publicar neste espaço (mock)."
-                : "Ao participar, você entra no círculo de conversas desta comunidade (mock)."}
+                : membershipStatus === "banned"
+                  ? "Conta com restrição neste espaço (mock)."
+                  : "Ao participar, você entra no círculo de conversas desta comunidade (mock)."}
             </p>
           </div>
         </div>

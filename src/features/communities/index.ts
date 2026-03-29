@@ -17,4 +17,16 @@ export {
   updateCommunity,
   validateCommunityUpdatePayload,
 } from "./services/community.service";
+export {
+  joinCommunityPublic,
+  leaveCommunity,
+  requestJoinCommunity,
+  approveJoinRequest,
+  rejectJoinRequest,
+  removeMember,
+  banMember,
+  setCommunityMemberRole,
+} from "./services/communityMembership.service";
+export type { CommunityMembershipActionResult } from "./services/communityMembership.service";
+export { CommunityMembersManagerDialog } from "./components/members-manager/CommunityMembersManagerDialog";
 export type { CommunityUpdatePayload, CommunityUpdateResult } from "./types";

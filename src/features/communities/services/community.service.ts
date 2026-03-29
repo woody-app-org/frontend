@@ -1,5 +1,5 @@
 import { canEditCommunity } from "@/domain/permissions";
-import { getCommunityById, getCommunityBySlug } from "@/domain/selectors";
+import { getActiveMemberCountForCommunity, getCommunityById, getCommunityBySlug } from "@/domain/selectors";
 import type { Community } from "@/domain/types";
 import type { CommunityUpdatePayload, CommunityUpdateResult } from "../types";
 
@@ -18,14 +18,23 @@ function mergeDraft(base: Community): Community {
   return draft ? cloneCommunity(draft) : cloneCommunity(base);
 }
 
+function withLiveMemberCount(c: Community): Community {
+  return {
+    ...c,
+    memberCount: getActiveMemberCountForCommunity(c.id),
+  };
+}
+
 export function getCommunityResolvedBySlug(slug: string): Community | undefined {
   const base = getCommunityBySlug(slug);
-  return base ? mergeDraft(base) : undefined;
+  if (!base) return undefined;
+  return withLiveMemberCount(mergeDraft(base));
 }
 
 export function getCommunityResolvedById(id: string): Community | undefined {
   const base = getCommunityById(id);
-  return base ? mergeDraft(base) : undefined;
+  if (!base) return undefined;
+  return withLiveMemberCount(mergeDraft(base));
 }
 
 function normalizeTags(tags: string[]): string[] {
@@ -100,7 +109,7 @@ export async function updateCommunity(
     id: base.id,
     slug: base.slug,
     ownerUserId: base.ownerUserId,
-    memberCount: current.memberCount,
+    memberCount: getActiveMemberCountForCommunity(base.id),
   };
 
   draftsByCommunityId.set(communityId, next);
