@@ -1,22 +1,45 @@
 export type {
   Community,
   CommunityCategory,
+  CommunityMemberRole,
+  CommunityVisibility,
+  JoinRequest,
+  JoinRequestStatus,
   Membership,
   MembershipRole,
+  MembershipStatus,
   Post,
   PostCommunityPreview,
   User,
 } from "./types";
 export { getCommunityCategoryLabel } from "./categoryLabels";
 export {
+  canEditCommunity,
+  canEditProfile,
+  canManageMembers,
+  getCommunityMembershipStatus,
+  hasPendingCommunityJoin,
+  isCommunityAdmin,
+  isCommunityMember,
+  isCommunityOwner,
+  isOwnProfile,
+} from "./permissions";
+export type { CommunityMembershipStatusResult } from "./permissions";
+export {
   getAllSeedPostsEnriched,
   getRecentPostsInUserCommunities,
+  getActiveMembershipsForUser,
   getCommunitiesForUser,
+  getCommunitiesOwnedByUser,
   getCommunityById,
   getCommunityBySlug,
   getCommunityIdsForUser,
   getCommunityMemberUsers,
+  getJoinRequestForUserInCommunity,
+  getJoinRequestsForCommunity,
+  getMembershipForUserInCommunity,
   getMembershipsForUser,
+  getPendingJoinRequestsForCommunity,
   getPostCommunityPreview,
   getPostsByAuthorId,
   getPostsByCommunityId,
@@ -25,5 +48,13 @@ export {
   enrichPost,
   postCommunityPreviewFromCommunity,
 } from "./selectors";
-export { SEED_COMMUNITIES, SEED_MEMBERSHIPS, SEED_POSTS, SEED_USERS } from "./mocks/seed";
+export { MOCK_PRIMARY_USER_ID } from "./mocks/constants";
+export {
+  SEED_COMMUNITIES,
+  SEED_JOIN_REQUESTS,
+  SEED_MEMBERSHIPS,
+  SEED_POSTS,
+  SEED_USERS,
+} from "./mocks/seed";
 export type { SeedPost } from "./mocks/seed";
+export * from "./services/platformMock.service";

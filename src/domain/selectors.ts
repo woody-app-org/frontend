@@ -1,7 +1,8 @@
-import type { Community, Membership, Post, PostCommunityPreview, User } from "./types";
+import type { Community, JoinRequest, Membership, Post, PostCommunityPreview, User } from "./types";
 import {
   SEED_COMMUNITIES,
   SEED_FOLLOWS,
+  SEED_JOIN_REQUESTS,
   SEED_MEMBERSHIPS,
   SEED_POSTS,
   SEED_USERS,
@@ -75,8 +76,20 @@ export function getMembershipsForUser(userId: string): Membership[] {
   return SEED_MEMBERSHIPS.filter((m) => m.userId === userId);
 }
 
+/** Filiações ativas (aparecem como membro da comunidade). */
+export function getActiveMembershipsForUser(userId: string): Membership[] {
+  return getMembershipsForUser(userId).filter((m) => m.status === "active");
+}
+
+export function getMembershipForUserInCommunity(
+  userId: string,
+  communityId: string
+): Membership | undefined {
+  return SEED_MEMBERSHIPS.find((m) => m.userId === userId && m.communityId === communityId);
+}
+
 export function getCommunityIdsForUser(userId: string): string[] {
-  return getMembershipsForUser(userId).map((m) => m.communityId);
+  return getActiveMembershipsForUser(userId).map((m) => m.communityId);
 }
 
 export function getCommunitiesForUser(userId: string): Community[] {
@@ -84,8 +97,28 @@ export function getCommunitiesForUser(userId: string): Community[] {
   return SEED_COMMUNITIES.filter((c) => idSet.has(c.id));
 }
 
+export function getCommunitiesOwnedByUser(userId: string): Community[] {
+  return SEED_COMMUNITIES.filter((c) => c.ownerUserId === userId);
+}
+
 export function isUserMemberOfCommunity(userId: string, communityId: string): boolean {
-  return SEED_MEMBERSHIPS.some((m) => m.userId === userId && m.communityId === communityId);
+  const m = getMembershipForUserInCommunity(userId, communityId);
+  return m?.status === "active";
+}
+
+export function getJoinRequestsForCommunity(communityId: string): JoinRequest[] {
+  return SEED_JOIN_REQUESTS.filter((r) => r.communityId === communityId);
+}
+
+export function getPendingJoinRequestsForCommunity(communityId: string): JoinRequest[] {
+  return getJoinRequestsForCommunity(communityId).filter((r) => r.status === "pending");
+}
+
+export function getJoinRequestForUserInCommunity(
+  userId: string,
+  communityId: string
+): JoinRequest | undefined {
+  return SEED_JOIN_REQUESTS.find((r) => r.userId === userId && r.communityId === communityId);
 }
 
 /** IDs de usuárias que `followerId` segue (mock). */
@@ -93,8 +126,12 @@ export function getFollowingUserIds(followerId: string): string[] {
   return [...new Set(SEED_FOLLOWS.filter((f) => f.followerId === followerId).map((f) => f.followingId))];
 }
 
-/** Usuárias que participam da comunidade (mock por membership; futuro: API). */
+/** Usuárias que participam da comunidade (mock por membership ativa; futuro: API). */
 export function getCommunityMemberUsers(communityId: string): User[] {
-  const ids = [...new Set(SEED_MEMBERSHIPS.filter((m) => m.communityId === communityId).map((m) => m.userId))];
+  const ids = [
+    ...new Set(
+      SEED_MEMBERSHIPS.filter((m) => m.communityId === communityId && m.status === "active").map((m) => m.userId)
+    ),
+  ];
   return ids.map((id) => getUserById(id)).filter((u): u is User => u != null);
 }

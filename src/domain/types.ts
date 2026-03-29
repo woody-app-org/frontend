@@ -2,6 +2,21 @@
 
 export type CommunityCategory = "bemestar" | "carreira" | "cultura" | "seguranca" | "outro";
 
+/** Quem pode ver entradas públicas vs aprovação para participar. */
+export type CommunityVisibility = "public" | "private";
+
+/** Papéis dentro da comunidade (criadora = owner). */
+export type CommunityMemberRole = "owner" | "admin" | "member";
+
+/**
+ * Estado da filiação à comunidade (linha `membership` no backend).
+ * Pedidos feitos pela usuária podem existir só em `JoinRequest`; aqui cobrimos ambos os fluxos.
+ */
+export type MembershipStatus = "active" | "pending" | "rejected" | "banned";
+
+/** @deprecated Use `CommunityMemberRole`. Mantido para imports legados. */
+export type MembershipRole = CommunityMemberRole;
+
 /** Usuária na plataforma (perfil / autoria de posts). */
 export interface User {
   id: string;
@@ -21,18 +36,31 @@ export interface Community {
   tags: string[];
   avatarUrl: string | null;
   coverUrl: string | null;
+  /** Dona da comunidade (criadora); alinhado a `owner` na membership dessa usuária. */
+  ownerUserId: string;
+  visibility: CommunityVisibility;
   /** Valor denormalizado para UI; em produção pode vir calculado da API. */
   memberCount: number;
 }
-
-export type MembershipRole = "member" | "moderator" | "admin";
 
 export interface Membership {
   id: string;
   userId: string;
   communityId: string;
-  role: MembershipRole;
+  role: CommunityMemberRole;
+  status: MembershipStatus;
   joinedAt?: string;
+}
+
+/** Status de pedido de entrada (fila moderada por owner/admin). */
+export type JoinRequestStatus = "pending" | "approved" | "rejected";
+
+export interface JoinRequest {
+  id: string;
+  communityId: string;
+  userId: string;
+  status: JoinRequestStatus;
+  requestedAt?: string;
 }
 
 /** Resumo da comunidade embutido no post para exibição (ex.: feed, busca). */

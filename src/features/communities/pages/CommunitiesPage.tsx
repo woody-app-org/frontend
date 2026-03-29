@@ -7,11 +7,8 @@ import { SEED_COMMUNITIES } from "@/domain/mocks/seed";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { CommunityCard } from "../components/CommunityCard";
 import { CommunitiesEmptyState } from "../components/CommunitiesEmptyState";
-import {
-  COMMUNITIES_PAGE_VIEWER_ID,
-  getCommunityCategoryLabel,
-  getMyCommunities,
-} from "../lib/communitiesPageModel";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { getCommunityCategoryLabel, getMyCommunities } from "../lib/communitiesPageModel";
 
 const CATEGORY_ORDER: CommunityCategory[] = [
   "carreira",
@@ -30,7 +27,7 @@ function normalizeSearch(s: string): string {
 }
 
 export function CommunitiesPage() {
-  const viewerId = COMMUNITIES_PAGE_VIEWER_ID;
+  const viewerId = useViewerId();
   const myCommunities = useMemo(() => getMyCommunities(viewerId), [viewerId]);
   const memberIds = useMemo(() => new Set(myCommunities.map((c) => c.id)), [myCommunities]);
 

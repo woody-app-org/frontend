@@ -1,10 +1,11 @@
 import type { Community, CommunityCategory } from "@/domain/types";
 import { getCommunityCategoryLabel as getCommunityCategoryLabelFromDomain } from "@/domain/categoryLabels";
+import { MOCK_PRIMARY_USER_ID } from "@/domain/mocks/constants";
 import { SEED_COMMUNITIES } from "@/domain/mocks/seed";
 import { getCommunitiesForUser } from "@/domain/selectors";
 
-/** Usuária mock “atual” alinhada ao composer do feed e ao perfil principal. */
-export const COMMUNITIES_PAGE_VIEWER_ID = "1";
+/** @deprecated Prefira `useViewerId()`; mantido para chamadas não-React legadas. */
+export const COMMUNITIES_PAGE_VIEWER_ID = MOCK_PRIMARY_USER_ID;
 
 export function getCommunityCategoryLabel(category: CommunityCategory): string {
   return getCommunityCategoryLabelFromDomain(category);

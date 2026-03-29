@@ -10,7 +10,7 @@ import {
 import type { Community, Post, User } from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { woodyLayout } from "@/lib/woody-ui";
-import { COMMUNITIES_PAGE_VIEWER_ID } from "../lib/communitiesPageModel";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { CommunityHero } from "../components/CommunityHero";
 import { CommunityFeed } from "../components/CommunityFeed";
 import { CommunityInfoPanel } from "../components/CommunityInfoPanel";
@@ -24,7 +24,7 @@ interface CommunityDetailLoadedProps {
 }
 
 function CommunityDetailLoaded({ community, posts, members }: CommunityDetailLoadedProps) {
-  const viewerId = COMMUNITIES_PAGE_VIEWER_ID;
+  const viewerId = useViewerId();
   const seedIsMember = isUserMemberOfCommunity(viewerId, community.id);
   const [isMember, setIsMember] = useState(seedIsMember);
 

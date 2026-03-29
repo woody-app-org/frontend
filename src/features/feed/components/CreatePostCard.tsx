@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
 import { getUserById } from "@/domain/selectors";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
 
 // --- Helpers ---
 
@@ -58,7 +59,8 @@ export interface CreatePostCardProps {
 }
 
 export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
-  const currentUser = getUserById("1");
+  const viewerId = useViewerId();
+  const currentUser = getUserById(viewerId);
   const [topic, setTopic] = useState("");
   const [content, setContent] = useState("");
 

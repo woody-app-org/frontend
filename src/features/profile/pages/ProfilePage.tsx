@@ -8,7 +8,7 @@ import { ProfileCommunitiesSection } from "../components/ProfileCommunitiesSecti
 import { ProfilePostsSection } from "../components/ProfilePostsSection";
 import { ProfileOverviewTab } from "../components/ProfileOverviewTab";
 import { ProfileSkeleton } from "../components/ProfileSkeleton";
-import { COMMUNITIES_PAGE_VIEWER_ID } from "@/features/communities/lib/communitiesPageModel";
+import { useProfilePermissions } from "@/features/auth/hooks/useProfilePermissions";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 
@@ -36,6 +36,7 @@ export function ProfilePage() {
     previousPage,
     refetch,
   } = useUserProfile(userId);
+  const { isOwnProfile } = useProfilePermissions(userId);
 
   if (!userId) {
     navigate("/feed", { replace: true });
@@ -112,7 +113,7 @@ export function ProfilePage() {
               {tab === "communities" ? (
                 <ProfileCommunitiesSection
                   userId={profile.id}
-                  isOwnProfile={profile.id === COMMUNITIES_PAGE_VIEWER_ID}
+                  isOwnProfile={isOwnProfile}
                   shortName={profile.name.split(/\s+/)[0]}
                   bare
                 />
