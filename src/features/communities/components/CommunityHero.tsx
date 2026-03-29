@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ChevronLeft, Users } from "lucide-react";
+import { ChevronLeft, Lock, Settings2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodySurface } from "@/lib/woody-ui";
@@ -13,6 +13,9 @@ export interface CommunityHeroProps {
   /** Contagem exibida (inclui ajuste optimista ao participar/sair no mock). */
   displayMemberCount: number;
   onToggleMembership: () => void;
+  /** Dona ou admin com permissão de edição (mock). */
+  canManage?: boolean;
+  onManageCommunity?: () => void;
   className?: string;
 }
 
@@ -67,6 +70,10 @@ const styles = {
     "h-11 w-full min-w-[180px] rounded-xl border-[var(--woody-accent)]/35 px-6 font-semibold sm:w-auto",
     "bg-[var(--woody-card)] text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/8"
   ),
+  ctaManage: cn(
+    "h-11 w-full min-w-[180px] rounded-xl border-[var(--woody-nav)]/35 px-6 font-semibold sm:w-auto",
+    "bg-[var(--woody-card)] text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10"
+  ),
 } as const;
 
 export function CommunityHero({
@@ -74,6 +81,8 @@ export function CommunityHero({
   isMember,
   displayMemberCount,
   onToggleMembership,
+  canManage = false,
+  onManageCommunity,
   className,
 }: CommunityHeroProps) {
   const categoryLabel = getCommunityCategoryLabel(community.category);
@@ -116,6 +125,12 @@ export function CommunityHero({
               <h1 className={styles.title}>{community.name}</h1>
               <div className={styles.meta}>
                 <span className={styles.category}>{categoryLabel}</span>
+                {community.visibility === "private" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--woody-accent)]/8 px-2 py-0.5 text-[0.6875rem] font-semibold text-[var(--woody-text)] ring-1 ring-[var(--woody-accent)]/15">
+                    <Lock className="size-3 opacity-85" aria-hidden />
+                    Privada
+                  </span>
+                ) : null}
                 <span className={styles.members}>
                   <Users className="size-4 shrink-0 opacity-85" aria-hidden />
                   {formatMemberCount(displayMemberCount)}
@@ -133,6 +148,18 @@ export function CommunityHero({
           </div>
 
           <div className={styles.actions}>
+            {canManage && onManageCommunity ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                onClick={onManageCommunity}
+                className={cn(woodyFocus.ring, styles.ctaManage, "mb-2")}
+              >
+                <Settings2 className="size-5 shrink-0 opacity-90" aria-hidden />
+                Gerenciar comunidade
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="secondary"
@@ -145,7 +172,12 @@ export function CommunityHero({
             >
               {isMember ? "Sair da comunidade" : "Participar"}
             </Button>
-            <p className="mt-2 max-w-[220px] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:text-left">
+            {canManage ? (
+              <p className="mb-2 max-w-[240px] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:text-left">
+                O botão acima abre o painel administrativo (edição do espaço).
+              </p>
+            ) : null}
+            <p className="mt-0 max-w-[220px] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:text-left">
               {isMember
                 ? "Você recebe atualizações e pode publicar neste espaço (mock)."
                 : "Ao participar, você entra no círculo de conversas desta comunidade (mock)."}

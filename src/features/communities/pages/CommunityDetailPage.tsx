@@ -1,8 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import {
-  getCommunityBySlug,
   getCommunityMemberUsers,
   getPostsByCommunityId,
   isUserMemberOfCommunity,
@@ -11,29 +10,41 @@ import type { Community, Post, User } from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { woodyLayout } from "@/lib/woody-ui";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
+import { getCommunityResolvedBySlug } from "../services/community.service";
 import { CommunityHero } from "../components/CommunityHero";
 import { CommunityFeed } from "../components/CommunityFeed";
 import { CommunityInfoPanel } from "../components/CommunityInfoPanel";
 import { CommunityMembersPreview } from "../components/CommunityMembersPreview";
 import { CommunityNotFound } from "../components/CommunityNotFound";
+import { CommunityEditDialog } from "../components/community-settings/CommunityEditDialog";
 
 interface CommunityDetailLoadedProps {
   community: Community;
   posts: Post[];
   members: User[];
+  onCommunitySaved: () => void;
 }
 
-function CommunityDetailLoaded({ community, posts, members }: CommunityDetailLoadedProps) {
+function CommunityDetailLoaded({ community, posts, members, onCommunitySaved }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
+  const [isMember, setIsMember] = useState(() => isUserMemberOfCommunity(viewerId, community.id));
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMember(isUserMemberOfCommunity(viewerId, community.id));
+  }, [community.id, viewerId]);
+
   const seedIsMember = isUserMemberOfCommunity(viewerId, community.id);
-  const [isMember, setIsMember] = useState(seedIsMember);
+
+  const { canEditCommunity, isOwner } = useCommunityPermissions(community);
 
   const displayMemberCount =
     community.memberCount + (isMember === seedIsMember ? 0 : isMember ? 1 : -1);
 
-  const toggleMembership = useCallback(() => {
-    setIsMember((prev) => !prev);
-  }, []);
+  const handleSaved = useCallback(() => {
+    onCommunitySaved();
+  }, [onCommunitySaved]);
 
   return (
     <div
@@ -46,8 +57,21 @@ function CommunityDetailLoaded({ community, posts, members }: CommunityDetailLoa
         community={community}
         isMember={isMember}
         displayMemberCount={displayMemberCount}
-        onToggleMembership={toggleMembership}
+        onToggleMembership={() => setIsMember((prev) => !prev)}
+        canManage={canEditCommunity}
+        onManageCommunity={canEditCommunity ? () => setSettingsOpen(true) : undefined}
       />
+
+      {canEditCommunity ? (
+        <CommunityEditDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          community={community}
+          viewerId={viewerId}
+          adminRoleLabel={isOwner ? "dona" : "administradora"}
+          onSaved={handleSaved}
+        />
+      ) : null}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10 xl:gap-12">
         <CommunityFeed community={community} posts={posts} className="order-2 min-w-0 lg:order-1" />
@@ -66,17 +90,21 @@ function CommunityDetailLoaded({ community, posts, members }: CommunityDetailLoa
  */
 export function CommunityDetailPage() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
+  const [revision, setRevision] = useState(0);
+
   const community = useMemo(
-    () => (communitySlug ? getCommunityBySlug(communitySlug) : undefined),
-    [communitySlug]
+    () => (communitySlug ? getCommunityResolvedBySlug(communitySlug) : undefined),
+    [communitySlug, revision]
   );
+
   const posts = useMemo(
     () => (community ? getPostsByCommunityId(community.id) : []),
-    [community]
+    [community?.id]
   );
+
   const members = useMemo(
     () => (community ? getCommunityMemberUsers(community.id) : []),
-    [community]
+    [community?.id]
   );
 
   if (!communitySlug) {
@@ -111,7 +139,13 @@ export function CommunityDetailPage() {
 
   return (
     <FeedLayout>
-      <CommunityDetailLoaded key={community.id} community={community} posts={posts} members={members} />
+      <CommunityDetailLoaded
+        key={community.id}
+        community={community}
+        posts={posts}
+        members={members}
+        onCommunitySaved={() => setRevision((n) => n + 1)}
+      />
     </FeedLayout>
   );
 }

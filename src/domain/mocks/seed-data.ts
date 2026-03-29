@@ -346,6 +346,10 @@ export function buildPlatformSeed(): {
     ownerUserId: idx < 2 ? "1" : String(((idx + 3) % 18) + 1),
     visibility: idx % 3 === 1 ? "private" : "public",
     memberCount: 0,
+    rules:
+      idx === 0
+        ? "Compartilhe oportunidades com contexto e respeito.\nEvite spam e mensagens privadas não solicitadas."
+        : "",
   }));
   const memberships: Membership[] = [];
   let mid = 0;

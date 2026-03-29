@@ -34,6 +34,8 @@ export interface Community {
   description: string;
   category: CommunityCategory;
   tags: string[];
+  /** Texto multilinha exibido como regras do espaço (futuro: markdown ou blocos). */
+  rules: string;
   avatarUrl: string | null;
   coverUrl: string | null;
   /** Dona da comunidade (criadora); alinhado a `owner` na membership dessa usuária. */
