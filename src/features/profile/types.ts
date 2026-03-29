@@ -39,6 +39,19 @@ export interface UserProfile {
   isFollowing?: boolean;
 }
 
+/** Payload para `updateProfile` / futura API REST. */
+export interface ProfileUpdatePayload {
+  name: string;
+  username: string;
+  bio: string;
+  pronouns?: string;
+  location?: string;
+  role?: string;
+  avatarUrl?: string | null;
+  bannerUrl?: string | null;
+  interests?: InterestTag[];
+}
+
 /** Resposta paginada de posts do perfil */
 export interface ProfilePostsResponse {
   items: Post[];

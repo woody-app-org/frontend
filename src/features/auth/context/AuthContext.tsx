@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import type { AuthUser } from "../types";
-import { getAuthUser, loginMock, logoutMock, registerMock } from "../services/auth.service";
+import { getAuthUser, loginMock, logoutMock, patchStoredUser, registerMock } from "../services/auth.service";
 import type { LoginCredentials, RegisterCredentials } from "../types";
 
 interface AuthContextValue {
@@ -10,6 +10,8 @@ interface AuthContextValue {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
+  /** Atualiza dados da sessão e o `localStorage` (ex.: nome após editar perfil). */
+  patchUser: (patch: Partial<AuthUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -33,6 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const patchUser = useCallback((patch: Partial<AuthUser>) => {
+    const next = patchStoredUser(patch);
+    if (next) setUser(next);
+  }, []);
+
   const value: AuthContextValue = {
     user,
     isAuthenticated: !!user,
@@ -40,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
+    patchUser,
   };
 
   return (

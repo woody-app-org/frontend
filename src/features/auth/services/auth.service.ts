@@ -59,3 +59,12 @@ export function logoutMock(): void {
 export function getAuthUser(): AuthUser | null {
   return getStoredUser();
 }
+
+/** Mescla campos no usuário persistido (ex.: após editar perfil). */
+export function patchStoredUser(patch: Partial<AuthUser>): AuthUser | null {
+  const cur = getStoredUser();
+  if (!cur) return null;
+  const next: AuthUser = { ...cur, ...patch };
+  setStoredUser(next);
+  return next;
+}

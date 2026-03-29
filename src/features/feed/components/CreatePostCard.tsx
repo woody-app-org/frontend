@@ -7,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
+import type { User } from "@/domain/types";
 import { getUserById } from "@/domain/selectors";
+import { useAuth } from "@/features/auth/context/AuthContext";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 
 // --- Helpers ---
@@ -58,9 +60,24 @@ export interface CreatePostCardProps {
   className?: string;
 }
 
+function mergeSessionIntoSeedUser(seed: User, sessionId: string, authId: string | undefined, authName?: string, authAvatar?: string, authUsername?: string): User {
+  if (authId !== sessionId) return seed;
+  return {
+    ...seed,
+    name: authName?.trim() || seed.name,
+    username: authUsername?.trim() || seed.username,
+    avatarUrl: authAvatar !== undefined ? (authAvatar || null) : seed.avatarUrl,
+  };
+}
+
 export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
   const viewerId = useViewerId();
-  const currentUser = getUserById(viewerId);
+  const { user: authUser } = useAuth();
+  const seedUser = getUserById(viewerId);
+  const currentUser =
+    seedUser != null
+      ? mergeSessionIntoSeedUser(seedUser, viewerId, authUser?.id, authUser?.name, authUser?.avatarUrl, authUser?.username)
+      : undefined;
   const [topic, setTopic] = useState("");
   const [content, setContent] = useState("");
 
