@@ -1,5 +1,6 @@
 import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
 import { AUTH_STORAGE_KEY } from "../constants";
+import { syncAuthUserToDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
 
 const MOCK_DELAY_MS = 600;
 
@@ -33,6 +34,7 @@ export async function loginMock(
     email: credentials.username.includes("@") ? credentials.username : undefined,
   };
   setStoredUser(user);
+  syncAuthUserToDisplayPatch(user);
   return user;
 }
 
@@ -49,6 +51,7 @@ export async function registerMock(
     avatarUrl: credentials.avatarUrl ?? undefined,
   };
   setStoredUser(user);
+  syncAuthUserToDisplayPatch(user);
   return user;
 }
 
@@ -66,5 +69,6 @@ export function patchStoredUser(patch: Partial<AuthUser>): AuthUser | null {
   if (!cur) return null;
   const next: AuthUser = { ...cur, ...patch };
   setStoredUser(next);
+  syncAuthUserToDisplayPatch(next);
   return next;
 }

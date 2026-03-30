@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Bell, MessageCircle } from "lucide-react";
+import { Bell, MessageCircle, User } from "lucide-react";
+import { useAuth } from "@/features/auth/context/AuthContext";
 import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -73,6 +74,7 @@ function isInsideDialogLayer(node: EventTarget | null): boolean {
 }
 
 export function FeedLayout({ children, className }: FeedLayoutProps) {
+  const { user } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -183,15 +185,17 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
                 <span className={styles.badge} aria-hidden />
               </button>
               <Link
-                to="/profile/1"
+                to={user ? `/profile/${user.id}` : "/auth/login"}
                 className={styles.avatarBtn}
-                aria-label="Ir para meu perfil"
+                aria-label={user ? "Ir para meu perfil" : "Entrar"}
               >
-                <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop"
-                  alt=""
-                  className={styles.avatarImg}
-                />
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="" className={styles.avatarImg} />
+                ) : (
+                  <span className="flex size-8 items-center justify-center rounded-full bg-white/15 text-white">
+                    <User className="size-[1.35rem]" aria-hidden />
+                  </span>
+                )}
               </Link>
             </div>
           </div>

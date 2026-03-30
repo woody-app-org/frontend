@@ -1,6 +1,13 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import type { AuthUser } from "../types";
-import { getAuthUser, loginMock, logoutMock, patchStoredUser, registerMock } from "../services/auth.service";
+import {
+  getAuthUser,
+  loginMock,
+  logoutMock,
+  patchStoredUser,
+  registerMock,
+} from "../services/auth.service";
+import { syncAuthUserToDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
 import type { LoginCredentials, RegisterCredentials } from "../types";
 
 interface AuthContextValue {
@@ -16,8 +23,14 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function readInitialAuthUser(): AuthUser | null {
+  const u = getAuthUser();
+  if (u) syncAuthUserToDisplayPatch(u);
+  return u;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => getAuthUser());
+  const [user, setUser] = useState<AuthUser | null>(readInitialAuthUser);
   const isLoading = false;
 
   const login = useCallback(async (credentials: LoginCredentials) => {

@@ -1,19 +1,45 @@
 import type { Community, JoinRequest, Membership, Post, PostCommunityPreview, User } from "./types";
+import { getCommunityDraft } from "./mocks/communityDraftStore";
 import { getJoinRequestRows, getMembershipRows } from "./mocks/membershipMockStore";
 import { SEED_COMMUNITIES, SEED_FOLLOWS, SEED_POSTS, SEED_USERS, type SeedPost } from "./mocks/seed";
+import { getUserDisplayPatch } from "./mocks/userDisplayPatchStore";
 
 const communityById = new Map(SEED_COMMUNITIES.map((c) => [c.id, c]));
 
+function mergeUserWithDisplayPatch(base: User, patch: NonNullable<ReturnType<typeof getUserDisplayPatch>>): User {
+  return {
+    ...base,
+    ...(patch.name !== undefined ? { name: patch.name } : {}),
+    ...(patch.username !== undefined ? { username: patch.username } : {}),
+    ...(patch.avatarUrl !== undefined ? { avatarUrl: patch.avatarUrl } : {}),
+    ...(patch.bio !== undefined ? { bio: patch.bio } : {}),
+    ...(patch.pronouns !== undefined ? { pronouns: patch.pronouns } : {}),
+  };
+}
+
 export function getUserById(userId: string): User | undefined {
-  return SEED_USERS.find((u) => u.id === userId);
+  const base = SEED_USERS.find((u) => u.id === userId);
+  if (!base) return undefined;
+  const patch = getUserDisplayPatch(userId);
+  return patch ? mergeUserWithDisplayPatch(base, patch) : base;
+}
+
+function mergeCommunityWithDraft(base: Community): Community {
+  const draft = getCommunityDraft(base.id);
+  const src = draft ?? base;
+  return { ...src, tags: [...src.tags] };
 }
 
 export function getCommunityById(id: string): Community | undefined {
-  return communityById.get(id);
+  const base = communityById.get(id);
+  if (!base) return undefined;
+  return mergeCommunityWithDraft(base);
 }
 
 export function getCommunityBySlug(slug: string): Community | undefined {
-  return SEED_COMMUNITIES.find((c) => c.slug === slug);
+  const base = SEED_COMMUNITIES.find((c) => c.slug === slug);
+  if (!base) return undefined;
+  return mergeCommunityWithDraft(base);
 }
 
 export function postCommunityPreviewFromCommunity(c: Community): PostCommunityPreview {
@@ -32,10 +58,11 @@ export function getPostCommunityPreview(communityId: string): PostCommunityPrevi
 }
 
 export function enrichPost(raw: SeedPost): Post {
+  const author = getUserById(raw.author.id) ?? raw.author;
   return {
     id: raw.id,
     communityId: raw.communityId,
-    author: raw.author,
+    author,
     title: raw.title,
     content: raw.content,
     imageUrl: raw.imageUrl,
@@ -96,11 +123,15 @@ export function getCommunityIdsForUser(userId: string): string[] {
 
 export function getCommunitiesForUser(userId: string): Community[] {
   const idSet = new Set(getCommunityIdsForUser(userId));
-  return SEED_COMMUNITIES.filter((c) => idSet.has(c.id));
+  return SEED_COMMUNITIES.filter((c) => idSet.has(c.id))
+    .map((c) => getCommunityById(c.id))
+    .filter((c): c is Community => c != null);
 }
 
 export function getCommunitiesOwnedByUser(userId: string): Community[] {
-  return SEED_COMMUNITIES.filter((c) => c.ownerUserId === userId);
+  return SEED_COMMUNITIES.filter((c) => c.ownerUserId === userId)
+    .map((c) => getCommunityById(c.id))
+    .filter((c): c is Community => c != null);
 }
 
 export function isUserMemberOfCommunity(userId: string, communityId: string): boolean {

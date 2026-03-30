@@ -1,5 +1,6 @@
 import type { UserProfile, ProfilePostsResponse, ProfileUpdatePayload } from "../types";
 import { MOCK_USER_PROFILE } from "../mocks/profile.mock";
+import { applyUserDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
 import { getPostsByAuthorId, getUserById } from "@/domain/selectors";
 
 function delay(ms: number): Promise<void> {
@@ -134,6 +135,13 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
   };
 
   profileDraftByUserId.set(userId, next);
+  applyUserDisplayPatch(userId, {
+    name: next.name,
+    username: next.username,
+    avatarUrl: next.avatarUrl,
+    bio: next.bio,
+    pronouns: next.pronouns,
+  });
   return { ok: true, profile: next };
 }
 

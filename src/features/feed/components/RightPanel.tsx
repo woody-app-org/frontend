@@ -1,8 +1,11 @@
+import { useMemo, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
+import { subscribeUserDisplayPatches, getUserDisplayPatchesVersion } from "@/domain/mocks/userDisplayPatchStore";
+import { getUserById } from "@/domain/selectors";
 
 const MOCK_SUGGESTIONS: { id: string; name: string; avatarUrl: string }[] = [];
 
@@ -104,6 +107,21 @@ function UserRow({ user, className }: { user: UserItem; className?: string }) {
 
 export function RightPanel({ className }: RightPanelProps) {
   const hasSuggestions = MOCK_SUGGESTIONS.length > 0;
+  const userDisplayRev = useSyncExternalStore(
+    subscribeUserDisplayPatches,
+    getUserDisplayPatchesVersion,
+    getUserDisplayPatchesVersion
+  );
+  const followingResolved = useMemo(
+    () =>
+      MOCK_FOLLOWING.map((item) => {
+        const u = getUserById(item.id);
+        return u
+          ? { id: u.id, name: u.name, avatarUrl: u.avatarUrl ?? item.avatarUrl }
+          : item;
+      }),
+    [userDisplayRev]
+  );
 
   return (
     <aside className={cn(styles.panel, className)}>
@@ -132,7 +150,7 @@ export function RightPanel({ className }: RightPanelProps) {
           <Card className={styles.card}>
             <CardContent className={styles.cardContent}>
               <ul className={styles.list}>
-                {MOCK_FOLLOWING.map((user) => (
+                {followingResolved.map((user) => (
                   <UserRow key={user.id} user={user} />
                 ))}
               </ul>

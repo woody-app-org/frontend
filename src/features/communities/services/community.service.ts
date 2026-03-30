@@ -1,4 +1,5 @@
 import { canEditCommunity } from "@/domain/permissions";
+import { setCommunityDraft } from "@/domain/mocks/communityDraftStore";
 import { getActiveMemberCountForCommunity, getCommunityById, getCommunityBySlug } from "@/domain/selectors";
 import type { Community } from "@/domain/types";
 import type { CommunityUpdatePayload, CommunityUpdateResult } from "../types";
@@ -11,13 +12,6 @@ function cloneCommunity(c: Community): Community {
   return { ...c, tags: [...c.tags] };
 }
 
-const draftsByCommunityId = new Map<string, Community>();
-
-function mergeDraft(base: Community): Community {
-  const draft = draftsByCommunityId.get(base.id);
-  return draft ? cloneCommunity(draft) : cloneCommunity(base);
-}
-
 function withLiveMemberCount(c: Community): Community {
   return {
     ...c,
@@ -28,13 +22,13 @@ function withLiveMemberCount(c: Community): Community {
 export function getCommunityResolvedBySlug(slug: string): Community | undefined {
   const base = getCommunityBySlug(slug);
   if (!base) return undefined;
-  return withLiveMemberCount(mergeDraft(base));
+  return withLiveMemberCount(cloneCommunity(base));
 }
 
 export function getCommunityResolvedById(id: string): Community | undefined {
   const base = getCommunityById(id);
   if (!base) return undefined;
-  return withLiveMemberCount(mergeDraft(base));
+  return withLiveMemberCount(cloneCommunity(base));
 }
 
 function normalizeTags(tags: string[]): string[] {
@@ -85,10 +79,9 @@ export async function updateCommunity(
   payload: CommunityUpdatePayload
 ): Promise<CommunityUpdateResult> {
   await delay(520);
-  const base = getCommunityById(communityId);
-  if (!base) return { ok: false, error: "Comunidade não encontrada." };
+  const current = getCommunityById(communityId);
+  if (!current) return { ok: false, error: "Comunidade não encontrada." };
 
-  const current = mergeDraft(base);
   if (!canEditCommunity(actorUserId, current)) {
     return { ok: false, error: "Você não tem permissão para editar esta comunidade." };
   }
@@ -107,12 +100,12 @@ export async function updateCommunity(
     avatarUrl: payload.avatarUrl !== undefined ? payload.avatarUrl : current.avatarUrl,
     coverUrl: payload.coverUrl !== undefined ? payload.coverUrl : current.coverUrl,
     visibility: payload.visibility,
-    id: base.id,
-    slug: base.slug,
-    ownerUserId: base.ownerUserId,
-    memberCount: getActiveMemberCountForCommunity(base.id),
+    id: current.id,
+    slug: current.slug,
+    ownerUserId: current.ownerUserId,
+    memberCount: getActiveMemberCountForCommunity(current.id),
   };
 
-  draftsByCommunityId.set(communityId, next);
+  setCommunityDraft(communityId, next);
   return { ok: true, community: cloneCommunity(next) };
 }

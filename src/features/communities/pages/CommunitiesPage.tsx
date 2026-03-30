@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { HeartHandshake, Search, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
 import type { CommunityCategory } from "@/domain/types";
+import { subscribeCommunityDrafts, getCommunityDraftsVersion } from "@/domain/mocks/communityDraftStore";
 import { SEED_COMMUNITIES } from "@/domain/mocks/seed";
+import { getCommunityById } from "@/domain/selectors";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { CommunityCard } from "../components/CommunityCard";
 import { CommunitiesEmptyState } from "../components/CommunitiesEmptyState";
@@ -28,7 +30,12 @@ function normalizeSearch(s: string): string {
 
 export function CommunitiesPage() {
   const viewerId = useViewerId();
-  const myCommunities = useMemo(() => getMyCommunities(viewerId), [viewerId]);
+  const communityDraftRev = useSyncExternalStore(
+    subscribeCommunityDrafts,
+    getCommunityDraftsVersion,
+    getCommunityDraftsVersion
+  );
+  const myCommunities = useMemo(() => getMyCommunities(viewerId), [viewerId, communityDraftRev]);
   const memberIds = useMemo(() => new Set(myCommunities.map((c) => c.id)), [myCommunities]);
 
   const [query, setQuery] = useState("");
@@ -52,9 +59,11 @@ export function CommunitiesPage() {
         catLabel.includes(q) ||
         c.tags.some((t) => normalizeSearch(t).includes(q))
       );
-    });
+    })
+      .map((c) => getCommunityById(c.id))
+      .filter((c): c is NonNullable<typeof c> => c != null);
     return [...list].sort((a, b) => b.memberCount - a.memberCount);
-  }, [query, category]);
+  }, [query, category, communityDraftRev]);
 
   return (
     <FeedLayout>
