@@ -102,7 +102,7 @@ export type UpdateProfileResult =
 
 /**
  * Persistência mock: grava sobre o rascunho em memória.
- * Futuro: `PUT /users/:id/profile` ou equivalente.
+ * Integração HTTP: mapear para `BACKEND_ROUTE_HINTS.profile.updateProfile` em `@/lib/backendIntegrationHints`.
  */
 export async function updateProfile(userId: string, payload: ProfileUpdatePayload): Promise<UpdateProfileResult> {
   await delay(550);

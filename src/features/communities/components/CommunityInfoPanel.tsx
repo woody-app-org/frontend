@@ -67,7 +67,7 @@ export function CommunityInfoPanel({ community, className }: CommunityInfoPanelP
             {customRuleLines.length === 0 ? (
               <p className="mt-2 text-xs text-[var(--woody-muted)] leading-relaxed">
                 Diretrizes gerais da plataforma abaixo. A moderadora pode definir regras próprias em{" "}
-                <strong className="text-[var(--woody-text)]">Gerenciar comunidade</strong>.
+                <strong className="text-[var(--woody-text)]">Editar comunidade</strong>.
               </p>
             ) : null}
             <ul className="mt-3 list-none space-y-2.5 p-0 m-0">

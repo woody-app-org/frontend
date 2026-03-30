@@ -50,6 +50,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
   const isTargetOwner = community.ownerUserId === user.id || membership.role === "owner";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDestructive, setConfirmDestructive] = useState<null | "remove" | "ban">(null);
 
   const run = async (fn: () => Promise<CommunityMembershipActionResult>) => {
     setBusy(true);
@@ -63,7 +64,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
     }
   };
 
-  const canModerate = !isTargetOwner && !busy;
+  const canModerate = !isTargetOwner && !busy && !confirmDestructive;
   const showPromote = actorIsOwner && membership.role === "member" && canModerate;
   const showDemote = actorIsOwner && membership.role === "admin" && canModerate;
 
@@ -99,15 +100,70 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
 
         {isTargetOwner ? (
           <p className="text-xs text-[var(--woody-muted)] sm:text-right">Papel fixo no mock.</p>
+        ) : confirmDestructive ? (
+          <div
+            className="w-full max-w-full rounded-xl border border-[var(--woody-accent)]/18 bg-[var(--woody-nav)]/6 p-3 sm:max-w-sm"
+            role="region"
+            aria-label="Confirmar ação administrativa"
+          >
+            <p className="text-sm font-medium text-[var(--woody-text)]">
+              {confirmDestructive === "remove"
+                ? `Remover ${user.name} desta comunidade?`
+                : `Restringir ${user.name} neste espaço?`}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--woody-muted)]">
+              {confirmDestructive === "remove"
+                ? "A pessoa perde o acesso imediatamente."
+                : "No mock, nova entrada exigiria ajuste manual nos dados."}
+            </p>
+            <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                className="min-h-10 w-full rounded-lg text-xs sm:w-auto"
+                onClick={() => setConfirmDestructive(null)}
+              >
+                Voltar
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                disabled={busy}
+                className={cn(
+                  "min-h-10 w-full rounded-lg text-xs sm:w-auto",
+                  confirmDestructive === "remove"
+                    ? "border-red-500/35 bg-red-500/10 text-red-800 hover:bg-red-500/15 dark:text-red-200"
+                    : "border-red-500/30 text-red-800 hover:bg-red-500/10 dark:text-red-200"
+                )}
+                variant="outline"
+                onClick={() => {
+                  const kind = confirmDestructive;
+                  if (!kind) return;
+                  void run(async () => {
+                    const r =
+                      kind === "remove"
+                        ? await removeMember(viewerId, community.id, user.id)
+                        : await banMember(viewerId, community.id, user.id);
+                    if (r.ok) setConfirmDestructive(null);
+                    return r;
+                  });
+                }}
+              >
+                {busy ? "Processando…" : "Confirmar"}
+              </Button>
+            </div>
+          </div>
         ) : (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" aria-busy={busy}>
             {showPromote ? (
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 disabled={busy}
-                className="rounded-lg text-xs"
+                className="min-h-10 rounded-lg text-xs"
                 onClick={() =>
                   run(() => setCommunityMemberRole(viewerId, community.id, user.id, "admin"))
                 }
@@ -121,12 +177,12 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
                 size="sm"
                 variant="outline"
                 disabled={busy}
-                className="rounded-lg text-xs"
+                className="min-h-10 rounded-lg text-xs"
                 onClick={() =>
                   run(() => setCommunityMemberRole(viewerId, community.id, user.id, "member"))
                 }
               >
-                Rebaixar
+                Rebaixar para membro
               </Button>
             ) : null}
             <Button
@@ -134,31 +190,20 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
               size="sm"
               variant="outline"
               disabled={!canModerate}
-              className="rounded-lg text-xs border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300"
-              onClick={() => {
-                if (!window.confirm(`Remover ${user.name} da comunidade?`)) return;
-                void run(() => removeMember(viewerId, community.id, user.id));
-              }}
+              className="min-h-10 rounded-lg border-red-500/30 text-xs text-red-700 hover:bg-red-500/10 dark:text-red-300"
+              onClick={() => setConfirmDestructive("remove")}
             >
-              Remover
+              Remover da comunidade
             </Button>
             <Button
               type="button"
               size="sm"
               variant="ghost"
               disabled={!canModerate}
-              className="rounded-lg text-xs text-[var(--woody-muted)] hover:text-red-600"
-              onClick={() => {
-                if (
-                  !window.confirm(
-                    `Restringir ${user.name}? Ela não poderá entrar de novo neste mock sem nova lógica.`
-                  )
-                )
-                  return;
-                void run(() => banMember(viewerId, community.id, user.id));
-              }}
+              className="min-h-10 rounded-lg text-xs text-[var(--woody-muted)] hover:text-red-600"
+              onClick={() => setConfirmDestructive("ban")}
             >
-              Banir
+              Restringir acesso
             </Button>
           </div>
         )}

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { woodyFocus } from "@/lib/woody-ui";
+import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import type { Community, Membership, User } from "@/domain/types";
 import {
   getPendingJoinRequestsForCommunity,
@@ -76,23 +76,23 @@ export function CommunityMembersManagerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-h-[min(92vh,760px)] overflow-y-auto overflow-x-hidden",
+          woodyDialogScroll,
           "top-[4%] translate-y-0 sm:top-1/2 sm:-translate-y-1/2",
-          "max-w-[640px] border-[var(--woody-accent)]/15"
+          "max-w-[min(100vw-1rem,40rem)] border-[var(--woody-accent)]/15 sm:max-w-2xl"
         )}
       >
         <DialogHeader className="space-y-2 pr-6 text-left">
-          <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--woody-nav)]/25 bg-[var(--woody-nav)]/10 px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)]">
-            <Shield className="size-3.5" aria-hidden />
-            Moderação
+          <div className={cn(woodyContext.adminBadge)}>
+            <Shield className="size-3.5 shrink-0" aria-hidden />
+            Administrativo · membros
           </div>
-          <DialogTitle className="flex items-center gap-2 text-[var(--woody-text)]">
-            <Users className="size-5 text-[var(--woody-nav)]" aria-hidden />
-            Membros e acessos
+          <DialogTitle className="flex flex-wrap items-center gap-2 text-[var(--woody-text)]">
+            <Users className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+            Moderar membros
           </DialogTitle>
           <DialogDescription>
-            Gerencie quem participa e responda pedidos de entrada nesta comunidade. No backend, estas ações virão de
-            endpoints dedicados.
+            Aprovar pedidos, remover ou restringir contas neste espaço. Ações mock em communityMembership.service — rotas
+            sugeridas em lib/backendIntegrationHints (membership).
           </DialogDescription>
         </DialogHeader>
 
@@ -106,7 +106,7 @@ export function CommunityMembersManagerDialog({
             aria-selected={tab === "members"}
             className={cn(
               woodyFocus.ring,
-              "flex-1 rounded-lg py-2.5 px-2 text-sm font-medium transition-colors",
+              "min-h-11 flex-1 rounded-lg px-2 py-2.5 text-sm font-medium transition-colors",
               tab === "members"
                 ? "bg-[var(--woody-nav)] text-white shadow-sm"
                 : "text-[var(--woody-text)]/85 hover:bg-[var(--woody-nav)]/8"
@@ -121,7 +121,7 @@ export function CommunityMembersManagerDialog({
             aria-selected={tab === "requests"}
             className={cn(
               woodyFocus.ring,
-              "flex flex-1 items-center justify-center gap-1 rounded-lg py-2.5 px-2 text-sm font-medium transition-colors",
+              "flex min-h-11 flex-1 items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-sm font-medium transition-colors",
               tab === "requests"
                 ? "bg-[var(--woody-nav)] text-white shadow-sm"
                 : "text-[var(--woody-text)]/85 hover:bg-[var(--woody-nav)]/8"
@@ -137,7 +137,7 @@ export function CommunityMembersManagerDialog({
           <div className="mt-4">
             {memberRows.length === 0 ? (
               <p className="rounded-xl border border-dashed border-[var(--woody-accent)]/20 bg-[var(--woody-nav)]/5 px-4 py-8 text-center text-sm text-[var(--woody-muted)]">
-                Nenhuma membro ativa listada.
+                Nenhum membro ativo listado.
               </p>
             ) : (
               <ul className="m-0 flex list-none flex-col gap-2 p-0">

@@ -27,6 +27,7 @@ export interface PendingRequestRowProps {
 export function PendingRequestRow({ request, user, viewerId, onChanged }: PendingRequestRowProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmReject, setConfirmReject] = useState(false);
 
   const run = async (fn: () => Promise<CommunityMembershipActionResult>) => {
     setBusy(true);
@@ -65,30 +66,66 @@ export function PendingRequestRow({ request, user, viewerId, onChanged }: Pendin
           </div>
         </Link>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            size="sm"
-            disabled={busy}
-            className="rounded-lg bg-[var(--woody-nav)] text-xs text-white hover:bg-[var(--woody-nav)]/90"
-            onClick={() => run(() => approveJoinRequest(viewerId, request.id))}
+        {confirmReject ? (
+          <div
+            className="w-full max-w-full rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 sm:max-w-xs"
+            role="region"
+            aria-label="Confirmar recusa do pedido"
           >
-            Aprovar
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={busy}
-            className="rounded-lg border-red-500/35 text-xs text-red-700 hover:bg-red-500/10 dark:text-red-300"
-            onClick={() => {
-              if (!window.confirm(`Recusar o pedido de ${user.name}?`)) return;
-              void run(() => rejectJoinRequest(viewerId, request.id));
-            }}
-          >
-            Recusar
-          </Button>
-        </div>
+            <p className="text-sm font-medium text-[var(--woody-text)]">Recusar o pedido de {user.name}?</p>
+            <p className="mt-1 text-xs text-[var(--woody-muted)]">A pessoa poderá solicitar de novo, conforme as regras do espaço.</p>
+            <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                className="min-h-10 w-full rounded-lg text-xs sm:w-auto"
+                onClick={() => setConfirmReject(false)}
+              >
+                Voltar
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                className="min-h-10 w-full rounded-lg border-red-500/35 text-xs text-red-700 hover:bg-red-500/10 dark:text-red-300 sm:w-auto"
+                onClick={() =>
+                  void run(async () => {
+                    const r = await rejectJoinRequest(viewerId, request.id);
+                    if (r.ok) setConfirmReject(false);
+                    return r;
+                  })
+                }
+              >
+                {busy ? "Processando…" : "Confirmar recusa"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2" aria-busy={busy}>
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy}
+              className="min-h-10 rounded-lg bg-[var(--woody-nav)] text-xs text-white hover:bg-[var(--woody-nav)]/90"
+              onClick={() => run(() => approveJoinRequest(viewerId, request.id))}
+            >
+              Aprovar entrada
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              className="min-h-10 rounded-lg border-red-500/35 text-xs text-red-700 hover:bg-red-500/10 dark:text-red-300"
+              onClick={() => setConfirmReject(true)}
+            >
+              Recusar pedido
+            </Button>
+          </div>
+        )}
       </div>
       {error ? <p className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">{error}</p> : null}
     </li>

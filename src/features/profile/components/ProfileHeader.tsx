@@ -111,7 +111,7 @@ export function ProfileHeader({ profile, className, isOwnProfile = false, onEdit
               onClick={onEditProfile}
             >
               <Pencil className="size-4" />
-              Editar perfil
+              Ajustar meu perfil
             </Button>
           ) : !isOwnProfile ? (
             <Button className={cn(styles.followBtn, woodyFocus.ring)} variant="secondary" size="sm">

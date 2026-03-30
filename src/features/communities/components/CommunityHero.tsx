@@ -69,7 +69,8 @@ const styles = {
   members: "inline-flex items-center gap-1.5",
   desc: "mt-3 max-w-3xl text-sm leading-relaxed text-[var(--woody-text)]/90 sm:text-[0.9375rem]",
   tags: "mt-3 flex flex-wrap gap-2",
-  actions: "shrink-0 md:pb-1",
+  actions:
+    "flex w-full max-w-full shrink-0 flex-col items-stretch gap-0 md:max-w-[min(100%,18rem)] md:items-end md:pb-1",
   ctaJoin: cn(
     "h-11 w-full min-w-[180px] rounded-xl px-6 font-semibold shadow-md sm:w-auto",
     "bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/92"
@@ -222,6 +223,11 @@ export function CommunityHero({
           </div>
 
           <div className={styles.actions}>
+            {canManage || canManageMembers ? (
+              <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-[var(--woody-nav)] md:text-right">
+                Área administrativa
+              </p>
+            ) : null}
             {canManage && onManageCommunity ? (
               <Button
                 type="button"
@@ -231,7 +237,7 @@ export function CommunityHero({
                 className={cn(woodyFocus.ring, styles.ctaManage, "mb-2")}
               >
                 <Settings2 className="size-5 shrink-0 opacity-90" aria-hidden />
-                Gerenciar comunidade
+                Editar comunidade
               </Button>
             ) : null}
             {canManageMembers && onManageMembers ? (
@@ -243,7 +249,7 @@ export function CommunityHero({
                 className={cn(woodyFocus.ring, styles.ctaManage, "mb-2")}
               >
                 <UserCog className="size-5 shrink-0 opacity-90" aria-hidden />
-                Membros e acessos
+                Moderar membros
               </Button>
             ) : null}
             <Button
@@ -261,12 +267,7 @@ export function CommunityHero({
                 {accessNotice}
               </p>
             ) : null}
-            {canManage ? (
-              <p className="mb-1 max-w-[240px] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:text-left">
-                Configurações do espaço e moderadora ao lado.
-              </p>
-            ) : null}
-            <p className="mt-0 max-w-[220px] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:text-left">
+            <p className="mt-0 max-w-[min(100%,280px)] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:max-w-[240px] md:text-left">
               {community.visibility === "private" && !isMember && membershipStatus !== "banned"
                 ? "Comunidade privada: sua entrada pode depender de aprovação."
                 : null}

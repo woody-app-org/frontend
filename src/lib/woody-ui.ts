@@ -56,3 +56,21 @@ export const woodyLayout = {
   stackGap: "flex flex-col gap-9 md:gap-11",
   stackGapTight: "flex flex-col gap-8 md:gap-10",
 } as const;
+
+/** Diferenciação visual: perfil pessoal vs ações de comunidade (moderadora). */
+export const woodyContext = {
+  personalBadge: cn(
+    "inline-flex w-fit max-w-full items-center gap-1.5 rounded-full border border-[var(--woody-accent)]/25",
+    "bg-[var(--woody-accent)]/8 px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-text)]"
+  ),
+  adminBadge: cn(
+    "inline-flex w-fit max-w-full items-center gap-1.5 rounded-full border border-[var(--woody-nav)]/28",
+    "bg-[var(--woody-nav)]/10 px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)]"
+  ),
+} as const;
+
+/** Scroll e altura em modais longos (mobile / teclado); combinar com `DialogContent` existente. */
+export const woodyDialogScroll = cn(
+  "max-h-[min(88dvh,840px)] overflow-y-auto overflow-x-hidden overscroll-y-contain",
+  "pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+);

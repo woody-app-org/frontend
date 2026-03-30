@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { ImagePlus, Loader2, Pencil } from "lucide-react";
+import { ImagePlus, Loader2, Pencil, User } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { woodyFocus } from "@/lib/woody-ui";
+import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import type { InterestTag, UserProfile } from "../types";
 import { updateProfile, validateProfileUpdatePayload } from "../services/profile.service";
 
@@ -219,22 +219,27 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-h-[min(92vh,840px)] overflow-y-auto overflow-x-hidden",
+          woodyDialogScroll,
           "top-[5%] translate-y-0 sm:top-1/2 sm:-translate-y-1/2",
           "border-[var(--woody-accent)]/15"
         )}
       >
-        <DialogHeader className="text-left space-y-1 pr-8">
-          <DialogTitle className="flex items-center gap-2 text-[var(--woody-text)]">
-            <Pencil className="size-5 text-[var(--woody-nav)]" aria-hidden />
-            Editar perfil
+        <DialogHeader className="space-y-2 pr-8 text-left">
+          <div className={cn(woodyContext.personalBadge)}>
+            <User className="size-3.5 shrink-0" aria-hidden />
+            Seu perfil
+          </div>
+          <DialogTitle className="flex flex-wrap items-center gap-2 text-[var(--woody-text)]">
+            <Pencil className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+            Ajustar meu perfil
           </DialogTitle>
           <DialogDescription>
-            Suas alterações ficam salvas neste dispositivo no modo demo. Em produção, serão enviadas ao servidor.
+            Só o seu perfil pessoal — não altera comunidades. No demo os dados ficam neste navegador; ao ligar a API,
+            substitua a função em profile.service (mapa de rotas em lib/backendIntegrationHints).
           </DialogDescription>
         </DialogHeader>
 
-        <form id={formId} onSubmit={handleSubmit} className="mt-2 space-y-5">
+        <form id={formId} onSubmit={handleSubmit} className="mt-2 space-y-5" aria-busy={isSubmitting}>
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--woody-muted)]">
               Banner
@@ -431,7 +436,10 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
             <Button
               type="button"
               variant="outline"
-              className={cn("rounded-xl border-[var(--woody-accent)]/25", woodyFocus.ring)}
+              className={cn(
+                "min-h-11 w-full rounded-xl border-[var(--woody-accent)]/25 sm:w-auto",
+                woodyFocus.ring
+              )}
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
@@ -441,7 +449,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
               type="submit"
               disabled={isSubmitting || success}
               className={cn(
-                "rounded-xl bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:scale-[0.98]",
+                "min-h-11 w-full rounded-xl bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:scale-[0.98] sm:w-auto",
                 woodyFocus.ring
               )}
             >

@@ -77,6 +77,7 @@ export function validateCommunityUpdatePayload(
 
 /**
  * Atualização mock com rascunho em memória. Quem pode editar segue `canEditCommunity` (dona ou admin).
+ * Integração HTTP: `BACKEND_ROUTE_HINTS.community.updateCommunity` em `@/lib/backendIntegrationHints`.
  */
 export async function updateCommunity(
   actorUserId: string,

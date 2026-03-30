@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { woodyFocus } from "@/lib/woody-ui";
+import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import type { Community, CommunityCategory, CommunityVisibility } from "@/domain/types";
 import { updateCommunity, validateCommunityUpdatePayload } from "../../services/community.service";
 import { CommunityAppearanceSection } from "./CommunityAppearanceSection";
@@ -148,24 +148,29 @@ export function CommunityEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-h-[min(92vh,880px)] overflow-y-auto overflow-x-hidden",
+          woodyDialogScroll,
           "top-[4%] translate-y-0 sm:top-1/2 sm:-translate-y-1/2",
           "border-[var(--woody-accent)]/15"
         )}
       >
-        <DialogHeader className="text-left space-y-2 pr-8">
-          <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[var(--woody-nav)]/25 bg-[var(--woody-nav)]/10 px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)]">
-            <Shield className="size-3.5" aria-hidden />
-            Área administrativa
+        <DialogHeader className="space-y-2 pr-8 text-left">
+          <div className={cn(woodyContext.adminBadge)}>
+            <Shield className="size-3.5 shrink-0" aria-hidden />
+            Administrativo · comunidade
           </div>
-          <DialogTitle className="text-[var(--woody-text)]">Gerenciar comunidade</DialogTitle>
+          <DialogTitle className="text-[var(--woody-text)]">Editar dados da comunidade</DialogTitle>
           <DialogDescription>
-            Você está editando como <strong>{adminRoleLabel}</strong> deste espaço. Alterações ficam salvas no mock
-            deste navegador até integrarmos o backend.
+            Como <strong>{adminRoleLabel}</strong>, você altera nome, aparência, regras e visibilidade do espaço — não o
+            perfil pessoal. Mock local até integrar community.service com a API (ver lib/backendIntegrationHints).
           </DialogDescription>
         </DialogHeader>
 
-        <form id={formId} onSubmit={handleSubmit} className="mt-3 space-y-8 border-t border-[var(--woody-accent)]/10 pt-6">
+        <form
+          id={formId}
+          onSubmit={handleSubmit}
+          className="mt-3 space-y-8 border-t border-[var(--woody-accent)]/10 pt-6"
+          aria-busy={isSubmitting}
+        >
           <CommunityAppearanceSection
             formId={formId}
             communityName={name || community.name}
@@ -221,7 +226,10 @@ export function CommunityEditDialog({
             <Button
               type="button"
               variant="outline"
-              className={cn("rounded-xl border-[var(--woody-accent)]/25", woodyFocus.ring)}
+              className={cn(
+                "min-h-11 w-full rounded-xl border-[var(--woody-accent)]/25 sm:w-auto",
+                woodyFocus.ring
+              )}
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
@@ -231,7 +239,7 @@ export function CommunityEditDialog({
               type="submit"
               disabled={isSubmitting || success}
               className={cn(
-                "rounded-xl bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:scale-[0.98]",
+                "min-h-11 w-full rounded-xl bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:scale-[0.98] sm:w-auto",
                 woodyFocus.ring
               )}
             >

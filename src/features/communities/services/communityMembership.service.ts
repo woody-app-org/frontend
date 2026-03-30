@@ -1,6 +1,6 @@
 /**
  * Ações mockadas de membership e pedidos de entrada.
- * Substituir por chamadas HTTP mantendo estes nomes facilita o mapeamento com o backend.
+ * Manter estes nomes de função ao integrar HTTP; rotas sugeridas em `@/lib/backendIntegrationHints` (membership.*).
  */
 import { canManageMembers, isCommunityOwner } from "@/domain/permissions";
 import { getJoinRequestRows, getMembershipRows } from "@/domain/mocks/membershipMockStore";
