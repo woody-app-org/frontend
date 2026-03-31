@@ -127,10 +127,12 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   const createComment = useCallback(
     async (body: string) => {
       if (!postId) return false;
+      const trimmed = body.trim();
+      if (!trimmed) return false;
       setIsCreatingComment(true);
       setError(null);
       try {
-        const result = await createCommentMock(postId, viewerId, body);
+        const result = await createCommentMock(postId, viewerId, trimmed);
         if (!result.ok) {
           setError(result.error);
           return false;
