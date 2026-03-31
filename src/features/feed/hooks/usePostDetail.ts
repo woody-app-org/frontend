@@ -11,10 +11,14 @@ import {
 interface UsePostDetailReturn {
   post: Post | null;
   comments: Comment[];
+  /** Carregamento do post (bloqueia a página de detalhe até ter corpo). */
   isLoading: boolean;
+  /** Carregamento assíncrono dos comentários (lista + mock delay). */
+  isCommentsLoading: boolean;
   isMutatingLike: boolean;
   isCreatingComment: boolean;
   error: string | null;
+  commentsError: string | null;
   refetch: () => Promise<void>;
   toggleLike: () => Promise<void>;
   createComment: (body: string) => Promise<boolean>;
@@ -25,32 +29,52 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCommentsLoading, setIsCommentsLoading] = useState(true);
   const [isMutatingLike, setIsMutatingLike] = useState(false);
   const [isCreatingComment, setIsCreatingComment] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [commentsError, setCommentsError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     if (!postId) {
       setPost(null);
       setComments([]);
       setIsLoading(false);
+      setIsCommentsLoading(false);
       return;
     }
 
     setIsLoading(true);
+    setIsCommentsLoading(true);
     setError(null);
-    try {
-      const [postData, commentsData] = await Promise.all([
-        getPostByIdMock(postId, viewerId),
-        getCommentsByPostIdMock(postId),
-      ]);
-      setPost(postData);
-      setComments(commentsData);
-    } catch {
-      setError("Não foi possível carregar o post.");
-    } finally {
-      setIsLoading(false);
-    }
+    setCommentsError(null);
+
+    const postTask = getPostByIdMock(postId, viewerId)
+      .then((postData) => {
+        setPost(postData);
+        return postData;
+      })
+      .catch(() => {
+        setError("Não foi possível carregar o post.");
+        setPost(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+
+    const commentsTask = getCommentsByPostIdMock(postId)
+      .then((commentsData) => {
+        setComments(commentsData);
+      })
+      .catch(() => {
+        setCommentsError("Não foi possível carregar os comentários.");
+        setComments([]);
+      })
+      .finally(() => {
+        setIsCommentsLoading(false);
+      });
+
+    await Promise.all([postTask, commentsTask]);
   }, [postId, viewerId]);
 
   useEffect(() => {
@@ -111,6 +135,7 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
           setError(result.error);
           return false;
         }
+        setCommentsError(null);
         setComments((current) => [...current, result.comment]);
         setPost((current) =>
           current
@@ -135,9 +160,11 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
     post,
     comments,
     isLoading,
+    isCommentsLoading,
     isMutatingLike,
     isCreatingComment,
     error,
+    commentsError,
     refetch,
     toggleLike,
     createComment,

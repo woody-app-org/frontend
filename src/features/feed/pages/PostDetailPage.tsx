@@ -8,8 +8,19 @@ export function PostDetailPage() {
   const { postId } = useParams<{ postId: string }>();
   const { search } = useLocation();
   const focusComments = useMemo(() => new URLSearchParams(search).get("focus") === "comments", [search]);
-  const { post, comments, isLoading, isMutatingLike, isCreatingComment, error, refetch, toggleLike, createComment } =
-    usePostDetail(postId);
+  const {
+    post,
+    comments,
+    isLoading,
+    isCommentsLoading,
+    isMutatingLike,
+    isCreatingComment,
+    error,
+    commentsError,
+    refetch,
+    toggleLike,
+    createComment,
+  } = usePostDetail(postId);
 
   if (!postId) return <Navigate to="/feed" replace />;
 
@@ -56,6 +67,8 @@ export function PostDetailPage() {
             <PostDetailView
               post={post}
               comments={comments}
+              isCommentsLoading={isCommentsLoading}
+              commentsError={commentsError}
               focusCommentsOnOpen={focusComments}
               isMutatingLike={isMutatingLike}
               isCreatingComment={isCreatingComment}
