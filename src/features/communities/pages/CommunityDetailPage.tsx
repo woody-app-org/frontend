@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import {
@@ -23,11 +23,15 @@ import {
 import type { CommunityMembershipActionResult } from "../services/communityMembership.service";
 import { CommunityHero } from "../components/CommunityHero";
 import { CommunityFeed } from "../components/CommunityFeed";
-import { CommunityInfoPanel } from "../components/CommunityInfoPanel";
+import { CommunityAboutCard } from "../components/CommunityAboutCard";
+import { CommunityTopicsCard } from "../components/CommunityTopicsCard";
+import { CommunityRulesQuickCard } from "../components/CommunityRulesQuickCard";
 import { CommunityMembersPreview } from "../components/CommunityMembersPreview";
 import { CommunityNotFound } from "../components/CommunityNotFound";
 import { CommunityEditDialog } from "../components/community-settings/CommunityEditDialog";
 import { CommunityMembersManagerDialog } from "../components/members-manager/CommunityMembersManagerDialog";
+
+const COMMUNITY_FEED_PAGE_SIZE = 10;
 
 interface CommunityDetailLoadedProps {
   community: Community;
@@ -49,6 +53,7 @@ function CommunityDetailLoaded({
   const [membersOpen, setMembersOpen] = useState(false);
   const [ctaBusy, setCtaBusy] = useState(false);
   const [accessNotice, setAccessNotice] = useState<string | null>(null);
+  const [feedPage, setFeedPage] = useState(1);
 
   const isMember = isUserMemberOfCommunity(viewerId, community.id);
   const membershipStatus = getCommunityMembershipStatus(viewerId, community.id);
@@ -80,10 +85,31 @@ function CommunityDetailLoaded({
     onDataChanged();
   }, [onDataChanged]);
 
+  const totalPosts = posts.length;
+  const feedTotalPages = Math.max(1, Math.ceil(totalPosts / COMMUNITY_FEED_PAGE_SIZE));
+
+  useEffect(() => {
+    setFeedPage(1);
+  }, [community.id, dataRevision]);
+
+  useEffect(() => {
+    if (feedPage > feedTotalPages) {
+      setFeedPage(Math.max(1, feedTotalPages));
+    }
+  }, [feedPage, feedTotalPages]);
+
+  const paginatedPosts = useMemo(() => {
+    const start = (feedPage - 1) * COMMUNITY_FEED_PAGE_SIZE;
+    return posts.slice(start, start + COMMUNITY_FEED_PAGE_SIZE);
+  }, [posts, feedPage]);
+
+  const hasNextFeedPage = feedPage < feedTotalPages;
+  const hasPreviousFeedPage = feedPage > 1;
+
   return (
     <div
       className={cn(
-        "mx-auto w-full max-w-6xl flex flex-col gap-8 md:gap-10 pb-20 md:pb-8",
+        "mx-auto flex w-full max-w-7xl flex-col gap-8 md:gap-12 pb-20 md:pb-10",
         woodyLayout.pagePadWide
       )}
     >
@@ -128,11 +154,35 @@ function CommunityDetailLoaded({
         />
       ) : null}
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10 xl:gap-12">
-        <CommunityFeed community={community} posts={posts} className="order-2 min-w-0 lg:order-1" />
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-8 md:gap-10",
+          "xl:grid-cols-[minmax(0,1fr)_minmax(280px,22rem)] xl:items-start xl:gap-x-10 xl:gap-y-8",
+          "2xl:grid-cols-[minmax(28rem,1fr)_22rem] 2xl:gap-x-12"
+        )}
+      >
+        <CommunityFeed
+          community={community}
+          posts={paginatedPosts}
+          totalPostCount={totalPosts}
+          postsPerPage={COMMUNITY_FEED_PAGE_SIZE}
+          page={feedPage}
+          hasNextPage={hasNextFeedPage}
+          hasPreviousPage={hasPreviousFeedPage}
+          onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
+          onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
+          className="order-3 min-w-0 xl:order-1"
+        />
 
-        <aside className="order-1 flex min-w-0 flex-col gap-6 lg:order-2 lg:sticky lg:top-16 lg:self-start">
-          <CommunityInfoPanel community={community} />
+        <aside
+          className={cn(
+            "order-2 flex min-w-0 flex-col gap-5 md:gap-6",
+            "xl:order-2 xl:self-start"
+          )}
+        >
+          <CommunityAboutCard community={community} memberCount={memberCount} />
+          <CommunityTopicsCard tags={community.tags} />
+          <CommunityRulesQuickCard community={community} />
           <CommunityMembersPreview members={members} />
         </aside>
       </div>
@@ -166,7 +216,7 @@ export function CommunityDetailPage() {
 
   if (!communitySlug) {
     return (
-      <FeedLayout>
+      <FeedLayout showRightPanel={false}>
         <div
           className={cn(
             "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
@@ -181,7 +231,7 @@ export function CommunityDetailPage() {
 
   if (!community) {
     return (
-      <FeedLayout>
+      <FeedLayout showRightPanel={false}>
         <div
           className={cn(
             "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
@@ -195,7 +245,7 @@ export function CommunityDetailPage() {
   }
 
   return (
-    <FeedLayout>
+    <FeedLayout showRightPanel={false}>
       <CommunityDetailLoaded
         key={community.id}
         community={community}

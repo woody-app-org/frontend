@@ -1,11 +1,16 @@
 import { Link } from "react-router-dom";
-import { ChevronLeft, Lock, Settings2, UserCog, Users } from "lucide-react";
+import { ChevronDown, ChevronLeft, Globe, Lock, Settings2, UserCog, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodySurface } from "@/lib/woody-ui";
 import type { CommunityMembershipStatusResult } from "@/domain/permissions";
 import type { Community, JoinRequest } from "@/domain/types";
-import { CommunityTag } from "./CommunityTag";
 import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
 
 export interface CommunityHeroProps {
@@ -33,59 +38,64 @@ function formatMemberCount(n: number): string {
   return `${n} ${n === 1 ? "membro" : "membros"}`;
 }
 
+const shell = cn(
+  woodySurface.cardHero,
+  "relative overflow-hidden shadow-[0_8px_28px_rgba(92,58,59,0.09)]"
+);
+
 const styles = {
-  wrap: cn(
-    woodySurface.cardHero,
-    "relative overflow-hidden shadow-[0_8px_28px_rgba(92,58,59,0.11)]"
-  ),
-  banner: "relative h-36 sm:h-44 md:h-52 w-full overflow-hidden",
+  banner: "relative h-32 w-full overflow-hidden sm:h-40 md:h-44",
   bannerImg: "size-full object-cover",
   bannerFallback:
-    "size-full bg-gradient-to-br from-[var(--woody-nav)]/35 via-[var(--woody-accent)]/25 to-[var(--woody-bg)]",
-  bannerTint:
-    "pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--woody-card)] via-[var(--woody-card)]/40 to-transparent",
+    "size-full bg-gradient-to-br from-[var(--woody-nav)]/35 via-[var(--woody-accent)]/22 to-[var(--woody-bg)]",
+  tint: "pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--woody-card)] via-[var(--woody-card)]/45 to-transparent",
   backRow:
-    "absolute left-0 right-0 top-0 z-20 flex items-center justify-between gap-2 px-3 pt-3 sm:px-4 sm:pt-4",
+    "absolute left-0 right-0 top-0 z-20 flex items-center gap-2 px-3 pt-3 sm:px-5 sm:pt-4 md:px-7",
   backLink: cn(
     woodyFocus.ring,
-    "inline-flex items-center gap-1 rounded-lg bg-[var(--woody-card)]/90 px-2.5 py-1.5 text-xs font-semibold text-[var(--woody-text)]",
-    "shadow-sm ring-1 ring-[var(--woody-accent)]/15 backdrop-blur-sm transition-colors hover:bg-[var(--woody-card)] sm:text-sm"
+    "inline-flex items-center gap-1 rounded-lg bg-[var(--woody-card)]/92 px-2.5 py-1.5 text-xs font-semibold text-[var(--woody-text)]",
+    "shadow-sm ring-1 ring-[var(--woody-accent)]/12 backdrop-blur-sm transition-colors hover:bg-[var(--woody-card)] sm:text-sm"
   ),
-  body: "relative z-10 -mt-10 pb-5 sm:-mt-12 sm:pb-6 md:-mt-14 md:pb-8",
-  bodyInner: "flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-8",
-  identity: "flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-end sm:gap-5",
-  avatar: "size-20 shrink-0 rounded-2xl border-4 border-[var(--woody-card)] object-cover shadow-lg sm:size-24 md:size-[5.5rem]",
+  body: "relative z-10 -mt-9 w-full min-w-0 px-4 pb-7 sm:-mt-10 sm:px-6 sm:pb-8 md:px-8 md:pb-9",
+  stack: "flex w-full min-w-0 flex-col gap-5 md:gap-6",
+  identityRow:
+    "flex w-full min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:gap-5 md:gap-6",
+  avatar:
+    "size-[4.5rem] shrink-0 rounded-2xl border-[3px] border-[var(--woody-card)] object-cover shadow-md sm:size-24 md:size-[5.25rem]",
   avatarFallback: cn(
-    "flex size-20 shrink-0 items-center justify-center rounded-2xl border-4 border-[var(--woody-card)]",
-    "bg-[var(--woody-nav)]/15 text-lg font-bold text-[var(--woody-text)] shadow-lg sm:size-24 md:size-[5.5rem] md:text-xl"
+    "flex size-[4.5rem] shrink-0 items-center justify-center rounded-2xl border-[3px] border-[var(--woody-card)]",
+    "bg-[var(--woody-nav)]/12 text-base font-bold text-[var(--woody-text)] shadow-md sm:size-24 md:size-[5.25rem] md:text-lg"
   ),
-  textBlock: "min-w-0 pt-1 sm:pb-0.5",
-  title: "text-2xl font-bold leading-tight tracking-tight text-[var(--woody-text)] sm:text-3xl",
-  meta: "mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-[var(--woody-muted)]",
-  category: cn(
-    "rounded-full bg-[var(--woody-nav)]/14 px-3 py-0.5 text-xs font-semibold text-[var(--woody-text)]",
-    "ring-1 ring-[var(--woody-accent)]/12"
+  /** Bloco do título ocupa toda a largura restante; nunca parteilha linha com botões. */
+  titleColumn: "w-full min-w-0 flex-1",
+  title:
+    "w-full break-words text-xl font-bold leading-tight tracking-tight text-[var(--woody-text)] sm:text-2xl md:text-3xl",
+  meta: "mt-2 flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-[var(--woody-muted)] sm:text-sm",
+  metaSep: "hidden text-[var(--woody-accent)]/35 sm:inline",
+  metaChip: cn(
+    "inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/12 px-2.5 py-0.5 text-xs font-semibold text-[var(--woody-text)]",
+    "ring-1 ring-[var(--woody-accent)]/10"
   ),
-  members: "inline-flex items-center gap-1.5",
-  desc: "mt-3 max-w-3xl text-sm leading-relaxed text-[var(--woody-text)]/90 sm:text-[0.9375rem]",
-  tags: "mt-3 flex flex-wrap gap-2",
-  actions:
-    "flex w-full max-w-full shrink-0 flex-col items-stretch gap-0 md:max-w-[min(100%,18rem)] md:items-end md:pb-1",
+  /** Descrição em bloco próprio, largura total — sem line-clamp no hero. */
+  description:
+    "w-full min-w-0 break-words text-sm leading-relaxed text-[var(--woody-text)]/88 sm:text-[0.9375rem]",
+  actionsRow:
+    "flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3",
   ctaJoin: cn(
-    "h-11 w-full min-w-[180px] rounded-xl px-6 font-semibold shadow-md sm:w-auto",
+    "h-11 min-h-11 w-full rounded-xl px-5 font-semibold shadow-sm sm:w-auto sm:min-w-[12.5rem]",
     "bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/92"
   ),
   ctaLeave: cn(
-    "h-11 w-full min-w-[180px] rounded-xl border-[var(--woody-accent)]/35 px-6 font-semibold sm:w-auto",
+    "h-11 min-h-11 w-full rounded-xl border border-[var(--woody-accent)]/30 px-5 font-semibold sm:w-auto sm:min-w-[12.5rem]",
     "bg-[var(--woody-card)] text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/8"
   ),
-  ctaManage: cn(
-    "h-11 w-full min-w-[180px] rounded-xl border-[var(--woody-nav)]/35 px-6 font-semibold sm:w-auto",
-    "bg-[var(--woody-card)] text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10"
-  ),
   ctaMuted: cn(
-    "h-11 w-full min-w-[180px] rounded-xl border-[var(--woody-accent)]/25 px-6 font-semibold sm:w-auto",
-    "bg-[var(--woody-card)]/80 text-[var(--woody-muted)]"
+    "h-11 min-h-11 w-full cursor-not-allowed rounded-xl border border-[var(--woody-accent)]/20 px-5 font-semibold opacity-90 sm:w-auto sm:min-w-[12.5rem]",
+    "bg-[var(--woody-card)]/90 text-[var(--woody-muted)]"
+  ),
+  adminTrigger: cn(
+    "h-11 min-h-11 w-full justify-center gap-1.5 rounded-xl border border-[var(--woody-accent)]/22 bg-[var(--woody-bg)] px-4 sm:w-auto",
+    "text-sm font-medium text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/6"
   ),
 } as const;
 
@@ -162,21 +172,20 @@ export function CommunityHero({
   );
 
   const ctaClass =
-    cta.variant === "leave"
-      ? styles.ctaLeave
-      : cta.variant === "muted"
-        ? styles.ctaMuted
-        : styles.ctaJoin;
+    cta.variant === "leave" ? styles.ctaLeave : cta.variant === "muted" ? styles.ctaMuted : styles.ctaJoin;
+
+  const showAdminMenu = (canManage && onManageCommunity) || (canManageMembers && onManageMembers);
+  const description = community.description.trim();
 
   return (
-    <div className={cn(styles.wrap, className)}>
+    <header className={cn(shell, className)}>
       <div className={styles.banner}>
         {community.coverUrl ? (
           <img src={community.coverUrl} alt="" className={styles.bannerImg} loading="eager" />
         ) : (
           <div className={styles.bannerFallback} aria-hidden />
         )}
-        <div className={styles.bannerTint} aria-hidden />
+        <div className={styles.tint} aria-hidden />
       </div>
 
       <div className={styles.backRow}>
@@ -186,9 +195,9 @@ export function CommunityHero({
         </Link>
       </div>
 
-      <div className={cn(styles.body, "px-4 sm:px-6")}>
-        <div className={styles.bodyInner}>
-          <div className={styles.identity}>
+      <div className={styles.body}>
+        <div className={styles.stack}>
+          <div className={styles.identityRow}>
             {community.avatarUrl ? (
               <img src={community.avatarUrl} alt="" className={styles.avatar} loading="eager" />
             ) : (
@@ -196,65 +205,48 @@ export function CommunityHero({
                 {initials}
               </span>
             )}
-            <div className={styles.textBlock}>
+            <div className={styles.titleColumn}>
               <h1 className={styles.title}>{community.name}</h1>
               <div className={styles.meta}>
-                <span className={styles.category}>{categoryLabel}</span>
-                {community.visibility === "private" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--woody-accent)]/8 px-2 py-0.5 text-[0.6875rem] font-semibold text-[var(--woody-text)] ring-1 ring-[var(--woody-accent)]/15">
-                    <Lock className="size-3 opacity-85" aria-hidden />
-                    Privada
-                  </span>
-                ) : null}
-                <span className={styles.members}>
-                  <Users className="size-4 shrink-0 opacity-85" aria-hidden />
+                <span className={styles.metaChip}>{categoryLabel}</span>
+                <span className={styles.metaSep} aria-hidden>
+                  ·
+                </span>
+                <span className="inline-flex max-w-full items-center gap-1.5 break-words">
+                  <Users className="size-3.5 shrink-0 opacity-80 sm:size-4" aria-hidden />
                   {formatMemberCount(memberCount)}
                 </span>
+                <span className={styles.metaSep} aria-hidden>
+                  ·
+                </span>
+                {community.visibility === "private" ? (
+                  <span className="inline-flex items-center gap-1 font-medium text-[var(--woody-text)]/90">
+                    <Lock className="size-3.5 shrink-0 opacity-80" aria-hidden />
+                    Privada
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 font-medium text-[var(--woody-text)]/90">
+                    <Globe className="size-3.5 shrink-0 opacity-80" aria-hidden />
+                    Pública
+                  </span>
+                )}
               </div>
-              <p className={styles.desc}>{community.description}</p>
-              {community.tags.length > 0 ? (
-                <div className={styles.tags}>
-                  {community.tags.map((tag) => (
-                    <CommunityTag key={tag} label={tag} />
-                  ))}
-                </div>
-              ) : null}
             </div>
           </div>
 
-          <div className={styles.actions}>
-            {canManage || canManageMembers ? (
-              <p className="mb-2 text-center text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-[var(--woody-nav)] md:text-right">
-                Área administrativa
-              </p>
-            ) : null}
-            {canManage && onManageCommunity ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="lg"
-                onClick={onManageCommunity}
-                className={cn(woodyFocus.ring, styles.ctaManage, "mb-2")}
-              >
-                <Settings2 className="size-5 shrink-0 opacity-90" aria-hidden />
-                Editar comunidade
-              </Button>
-            ) : null}
-            {canManageMembers && onManageMembers ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="lg"
-                onClick={onManageMembers}
-                className={cn(woodyFocus.ring, styles.ctaManage, "mb-2")}
-              >
-                <UserCog className="size-5 shrink-0 opacity-90" aria-hidden />
-                Moderar membros
-              </Button>
-            ) : null}
+          {description ? (
+            <p className={styles.description}>{description}</p>
+          ) : (
+            <p className={cn(styles.description, "italic text-[var(--woody-muted)]")}>
+              Sem descrição neste espaço. Detalhes adicionais podem aparecer na coluna ao lado quando
+              existirem.
+            </p>
+          )}
+
+          <div className={styles.actionsRow}>
             <Button
               type="button"
-              variant="secondary"
+              variant={cta.variant === "muted" ? "secondary" : cta.variant === "leave" ? "outline" : "default"}
               size="lg"
               disabled={cta.disabled || ctaBusy}
               onClick={() => void cta.onClick()}
@@ -262,25 +254,55 @@ export function CommunityHero({
             >
               {ctaBusy ? "Aguarde…" : cta.label}
             </Button>
-            {accessNotice ? (
-              <p className="mb-1 max-w-[260px] text-center text-xs font-medium text-red-600 dark:text-red-400 md:text-left">
-                {accessNotice}
-              </p>
+
+            {showAdminMenu ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className={cn(woodyFocus.ring, styles.adminTrigger)}
+                    aria-label="Administrar comunidade"
+                  >
+                    Administrar
+                    <ChevronDown className="size-4 opacity-70" aria-hidden />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="min-w-[12rem] border-[var(--woody-accent)]/20 bg-[var(--woody-card)]"
+                >
+                  {canManage && onManageCommunity ? (
+                    <DropdownMenuItem
+                      onClick={() => onManageCommunity()}
+                      className="cursor-pointer text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+                    >
+                      <Settings2 className="size-4 opacity-80" aria-hidden />
+                      Editar comunidade
+                    </DropdownMenuItem>
+                  ) : null}
+                  {canManageMembers && onManageMembers ? (
+                    <DropdownMenuItem
+                      onClick={() => onManageMembers()}
+                      className="cursor-pointer text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+                    >
+                      <UserCog className="size-4 opacity-80" aria-hidden />
+                      Moderar membros
+                    </DropdownMenuItem>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : null}
-            <p className="mt-0 max-w-[min(100%,280px)] text-center text-[0.6875rem] leading-snug text-[var(--woody-muted)] md:max-w-[240px] md:text-left">
-              {community.visibility === "private" && !isMember && membershipStatus !== "banned"
-                ? "Comunidade privada: sua entrada pode depender de aprovação."
-                : null}
-              {community.visibility === "private" && !isMember && membershipStatus !== "banned" ? " " : ""}
-              {isMember
-                ? "Você recebe atualizações e pode publicar neste espaço (mock)."
-                : membershipStatus === "banned"
-                  ? "Conta com restrição neste espaço (mock)."
-                  : "Ao participar, você entra no círculo de conversas desta comunidade (mock)."}
-            </p>
           </div>
+
+          {accessNotice ? (
+            <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
+              {accessNotice}
+            </p>
+          ) : null}
         </div>
       </div>
-    </div>
+    </header>
   );
 }

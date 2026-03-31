@@ -11,6 +11,12 @@ import { SearchModal } from "@/features/search/components/SearchModal";
 export interface FeedLayoutProps {
   children: React.ReactNode;
   className?: string;
+  /**
+   * Coluna global à direita (Sugestões / Seguindo).
+   * Desligar em páginas que já têm sidebar densa no miolo (ex.: detalhe de comunidade),
+   * para não sobrepor conteúdo.
+   */
+  showRightPanel?: boolean;
 }
 
 // --- Estilos do header (evitar classes gigantes no JSX) ---
@@ -73,7 +79,7 @@ function isInsideDialogLayer(node: EventTarget | null): boolean {
   );
 }
 
-export function FeedLayout({ children, className }: FeedLayoutProps) {
+export function FeedLayout({ children, className, showRightPanel = true }: FeedLayoutProps) {
   const { user } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
@@ -201,7 +207,14 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
           </div>
           </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-[250px_1fr_260px] lg:grid-cols-[250px_1fr_230px] w-full gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start">
+          <div
+            className={cn(
+              "grid w-full grid-cols-1 gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start",
+              showRightPanel
+                ? "md:grid-cols-[250px_minmax(0,1fr)_minmax(0,260px)] lg:grid-cols-[250px_minmax(0,1fr)_minmax(0,230px)]"
+                : "md:grid-cols-[250px_minmax(0,1fr)]"
+            )}
+          >
             <Sidebar
               className="md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:self-start"
               onOpenSearch={() => setIsSearchOpen(true)}
@@ -210,7 +223,9 @@ export function FeedLayout({ children, className }: FeedLayoutProps) {
             <main className="min-w-0 flex flex-col pb-16 md:pb-0 pt-4 md:pt-5" aria-label="Feed principal">
               {children}
             </main>
-            <RightPanel className="md:sticky md:top-16 md:max-h-[calc(100vh-4rem)] md:overflow-y-auto md:self-start" />
+            {showRightPanel ? (
+              <RightPanel className="md:sticky md:top-16 md:max-h-[calc(100vh-4rem)] md:overflow-y-auto md:self-start" />
+            ) : null}
           </div>
         </div>
       </div>

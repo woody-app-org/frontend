@@ -70,10 +70,11 @@ const styles = {
   cardContent: "p-4",
   list: "space-y-0",
   item:
-    "flex items-center gap-3 rounded-md py-2 px-1 -mx-1 cursor-pointer transition-colors min-w-0",
+    "flex items-start gap-3 rounded-md py-2 px-1 -mx-1 cursor-pointer transition-colors min-w-0",
   itemHover: "hover:bg-[var(--woody-nav)]/8",
   itemAvatar: "size-9 shrink-0",
-  itemName: "text-sm font-medium text-[var(--woody-text)] truncate min-w-0",
+  itemName:
+    "flex-1 min-w-0 text-sm font-medium leading-snug text-[var(--woody-text)] break-words [overflow-wrap:anywhere]",
   emptyState:
     "flex items-center gap-2 py-3 text-sm text-[var(--woody-muted)]",
   emptyStateIcon: "size-4 shrink-0 text-[var(--woody-muted)]/80",
