@@ -22,7 +22,7 @@ export function PostDetailActions({
   onComment,
 }: PostDetailActionsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2 border-y border-[var(--woody-accent)]/12 py-3">
+    <div className="flex flex-wrap items-center gap-2 pt-2">
       <Button
         type="button"
         variant={post.likedByCurrentUser ? "default" : "ghost"}

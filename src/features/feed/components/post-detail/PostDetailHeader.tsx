@@ -31,9 +31,12 @@ export function PostDetailHeader({ post }: PostDetailHeaderProps) {
       {post.community ? <PostCommunityContextBar preview={post.community} variant="community" /> : null}
 
       <div className="flex items-start gap-3">
-        <Link to={`/profile/${post.author.id}`} className="shrink-0">
-          <Avatar size="default" className="size-10">
-            <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} />
+        <Link
+          to={`/profile/${post.author.id}`}
+          className="shrink-0 overflow-hidden rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]"
+        >
+          <Avatar size="default" className="size-10 ring-0">
+            <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} className="block" />
             <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
               {initials}
             </AvatarFallback>

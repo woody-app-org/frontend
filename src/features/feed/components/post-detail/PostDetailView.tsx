@@ -66,13 +66,18 @@ export function PostDetailView({
             ) : null}
           </div>
 
-          <CommentsList comments={comments} isLoading={isCommentsLoading} error={commentsError} />
-
           <CommentComposer
             onCreateComment={onCreateComment}
             isSubmitting={isCreatingComment}
             commentsReady={!isCommentsLoading}
             emphasizeEntry={focusCommentsOnOpen}
+          />
+
+          <CommentsList
+            comments={comments}
+            isLoading={isCommentsLoading}
+            error={commentsError}
+            className="mt-1 border-t border-[var(--woody-accent)]/10 pt-5"
           />
         </section>
       </div>

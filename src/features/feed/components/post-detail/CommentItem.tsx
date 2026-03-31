@@ -22,11 +22,11 @@ export function CommentItem({ comment, className }: CommentItemProps) {
     <article className={cn("flex gap-3 py-4 first:pt-0 last:pb-0", className)}>
       <Link
         to={`/profile/${author.id}`}
-        className="mt-0.5 shrink-0 rounded-full ring-1 ring-[var(--woody-accent)]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35"
+        className="mt-0.5 shrink-0 rounded-full overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]"
         aria-label={`Ver perfil de ${author.name}`}
       >
-        <Avatar size="sm" className="size-9 sm:size-10">
-          <AvatarImage src={author.avatarUrl ?? undefined} alt="" />
+        <Avatar size="sm" className="size-9 sm:size-10 ring-0">
+          <AvatarImage src={author.avatarUrl ?? undefined} alt="" className="block" />
           <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[0.65rem] font-medium text-[var(--woody-text)]">
             {initials}
           </AvatarFallback>
