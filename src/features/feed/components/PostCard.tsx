@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, MoreVertical, Pin, Flag, Clock } from "lucide-react";
+import { Heart, MessageCircle, MoreVertical, Pin, Flag, Clock, Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -65,6 +65,8 @@ export interface PostCardProps {
   post: Post;
   onPin?: (postId: string) => void;
   onReport?: (postId: string) => void;
+  onLike?: (postId: string) => void | Promise<void>;
+  isLikePending?: boolean;
   className?: string;
   /**
    * `community`: chip da comunidade como indicador (sem link), adequado à página da própria comunidade.
@@ -77,6 +79,8 @@ export function PostCard({
   post,
   onPin,
   onReport,
+  onLike,
+  isLikePending = false,
   className,
   postListingContext = "feed",
 }: PostCardProps) {
@@ -206,11 +210,27 @@ export function PostCard({
           <button
             type="button"
             data-post-ignore-open="true"
-            className={styles.footerItem}
-            aria-label="Curtir publicação"
-            onClick={(event) => event.stopPropagation()}
+            disabled={isLikePending}
+            className={cn(
+              styles.footerItem,
+              post.likedByCurrentUser && "text-[var(--woody-accent)] bg-[var(--woody-accent)]/8",
+              isLikePending && "opacity-70 cursor-not-allowed"
+            )}
+            aria-label={post.likedByCurrentUser ? "Descurtir publicação" : "Curtir publicação"}
+            aria-pressed={post.likedByCurrentUser}
+            onClick={(event) => {
+              event.stopPropagation();
+              void onLike?.(post.id);
+            }}
           >
-            <Heart className="size-[1em] stroke-current" strokeWidth={1.75} />
+            {isLikePending ? (
+              <Loader2 className="size-[1em] animate-spin" strokeWidth={2} />
+            ) : (
+              <Heart
+                className={cn("size-[1em] stroke-current", post.likedByCurrentUser && "fill-current")}
+                strokeWidth={1.75}
+              />
+            )}
             {formatCount(post.likesCount)}
           </button>
           <button

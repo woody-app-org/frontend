@@ -49,6 +49,8 @@ export function FeedPage() {
     nextPage,
     previousPage,
     refetch,
+    togglePostLike,
+    isPostLikePending,
   } = useFeed();
 
   const hasPosts = posts.length > 0;
@@ -116,6 +118,8 @@ export function FeedPage() {
                   <li key={post.id}>
                     <PostCard
                       post={post}
+                      onLike={togglePostLike}
+                      isLikePending={isPostLikePending(post.id)}
                       onPin={(id) => console.log("Pin", id)}
                       onReport={(id) => console.log("Report", id)}
                     />
