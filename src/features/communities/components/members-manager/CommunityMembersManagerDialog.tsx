@@ -50,6 +50,7 @@ export function CommunityMembersManagerDialog({
   const [tab, setTab] = useState<"members" | "requests">("members");
 
   const { activeMembers, pendingRequests, requestUsers, memberRows } = useMemo(() => {
+    void listRevision;
     const all = getMembershipsInCommunity(community.id);
     const activeMembers = all.filter((m) => m.status === "active");
     const sorted = sortMemberships(activeMembers, community);
@@ -70,7 +71,7 @@ export function CommunityMembersManagerDialog({
       requestUsers: reqUsers,
       memberRows: memberPairs,
     };
-  }, [community.id, listRevision, community]);
+  }, [community, listRevision]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

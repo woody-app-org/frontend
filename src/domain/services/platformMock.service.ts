@@ -32,60 +32,75 @@ export interface UpdateCommunityInput {
 }
 
 export async function updateProfileMock(
-  _userId: string,
-  _patch: UpdateProfileInput
+  userId: string,
+  patch: UpdateProfileInput
 ): Promise<MockResult<{ user: User }>> {
+  void userId;
+  void patch;
   await delay(MOCK_DELAY_MS);
   return { ok: true, data: { user: {} as User } };
 }
 
 export async function updateCommunityMock(
-  _communityId: string,
-  _patch: UpdateCommunityInput
+  communityId: string,
+  patch: UpdateCommunityInput
 ): Promise<MockResult<{ community: Community }>> {
+  void communityId;
+  void patch;
   await delay(MOCK_DELAY_MS);
   return { ok: true, data: { community: {} as Community } };
 }
 
 export async function requestJoinCommunityMock(
-  _userId: string,
-  _communityId: string
+  userId: string,
+  communityId: string
 ): Promise<MockResult<{ joinRequestId: string }>> {
+  void userId;
+  void communityId;
   await delay(MOCK_DELAY_MS);
   return { ok: true, data: { joinRequestId: "mock-jr" } };
 }
 
 export async function approveMembershipMock(
-  _joinRequestId: string,
-  _actorUserId: string
+  joinRequestId: string,
+  actorUserId: string
 ): Promise<MockResult<{ membershipId: string }>> {
+  void joinRequestId;
+  void actorUserId;
   await delay(MOCK_DELAY_MS);
   return { ok: true, data: { membershipId: "mock-m" } };
 }
 
 export async function rejectMembershipMock(
-  _joinRequestId: string,
-  _actorUserId: string
+  joinRequestId: string,
+  actorUserId: string
 ): Promise<MockResult<{ joinRequestId: string }>> {
+  void actorUserId;
   await delay(MOCK_DELAY_MS);
-  return { ok: true, data: { joinRequestId: _joinRequestId } };
+  return { ok: true, data: { joinRequestId } };
 }
 
 export async function removeMemberMock(
-  _communityId: string,
-  _memberUserId: string,
-  _actorUserId: string
+  communityId: string,
+  memberUserId: string,
+  actorUserId: string
 ): Promise<MockResult<{ removedUserId: string }>> {
+  void communityId;
+  void actorUserId;
   await delay(MOCK_DELAY_MS);
-  return { ok: true, data: { removedUserId: _memberUserId } };
+  return { ok: true, data: { removedUserId: memberUserId } };
 }
 
 export async function setMemberRoleMock(
-  _communityId: string,
-  _memberUserId: string,
-  _role: CommunityMemberRole,
-  _actorUserId: string
+  communityId: string,
+  memberUserId: string,
+  role: CommunityMemberRole,
+  actorUserId: string
 ): Promise<MockResult<{ membershipId: string }>> {
+  void communityId;
+  void memberUserId;
+  void role;
+  void actorUserId;
   await delay(MOCK_DELAY_MS);
   return { ok: true, data: { membershipId: "mock-m" } };
 }

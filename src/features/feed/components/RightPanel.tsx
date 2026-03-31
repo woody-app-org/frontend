@@ -113,16 +113,13 @@ export function RightPanel({ className }: RightPanelProps) {
     getUserDisplayPatchesVersion,
     getUserDisplayPatchesVersion
   );
-  const followingResolved = useMemo(
-    () =>
-      MOCK_FOLLOWING.map((item) => {
-        const u = getUserById(item.id);
-        return u
-          ? { id: u.id, name: u.name, avatarUrl: u.avatarUrl ?? item.avatarUrl }
-          : item;
-      }),
-    [userDisplayRev]
-  );
+  const followingResolved = useMemo(() => {
+    void userDisplayRev;
+    return MOCK_FOLLOWING.map((item) => {
+      const u = getUserById(item.id);
+      return u ? { id: u.id, name: u.name, avatarUrl: u.avatarUrl ?? item.avatarUrl } : item;
+    });
+  }, [userDisplayRev]);
 
   return (
     <aside className={cn(styles.panel, className)}>

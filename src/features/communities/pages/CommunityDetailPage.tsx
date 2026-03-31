@@ -59,10 +59,10 @@ function CommunityDetailLoaded({
   const membershipStatus = getCommunityMembershipStatus(viewerId, community.id);
   const joinRequest = getJoinRequestForUserInCommunity(viewerId, community.id) ?? null;
 
-  const memberCount = useMemo(
-    () => getActiveMemberCountForCommunity(community.id),
-    [community.id, dataRevision]
-  );
+  const memberCount = useMemo(() => {
+    void dataRevision;
+    return getActiveMemberCountForCommunity(community.id);
+  }, [community.id, dataRevision]);
 
   const { canEditCommunity, canManageMembers, isOwner } = useCommunityPermissions(community);
 
@@ -199,20 +199,20 @@ export function CommunityDetailPage() {
 
   const bump = useCallback(() => setRevision((n) => n + 1), []);
 
-  const community = useMemo(
-    () => (communitySlug ? getCommunityResolvedBySlug(communitySlug) : undefined),
-    [communitySlug, revision]
-  );
+  const community = useMemo(() => {
+    void revision;
+    return communitySlug ? getCommunityResolvedBySlug(communitySlug) : undefined;
+  }, [communitySlug, revision]);
 
-  const posts = useMemo(
-    () => (community ? getPostsByCommunityId(community.id) : []),
-    [community?.id, revision]
-  );
+  const posts = useMemo(() => {
+    void revision;
+    return community ? getPostsByCommunityId(community.id) : [];
+  }, [community, revision]);
 
-  const members = useMemo(
-    () => (community ? getCommunityMemberUsers(community.id) : []),
-    [community?.id, revision]
-  );
+  const members = useMemo(() => {
+    void revision;
+    return community ? getCommunityMemberUsers(community.id) : [];
+  }, [community, revision]);
 
   if (!communitySlug) {
     return (

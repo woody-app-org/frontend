@@ -45,6 +45,8 @@ export function useFeed(): UseFeedReturn {
   const isFirstLoadRef = useRef(true);
 
   const fetchFeed = useCallback(async () => {
+    void userDisplayRev;
+    void communityDraftRev;
     const isInitialLoad = isFirstLoadRef.current;
     setIsLoading(isInitialLoad);
     setIsRefreshing(!isInitialLoad);

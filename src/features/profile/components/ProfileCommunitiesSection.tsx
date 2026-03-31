@@ -73,10 +73,10 @@ export function ProfileCommunitiesSection({
     getCommunityDraftsVersion,
     getCommunityDraftsVersion
   );
-  const communities = useMemo(
-    () => getCommunitiesForUser(userId),
-    [userId, communityDraftRev]
-  );
+  const communities = useMemo(() => {
+    void communityDraftRev;
+    return getCommunitiesForUser(userId);
+  }, [userId, communityDraftRev]);
 
   const blurb = isOwnProfile
     ? "Espaços onde você conversa e constrói vínculos na Woody."

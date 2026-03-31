@@ -142,7 +142,7 @@ export async function approveJoinRequest(
 
   jr.status = "approved";
   const mRows = getMembershipRows();
-  let mem = mRows.find((x) => x.userId === jr.userId && x.communityId === jr.communityId);
+  const mem = mRows.find((x) => x.userId === jr.userId && x.communityId === jr.communityId);
   if (mem) {
     mem.status = "active";
     if (mem.role !== "owner") mem.role = "member";

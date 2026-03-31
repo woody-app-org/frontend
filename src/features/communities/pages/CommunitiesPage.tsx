@@ -35,7 +35,10 @@ export function CommunitiesPage() {
     getCommunityDraftsVersion,
     getCommunityDraftsVersion
   );
-  const myCommunities = useMemo(() => getMyCommunities(viewerId), [viewerId, communityDraftRev]);
+  const myCommunities = useMemo(() => {
+    void communityDraftRev;
+    return getMyCommunities(viewerId);
+  }, [viewerId, communityDraftRev]);
   const memberIds = useMemo(() => new Set(myCommunities.map((c) => c.id)), [myCommunities]);
 
   const [query, setQuery] = useState("");
@@ -62,6 +65,7 @@ export function CommunitiesPage() {
     })
       .map((c) => getCommunityById(c.id))
       .filter((c): c is NonNullable<typeof c> => c != null);
+    void communityDraftRev;
     return [...list].sort((a, b) => b.memberCount - a.memberCount);
   }, [query, category, communityDraftRev]);
 
