@@ -5,10 +5,11 @@ export interface SeedFollow {
   followingId: string;
 }
 
-/** Post bruto alinhado ao antigo seed (author embutido). */
+/** Post bruto alinhado ao seed (autor expandido + `authorId` para DTO/API). */
 export interface SeedPost {
   id: string;
   communityId: string;
+  authorId: string;
   author: User;
   title: string;
   content: string;
@@ -17,6 +18,16 @@ export interface SeedPost {
   createdAt: string;
   likesCount: number;
   commentsCount: number;
+}
+
+/** Comentário persistido no mock (sem `author` expandido até o enrich). */
+export interface SeedComment {
+  id: string;
+  postId: string;
+  authorId: string;
+  body: string;
+  /** ISO 8601. */
+  createdAt: string;
 }
 
 const avatar = (id: string, sig: string) =>
@@ -324,12 +335,51 @@ function buildUsers(): User[] {
   return users;
 }
 
+function buildSeedCommentsForPosts(
+  posts: SeedPost[],
+  authorsByCommunity: Map<string, string[]>
+): SeedComment[] {
+  const COMMENT_TOPICS = [
+    ...SNIPPETS_SHORT,
+    "Concordo plenamente — obrigada por compartilhar.",
+    "Vou testar isso na próxima semana e volto com feedback.",
+    "Tem algum link ou material de apoio?",
+    "Mesma dúvida aqui, acompanhando a thread.",
+    "🙌 Isso normaliza demais o que estou sentindo.",
+  ];
+  const comments: SeedComment[] = [];
+  let cid = 0;
+
+  for (const post of posts) {
+    const pool = authorsByCommunity.get(post.communityId) ?? [post.authorId];
+    const volume = Math.max(
+      0,
+      Math.min(post.commentsCount, 2 + (hash(post.id.length, 7) % 12))
+    );
+    for (let j = 0; j < volume; j += 1) {
+      cid += 1;
+      const authorId = pool[(hash(cid, j) + post.id.length) % pool.length];
+      const hoursAgo = j * 3 + (hash(cid, 5) % 20);
+      comments.push({
+        id: `cmt-${post.id}-${j + 1}`,
+        postId: post.id,
+        authorId,
+        body: COMMENT_TOPICS[(hash(cid, j * 2) + j) % COMMENT_TOPICS.length],
+        createdAt: new Date(Date.now() - hoursAgo * 3_600_000 - (hash(cid, 3) % 3600) * 1000).toISOString(),
+      });
+    }
+  }
+
+  return comments;
+}
+
 export function buildPlatformSeed(): {
   users: User[];
   communities: Community[];
   memberships: Membership[];
   follows: SeedFollow[];
   posts: SeedPost[];
+  postComments: SeedComment[];
   joinRequests: JoinRequest[];
 } {
   const users = buildUsers();
@@ -507,6 +557,7 @@ export function buildPlatformSeed(): {
     posts.push({
       id: `post-${pid}`,
       communityId: c.id,
+      authorId: author.id,
       author,
       title: i % 4 === 0 ? tpl.title : `${tpl.title} · #${i + 1}`,
       content,
@@ -529,6 +580,7 @@ export function buildPlatformSeed(): {
     posts.push({
       id: `post-u1-${j}`,
       communityId: cId,
+      authorId: "1",
       author: userById.get("1")!,
       title: j % 2 === 0 ? "Notas da semana na Woody" : "Atualização rápida para quem acompanha",
       content:
@@ -543,5 +595,14 @@ export function buildPlatformSeed(): {
     });
   }
 
-  return { users, communities, memberships, follows, posts, joinRequests };
+  const postComments = buildSeedCommentsForPosts(posts, authorsByCommunity);
+  const countByPost = new Map<string, number>();
+  for (const c of postComments) {
+    countByPost.set(c.postId, (countByPost.get(c.postId) ?? 0) + 1);
+  }
+  for (const p of posts) {
+    p.commentsCount = countByPost.get(p.id) ?? 0;
+  }
+
+  return { users, communities, memberships, follows, posts, postComments, joinRequests };
 }

@@ -151,10 +151,12 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
 export async function getProfilePosts(
   userId: string,
   page: number,
-  pageSize: number = 10
+  pageSize: number = 10,
+  /** Sessão da visitante: curtidas e contadores alinhados ao mock. */
+  viewerId: string
 ): Promise<ProfilePostsResponse> {
   await delay(400);
-  const pool = getPostsByAuthorId(userId);
+  const pool = getPostsByAuthorId(userId, viewerId);
   const totalCount = pool.length;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;

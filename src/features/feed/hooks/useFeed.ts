@@ -1,5 +1,9 @@
 import { useState, useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { subscribeCommunityDrafts, getCommunityDraftsVersion } from "@/domain/mocks/communityDraftStore";
+import {
+  getPostInteractionsVersion,
+  subscribePostInteractions,
+} from "@/domain/mocks/postInteractionMockStore";
 import { subscribeUserDisplayPatches, getUserDisplayPatchesVersion } from "@/domain/mocks/userDisplayPatchStore";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import type { Post, FeedFilter } from "../types";
@@ -33,6 +37,11 @@ export function useFeed(): UseFeedReturn {
     getCommunityDraftsVersion,
     getCommunityDraftsVersion
   );
+  const postInteractionRev = useSyncExternalStore(
+    subscribePostInteractions,
+    getPostInteractionsVersion,
+    getPostInteractionsVersion
+  );
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -47,6 +56,7 @@ export function useFeed(): UseFeedReturn {
   const fetchFeed = useCallback(async () => {
     void userDisplayRev;
     void communityDraftRev;
+    void postInteractionRev;
     const isInitialLoad = isFirstLoadRef.current;
     setIsLoading(isInitialLoad);
     setIsRefreshing(!isInitialLoad);
@@ -64,7 +74,7 @@ export function useFeed(): UseFeedReturn {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, filter, viewerId, userDisplayRev, communityDraftRev]);
+  }, [page, filter, viewerId, userDisplayRev, communityDraftRev, postInteractionRev]);
 
   useEffect(() => {
     fetchFeed();

@@ -11,4 +11,4 @@ export { FeedSkeleton } from "./components/FeedSkeleton";
 export { FeedEmptyState } from "./components/FeedEmptyState";
 export { FeedErrorState } from "./components/FeedErrorState";
 export { useFeed } from "./hooks/useFeed";
-export type { Post, User, FeedFilter, PaginatedResponse } from "./types";
+export type { Comment, Post, PostInteractionState, User, FeedFilter, PaginatedResponse } from "./types";

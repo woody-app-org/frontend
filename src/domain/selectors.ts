@@ -1,7 +1,21 @@
-import type { Community, JoinRequest, Membership, Post, PostCommunityPreview, User } from "./types";
+import type {
+  Comment,
+  Community,
+  JoinRequest,
+  Membership,
+  Post,
+  PostCommunityPreview,
+  User,
+} from "./types";
 import { getCommunityDraft } from "./mocks/communityDraftStore";
 import { getJoinRequestRows, getMembershipRows } from "./mocks/membershipMockStore";
-import { SEED_COMMUNITIES, SEED_FOLLOWS, SEED_POSTS, SEED_USERS, type SeedPost } from "./mocks/seed";
+import {
+  getMutableCommentRows,
+  getMutablePostRows,
+  getSeedPostRowById,
+  isPostLikedByUser,
+} from "./mocks/postInteractionMockStore";
+import { SEED_COMMUNITIES, SEED_FOLLOWS, SEED_USERS, type SeedComment, type SeedPost } from "./mocks/seed";
 import { getUserDisplayPatch } from "./mocks/userDisplayPatchStore";
 
 const communityById = new Map(SEED_COMMUNITIES.map((c) => [c.id, c]));
@@ -57,11 +71,14 @@ export function getPostCommunityPreview(communityId: string): PostCommunityPrevi
   return c ? postCommunityPreviewFromCommunity(c) : undefined;
 }
 
-export function enrichPost(raw: SeedPost): Post {
-  const author = getUserById(raw.author.id) ?? raw.author;
+export function enrichPost(raw: SeedPost, viewerId?: string): Post {
+  const authorId = raw.authorId ?? raw.author.id;
+  const author = getUserById(authorId) ?? raw.author;
+  const likedByCurrentUser = viewerId != null && viewerId !== "" ? isPostLikedByUser(viewerId, raw.id) : false;
   return {
     id: raw.id,
     communityId: raw.communityId,
+    authorId,
     author,
     title: raw.title,
     content: raw.content,
@@ -70,26 +87,60 @@ export function enrichPost(raw: SeedPost): Post {
     createdAt: raw.createdAt,
     likesCount: raw.likesCount,
     commentsCount: raw.commentsCount,
+    likedByCurrentUser,
     community: getPostCommunityPreview(raw.communityId),
   };
 }
 
-export function getAllSeedPostsEnriched(): Post[] {
-  return SEED_POSTS.map((p) => enrichPost(p));
+export function enrichComment(raw: SeedComment): Comment {
+  const author = getUserById(raw.authorId);
+  if (!author) {
+    throw new Error(`enrichComment: usuária ${raw.authorId} não encontrada no seed`);
+  }
+  return {
+    id: raw.id,
+    postId: raw.postId,
+    authorId: raw.authorId,
+    author,
+    body: raw.body,
+    createdAt: raw.createdAt,
+  };
+}
+
+/** Lista comentários do mock, ordenados do mais antigo ao mais recente. */
+export function getCommentsEnrichedByPostId(postId: string): Comment[] {
+  return getMutableCommentRows()
+    .filter((c) => c.postId === postId)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((c) => enrichComment(c));
+}
+
+export function getPostById(postId: string, viewerId?: string): Post | undefined {
+  const raw = getSeedPostRowById(postId);
+  return raw ? enrichPost(raw, viewerId) : undefined;
+}
+
+export function getAllSeedPostsEnriched(viewerId?: string): Post[] {
+  return getMutablePostRows().map((p) => enrichPost(p, viewerId));
 }
 
 /** Posts recentes apenas das comunidades em que a usuária participa (mock). */
-export function getRecentPostsInUserCommunities(userId: string, limit = 5): Post[] {
+export function getRecentPostsInUserCommunities(userId: string, limit = 5, viewerId?: string): Post[] {
   const allowed = new Set(getCommunityIdsForUser(userId));
-  return getAllSeedPostsEnriched().filter((p) => allowed.has(p.communityId)).slice(0, limit);
+  const vid = viewerId ?? userId;
+  return getAllSeedPostsEnriched(vid).filter((p) => allowed.has(p.communityId)).slice(0, limit);
 }
 
-export function getPostsByCommunityId(communityId: string): Post[] {
-  return SEED_POSTS.filter((p) => p.communityId === communityId).map((p) => enrichPost(p));
+export function getPostsByCommunityId(communityId: string, viewerId?: string): Post[] {
+  return getMutablePostRows()
+    .filter((p) => p.communityId === communityId)
+    .map((p) => enrichPost(p, viewerId));
 }
 
-export function getPostsByAuthorId(authorId: string): Post[] {
-  return SEED_POSTS.filter((p) => p.author.id === authorId).map((p) => enrichPost(p));
+export function getPostsByAuthorId(authorId: string, viewerId?: string): Post[] {
+  return getMutablePostRows()
+    .filter((p) => p.authorId === authorId)
+    .map((p) => enrichPost(p, viewerId));
 }
 
 export function getMembershipsForUser(userId: string): Membership[] {

@@ -1,4 +1,4 @@
-export type { User, Post } from "@/domain/types";
+export type { User, Post, Comment, PostInteractionState } from "@/domain/types";
 
 export type FeedFilter = "trending" | "forYou" | "following";
 
