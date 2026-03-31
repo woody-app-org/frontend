@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, MoreVertical, Pin, Flag, Clock } from "lucide-react";
 import {
   Card,
@@ -80,6 +80,7 @@ export function PostCard({
   className,
   postListingContext = "feed",
 }: PostCardProps) {
+  const navigate = useNavigate();
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -87,13 +88,33 @@ export function PostCard({
     .slice(0, 2)
     .toUpperCase();
 
+  const openPost = () => navigate(`/posts/${post.id}`);
+  const openPostComments = () => navigate(`/posts/${post.id}?focus=comments`);
+
+  const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("a,button,[data-post-ignore-open='true']")) return;
+    openPost();
+  };
+
+  const handleCardKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    openPost();
+  };
+
   return (
     <Card
       className={cn(
         styles.card,
+        "cursor-pointer",
         postListingContext === "community" && "px-4 pb-4 pt-3 sm:px-6 sm:pb-5 sm:pt-4",
         className
       )}
+      role="button"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
     >
       {post.community ? (
         <PostCommunityContextBar preview={post.community} variant={postListingContext} />
@@ -102,8 +123,10 @@ export function PostCard({
         <div className={styles.headerLeft}>
           <Link
             to={`/profile/${post.author.id}`}
+            data-post-ignore-open="true"
             className="flex min-w-0 flex-1 items-start gap-3 rounded-md -m-1.5 p-1.5 hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
             aria-label={`Ver perfil de ${post.author.name}`}
+            onClick={(event) => event.stopPropagation()}
           >
             <Avatar size="default" className={styles.avatar}>
               <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} />
@@ -135,8 +158,10 @@ export function PostCard({
             <Button
               variant="ghost"
               size="icon-xs"
+              data-post-ignore-open="true"
               className={styles.menuTrigger}
               aria-label="Abrir menu"
+              onClick={(event) => event.stopPropagation()}
             >
               <MoreVertical className="size-4" />
             </Button>
@@ -178,14 +203,29 @@ export function PostCard({
           </div>
         )}
         <div className={styles.footer}>
-          <span className={styles.footerItem}>
+          <button
+            type="button"
+            data-post-ignore-open="true"
+            className={styles.footerItem}
+            aria-label="Curtir publicação"
+            onClick={(event) => event.stopPropagation()}
+          >
             <Heart className="size-[1em] stroke-current" strokeWidth={1.75} />
             {formatCount(post.likesCount)}
-          </span>
-          <span className={styles.footerItem}>
+          </button>
+          <button
+            type="button"
+            data-post-ignore-open="true"
+            className={styles.footerItem}
+            aria-label="Abrir comentários da publicação"
+            onClick={(event) => {
+              event.stopPropagation();
+              openPostComments();
+            }}
+          >
             <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
             {formatCount(post.commentsCount)}
-          </span>
+          </button>
         </div>
       </CardContent>
     </Card>

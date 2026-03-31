@@ -1,0 +1,145 @@
+import { useCallback, useEffect, useState } from "react";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import type { Comment, Post } from "@/domain/types";
+import {
+  createCommentMock,
+  getCommentsByPostIdMock,
+  getPostByIdMock,
+  togglePostLikeMock,
+} from "@/domain/services/postMock.service";
+
+interface UsePostDetailReturn {
+  post: Post | null;
+  comments: Comment[];
+  isLoading: boolean;
+  isMutatingLike: boolean;
+  isCreatingComment: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+  toggleLike: () => Promise<void>;
+  createComment: (body: string) => Promise<boolean>;
+}
+
+export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
+  const viewerId = useViewerId();
+  const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMutatingLike, setIsMutatingLike] = useState(false);
+  const [isCreatingComment, setIsCreatingComment] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    if (!postId) {
+      setPost(null);
+      setComments([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [postData, commentsData] = await Promise.all([
+        getPostByIdMock(postId, viewerId),
+        getCommentsByPostIdMock(postId),
+      ]);
+      setPost(postData);
+      setComments(commentsData);
+    } catch {
+      setError("Não foi possível carregar o post.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [postId, viewerId]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  const toggleLike = useCallback(async () => {
+    if (!postId || !post) return;
+    setIsMutatingLike(true);
+    setError(null);
+    const before = {
+      likesCount: post.likesCount,
+      likedByCurrentUser: post.likedByCurrentUser,
+    };
+
+    setPost({
+      ...post,
+      likesCount: post.likedByCurrentUser ? Math.max(0, post.likesCount - 1) : post.likesCount + 1,
+      likedByCurrentUser: !post.likedByCurrentUser,
+    });
+
+    try {
+      const result = await togglePostLikeMock(postId, viewerId);
+      if (!result) throw new Error("toggle like falhou");
+      setPost((current) =>
+        current
+          ? {
+              ...current,
+              likesCount: result.likesCount,
+              likedByCurrentUser: result.likedByCurrentUser,
+            }
+          : current
+      );
+    } catch {
+      setPost((current) =>
+        current
+          ? {
+              ...current,
+              likesCount: before.likesCount,
+              likedByCurrentUser: before.likedByCurrentUser,
+            }
+          : current
+      );
+      setError("Não foi possível atualizar a curtida.");
+    } finally {
+      setIsMutatingLike(false);
+    }
+  }, [postId, post, viewerId]);
+
+  const createComment = useCallback(
+    async (body: string) => {
+      if (!postId) return false;
+      setIsCreatingComment(true);
+      setError(null);
+      try {
+        const result = await createCommentMock(postId, viewerId, body);
+        if (!result.ok) {
+          setError(result.error);
+          return false;
+        }
+        setComments((current) => [...current, result.comment]);
+        setPost((current) =>
+          current
+            ? {
+                ...current,
+                commentsCount: current.commentsCount + 1,
+              }
+            : current
+        );
+        return true;
+      } catch {
+        setError("Não foi possível publicar o comentário.");
+        return false;
+      } finally {
+        setIsCreatingComment(false);
+      }
+    },
+    [postId, viewerId]
+  );
+
+  return {
+    post,
+    comments,
+    isLoading,
+    isMutatingLike,
+    isCreatingComment,
+    error,
+    refetch,
+    toggleLike,
+    createComment,
+  };
+}

@@ -12,7 +12,7 @@ import { OnboardingStepCommunities } from "@/features/auth/onboarding/steps/Onbo
 import { OnboardingStepComplete } from "@/features/auth/onboarding/steps/OnboardingStepComplete";
 import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { RootRedirect } from "@/app/RootRedirect";
-import { FeedPage } from "@/features/feed";
+import { FeedPage, PostDetailPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
 import { CommunitiesPage, CommunityDetailPage } from "@/features/communities";
 
@@ -50,6 +50,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <FeedPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "posts/:postId",
+        element: (
+          <ProtectedRoute>
+            <PostDetailPage />
           </ProtectedRoute>
         ),
       },

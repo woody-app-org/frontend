@@ -1,4 +1,5 @@
 export { FeedPage } from "./pages/FeedPage";
+export { PostDetailPage } from "./pages/PostDetailPage";
 export { PostCard } from "./components/PostCard";
 export { CreatePostCard } from "./components/CreatePostCard";
 export { FeedTabs } from "./components/FeedTabs";
