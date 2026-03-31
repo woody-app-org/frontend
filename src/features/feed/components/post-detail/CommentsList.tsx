@@ -1,6 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { Comment } from "@/domain/types";
+import { getRootCommentsByPostId } from "@/domain/lib/commentThreads";
 import { CommentItem } from "./CommentItem";
 import { CommentsEmptyState } from "./CommentsEmptyState";
 
@@ -22,13 +23,14 @@ function CommentsListSkeleton({ rows = 3 }: { rows?: number }) {
 }
 
 export interface CommentsListProps {
+  postId: string;
   comments: Comment[];
   isLoading: boolean;
   error: string | null;
   className?: string;
 }
 
-export function CommentsList({ comments, isLoading, error, className }: CommentsListProps) {
+export function CommentsList({ postId, comments, isLoading, error, className }: CommentsListProps) {
   if (error) {
     return (
       <div
@@ -52,13 +54,15 @@ export function CommentsList({ comments, isLoading, error, className }: Comments
     );
   }
 
-  if (!comments.length) {
+  const roots = getRootCommentsByPostId(postId, comments);
+
+  if (!roots.length) {
     return <CommentsEmptyState className={className} />;
   }
 
   return (
     <div className={cn("divide-y divide-[var(--woody-accent)]/10", className)}>
-      {comments.map((comment) => (
+      {roots.map((comment) => (
         <CommentItem key={comment.id} comment={comment} />
       ))}
     </div>

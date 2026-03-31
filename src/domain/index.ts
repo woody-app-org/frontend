@@ -39,6 +39,7 @@ export {
   getActiveMemberCountForCommunity,
   getCommunityMemberUsers,
   getCommentsEnrichedByPostId,
+  getRepliesEnrichedByCommentId,
   getJoinRequestForUserInCommunity,
   getMembershipsInCommunity,
   getJoinRequestsForCommunity,
@@ -56,6 +57,12 @@ export {
   postCommunityPreviewFromCommunity,
 } from "./selectors";
 export { pickPostInteractionState } from "./lib/postInteractionHelpers";
+export {
+  buildCommentThreadTree,
+  getRepliesByCommentId,
+  getRootCommentsByPostId,
+} from "./lib/commentThreads";
+export type { CommentParentRef, CommentThreadNode } from "./lib/commentThreads";
 export { MOCK_PRIMARY_USER_ID } from "./mocks/constants";
 export {
   SEED_COMMUNITIES,

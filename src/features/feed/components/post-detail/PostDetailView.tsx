@@ -74,6 +74,7 @@ export function PostDetailView({
           />
 
           <CommentsList
+            postId={post.id}
             comments={comments}
             isLoading={isCommentsLoading}
             error={commentsError}

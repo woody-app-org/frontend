@@ -24,8 +24,10 @@ export interface SeedPost {
 export interface SeedComment {
   id: string;
   postId: string;
+  /** `null` = comentário raiz no post. */
+  parentCommentId: string | null;
   authorId: string;
-  body: string;
+  content: string;
   /** ISO 8601. */
   createdAt: string;
 }
@@ -346,6 +348,9 @@ function buildSeedCommentsForPosts(
     "Tem algum link ou material de apoio?",
     "Mesma dúvida aqui, acompanhando a thread.",
     "🙌 Isso normaliza demais o que estou sentindo.",
+    "Respondendo aqui: faz sentido, obrigada por abrir o tema.",
+    "Subindo um nível: também passo por algo parecido.",
+    "Concordo em partes — vale um café virtual pra destrinchar.",
   ];
   const comments: SeedComment[] = [];
   let cid = 0;
@@ -356,16 +361,69 @@ function buildSeedCommentsForPosts(
       0,
       Math.min(post.commentsCount, 2 + (hash(post.id.length, 7) % 12))
     );
+    const rootsThisPost: SeedComment[] = [];
+
     for (let j = 0; j < volume; j += 1) {
       cid += 1;
       const authorId = pool[(hash(cid, j) + post.id.length) % pool.length];
       const hoursAgo = j * 3 + (hash(cid, 5) % 20);
-      comments.push({
-        id: `cmt-${post.id}-${j + 1}`,
+      const createdAt = new Date(
+        Date.now() - hoursAgo * 3_600_000 - (hash(cid, 3) % 3600) * 1000
+      ).toISOString();
+      const root: SeedComment = {
+        id: `cmt-${post.id}-r-${j + 1}`,
         postId: post.id,
+        parentCommentId: null,
         authorId,
-        body: COMMENT_TOPICS[(hash(cid, j * 2) + j) % COMMENT_TOPICS.length],
-        createdAt: new Date(Date.now() - hoursAgo * 3_600_000 - (hash(cid, 3) % 3600) * 1000).toISOString(),
+        content: COMMENT_TOPICS[(hash(cid, j * 2) + j) % COMMENT_TOPICS.length],
+        createdAt,
+      };
+      comments.push(root);
+      rootsThisPost.push(root);
+    }
+
+    /** Threads moderadas: respostas e, em alguns posts, um terceiro nível. */
+    if (rootsThisPost.length === 0) continue;
+    const threadSalt = hash(post.id.length, 11);
+    if (threadSalt % 5 >= 3) continue;
+
+    const firstRoot = rootsThisPost[0];
+    const replyAuthor1 = pool[(hash(post.id.length, 2) + 1) % pool.length];
+    const tReply1 = new Date(new Date(firstRoot.createdAt).getTime() + (3 + (threadSalt % 5)) * 60_000).toISOString();
+    const reply1: SeedComment = {
+      id: `cmt-${post.id}-re-${firstRoot.id}-a`,
+      postId: post.id,
+      parentCommentId: firstRoot.id,
+      authorId: replyAuthor1,
+      content: COMMENT_TOPICS[(hash(cid + 1, 8) + 1) % COMMENT_TOPICS.length],
+      createdAt: tReply1,
+    };
+    comments.push(reply1);
+
+    if (rootsThisPost.length >= 2 && threadSalt % 2 === 0) {
+      const secondRoot = rootsThisPost[1];
+      const replyAuthor2 = pool[(hash(post.id.length, 4) + 2) % pool.length];
+      const tReply2 = new Date(new Date(secondRoot.createdAt).getTime() + 8 * 60_000).toISOString();
+      comments.push({
+        id: `cmt-${post.id}-re-${secondRoot.id}-a`,
+        postId: post.id,
+        parentCommentId: secondRoot.id,
+        authorId: replyAuthor2,
+        content: COMMENT_TOPICS[(hash(cid + 2, 9) + 2) % COMMENT_TOPICS.length],
+        createdAt: tReply2,
+      });
+    }
+
+    if (threadSalt % 4 === 0) {
+      const replyAuthor3 = pool[(hash(post.id.length, 6) + 3) % pool.length];
+      const tDeep = new Date(new Date(reply1.createdAt).getTime() + 6 * 60_000).toISOString();
+      comments.push({
+        id: `cmt-${post.id}-re-${reply1.id}-b`,
+        postId: post.id,
+        parentCommentId: reply1.id,
+        authorId: replyAuthor3,
+        content: COMMENT_TOPICS[(hash(cid + 3, 4) + 3) % COMMENT_TOPICS.length],
+        createdAt: tDeep,
       });
     }
   }

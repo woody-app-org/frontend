@@ -26,7 +26,8 @@ interface UsePostDetailReturn {
   commentsError: string | null;
   refetch: () => Promise<void>;
   toggleLike: () => Promise<void>;
-  createComment: (body: string) => Promise<boolean>;
+  /** `parentCommentId` opcional para resposta (composer raiz envia `null`). */
+  createComment: (body: string, parentCommentId?: string | null) => Promise<boolean>;
 }
 
 export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
@@ -142,14 +143,14 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   }, [postId, post, viewerId]);
 
   const createComment = useCallback(
-    async (body: string) => {
+    async (body: string, parentCommentId?: string | null) => {
       if (!postId) return false;
       const trimmed = body.trim();
       if (!trimmed) return false;
       setIsCreatingComment(true);
       setError(null);
       try {
-        const result = await createCommentMock(postId, viewerId, trimmed);
+        const result = await createCommentMock(postId, viewerId, trimmed, parentCommentId ?? null);
         if (!result.ok) {
           setError(result.error);
           return false;

@@ -46,7 +46,7 @@ export function CommentItem({ comment, className }: CommentItemProps) {
           </span>
         </header>
         <p className="mt-1.5 whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-[var(--woody-text)]/90 [overflow-wrap:anywhere]">
-          {comment.body}
+          {comment.content}
         </p>
       </div>
     </article>

@@ -4,7 +4,12 @@
  * manter assinaturas ou adaptadores finos para não reescrever hooks/UI.
  */
 import type { Comment, Post } from "../types";
-import { enrichComment, getCommentsEnrichedByPostId, getPostById } from "../selectors";
+import {
+  enrichComment,
+  getCommentsEnrichedByPostId,
+  getPostById,
+  getRepliesEnrichedByCommentId,
+} from "../selectors";
 import { appendCommentForPost, togglePostLikeForUser } from "../mocks/postInteractionMockStore";
 
 const MOCK_DELAY_MS = 400;
@@ -25,6 +30,12 @@ export async function getCommentsByPostIdMock(postId: string): Promise<Comment[]
   return getCommentsEnrichedByPostId(postId);
 }
 
+/** TODO(backend): GET /comments/:parentCommentId/replies */
+export async function getRepliesByCommentIdMock(parentCommentId: string): Promise<Comment[]> {
+  await delay(Math.round(MOCK_DELAY_MS * 0.5));
+  return getRepliesEnrichedByCommentId(parentCommentId);
+}
+
 /** TODO(backend): POST /posts/:postId/like ou DELETE conforme estado */
 export async function togglePostLikeMock(
   postId: string,
@@ -42,18 +53,20 @@ export type CreateCommentMockResult =
 export async function createCommentMock(
   postId: string,
   viewerId: string,
-  body: string
+  content: string,
+  parentCommentId?: string | null
 ): Promise<CreateCommentMockResult> {
   await delay(Math.round(MOCK_DELAY_MS * 0.65));
-  const trimmed = body.trim();
+  const trimmed = content.trim();
   if (!trimmed) return { ok: false, error: "Escreva uma mensagem antes de enviar." };
 
   const row = appendCommentForPost({
     postId,
     authorId: viewerId,
-    body: trimmed,
+    content: trimmed,
     createdAt: new Date().toISOString(),
+    parentCommentId: parentCommentId ?? null,
   });
-  if (!row) return { ok: false, error: "Post não encontrado." };
+  if (!row) return { ok: false, error: "Não foi possível publicar (post ou comentário pai inválido)." };
   return { ok: true, comment: enrichComment(row) };
 }

@@ -81,10 +81,12 @@ export interface PostCommunityPreview {
 export interface Comment {
   id: string;
   postId: string;
+  /** Comentário raiz: `null`. Resposta: id do comentário pai. */
+  parentCommentId: string | null;
   authorId: string;
   author: User;
-  /** Corpo do comentário (equivalente a `body`/`content` na API). */
-  body: string;
+  /** Corpo do comentário (nome alinhado a DTOs típicos `content`). */
+  content: string;
   /** ISO 8601 recomendado para integração com backend. */
   createdAt: string;
 }

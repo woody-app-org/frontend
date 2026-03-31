@@ -107,20 +107,29 @@ export function togglePostLikeForUser(userId: string, postId: string): {
 export function appendCommentForPost(input: {
   postId: string;
   authorId: string;
-  body: string;
+  content: string;
   createdAt: string;
+  /** `undefined`/`null` = comentário raiz. */
+  parentCommentId?: string | null;
 }): SeedComment | null {
   const rows = getMutablePostRows();
   const post = rows.find((p) => p.id === input.postId);
   if (!post) return null;
 
   const comments = getMutableCommentRows();
+  const parentCommentId = input.parentCommentId ?? null;
+  if (parentCommentId != null) {
+    const parent = comments.find((c) => c.id === parentCommentId);
+    if (!parent || parent.postId !== input.postId) return null;
+  }
+
   const nextNum = comments.filter((c) => c.postId === input.postId).length + 1;
   const row: SeedComment = {
     id: `cmt-${input.postId}-local-${nextNum}-${Date.now()}`,
     postId: input.postId,
+    parentCommentId,
     authorId: input.authorId,
-    body: input.body,
+    content: input.content,
     createdAt: input.createdAt,
   };
   comments.push(row);

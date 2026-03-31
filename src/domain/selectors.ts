@@ -100,9 +100,10 @@ export function enrichComment(raw: SeedComment): Comment {
   return {
     id: raw.id,
     postId: raw.postId,
+    parentCommentId: raw.parentCommentId,
     authorId: raw.authorId,
     author,
-    body: raw.body,
+    content: raw.content,
     createdAt: raw.createdAt,
   };
 }
@@ -111,6 +112,14 @@ export function enrichComment(raw: SeedComment): Comment {
 export function getCommentsEnrichedByPostId(postId: string): Comment[] {
   return getMutableCommentRows()
     .filter((c) => c.postId === postId)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((c) => enrichComment(c));
+}
+
+/** Respostas diretas de um comentário (ordenadas por data). */
+export function getRepliesEnrichedByCommentId(parentCommentId: string): Comment[] {
+  return getMutableCommentRows()
+    .filter((c) => c.parentCommentId === parentCommentId)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .map((c) => enrichComment(c));
 }
