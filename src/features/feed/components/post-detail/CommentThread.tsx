@@ -1,0 +1,43 @@
+import { useCallback, useMemo, useState } from "react";
+import type { Comment } from "@/domain/types";
+import { buildCommentThreadTree } from "@/domain/lib/commentThreads";
+import { cn } from "@/lib/utils";
+import { CommentThreadItem } from "./CommentThreadItem";
+
+export interface CommentThreadProps {
+  postId: string;
+  comments: Comment[];
+  className?: string;
+}
+
+export function CommentThread({ postId, comments, className }: CommentThreadProps) {
+  const tree = useMemo(() => buildCommentThreadTree(postId, comments), [postId, comments]);
+
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+
+  const onToggleExpand = useCallback((commentId: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(commentId)) next.delete(commentId);
+      else next.add(commentId);
+      return next;
+    });
+  }, []);
+
+  if (!tree.length) return null;
+
+  return (
+    <div className={cn("divide-y divide-[var(--woody-accent)]/10", className)}>
+      {tree.map((node) => (
+        <div key={node.comment.id} className="py-4 first:pt-0 last:pb-0">
+          <CommentThreadItem
+            node={node}
+            depth={0}
+            expandedIds={expandedIds}
+            onToggleExpand={onToggleExpand}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}

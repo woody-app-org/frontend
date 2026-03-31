@@ -431,6 +431,88 @@ function buildSeedCommentsForPosts(
   return comments;
 }
 
+/** Comentários fixos para o post `post-demo-threads` — visualizar threads sem depender do hash do seed. */
+function buildShowcaseThreadComments(postId: string): SeedComment[] {
+  const iso = (minsAgo: number) => new Date(Date.now() - minsAgo * 60_000).toISOString();
+
+  const rootA = "demo-th-a";
+  const rootB = "demo-th-b";
+  const rootC = "demo-th-c";
+  const rA1 = "demo-th-a1";
+  const rA2 = "demo-th-a2";
+  const rA3 = "demo-th-a3";
+  const nested = "demo-th-a1n";
+  const rC1 = "demo-th-c1";
+
+  return [
+    {
+      id: rootA,
+      postId,
+      parentCommentId: null,
+      authorId: "2",
+      content:
+        "Dá para ver só os comentários raiz primeiro — e abrir as respostas quando quiser. O fluxo lembra thread, mas com a cara da Woody.",
+      createdAt: iso(180),
+    },
+    {
+      id: rootB,
+      postId,
+      parentCommentId: null,
+      authorId: "4",
+      content: "Comentário raiz sem respostas, para comparar o layout mais limpo.",
+      createdAt: iso(170),
+    },
+    {
+      id: rootC,
+      postId,
+      parentCommentId: null,
+      authorId: "6",
+      content: "No mobile a indentação fica leve — não esmaga o texto. Alguém mais testou?",
+      createdAt: iso(95),
+    },
+    {
+      id: rA1,
+      postId,
+      parentCommentId: rootA,
+      authorId: "3",
+      content: "Concordo. Expandir em camadas evita a página virar um muro de texto.",
+      createdAt: iso(165),
+    },
+    {
+      id: rA2,
+      postId,
+      parentCommentId: rootA,
+      authorId: "5",
+      content: "🙌 Exato — especialmente quando tem muita gente respondendo ao mesmo bloco.",
+      createdAt: iso(158),
+    },
+    {
+      id: rA3,
+      postId,
+      parentCommentId: rootA,
+      authorId: "7",
+      content: "Só um detalhe: dá para recolher de novo e a lista some, como esperado.",
+      createdAt: iso(150),
+    },
+    {
+      id: nested,
+      postId,
+      parentCommentId: rA1,
+      authorId: "8",
+      content: "Resposta aninhada (nível 3): aparece só depois que você abre as respostas do comentário acima.",
+      createdAt: iso(162),
+    },
+    {
+      id: rC1,
+      postId,
+      parentCommentId: rootC,
+      authorId: "9",
+      content: "Testei no celular — leitura ok, sem sensação de caixa apertada.",
+      createdAt: iso(88),
+    },
+  ];
+}
+
 export function buildPlatformSeed(): {
   users: User[];
   communities: Community[];
@@ -653,7 +735,31 @@ export function buildPlatformSeed(): {
     });
   }
 
-  const postComments = buildSeedCommentsForPosts(posts, authorsByCommunity);
+  /** Post só para visualizar threads no detalhe (alto engajamento → costuma aparecer no topo do feed mock). */
+  const demoPostId = "post-demo-threads";
+  const demoCommunityId = viewerCommunityIds[0] ?? communities[0].id;
+  posts.push({
+    id: demoPostId,
+    communityId: demoCommunityId,
+    authorId: "1",
+    author: userById.get("1")!,
+    title: "Preview · threads de comentários",
+    content:
+      "Post de demonstração do mock: comentários raiz, “Ver N respostas” e resposta aninhada. Abra o post para explorar.",
+    imageUrl: null,
+    tags: ["demo", "UI"],
+    createdAt: "agora há pouco",
+    likesCount: 24_000,
+    commentsCount: 0,
+  });
+
+  const postComments = [
+    ...buildSeedCommentsForPosts(
+      posts.filter((p) => p.id !== demoPostId),
+      authorsByCommunity
+    ),
+    ...buildShowcaseThreadComments(demoPostId),
+  ];
   const countByPost = new Map<string, number>();
   for (const c of postComments) {
     countByPost.set(c.postId, (countByPost.get(c.postId) ?? 0) + 1);
