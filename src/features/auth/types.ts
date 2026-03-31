@@ -6,6 +6,9 @@ export interface AuthUser {
   name?: string;
 }
 
+/** Sessão atual (espelho de `AuthUser` para vocabulário alinhado ao backend). */
+export type CurrentUser = AuthUser;
+
 export interface LoginCredentials {
   username: string;
   password: string;

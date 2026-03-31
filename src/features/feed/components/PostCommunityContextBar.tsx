@@ -11,9 +11,15 @@ export interface PostCommunityContextBarProps {
   className?: string;
 }
 
-const rowClass = cn(
+const rowClassFeed = cn(
   "flex w-full min-w-0 items-center gap-2.5 rounded-t-2xl -mx-4 -mt-3 mb-1 border-b border-[var(--woody-accent)]/12",
   "bg-[var(--woody-nav)]/[0.06] px-3 py-2.5 sm:px-4 transition-[background-color] duration-200"
+);
+
+/** Na página da comunidade o contexto já é óbvio — faixa mais discreta, sem bleed negativo. */
+const rowClassCommunity = cn(
+  "mb-3 flex w-full min-w-0 items-center gap-2.5 rounded-xl border border-[var(--woody-accent)]/10",
+  "bg-[var(--woody-nav)]/[0.04] px-3 py-2 sm:px-3.5"
 );
 
 const nameClass =
@@ -62,7 +68,7 @@ export function PostCommunityContextBar({ preview, variant, className }: PostCom
 
   if (variant === "community") {
     return (
-      <div className={cn(rowClass, className)} aria-label={`Post em ${preview.name}`}>
+      <div className={cn(rowClassCommunity, className)} aria-label={`Post em ${preview.name}`}>
         {inner}
       </div>
     );
@@ -72,7 +78,7 @@ export function PostCommunityContextBar({ preview, variant, className }: PostCom
     <Link
       to={`/communities/${preview.slug}`}
       className={cn(
-        rowClass,
+        rowClassFeed,
         "group hover:bg-[var(--woody-nav)]/10 active:bg-[var(--woody-nav)]/12",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/35 focus-visible:ring-inset",
         className

@@ -1,6 +1,5 @@
 import type { Post } from "@/domain/types";
 import { getAllSeedPostsEnriched, getCommunityIdsForUser, getFollowingUserIds } from "@/domain/selectors";
-import { COMMUNITIES_PAGE_VIEWER_ID } from "@/features/communities/lib/communitiesPageModel";
 import type { PaginatedResponse, FeedFilter } from "../types";
 
 function delay(ms: number): Promise<void> {
@@ -43,10 +42,12 @@ function applyFeedFilter(all: Post[], filter: FeedFilter, viewerId: string): Pos
   }
 }
 
-export async function getFeed(page: number, filter: FeedFilter): Promise<PaginatedResponse<Post>> {
+export async function getFeed(
+  page: number,
+  filter: FeedFilter,
+  viewerId: string
+): Promise<PaginatedResponse<Post>> {
   await delay(420);
-
-  const viewerId = COMMUNITIES_PAGE_VIEWER_ID;
   const all = getAllSeedPostsEnriched();
   const pool = applyFeedFilter(all, filter, viewerId);
   const pageSize = 10;

@@ -1,4 +1,4 @@
-import type { Community, CommunityCategory, Membership, User } from "../types";
+import type { Community, CommunityCategory, JoinRequest, Membership, User } from "../types";
 
 export interface SeedFollow {
   followerId: string;
@@ -330,6 +330,7 @@ export function buildPlatformSeed(): {
   memberships: Membership[];
   follows: SeedFollow[];
   posts: SeedPost[];
+  joinRequests: JoinRequest[];
 } {
   const users = buildUsers();
   const communities: Community[] = COMMUNITY_SPECS.map((spec, idx) => ({
@@ -341,7 +342,14 @@ export function buildPlatformSeed(): {
     tags: spec.tags,
     avatarUrl: avatar(AVATAR_PHOTOS[(idx * 3) % AVATAR_PHOTOS.length], `c=${spec.slug}`),
     coverUrl: cover(COVER_PHOTOS[idx % COVER_PHOTOS.length], `cv=${spec.slug}`),
+    /** Duas primeiras comunidades criadas pela usuária seed "1"; demais espalham donas. */
+    ownerUserId: idx < 2 ? "1" : String(((idx + 3) % 18) + 1),
+    visibility: idx % 3 === 1 ? "private" : "public",
     memberCount: 0,
+    rules:
+      idx === 0
+        ? "Compartilhe oportunidades com contexto e respeito.\nEvite spam e mensagens privadas não solicitadas."
+        : "",
   }));
   const memberships: Membership[] = [];
   let mid = 0;
@@ -351,6 +359,21 @@ export function buildPlatformSeed(): {
     memberMap.set(c.id, new Set());
   }
 
+  for (const c of communities) {
+    const set = memberMap.get(c.id)!;
+    if (set.has(c.ownerUserId)) continue;
+    set.add(c.ownerUserId);
+    mid += 1;
+    memberships.push({
+      id: `m-${mid}`,
+      userId: c.ownerUserId,
+      communityId: c.id,
+      role: "owner",
+      status: "active",
+      joinedAt: `2020-${String((mid % 12) + 1).padStart(2, "0")}-01`,
+    });
+  }
+
   for (let u = 0; u < users.length; u++) {
     const userId = users[u].id;
     const n = 3 + (hash(u, 0) % 4);
@@ -358,6 +381,7 @@ export function buildPlatformSeed(): {
     for (let k = 0; k < n; k++) {
       const cIdx = (started + k * 2) % communities.length;
       const comm = communities[cIdx];
+      if (comm.ownerUserId === userId) continue;
       const set = memberMap.get(comm.id)!;
       if (set.has(userId)) continue;
       set.add(userId);
@@ -366,15 +390,70 @@ export function buildPlatformSeed(): {
         id: `m-${mid}`,
         userId,
         communityId: comm.id,
-        role: hash(u, k) % 11 === 0 ? "moderator" : "member",
+        role: hash(u, k) % 11 === 0 ? "admin" : "member",
+        status: "active",
         joinedAt: `${2019 + ((u + k) % 5)}-${String(((u + k) % 12) + 1).padStart(2, "0")}-15`,
       });
     }
   }
 
-  for (const c of communities) {
-    c.memberCount = memberMap.get(c.id)?.size ?? 0;
+  const maternidade = communities[1];
+  for (let i = memberships.length - 1; i >= 0; i--) {
+    const m = memberships[i];
+    if (m.communityId === maternidade.id && (m.userId === "4" || m.userId === "5")) {
+      const set = memberMap.get(m.communityId);
+      set?.delete(m.userId);
+      memberships.splice(i, 1);
+    }
   }
+
+  const banned = memberships.find((m) => m.userId === "10" && m.communityId === communities[0].id);
+  if (banned) {
+    banned.status = "banned";
+    memberMap.get(banned.communityId)?.delete("10");
+  }
+
+  /** Pedido pendente só em membership (sem join request) — cenário alternativo ao jr-*. */
+  const livrosCommunity = communities[2];
+  const pendingUserId = "11";
+  const pendingMem = memberships.find((m) => m.userId === pendingUserId && m.communityId === livrosCommunity.id);
+  if (pendingMem) pendingMem.status = "pending";
+
+  const jr3Community = communities[4];
+  for (let i = memberships.length - 1; i >= 0; i--) {
+    const m = memberships[i];
+    if (m.communityId === jr3Community.id && m.userId === "6" && m.role !== "owner") {
+      memberships.splice(i, 1);
+    }
+  }
+
+  for (const c of communities) {
+    c.memberCount = memberships.filter((m) => m.communityId === c.id && m.status === "active").length;
+  }
+
+  const joinRequests: JoinRequest[] = [
+    {
+      id: "jr-1",
+      communityId: maternidade.id,
+      userId: "4",
+      status: "pending",
+      requestedAt: "2024-11-01T10:00:00.000Z",
+    },
+    {
+      id: "jr-2",
+      communityId: maternidade.id,
+      userId: "5",
+      status: "rejected",
+      requestedAt: "2024-10-15T08:00:00.000Z",
+    },
+    {
+      id: "jr-3",
+      communityId: communities[4].id,
+      userId: "6",
+      status: "pending",
+      requestedAt: "2024-11-20T14:00:00.000Z",
+    },
+  ];
 
   const follows: SeedFollow[] = [];
   const viewer = "1";
@@ -392,6 +471,7 @@ export function buildPlatformSeed(): {
 
   const authorsByCommunity = new Map<string, string[]>();
   for (const m of memberships) {
+    if (m.status !== "active") continue;
     const list = authorsByCommunity.get(m.communityId) ?? [];
     list.push(m.userId);
     authorsByCommunity.set(m.communityId, list);
@@ -439,7 +519,9 @@ export function buildPlatformSeed(): {
   }
 
   /** Garantir volume para a usuária visual principal. */
-  const viewerCommunityIds = memberships.filter((m) => m.userId === "1").map((m) => m.communityId);
+  const viewerCommunityIds = memberships
+    .filter((m) => m.userId === "1" && m.status === "active")
+    .map((m) => m.communityId);
   for (let j = 0; j < 12; j++) {
     if (viewerCommunityIds.length === 0) break;
     const cId = viewerCommunityIds[j % viewerCommunityIds.length];
@@ -461,5 +543,5 @@ export function buildPlatformSeed(): {
     });
   }
 
-  return { users, communities, memberships, follows, posts };
+  return { users, communities, memberships, follows, posts, joinRequests };
 }

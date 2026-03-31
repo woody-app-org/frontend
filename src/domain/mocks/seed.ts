@@ -1,5 +1,5 @@
 import { buildPlatformSeed } from "./seed-data";
-import type { Community, Membership, User } from "../types";
+import type { Community, JoinRequest, Membership, User } from "../types";
 
 const built = buildPlatformSeed();
 
@@ -9,6 +9,7 @@ const built = buildPlatformSeed();
 export const SEED_USERS: User[] = built.users;
 export const SEED_COMMUNITIES: Community[] = built.communities;
 export const SEED_MEMBERSHIPS: Membership[] = built.memberships;
+export const SEED_JOIN_REQUESTS: JoinRequest[] = built.joinRequests;
 export const SEED_FOLLOWS = built.follows;
 export const SEED_POSTS = built.posts;
 

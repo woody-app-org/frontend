@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { FeedErrorState } from "@/features/feed/components/FeedErrorState";
+import { useAuth } from "@/features/auth/context/AuthContext";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { ProfileHeader } from "../components/ProfileHeader";
+import { EditProfileDialog } from "../components/EditProfileDialog";
 import { ProfileCommunitiesSection } from "../components/ProfileCommunitiesSection";
 import { ProfilePostsSection } from "../components/ProfilePostsSection";
 import { ProfileOverviewTab } from "../components/ProfileOverviewTab";
 import { ProfileSkeleton } from "../components/ProfileSkeleton";
-import { COMMUNITIES_PAGE_VIEWER_ID } from "@/features/communities/lib/communitiesPageModel";
+import { useProfilePermissions } from "@/features/auth/hooks/useProfilePermissions";
+import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 
@@ -23,7 +26,9 @@ const TABS: { id: ProfileTab; label: string }[] = [
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { user: authUser, patchUser } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("posts");
+  const [editOpen, setEditOpen] = useState(false);
   const {
     profile,
     posts,
@@ -36,6 +41,21 @@ export function ProfilePage() {
     previousPage,
     refetch,
   } = useUserProfile(userId);
+  const { isOwnProfile } = useProfilePermissions(userId);
+
+  const handleProfileSaved = useCallback(
+    (next: UserProfile) => {
+      void refetch();
+      if (authUser?.id === next.id) {
+        patchUser({
+          name: next.name,
+          username: next.username,
+          avatarUrl: next.avatarUrl ?? undefined,
+        });
+      }
+    },
+    [authUser?.id, patchUser, refetch]
+  );
 
   if (!userId) {
     navigate("/feed", { replace: true });
@@ -58,7 +78,20 @@ export function ProfilePage() {
 
         {!isLoading && !error && profile && (
           <>
-            <ProfileHeader profile={profile} className="mb-5 md:mb-6" />
+            <ProfileHeader
+              profile={profile}
+              className="mb-5 md:mb-6"
+              isOwnProfile={isOwnProfile}
+              onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
+            />
+            {isOwnProfile ? (
+              <EditProfileDialog
+                open={editOpen}
+                onOpenChange={setEditOpen}
+                profile={profile}
+                onSaved={handleProfileSaved}
+              />
+            ) : null}
 
             <div
               className={cn(
@@ -112,7 +145,7 @@ export function ProfilePage() {
               {tab === "communities" ? (
                 <ProfileCommunitiesSection
                   userId={profile.id}
-                  isOwnProfile={profile.id === COMMUNITIES_PAGE_VIEWER_ID}
+                  isOwnProfile={isOwnProfile}
                   shortName={profile.name.split(/\s+/)[0]}
                   bare
                 />

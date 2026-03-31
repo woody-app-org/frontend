@@ -3,14 +3,12 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { isUserMemberOfCommunity } from "@/domain/selectors";
-import {
-  COMMUNITIES_PAGE_VIEWER_ID,
-  getTrendingCommunities,
-} from "@/features/communities/lib/communitiesPageModel";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { getTrendingCommunities } from "@/features/communities/lib/communitiesPageModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function FeedCommunityContextStrip({ className }: { className?: string }) {
-  const viewerId = COMMUNITIES_PAGE_VIEWER_ID;
+  const viewerId = useViewerId();
   const items = getTrendingCommunities().slice(0, 8);
 
   return (

@@ -1,4 +1,7 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import { subscribeCommunityDrafts, getCommunityDraftsVersion } from "@/domain/mocks/communityDraftStore";
+import { subscribeUserDisplayPatches, getUserDisplayPatchesVersion } from "@/domain/mocks/userDisplayPatchStore";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import type { Post, FeedFilter } from "../types";
 import { getFeed } from "../services/feed.service";
 
@@ -19,6 +22,17 @@ interface UseFeedReturn {
 }
 
 export function useFeed(): UseFeedReturn {
+  const viewerId = useViewerId();
+  const userDisplayRev = useSyncExternalStore(
+    subscribeUserDisplayPatches,
+    getUserDisplayPatchesVersion,
+    getUserDisplayPatchesVersion
+  );
+  const communityDraftRev = useSyncExternalStore(
+    subscribeCommunityDrafts,
+    getCommunityDraftsVersion,
+    getCommunityDraftsVersion
+  );
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -31,12 +45,14 @@ export function useFeed(): UseFeedReturn {
   const isFirstLoadRef = useRef(true);
 
   const fetchFeed = useCallback(async () => {
+    void userDisplayRev;
+    void communityDraftRev;
     const isInitialLoad = isFirstLoadRef.current;
     setIsLoading(isInitialLoad);
     setIsRefreshing(!isInitialLoad);
     setError(null);
     try {
-      const response = await getFeed(page, filter);
+      const response = await getFeed(page, filter, viewerId);
       setPosts(response.items);
       setHasNextPage(response.hasNextPage);
       setHasPreviousPage(response.hasPreviousPage);
@@ -48,7 +64,7 @@ export function useFeed(): UseFeedReturn {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, filter]);
+  }, [page, filter, viewerId, userDisplayRev, communityDraftRev]);
 
   useEffect(() => {
     fetchFeed();

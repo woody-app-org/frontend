@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, UsersRound } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodySurface } from "@/lib/woody-ui";
 import type { Community } from "@/domain/types";
+import { subscribeCommunityDrafts, getCommunityDraftsVersion } from "@/domain/mocks/communityDraftStore";
 import { getCommunitiesForUser } from "@/domain/selectors";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
 
@@ -67,7 +68,15 @@ export function ProfileCommunitiesSection({
   bare = false,
   className,
 }: ProfileCommunitiesSectionProps) {
-  const communities = useMemo(() => getCommunitiesForUser(userId), [userId]);
+  const communityDraftRev = useSyncExternalStore(
+    subscribeCommunityDrafts,
+    getCommunityDraftsVersion,
+    getCommunityDraftsVersion
+  );
+  const communities = useMemo(() => {
+    void communityDraftRev;
+    return getCommunitiesForUser(userId);
+  }, [userId, communityDraftRev]);
 
   const blurb = isOwnProfile
     ? "Espaços onde você conversa e constrói vínculos na Woody."

@@ -1,6 +1,6 @@
 import type { Community, Post, User } from "@/domain/types";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
-import { getAllSeedPostsEnriched } from "@/domain/selectors";
+import { getAllSeedPostsEnriched, getCommunityById, getUserById } from "@/domain/selectors";
 import { SEED_COMMUNITIES, SEED_USERS } from "@/domain/mocks/seed";
 
 function delay(ms: number): Promise<void> {
@@ -74,7 +74,9 @@ export async function searchByMode(params: {
         includesQuery(u.bio ?? "", q) ||
         includesQuery(u.pronouns ?? "", q)
       );
-    });
+    })
+      .map((u) => getUserById(u.id))
+      .filter((u): u is User => u != null);
     return { people };
   }
 
@@ -88,6 +90,8 @@ export async function searchByMode(params: {
       includesQuery(cat, q) ||
       tagMatch
     );
-  });
+  })
+    .map((c) => getCommunityById(c.id))
+    .filter((c): c is Community => c != null);
   return { communities };
 }

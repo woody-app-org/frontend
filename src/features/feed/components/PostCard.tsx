@@ -88,11 +88,17 @@ export function PostCard({
     .toUpperCase();
 
   return (
-    <Card className={cn(styles.card, className)}>
+    <Card
+      className={cn(
+        styles.card,
+        postListingContext === "community" && "px-4 pb-4 pt-3 sm:px-6 sm:pb-5 sm:pt-4",
+        className
+      )}
+    >
       {post.community ? (
         <PostCommunityContextBar preview={post.community} variant={postListingContext} />
       ) : null}
-      <CardHeader className={cn(styles.header, post.community && "pt-3")}>
+      <CardHeader className={cn(styles.header, post.community && "pt-2 sm:pt-3")}>
         <div className={styles.headerLeft}>
           <Link
             to={`/profile/${post.author.id}`}
