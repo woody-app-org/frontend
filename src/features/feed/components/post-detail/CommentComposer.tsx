@@ -13,6 +13,8 @@ export interface CommentComposerProps {
   commentsReady: boolean;
   /** Se a página abriu com foco na thread (ex.: `?focus=comments`). */
   emphasizeEntry?: boolean;
+  /** Fecha o composer de resposta quando a usuária interage com o campo raiz. */
+  onInteractRoot?: () => void;
   className?: string;
 }
 
@@ -21,6 +23,7 @@ export function CommentComposer({
   isSubmitting,
   commentsReady,
   emphasizeEntry = false,
+  onInteractRoot,
   className,
 }: CommentComposerProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -72,6 +75,7 @@ export function CommentComposer({
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
         textareaRef={textareaRef}
+        onTextareaFocus={onInteractRoot}
         placeholder="O que você acha? Compartilhe com calma e respeito."
         submitLabel="Publicar"
       />

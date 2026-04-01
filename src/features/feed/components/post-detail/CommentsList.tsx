@@ -28,9 +28,23 @@ export interface CommentsListProps {
   isLoading: boolean;
   error: string | null;
   className?: string;
+  replyingToCommentId: string | null;
+  onReplyingToChange: (commentId: string | null) => void;
+  onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
+  isCreatingComment: boolean;
 }
 
-export function CommentsList({ postId, comments, isLoading, error, className }: CommentsListProps) {
+export function CommentsList({
+  postId,
+  comments,
+  isLoading,
+  error,
+  className,
+  replyingToCommentId,
+  onReplyingToChange,
+  onReplySubmit,
+  isCreatingComment,
+}: CommentsListProps) {
   if (error) {
     return (
       <div
@@ -60,5 +74,15 @@ export function CommentsList({ postId, comments, isLoading, error, className }: 
     return <CommentsEmptyState className={className} />;
   }
 
-  return <CommentThread postId={postId} comments={comments} className={className} />;
+  return (
+    <CommentThread
+      postId={postId}
+      comments={comments}
+      replyingToCommentId={replyingToCommentId}
+      onReplyingToChange={onReplyingToChange}
+      onReplySubmit={onReplySubmit}
+      isCreatingComment={isCreatingComment}
+      className={className}
+    />
+  );
 }

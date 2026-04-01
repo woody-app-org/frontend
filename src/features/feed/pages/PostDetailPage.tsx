@@ -73,7 +73,8 @@ export function PostDetailPage() {
               isMutatingLike={isMutatingLike}
               isCreatingComment={isCreatingComment}
               onToggleLike={() => void toggleLike()}
-              onCreateComment={createComment}
+              onCreateComment={async (body) => createComment(body, null)}
+              onReplySubmit={(body, parentId) => createComment(body, parentId)}
             />
           </>
         ) : null}

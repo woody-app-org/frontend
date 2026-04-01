@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +14,10 @@ export interface CommentFormProps {
   placeholder?: string;
   submitLabel?: string;
   textareaRef?: RefObject<HTMLTextAreaElement | null>;
+  /** Conteúdo à esquerda da linha de ações (ex.: cancelar resposta). */
+  footerStart?: ReactNode;
+  onTextareaFocus?: () => void;
+  rows?: number;
   className?: string;
 }
 
@@ -27,6 +31,9 @@ export function CommentForm({
   placeholder = "Escreva um comentário…",
   submitLabel = "Publicar",
   textareaRef,
+  footerStart,
+  onTextareaFocus,
+  rows = 3,
   className,
 }: CommentFormProps) {
   const canSubmit = value.trim().length > 0 && !isSubmitting && !disabled;
@@ -48,7 +55,8 @@ export function CommentForm({
         value={value}
         disabled={disabled || isSubmitting}
         onChange={(e) => onChange(e.target.value)}
-        rows={3}
+        onFocus={() => onTextareaFocus?.()}
+        rows={rows}
         className={cn(
           "min-h-[88px] resize-y rounded-xl border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
           "text-[var(--woody-text)] placeholder:text-[var(--woody-muted)]/80",
@@ -57,7 +65,13 @@ export function CommentForm({
         )}
         aria-label="Texto do comentário"
       />
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-2",
+          footerStart ? "justify-between" : "justify-end"
+        )}
+      >
+        {footerStart ? <div className="flex shrink-0 items-center gap-2">{footerStart}</div> : null}
         <Button
           type="submit"
           size="sm"

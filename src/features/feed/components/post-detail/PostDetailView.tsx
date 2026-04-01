@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Comment, Post } from "@/domain/types";
 import { Card } from "@/components/ui/card";
 import { CommentComposer } from "./CommentComposer";
@@ -16,7 +16,9 @@ export interface PostDetailViewProps {
   isMutatingLike: boolean;
   isCreatingComment: boolean;
   onToggleLike: () => void;
+  /** Comentário raiz (`parentCommentId` null). Respostas usam `onReplySubmit` na lista. */
   onCreateComment: (body: string) => Promise<boolean>;
+  onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
 }
 
 export function PostDetailView({
@@ -29,8 +31,10 @@ export function PostDetailView({
   isCreatingComment,
   onToggleLike,
   onCreateComment,
+  onReplySubmit,
 }: PostDetailViewProps) {
   const commentsRef = useRef<HTMLElement>(null);
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!focusCommentsOnOpen) return;
@@ -71,6 +75,7 @@ export function PostDetailView({
             isSubmitting={isCreatingComment}
             commentsReady={!isCommentsLoading}
             emphasizeEntry={focusCommentsOnOpen}
+            onInteractRoot={() => setReplyingToCommentId(null)}
           />
 
           <CommentsList
@@ -79,6 +84,10 @@ export function PostDetailView({
             isLoading={isCommentsLoading}
             error={commentsError}
             className="mt-1 border-t border-[var(--woody-accent)]/10 pt-5"
+            replyingToCommentId={replyingToCommentId}
+            onReplyingToChange={setReplyingToCommentId}
+            onReplySubmit={onReplySubmit}
+            isCreatingComment={isCreatingComment}
           />
         </section>
       </div>

@@ -7,10 +7,23 @@ import { CommentThreadItem } from "./CommentThreadItem";
 export interface CommentThreadProps {
   postId: string;
   comments: Comment[];
+  replyingToCommentId: string | null;
+  onReplyingToChange: (commentId: string | null) => void;
+  /** Resposta a comentário (`parentCommentId` sempre definido). */
+  onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
+  isCreatingComment: boolean;
   className?: string;
 }
 
-export function CommentThread({ postId, comments, className }: CommentThreadProps) {
+export function CommentThread({
+  postId,
+  comments,
+  replyingToCommentId,
+  onReplyingToChange,
+  onReplySubmit,
+  isCreatingComment,
+  className,
+}: CommentThreadProps) {
   const tree = useMemo(() => buildCommentThreadTree(postId, comments), [postId, comments]);
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
@@ -20,6 +33,15 @@ export function CommentThread({ postId, comments, className }: CommentThreadProp
       const next = new Set(prev);
       if (next.has(commentId)) next.delete(commentId);
       else next.add(commentId);
+      return next;
+    });
+  }, []);
+
+  const ensureRepliesExpanded = useCallback((commentId: string) => {
+    setExpandedIds((prev) => {
+      if (prev.has(commentId)) return prev;
+      const next = new Set(prev);
+      next.add(commentId);
       return next;
     });
   }, []);
@@ -35,6 +57,11 @@ export function CommentThread({ postId, comments, className }: CommentThreadProp
             depth={0}
             expandedIds={expandedIds}
             onToggleExpand={onToggleExpand}
+            replyingToCommentId={replyingToCommentId}
+            onReplyingToChange={onReplyingToChange}
+            onReplySubmit={onReplySubmit}
+            isCreatingComment={isCreatingComment}
+            ensureRepliesExpanded={ensureRepliesExpanded}
           />
         </div>
       ))}
