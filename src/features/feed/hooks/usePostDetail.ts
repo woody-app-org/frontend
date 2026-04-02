@@ -7,9 +7,8 @@ import {
 } from "@/domain/mocks/postInteractionMockStore";
 import type { Comment, Post } from "@/domain/types";
 import {
-  createCommentMock,
-  getCommentsByPostIdMock,
   getPostByIdMock,
+  postCommentsMockApi,
   togglePostLikeMock,
 } from "@/domain/services/postMock.service";
 
@@ -30,6 +29,10 @@ interface UsePostDetailReturn {
   createComment: (body: string, parentCommentId?: string | null) => Promise<boolean>;
 }
 
+/**
+ * Comentários: `postCommentsMockApi.listByPostId` + árvore na UI; criação com `create` (raiz ou reply).
+ * @see postMock.service — mapa de endpoints futuros.
+ */
 export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   const viewerId = useViewerId();
   const postInteractionRev = useSyncExternalStore(
@@ -73,7 +76,7 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
         setIsLoading(false);
       });
 
-    const commentsTask = getCommentsByPostIdMock(postId)
+    const commentsTask = postCommentsMockApi.listByPostId(postId)
       .then((commentsData) => {
         setComments(commentsData);
       })
@@ -150,7 +153,7 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
       setIsCreatingComment(true);
       setError(null);
       try {
-        const result = await createCommentMock(postId, viewerId, trimmed, parentCommentId ?? null);
+        const result = await postCommentsMockApi.create(postId, viewerId, trimmed, parentCommentId ?? null);
         if (!result.ok) {
           setError(result.error);
           return false;

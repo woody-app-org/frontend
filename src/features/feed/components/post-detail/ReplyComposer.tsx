@@ -9,6 +9,8 @@ export interface ReplyComposerProps {
   onCancel: () => void;
   isSubmitting: boolean;
   disabled?: boolean;
+  /** Quando já dentro de um bloco com `COMMENT_THREAD_ACTION_INDENT`. */
+  omitActionIndent?: boolean;
   className?: string;
 }
 
@@ -22,12 +24,13 @@ export function ReplyComposer({
   onCancel,
   isSubmitting,
   disabled = false,
+  omitActionIndent = false,
   className,
 }: ReplyComposerProps) {
   return (
     <div
       className={cn(
-        COMMENT_THREAD_ACTION_INDENT,
+        !omitActionIndent && COMMENT_THREAD_ACTION_INDENT,
         "mt-2 min-w-0 max-w-full",
         "motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200",
         className
@@ -35,8 +38,8 @@ export function ReplyComposer({
     >
       <div
         className={cn(
-          "rounded-xl border border-[var(--woody-accent)]/10 border-l-[3px] border-l-[var(--woody-accent)]/28",
-          "bg-[var(--woody-nav)]/[0.06] py-2.5 pl-3 pr-2.5 sm:py-3 sm:pl-4 sm:pr-3",
+          "rounded-xl border border-[var(--woody-accent)]/10 border-l-[3px] border-l-[var(--woody-accent)]/26",
+          "bg-[var(--woody-nav)]/[0.06] py-2.5 pl-2.5 pr-2 sm:py-3 sm:pl-3.5 sm:pr-3",
           "shadow-sm transition-[box-shadow,border-color] duration-200"
         )}
       >

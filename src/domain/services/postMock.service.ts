@@ -2,6 +2,18 @@
  * Contratos de leitura/mutação de posts para o mock.
  * TODO(backend): trocar implementações por `fetch`/`axios` apontando para rotas REST/GraphQL;
  * manter assinaturas ou adaptadores finos para não reescrever hooks/UI.
+ *
+ * ## Comentários (mapa para API futura)
+ *
+ * | Operação | Mock atual | Payload / notas |
+ * |----------|------------|-----------------|
+ * | Listar thread do post (raiz + aninhados) | `getCommentsByPostIdMock` | `GET /posts/:postId/comments` — hoje retorna lista plana; UI monta árvore. |
+ * | Listar só replies de um comentário | `getRepliesByCommentIdMock` | `GET /comments/:id/replies` — pronto para paginação sob demanda. |
+ * | Criar comentário raiz | `createCommentMock(..., null)` | `POST /posts/:postId/comments` body `{ content }`. |
+ * | Criar resposta | `createCommentMock(..., parentId)` | mesmo endpoint + `{ content, parentCommentId }`. |
+ *
+ * A UI (`usePostDetail`) usa só listagem completa + `createComment`; `getRepliesByCommentIdMock` fica
+ * disponível quando o backend paginar replies por nó.
  */
 import type { Comment, Post } from "../types";
 import {
@@ -70,3 +82,10 @@ export async function createCommentMock(
   if (!row) return { ok: false, error: "Não foi possível publicar (post ou comentário pai inválido)." };
   return { ok: true, comment: enrichComment(row) };
 }
+
+/** Fachada única para trocar por cliente HTTP sem espalhar imports na UI. */
+export const postCommentsMockApi = {
+  listByPostId: getCommentsByPostIdMock,
+  listRepliesByParentId: getRepliesByCommentIdMock,
+  create: createCommentMock,
+} as const;

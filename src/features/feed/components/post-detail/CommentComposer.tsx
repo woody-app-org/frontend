@@ -4,7 +4,7 @@ import { CommentForm } from "./CommentForm";
 
 export interface CommentComposerProps {
   /**
-   * Deve chamar `createCommentMock` (via hook). Retorna se o envio foi aceito.
+   * Deve chamar `postCommentsMockApi.create` (via hook). Retorna se o envio foi aceito.
    * TODO(backend): trocar por serviço HTTP mantendo a mesma assinatura.
    */
   onCreateComment: (body: string) => Promise<boolean>;

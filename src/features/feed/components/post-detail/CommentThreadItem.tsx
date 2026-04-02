@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { CommentThreadNode } from "@/domain/lib/commentThreads";
-import { COMMENT_THREAD_ACTION_INDENT } from "./commentThreadLayout";
+import { COMMENT_THREAD_ACTION_INDENT, commentRepliesRegionId } from "./commentThreadLayout";
 import { CommentItem } from "./CommentItem";
 import { NestedRepliesList } from "./NestedRepliesList";
 import { ReplyComposer } from "./ReplyComposer";
@@ -44,10 +44,40 @@ export function CommentThreadItem({
     return ok;
   };
 
+  const repliesRegionId = commentRepliesRegionId(comment.id);
+
   return (
     <div className={cn(depth > 0 && "min-w-0")}>
-      <CommentItem comment={comment} className="py-0" />
-      <div className={cn("mt-1", COMMENT_THREAD_ACTION_INDENT)}>
+      <CommentItem comment={comment} nested={depth > 0} className="py-0" />
+      <div className={cn("mt-1.5 space-y-2", COMMENT_THREAD_ACTION_INDENT)}>
+        <div className="flex flex-wrap items-stretch gap-x-2 gap-y-2 sm:items-center sm:gap-x-3">
+          {!isReplyOpen ? (
+            <button
+              type="button"
+              disabled={isCreatingComment}
+              onClick={() => onReplyingToChange(comment.id)}
+              className={cn(
+                "touch-manipulation inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-medium sm:min-h-9 sm:px-2 sm:text-xs",
+                "text-[var(--woody-accent)]",
+                "transition-[color,opacity,transform,background-color] duration-200",
+                "hover:bg-[var(--woody-nav)]/10 hover:underline hover:underline-offset-2",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30",
+                "disabled:pointer-events-none disabled:opacity-45",
+                "active:scale-[0.99]"
+              )}
+            >
+              Responder
+            </button>
+          ) : null}
+          {hasReplies ? (
+            <ReplyToggle
+              replyCount={replyCount}
+              expanded={expanded}
+              ariaControls={expanded ? repliesRegionId : undefined}
+              onToggle={() => onToggleExpand(comment.id)}
+            />
+          ) : null}
+        </div>
         {isReplyOpen ? (
           <ReplyComposer
             parentCommentId={comment.id}
@@ -56,36 +86,12 @@ export function CommentThreadItem({
             onCancel={() => onReplyingToChange(null)}
             isSubmitting={isCreatingComment}
             disabled={isCreatingComment}
+            omitActionIndent
           />
-        ) : (
-          <button
-            type="button"
-            disabled={isCreatingComment}
-            onClick={() => onReplyingToChange(comment.id)}
-            className={cn(
-              "rounded-md text-xs font-medium text-[var(--woody-accent)]",
-              "transition-[color,opacity,transform] duration-200",
-              "hover:underline hover:underline-offset-2",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30",
-              "disabled:pointer-events-none disabled:opacity-45",
-              "active:scale-[0.99]"
-            )}
-          >
-            Responder
-          </button>
-        )}
+        ) : null}
       </div>
-      {hasReplies ? (
-        <div className={cn("mt-1", COMMENT_THREAD_ACTION_INDENT)}>
-          <ReplyToggle
-            replyCount={replyCount}
-            expanded={expanded}
-            onToggle={() => onToggleExpand(comment.id)}
-          />
-        </div>
-      ) : null}
       {hasReplies && expanded ? (
-        <NestedRepliesList depth={depth}>
+        <NestedRepliesList depth={depth} regionId={repliesRegionId}>
           {replies.map((child) => (
             <CommentThreadItem
               key={child.comment.id}

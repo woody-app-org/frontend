@@ -49,9 +49,9 @@ export function CommentThread({
   if (!tree.length) return null;
 
   return (
-    <div className={cn("divide-y divide-[var(--woody-accent)]/10", className)}>
+    <div className={cn("divide-y divide-[var(--woody-accent)]/8", className)}>
       {tree.map((node) => (
-        <div key={node.comment.id} className="py-4 first:pt-0 last:pb-0">
+        <div key={node.comment.id} className="py-4 first:pt-0 last:pb-0 sm:py-5">
           <CommentThreadItem
             node={node}
             depth={0}
