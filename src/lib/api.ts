@@ -1,9 +1,20 @@
 import axios from "axios";
 import { AUTH_TOKEN_KEY } from "@/features/auth/constants";
 
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL?.toString().replace(/\/$/, "") ??
-  "http://localhost:5000/api";
+/**
+ * Base da API: sempre termina em `/api` (prefixo dos controllers ASP.NET).
+ * Se `VITE_API_BASE_URL` for só o host (ex. Railway sem `/api`), acrescenta `/api`.
+ */
+function resolveApiBaseUrl(): string {
+  const raw = import.meta.env.VITE_API_BASE_URL?.toString().trim();
+  const fallback = "http://localhost:5000/api";
+  if (!raw) return fallback;
+  const noTrail = raw.replace(/\/+$/, "");
+  if (noTrail.endsWith("/api")) return noTrail;
+  return `${noTrail}/api`;
+}
+
+const baseURL = resolveApiBaseUrl();
 
 export const api = axios.create({
   baseURL,
@@ -23,6 +34,12 @@ export function setStoredToken(token: string | null): void {
 }
 
 api.interceptors.request.use((config) => {
+  // Caminhos com "/" inicial são tratados como absolutos à raiz do host e removem o `/api` do baseURL.
+  // Usar caminhos relativos ao baseURL garante `.../api/Auth/login`, `.../api/posts/...`, etc.
+  if (config.url?.startsWith("/")) {
+    config.url = config.url.slice(1);
+  }
+
   const t = getStoredToken();
   if (t) {
     config.headers.Authorization = `Bearer ${t}`;
