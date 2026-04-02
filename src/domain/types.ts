@@ -74,9 +74,38 @@ export interface PostCommunityPreview {
   category: CommunityCategory;
 }
 
+/**
+ * Comentário no thread de um post (forma enriquecida para UI).
+ * Payload de API típico: ids + texto + timestamps; `author` costuma vir expandido ou via join.
+ */
+export interface Comment {
+  id: string;
+  postId: string;
+  /** Comentário raiz: `null`. Resposta: id do comentário pai. */
+  parentCommentId: string | null;
+  authorId: string;
+  author: User;
+  /** Corpo do comentário (nome alinhado a DTOs típicos `content`). */
+  content: string;
+  /** ISO 8601 recomendado para integração com backend. */
+  createdAt: string;
+}
+
+/**
+ * Fatia de engajamento do post para a usuária atual (útil em hooks e otimistic UI).
+ * Mantém paralelo aos campos homônimos em `Post`.
+ */
+export interface PostInteractionState {
+  likesCount: number;
+  commentsCount: number;
+  likedByCurrentUser: boolean;
+}
+
 export interface Post {
   id: string;
   communityId: string;
+  /** Alinhado ao autor expandido; em DTOs crus costuma vir só `authorId`. */
+  authorId: string;
   author: User;
   title: string;
   content: string;
@@ -86,6 +115,11 @@ export interface Post {
   createdAt: string;
   likesCount: number;
   commentsCount: number;
+  /**
+   * Se a usuária atual curtiu o post (requer contexto de `viewerId`).
+   * Mock: vindo de `postInteractionMockStore`; produção: campo da API ou derivado.
+   */
+  likedByCurrentUser: boolean;
   /** Preenchido ao montar dados para a UI; opcional em payloads “cru”. */
   community?: PostCommunityPreview;
 }

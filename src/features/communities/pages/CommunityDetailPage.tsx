@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import {
@@ -8,6 +8,10 @@ import {
   getPostsByCommunityId,
   isUserMemberOfCommunity,
 } from "@/domain/selectors";
+import {
+  getPostInteractionsVersion,
+  subscribePostInteractions,
+} from "@/domain/mocks/postInteractionMockStore";
 import { getCommunityMembershipStatus } from "@/domain/permissions";
 import type { Community, Post, User } from "@/domain/types";
 import { cn } from "@/lib/utils";
@@ -195,7 +199,13 @@ function CommunityDetailLoaded({
  */
 export function CommunityDetailPage() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
+  const viewerId = useViewerId();
   const [revision, setRevision] = useState(0);
+  const postInteractionRev = useSyncExternalStore(
+    subscribePostInteractions,
+    getPostInteractionsVersion,
+    getPostInteractionsVersion
+  );
 
   const bump = useCallback(() => setRevision((n) => n + 1), []);
 
@@ -206,8 +216,9 @@ export function CommunityDetailPage() {
 
   const posts = useMemo(() => {
     void revision;
-    return community ? getPostsByCommunityId(community.id) : [];
-  }, [community, revision]);
+    void postInteractionRev;
+    return community ? getPostsByCommunityId(community.id, viewerId) : [];
+  }, [community, revision, postInteractionRev, viewerId]);
 
   const members = useMemo(() => {
     void revision;

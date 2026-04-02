@@ -5,10 +5,11 @@ export interface SeedFollow {
   followingId: string;
 }
 
-/** Post bruto alinhado ao antigo seed (author embutido). */
+/** Post bruto alinhado ao seed (autor expandido + `authorId` para DTO/API). */
 export interface SeedPost {
   id: string;
   communityId: string;
+  authorId: string;
   author: User;
   title: string;
   content: string;
@@ -17,6 +18,18 @@ export interface SeedPost {
   createdAt: string;
   likesCount: number;
   commentsCount: number;
+}
+
+/** Comentário persistido no mock (sem `author` expandido até o enrich). */
+export interface SeedComment {
+  id: string;
+  postId: string;
+  /** `null` = comentário raiz no post. */
+  parentCommentId: string | null;
+  authorId: string;
+  content: string;
+  /** ISO 8601. */
+  createdAt: string;
 }
 
 const avatar = (id: string, sig: string) =>
@@ -324,12 +337,189 @@ function buildUsers(): User[] {
   return users;
 }
 
+function buildSeedCommentsForPosts(
+  posts: SeedPost[],
+  authorsByCommunity: Map<string, string[]>
+): SeedComment[] {
+  const COMMENT_TOPICS = [
+    ...SNIPPETS_SHORT,
+    "Concordo plenamente — obrigada por compartilhar.",
+    "Vou testar isso na próxima semana e volto com feedback.",
+    "Tem algum link ou material de apoio?",
+    "Mesma dúvida aqui, acompanhando a thread.",
+    "🙌 Isso normaliza demais o que estou sentindo.",
+    "Respondendo aqui: faz sentido, obrigada por abrir o tema.",
+    "Subindo um nível: também passo por algo parecido.",
+    "Concordo em partes — vale um café virtual pra destrinchar.",
+  ];
+  const comments: SeedComment[] = [];
+  let cid = 0;
+
+  for (const post of posts) {
+    const pool = authorsByCommunity.get(post.communityId) ?? [post.authorId];
+    const volume = Math.max(
+      0,
+      Math.min(post.commentsCount, 2 + (hash(post.id.length, 7) % 12))
+    );
+    const rootsThisPost: SeedComment[] = [];
+
+    for (let j = 0; j < volume; j += 1) {
+      cid += 1;
+      const authorId = pool[(hash(cid, j) + post.id.length) % pool.length];
+      const hoursAgo = j * 3 + (hash(cid, 5) % 20);
+      const createdAt = new Date(
+        Date.now() - hoursAgo * 3_600_000 - (hash(cid, 3) % 3600) * 1000
+      ).toISOString();
+      const root: SeedComment = {
+        id: `cmt-${post.id}-r-${j + 1}`,
+        postId: post.id,
+        parentCommentId: null,
+        authorId,
+        content: COMMENT_TOPICS[(hash(cid, j * 2) + j) % COMMENT_TOPICS.length],
+        createdAt,
+      };
+      comments.push(root);
+      rootsThisPost.push(root);
+    }
+
+    /** Threads moderadas: respostas e, em alguns posts, um terceiro nível. */
+    if (rootsThisPost.length === 0) continue;
+    const threadSalt = hash(post.id.length, 11);
+    if (threadSalt % 5 >= 3) continue;
+
+    const firstRoot = rootsThisPost[0];
+    const replyAuthor1 = pool[(hash(post.id.length, 2) + 1) % pool.length];
+    const tReply1 = new Date(new Date(firstRoot.createdAt).getTime() + (3 + (threadSalt % 5)) * 60_000).toISOString();
+    const reply1: SeedComment = {
+      id: `cmt-${post.id}-re-${firstRoot.id}-a`,
+      postId: post.id,
+      parentCommentId: firstRoot.id,
+      authorId: replyAuthor1,
+      content: COMMENT_TOPICS[(hash(cid + 1, 8) + 1) % COMMENT_TOPICS.length],
+      createdAt: tReply1,
+    };
+    comments.push(reply1);
+
+    if (rootsThisPost.length >= 2 && threadSalt % 2 === 0) {
+      const secondRoot = rootsThisPost[1];
+      const replyAuthor2 = pool[(hash(post.id.length, 4) + 2) % pool.length];
+      const tReply2 = new Date(new Date(secondRoot.createdAt).getTime() + 8 * 60_000).toISOString();
+      comments.push({
+        id: `cmt-${post.id}-re-${secondRoot.id}-a`,
+        postId: post.id,
+        parentCommentId: secondRoot.id,
+        authorId: replyAuthor2,
+        content: COMMENT_TOPICS[(hash(cid + 2, 9) + 2) % COMMENT_TOPICS.length],
+        createdAt: tReply2,
+      });
+    }
+
+    if (threadSalt % 4 === 0) {
+      const replyAuthor3 = pool[(hash(post.id.length, 6) + 3) % pool.length];
+      const tDeep = new Date(new Date(reply1.createdAt).getTime() + 6 * 60_000).toISOString();
+      comments.push({
+        id: `cmt-${post.id}-re-${reply1.id}-b`,
+        postId: post.id,
+        parentCommentId: reply1.id,
+        authorId: replyAuthor3,
+        content: COMMENT_TOPICS[(hash(cid + 3, 4) + 3) % COMMENT_TOPICS.length],
+        createdAt: tDeep,
+      });
+    }
+  }
+
+  return comments;
+}
+
+/** Comentários fixos para o post `post-demo-threads` — visualizar threads sem depender do hash do seed. */
+function buildShowcaseThreadComments(postId: string): SeedComment[] {
+  const iso = (minsAgo: number) => new Date(Date.now() - minsAgo * 60_000).toISOString();
+
+  const rootA = "demo-th-a";
+  const rootB = "demo-th-b";
+  const rootC = "demo-th-c";
+  const rA1 = "demo-th-a1";
+  const rA2 = "demo-th-a2";
+  const rA3 = "demo-th-a3";
+  const nested = "demo-th-a1n";
+  const rC1 = "demo-th-c1";
+
+  return [
+    {
+      id: rootA,
+      postId,
+      parentCommentId: null,
+      authorId: "2",
+      content:
+        "Dá para ver só os comentários raiz primeiro — e abrir as respostas quando quiser. O fluxo lembra thread, mas com a cara da Woody.",
+      createdAt: iso(180),
+    },
+    {
+      id: rootB,
+      postId,
+      parentCommentId: null,
+      authorId: "4",
+      content: "Comentário raiz sem respostas, para comparar o layout mais limpo.",
+      createdAt: iso(170),
+    },
+    {
+      id: rootC,
+      postId,
+      parentCommentId: null,
+      authorId: "6",
+      content: "No mobile a indentação fica leve — não esmaga o texto. Alguém mais testou?",
+      createdAt: iso(95),
+    },
+    {
+      id: rA1,
+      postId,
+      parentCommentId: rootA,
+      authorId: "3",
+      content: "Concordo. Expandir em camadas evita a página virar um muro de texto.",
+      createdAt: iso(165),
+    },
+    {
+      id: rA2,
+      postId,
+      parentCommentId: rootA,
+      authorId: "5",
+      content: "🙌 Exato — especialmente quando tem muita gente respondendo ao mesmo bloco.",
+      createdAt: iso(158),
+    },
+    {
+      id: rA3,
+      postId,
+      parentCommentId: rootA,
+      authorId: "7",
+      content: "Só um detalhe: dá para recolher de novo e a lista some, como esperado.",
+      createdAt: iso(150),
+    },
+    {
+      id: nested,
+      postId,
+      parentCommentId: rA1,
+      authorId: "8",
+      content: "Resposta aninhada (nível 3): aparece só depois que você abre as respostas do comentário acima.",
+      createdAt: iso(162),
+    },
+    {
+      id: rC1,
+      postId,
+      parentCommentId: rootC,
+      authorId: "9",
+      content: "Testei no celular — leitura ok, sem sensação de caixa apertada.",
+      createdAt: iso(88),
+    },
+  ];
+}
+
 export function buildPlatformSeed(): {
   users: User[];
   communities: Community[];
   memberships: Membership[];
   follows: SeedFollow[];
   posts: SeedPost[];
+  postComments: SeedComment[];
   joinRequests: JoinRequest[];
 } {
   const users = buildUsers();
@@ -507,6 +697,7 @@ export function buildPlatformSeed(): {
     posts.push({
       id: `post-${pid}`,
       communityId: c.id,
+      authorId: author.id,
       author,
       title: i % 4 === 0 ? tpl.title : `${tpl.title} · #${i + 1}`,
       content,
@@ -529,6 +720,7 @@ export function buildPlatformSeed(): {
     posts.push({
       id: `post-u1-${j}`,
       communityId: cId,
+      authorId: "1",
       author: userById.get("1")!,
       title: j % 2 === 0 ? "Notas da semana na Woody" : "Atualização rápida para quem acompanha",
       content:
@@ -543,5 +735,38 @@ export function buildPlatformSeed(): {
     });
   }
 
-  return { users, communities, memberships, follows, posts, joinRequests };
+  /** Post só para visualizar threads no detalhe (alto engajamento → costuma aparecer no topo do feed mock). */
+  const demoPostId = "post-demo-threads";
+  const demoCommunityId = viewerCommunityIds[0] ?? communities[0].id;
+  posts.push({
+    id: demoPostId,
+    communityId: demoCommunityId,
+    authorId: "1",
+    author: userById.get("1")!,
+    title: "Preview · threads de comentários",
+    content:
+      "Post de demonstração do mock: comentários raiz, “Ver N respostas” e resposta aninhada. Abra o post para explorar.",
+    imageUrl: null,
+    tags: ["demo", "UI"],
+    createdAt: "agora há pouco",
+    likesCount: 24_000,
+    commentsCount: 0,
+  });
+
+  const postComments = [
+    ...buildSeedCommentsForPosts(
+      posts.filter((p) => p.id !== demoPostId),
+      authorsByCommunity
+    ),
+    ...buildShowcaseThreadComments(demoPostId),
+  ];
+  const countByPost = new Map<string, number>();
+  for (const c of postComments) {
+    countByPost.set(c.postId, (countByPost.get(c.postId) ?? 0) + 1);
+  }
+  for (const p of posts) {
+    p.commentsCount = countByPost.get(p.id) ?? 0;
+  }
+
+  return { users, communities, memberships, follows, posts, postComments, joinRequests };
 }

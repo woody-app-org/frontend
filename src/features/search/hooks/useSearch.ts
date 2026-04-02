@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Community, Post, User } from "@/domain/types";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { searchByMode, type SearchMode } from "../services/search.service";
 
 export interface UseSearchParams {
@@ -16,6 +17,7 @@ export interface UseSearchReturn {
 }
 
 export function useSearch({ query, mode, debounceMs = 200 }: UseSearchParams): UseSearchReturn {
+  const viewerId = useViewerId();
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [people, setPeople] = useState<User[]>([]);
@@ -38,7 +40,7 @@ export function useSearch({ query, mode, debounceMs = 200 }: UseSearchParams): U
     setIsLoading(true);
     const t = window.setTimeout(async () => {
       try {
-        const result = await searchByMode({ query: effectiveQuery, mode });
+        const result = await searchByMode({ query: effectiveQuery, mode, viewerId });
         if (lastReq.current !== reqId) return;
         if (mode === "posts") {
           setPosts((result as { posts: Post[] }).posts ?? []);
@@ -59,7 +61,7 @@ export function useSearch({ query, mode, debounceMs = 200 }: UseSearchParams): U
     }, debounceMs);
 
     return () => window.clearTimeout(t);
-  }, [debounceMs, effectiveQuery, mode]);
+  }, [debounceMs, effectiveQuery, mode, viewerId]);
 
   return { isLoading, posts, people, communities };
 }

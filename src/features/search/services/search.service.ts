@@ -37,8 +37,10 @@ export interface SearchCommunitiesResult {
 export async function searchByMode(params: {
   query: string;
   mode: SearchMode;
+  /** Para `likedByCurrentUser` e futuros filtros ligados à sessão. */
+  viewerId: string;
 }): Promise<SearchPostsResult | SearchPeopleResult | SearchCommunitiesResult> {
-  const { query, mode } = params;
+  const { query, mode, viewerId } = params;
   await delay(260);
 
   const q = query.trim();
@@ -49,7 +51,7 @@ export async function searchByMode(params: {
   }
 
   if (mode === "posts") {
-    const posts = getAllSeedPostsEnriched().filter((p) => {
+    const posts = getAllSeedPostsEnriched(viewerId).filter((p) => {
       const tagMatch = p.tags?.some((t) => includesQuery(t, q)) ?? false;
       const categoryMatch =
         p.community != null && includesQuery(getCommunityCategoryLabel(p.community.category), q);

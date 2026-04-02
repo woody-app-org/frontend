@@ -1,4 +1,5 @@
 export { FeedPage } from "./pages/FeedPage";
+export { PostDetailPage } from "./pages/PostDetailPage";
 export { PostCard } from "./components/PostCard";
 export { CreatePostCard } from "./components/CreatePostCard";
 export { FeedTabs } from "./components/FeedTabs";
@@ -11,4 +12,4 @@ export { FeedSkeleton } from "./components/FeedSkeleton";
 export { FeedEmptyState } from "./components/FeedEmptyState";
 export { FeedErrorState } from "./components/FeedErrorState";
 export { useFeed } from "./hooks/useFeed";
-export type { Post, User, FeedFilter, PaginatedResponse } from "./types";
+export type { Comment, Post, PostInteractionState, User, FeedFilter, PaginatedResponse } from "./types";

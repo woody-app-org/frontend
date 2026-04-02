@@ -1,0 +1,55 @@
+import { Link } from "react-router-dom";
+import { Clock, ChevronLeft } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import type { Post } from "@/domain/types";
+import { PostCommunityContextBar } from "../PostCommunityContextBar";
+
+export interface PostDetailHeaderProps {
+  post: Post;
+}
+
+export function PostDetailHeader({ post }: PostDetailHeaderProps) {
+  const initials = post.author.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <header className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/feed">
+            <ChevronLeft className="size-4" />
+            Voltar
+          </Link>
+        </Button>
+      </div>
+
+      {post.community ? <PostCommunityContextBar preview={post.community} variant="community" /> : null}
+
+      <div className="flex items-start gap-3">
+        <Link
+          to={`/profile/${post.author.id}`}
+          className="shrink-0 overflow-hidden rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]"
+        >
+          <Avatar size="default" className="size-10 ring-0">
+            <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} className="block" />
+            <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-[var(--woody-text)]">{post.author.name}</p>
+          <div className="mt-0.5 flex items-center gap-1 text-xs text-[var(--woody-muted)]">
+            <Clock className="size-3" />
+            <span>{post.createdAt}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}

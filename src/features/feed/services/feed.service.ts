@@ -48,7 +48,7 @@ export async function getFeed(
   viewerId: string
 ): Promise<PaginatedResponse<Post>> {
   await delay(420);
-  const all = getAllSeedPostsEnriched();
+  const all = getAllSeedPostsEnriched(viewerId);
   const pool = applyFeedFilter(all, filter, viewerId);
   const pageSize = 10;
   const totalCount = pool.length;
