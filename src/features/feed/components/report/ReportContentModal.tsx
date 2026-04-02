@@ -84,7 +84,10 @@ export function ReportContentModal({ open, onOpenChange, target, viewerId }: Rep
       const result =
         target.kind === "post"
           ? await reportPostMock(target.post.id, viewerId, payload)
-          : await reportCommentMock(target.comment.id, viewerId, payload);
+          : await reportCommentMock(target.comment.id, viewerId, {
+              ...payload,
+              postId: target.post.id,
+            });
 
       if (!result.ok) {
         setError(result.message);

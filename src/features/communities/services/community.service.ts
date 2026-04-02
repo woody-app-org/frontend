@@ -1,35 +1,15 @@
-import { canEditCommunity } from "@/domain/permissions";
-import { setCommunityDraft } from "@/domain/mocks/communityDraftStore";
-import { getActiveMemberCountForCommunity, getCommunityById, getCommunityBySlug } from "@/domain/selectors";
-import type { Community } from "@/domain/types";
+import type {
+  Community,
+  CommunityMemberListItem,
+  CommunityMemberRole,
+  JoinRequest,
+  Post,
+  User,
+} from "@/domain/types";
+import axios from "axios";
+import { api, getApiErrorMessage } from "@/lib/api";
+import { mapCommunityFromApi, mapPostFromApi, mapUserFromApi } from "@/lib/apiMappers";
 import type { CommunityUpdatePayload, CommunityUpdateResult } from "../types";
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function cloneCommunity(c: Community): Community {
-  return { ...c, tags: [...c.tags] };
-}
-
-function withLiveMemberCount(c: Community): Community {
-  return {
-    ...c,
-    memberCount: getActiveMemberCountForCommunity(c.id),
-  };
-}
-
-export function getCommunityResolvedBySlug(slug: string): Community | undefined {
-  const base = getCommunityBySlug(slug);
-  if (!base) return undefined;
-  return withLiveMemberCount(cloneCommunity(base));
-}
-
-export function getCommunityResolvedById(id: string): Community | undefined {
-  const base = getCommunityById(id);
-  if (!base) return undefined;
-  return withLiveMemberCount(cloneCommunity(base));
-}
 
 function normalizeTags(tags: string[]): string[] {
   const seen = new Set<string>();
@@ -69,43 +49,131 @@ export function validateCommunityUpdatePayload(
   return { ok: true };
 }
 
-/**
- * Atualização mock com rascunho em memória. Quem pode editar segue `canEditCommunity` (dona ou admin).
- * Integração HTTP: `BACKEND_ROUTE_HINTS.community.updateCommunity` em `@/lib/backendIntegrationHints`.
- */
+export async function fetchCommunityBySlug(slug: string): Promise<Community | null> {
+  try {
+    const { data } = await api.get(`/communities/by-slug/${encodeURIComponent(slug)}`);
+    return mapCommunityFromApi(data);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) return null;
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar comunidade."));
+  }
+}
+
+export async function fetchAllCommunities(): Promise<Community[]> {
+  const { data } = await api.get("/communities");
+  return (data as unknown[]).map((c) => mapCommunityFromApi(c as Record<string, unknown>));
+}
+
+export async function fetchMyCommunityIdSet(): Promise<Set<string>> {
+  try {
+    const { data } = await api.get<string[]>("/users/me/communities");
+    return new Set(data ?? []);
+  } catch {
+    return new Set();
+  }
+}
+
+export async function fetchCommunityPosts(
+  communityId: string,
+  viewerId: string,
+  page: number = 1,
+  pageSize: number = 100
+): Promise<Post[]> {
+  const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/posts`, {
+    params: { page, pageSize },
+  });
+  const items = data.items ?? [];
+  return (items as unknown[]).map((p) => mapPostFromApi(p as Record<string, unknown>, viewerId));
+}
+
+function mapMemberRole(r: string): CommunityMemberRole {
+  if (r === "owner" || r === "admin" || r === "member") return r;
+  return "member";
+}
+
+export async function fetchCommunityMembers(communityId: string): Promise<CommunityMemberListItem[]> {
+  const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/members`);
+  const rows = data as { user: Record<string, unknown>; role: string }[];
+  return rows.map((row) => ({
+    user: mapUserFromApi(row.user),
+    role: mapMemberRole(row.role),
+  }));
+}
+
+export interface JoinRequestWithUser {
+  request: JoinRequest;
+  user: User;
+}
+
+export async function fetchCommunityJoinRequestRows(communityId: string): Promise<JoinRequestWithUser[]> {
+  try {
+    const { data } = await api.get<
+      {
+        id: string;
+        communityId: string;
+        userId: string;
+        status: string;
+        requestedAt?: string;
+        user: Record<string, unknown>;
+      }[]
+    >(`/communities/${encodeURIComponent(communityId)}/join-requests`);
+    return (data ?? []).map((r) => ({
+      request: {
+        id: r.id,
+        communityId: r.communityId,
+        userId: r.userId,
+        status: r.status as JoinRequest["status"],
+        requestedAt: r.requestedAt,
+      },
+      user: mapUserFromApi(r.user),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchCommunityById(id: string): Promise<Community | null> {
+  try {
+    const { data } = await api.get(`/communities/${encodeURIComponent(id)}`);
+    return mapCommunityFromApi(data);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) return null;
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar comunidade."));
+  }
+}
+
+/** @deprecated Prefer `fetchCommunityBySlug` (API). Mantido para compatibilidade de imports. */
+export function getCommunityResolvedBySlug(slug: string): Community | undefined {
+  void slug;
+  return undefined;
+}
+
+/** @deprecated Prefer `fetchCommunityById` (API). */
+export function getCommunityResolvedById(_id: string): Community | undefined {
+  return undefined;
+}
+
 export async function updateCommunity(
-  actorUserId: string,
+  _actorUserId: string,
   communityId: string,
   payload: CommunityUpdatePayload
 ): Promise<CommunityUpdateResult> {
-  await delay(520);
-  const current = getCommunityById(communityId);
-  if (!current) return { ok: false, error: "Comunidade não encontrada." };
-
-  if (!canEditCommunity(actorUserId, current)) {
-    return { ok: false, error: "Você não tem permissão para editar esta comunidade." };
-  }
-
   const validated = validateCommunityUpdatePayload(payload);
   if (!validated.ok) return validated;
 
-  const tags = normalizeTags(payload.tags);
-  const next: Community = {
-    ...current,
-    name: payload.name.trim(),
-    description: payload.description.trim(),
-    category: payload.category,
-    tags,
-    rules: payload.rules.trim(),
-    avatarUrl: payload.avatarUrl !== undefined ? payload.avatarUrl : current.avatarUrl,
-    coverUrl: payload.coverUrl !== undefined ? payload.coverUrl : current.coverUrl,
-    visibility: payload.visibility,
-    id: current.id,
-    slug: current.slug,
-    ownerUserId: current.ownerUserId,
-    memberCount: getActiveMemberCountForCommunity(current.id),
-  };
-
-  setCommunityDraft(communityId, next);
-  return { ok: true, community: cloneCommunity(next) };
+  try {
+    const { data } = await api.patch(`/communities/${encodeURIComponent(communityId)}`, {
+      name: payload.name.trim(),
+      description: payload.description.trim(),
+      category: payload.category,
+      tags: normalizeTags(payload.tags),
+      rules: payload.rules.trim(),
+      avatarUrl: payload.avatarUrl,
+      coverUrl: payload.coverUrl,
+      visibility: payload.visibility,
+    });
+    return { ok: true, community: mapCommunityFromApi(data) };
+  } catch (e) {
+    return { ok: false, error: getApiErrorMessage(e, "Não foi possível atualizar a comunidade.") };
+  }
 }

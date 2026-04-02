@@ -1,8 +1,7 @@
 import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
-import { AUTH_STORAGE_KEY } from "../constants";
+import { AUTH_STORAGE_KEY, AUTH_TOKEN_KEY } from "../constants";
 import { syncAuthUserToDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
-
-const MOCK_DELAY_MS = 600;
+import { api, getApiErrorMessage, setStoredToken } from "@/lib/api";
 
 function getStoredUser(): AuthUser | null {
   try {
@@ -22,50 +21,66 @@ function setStoredUser(user: AuthUser | null): void {
   }
 }
 
-/** Simula login. Qualquer usuário/senha com senha >= 6 chars é aceito no mock. */
-export async function loginMock(
-  credentials: LoginCredentials
-): Promise<AuthUser> {
-  await new Promise((r) => setTimeout(r, MOCK_DELAY_MS));
-  const user: AuthUser = {
-    id: "1",
-    username: credentials.username.trim(),
-    name: credentials.username.trim(),
-    email: credentials.username.includes("@") ? credentials.username : undefined,
+function mapAuthUser(raw: { id: string; username: string; email?: string; name?: string; avatarUrl?: string }): AuthUser {
+  return {
+    id: String(raw.id),
+    username: raw.username,
+    email: raw.email,
+    name: raw.name ?? raw.username,
+    avatarUrl: raw.avatarUrl,
   };
-  setStoredUser(user);
-  syncAuthUserToDisplayPatch(user);
-  return user;
 }
 
-/** Simula cadastro. Sempre retorna sucesso no mock. */
-export async function registerMock(
-  credentials: RegisterCredentials
-): Promise<AuthUser> {
-  await new Promise((r) => setTimeout(r, MOCK_DELAY_MS));
-  const user: AuthUser = {
-    id: crypto.randomUUID(),
-    username: credentials.username.trim(),
-    email: credentials.email.trim(),
-    name: credentials.username.trim(),
-    avatarUrl: credentials.avatarUrl ?? undefined,
-  };
-  setStoredUser(user);
-  syncAuthUserToDisplayPatch(user);
-  return user;
+export async function loginMock(credentials: LoginCredentials): Promise<AuthUser> {
+  try {
+    const { data } = await api.post<{ token: string; user: AuthUser }>("/Auth/login", {
+      username: credentials.username.trim(),
+      password: credentials.password,
+    });
+    setStoredToken(data.token);
+    const user = mapAuthUser(data.user as AuthUser);
+    setStoredUser(user);
+    syncAuthUserToDisplayPatch(user);
+    return user;
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Falha no login."));
+  }
+}
+
+export async function registerMock(credentials: RegisterCredentials): Promise<AuthUser> {
+  try {
+    const { data } = await api.post<{ token: string; user: AuthUser }>("/Auth/register", {
+      username: credentials.username.trim(),
+      email: credentials.email.trim(),
+      password: credentials.password,
+      cpf: credentials.cpf.trim(),
+      birthDate: credentials.birthDate,
+      avatarUrl: credentials.avatarUrl ?? undefined,
+    });
+    setStoredToken(data.token);
+    const user = mapAuthUser(data.user as AuthUser);
+    setStoredUser(user);
+    syncAuthUserToDisplayPatch(user);
+    return user;
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Falha no registo."));
+  }
 }
 
 export function logoutMock(): void {
   setStoredUser(null);
+  setStoredToken(null);
 }
 
-/**
- * Encerra sessão com latência semelhante à API (revogação de token, etc.).
- * A UI pode continuar usando `logoutMock` síncrono via `AuthContext`; use este quando o fluxo for assíncrono.
- */
-/** Simula POST /auth/logout — ver `BACKEND_ROUTE_HINTS.session` em `src/lib/backendIntegrationHints.ts`. */
 export async function logoutSessionMock(): Promise<void> {
-  await new Promise((r) => setTimeout(r, MOCK_DELAY_MS));
+  const t = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (t) {
+    try {
+      await api.post("/Auth/logout");
+    } catch {
+      /* stateless JWT: ignorar */
+    }
+  }
   logoutMock();
 }
 
@@ -73,7 +88,6 @@ export function getAuthUser(): AuthUser | null {
   return getStoredUser();
 }
 
-/** Mescla campos no usuário persistido (ex.: após editar perfil). */
 export function patchStoredUser(patch: Partial<AuthUser>): AuthUser | null {
   const cur = getStoredUser();
   if (!cur) return null;

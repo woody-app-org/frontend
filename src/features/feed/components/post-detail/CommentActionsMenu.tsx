@@ -86,7 +86,7 @@ export function CommentActionsMenu({ post, comment, viewerId }: CommentActionsMe
     setHideError(null);
     setHideBusy(true);
     try {
-      const result = await hideCommentMock(comment.id, viewerId);
+      const result = await hideCommentMock(comment.id, viewerId, post.id);
       if (!result.ok) {
         setHideError(result.message);
         return;

@@ -1,24 +1,18 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
-import {
-  getActiveMemberCountForCommunity,
-  getCommunityMemberListItems,
-  getJoinRequestForUserInCommunity,
-  getPostsByCommunityId,
-  isUserMemberOfCommunity,
-} from "@/domain/selectors";
-import {
-  getPostInteractionsVersion,
-  subscribePostInteractions,
-} from "@/domain/mocks/postInteractionMockStore";
-import { getCommunityMembershipStatus } from "@/domain/permissions";
-import type { Community, CommunityMemberListItem, Post } from "@/domain/types";
+import type { Community, CommunityMemberListItem, JoinRequest, Post } from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { woodyLayout } from "@/lib/woody-ui";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
-import { getCommunityResolvedBySlug } from "../services/community.service";
+import {
+  fetchCommunityBySlug,
+  fetchCommunityJoinRequestRows,
+  fetchCommunityMembers,
+  fetchCommunityPosts,
+  type JoinRequestWithUser,
+} from "../services/community.service";
 import {
   joinCommunityPublic,
   leaveCommunity,
@@ -41,16 +35,22 @@ interface CommunityDetailLoadedProps {
   community: Community;
   posts: Post[];
   members: CommunityMemberListItem[];
+  joinRows: JoinRequestWithUser[];
   dataRevision: number;
   onDataChanged: () => void;
+  joinPending: boolean;
+  setJoinPending: (v: boolean) => void;
 }
 
 function CommunityDetailLoaded({
   community,
   posts,
   members,
+  joinRows,
   dataRevision,
   onDataChanged,
+  joinPending,
+  setJoinPending,
 }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -59,16 +59,34 @@ function CommunityDetailLoaded({
   const [accessNotice, setAccessNotice] = useState<string | null>(null);
   const [feedPage, setFeedPage] = useState(1);
 
-  const isMember = isUserMemberOfCommunity(viewerId, community.id);
-  const membershipStatus = getCommunityMembershipStatus(viewerId, community.id);
-  const joinRequest = getJoinRequestForUserInCommunity(viewerId, community.id) ?? null;
+  const myRow = members.find((m) => m.user.id === viewerId);
+  const isMember = Boolean(myRow);
+  const isOwner = community.ownerUserId === viewerId;
+  const isAdminRole = myRow?.role === "admin";
+  const canMod = isOwner || isAdminRole;
 
-  const memberCount = useMemo(() => {
-    void dataRevision;
-    return getActiveMemberCountForCommunity(community.id);
-  }, [community.id, dataRevision]);
+  const membershipStatus = joinPending && !isMember ? "pending" : isMember ? "active" : "none";
 
-  const { canEditCommunity, canManageMembers, isOwner } = useCommunityPermissions(community);
+  const joinRequest: JoinRequest | null = useMemo(() => {
+    if (!joinPending || isMember) return null;
+    return {
+      id: "pending-local",
+      communityId: community.id,
+      userId: viewerId,
+      status: "pending",
+    };
+  }, [joinPending, isMember, community.id, viewerId]);
+
+  const memberCount = community.memberCount;
+
+  const { canEditCommunity, canManageMembers } = useCommunityPermissions(community, {
+    isMember,
+    membershipStatus,
+    canEditCommunity: canMod,
+    canManageMembers: canMod,
+    isAdmin: isAdminRole,
+    hasPendingJoin: joinPending,
+  });
 
   const runAccess = useCallback(
     async (fn: () => Promise<CommunityMembershipActionResult>) => {
@@ -124,9 +142,27 @@ function CommunityDetailLoaded({
         membershipStatus={membershipStatus}
         joinRequest={joinRequest}
         memberCount={memberCount}
-        onLeave={() => runAccess(() => leaveCommunity(viewerId, community.id))}
-        onJoinPublic={() => runAccess(() => joinCommunityPublic(viewerId, community.id))}
-        onRequestJoin={() => runAccess(() => requestJoinCommunity(viewerId, community.id))}
+        onLeave={() =>
+          runAccess(async () => {
+            const r = await leaveCommunity(viewerId, community.id);
+            if (r.ok) setJoinPending(false);
+            return r;
+          })
+        }
+        onJoinPublic={() =>
+          runAccess(async () => {
+            const r = await joinCommunityPublic(viewerId, community.id);
+            if (r.ok) setJoinPending(false);
+            return r;
+          })
+        }
+        onRequestJoin={() =>
+          runAccess(async () => {
+            const r = await requestJoinCommunity(viewerId, community.id);
+            if (r.ok) setJoinPending(true);
+            return r;
+          })
+        }
         ctaBusy={ctaBusy}
         accessNotice={accessNotice}
         canManage={canEditCommunity}
@@ -155,6 +191,8 @@ function CommunityDetailLoaded({
           actorIsOwner={isOwner}
           listRevision={dataRevision}
           onListChanged={onDataChanged}
+          liveMemberList={members}
+          liveJoinRequestRows={joinRows}
         />
       ) : null}
 
@@ -201,29 +239,69 @@ export function CommunityDetailPage() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
   const viewerId = useViewerId();
   const [revision, setRevision] = useState(0);
-  const postInteractionRev = useSyncExternalStore(
-    subscribePostInteractions,
-    getPostInteractionsVersion,
-    getPostInteractionsVersion
-  );
+  const [loadState, setLoadState] = useState<"loading" | "ok" | "error">("loading");
+  const [community, setCommunity] = useState<Community | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [members, setMembers] = useState<CommunityMemberListItem[]>([]);
+  const [joinRows, setJoinRows] = useState<JoinRequestWithUser[]>([]);
+  const [joinPending, setJoinPending] = useState(false);
 
   const bump = useCallback(() => setRevision((n) => n + 1), []);
 
-  const community = useMemo(() => {
-    void revision;
-    return communitySlug ? getCommunityResolvedBySlug(communitySlug) : undefined;
-  }, [communitySlug, revision]);
+  useEffect(() => {
+    if (!communitySlug) {
+      setLoadState("ok");
+      setCommunity(null);
+      return;
+    }
 
-  const posts = useMemo(() => {
-    void revision;
-    void postInteractionRev;
-    return community ? getPostsByCommunityId(community.id, viewerId) : [];
-  }, [community, revision, postInteractionRev, viewerId]);
+    let cancelled = false;
+    setLoadState("loading");
 
-  const members = useMemo(() => {
-    void revision;
-    return community ? getCommunityMemberListItems(community.id) : [];
-  }, [community, revision]);
+    (async () => {
+      try {
+        const c = await fetchCommunityBySlug(communitySlug);
+        if (cancelled) return;
+        if (!c) {
+          setCommunity(null);
+          setPosts([]);
+          setMembers([]);
+          setJoinRows([]);
+          setLoadState("ok");
+          return;
+        }
+
+        const [postsList, mems] = await Promise.all([
+          fetchCommunityPosts(c.id, viewerId, 1, 200),
+          fetchCommunityMembers(c.id),
+        ]);
+        if (cancelled) return;
+
+        const isMod =
+          c.ownerUserId === viewerId ||
+          mems.some((m) => m.user.id === viewerId && (m.role === "admin" || m.role === "owner"));
+        const jrows = isMod ? await fetchCommunityJoinRequestRows(c.id) : [];
+        if (cancelled) return;
+
+        setCommunity(c);
+        setPosts(postsList);
+        setMembers(mems);
+        setJoinRows(jrows);
+        const isMember = mems.some((m) => m.user.id === viewerId);
+        if (isMember) setJoinPending(false);
+        setLoadState("ok");
+      } catch {
+        if (!cancelled) {
+          setLoadState("error");
+          setCommunity(null);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [communitySlug, viewerId, revision]);
 
   if (!communitySlug) {
     return (
@@ -235,6 +313,36 @@ export function CommunityDetailPage() {
           )}
         >
           <CommunityNotFound />
+        </div>
+      </FeedLayout>
+    );
+  }
+
+  if (loadState === "loading") {
+    return (
+      <FeedLayout showRightPanel={false}>
+        <div
+          className={cn(
+            "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
+            woodyLayout.pagePadWide
+          )}
+        >
+          A carregar comunidade…
+        </div>
+      </FeedLayout>
+    );
+  }
+
+  if (loadState === "error") {
+    return (
+      <FeedLayout showRightPanel={false}>
+        <div
+          className={cn(
+            "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
+            woodyLayout.pagePadWide
+          )}
+        >
+          Não foi possível carregar esta comunidade.
         </div>
       </FeedLayout>
     );
@@ -262,8 +370,11 @@ export function CommunityDetailPage() {
         community={community}
         posts={posts}
         members={members}
+        joinRows={joinRows}
         dataRevision={revision}
         onDataChanged={bump}
+        joinPending={joinPending}
+        setJoinPending={setJoinPending}
       />
     </FeedLayout>
   );

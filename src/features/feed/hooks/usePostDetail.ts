@@ -1,10 +1,5 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
-import { getCommentsEnrichedByPostId, getPostById } from "@/domain/selectors";
-import {
-  getPostInteractionsVersion,
-  subscribePostInteractions,
-} from "@/domain/mocks/postInteractionMockStore";
 import type { Comment, Post } from "@/domain/types";
 import {
   getPostByIdMock,
@@ -35,11 +30,6 @@ interface UsePostDetailReturn {
  */
 export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   const viewerId = useViewerId();
-  const postInteractionRev = useSyncExternalStore(
-    subscribePostInteractions,
-    getPostInteractionsVersion,
-    getPostInteractionsVersion
-  );
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,13 +84,6 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   useEffect(() => {
     refetch();
   }, [refetch]);
-
-  useEffect(() => {
-    void postInteractionRev;
-    if (!postId) return;
-    setPost(getPostById(postId, viewerId) ?? null);
-    setComments(getCommentsEnrichedByPostId(postId, viewerId));
-  }, [postId, viewerId, postInteractionRev]);
 
   const toggleLike = useCallback(async () => {
     if (!postId || !post) return;
