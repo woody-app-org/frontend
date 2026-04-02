@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
+import { sortActiveMembershipsByHierarchy } from "@/domain/communityMemberRole";
 import type { Community, Membership, User } from "@/domain/types";
 import {
   getPendingJoinRequestsForCommunity,
@@ -28,16 +29,6 @@ export interface CommunityMembersManagerDialogProps {
   onListChanged: () => void;
 }
 
-function sortMemberships(rows: Membership[], community: Community): Membership[] {
-  const rank = (m: Membership): number => {
-    const isOwner = community.ownerUserId === m.userId || m.role === "owner";
-    if (isOwner) return 0;
-    if (m.role === "admin") return 1;
-    return 2;
-  };
-  return [...rows].sort((a, b) => rank(a) - rank(b) || a.userId.localeCompare(b.userId));
-}
-
 export function CommunityMembersManagerDialog({
   open,
   onOpenChange,
@@ -53,7 +44,7 @@ export function CommunityMembersManagerDialog({
     void listRevision;
     const all = getMembershipsInCommunity(community.id);
     const activeMembers = all.filter((m) => m.status === "active");
-    const sorted = sortMemberships(activeMembers, community);
+    const sorted = sortActiveMembershipsByHierarchy(activeMembers, community);
     const memberPairs: { membership: Membership; user: User }[] = [];
     for (const m of sorted) {
       const u = getUserById(m.userId);

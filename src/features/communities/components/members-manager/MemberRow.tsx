@@ -4,7 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
-import type { Community, CommunityMemberRole, Membership, User } from "@/domain/types";
+import {
+  getCommunityMemberRoleManagementBadgeClass,
+  getCommunityMemberRoleManagementLabel,
+} from "@/domain/communityMemberRole";
+import type { Community, Membership, User } from "@/domain/types";
 import {
   type CommunityMembershipActionResult,
   banMember,
@@ -19,22 +23,6 @@ function initials(name: string): string {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-}
-
-function roleLabel(role: CommunityMemberRole, isOwnerUser: boolean): string {
-  if (isOwnerUser || role === "owner") return "Dona";
-  if (role === "admin") return "Admin";
-  return "Membro";
-}
-
-function roleBadgeClass(role: CommunityMemberRole, isOwnerUser: boolean): string {
-  if (isOwnerUser || role === "owner") {
-    return "bg-[var(--woody-nav)]/18 text-[var(--woody-text)] ring-1 ring-[var(--woody-nav)]/25";
-  }
-  if (role === "admin") {
-    return "bg-amber-500/12 text-amber-900 dark:text-amber-100 ring-1 ring-amber-500/20";
-  }
-  return "bg-[var(--woody-accent)]/10 text-[var(--woody-text)] ring-1 ring-[var(--woody-accent)]/15";
 }
 
 export interface MemberRowProps {
@@ -90,10 +78,10 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
             <span
               className={cn(
                 "mt-1 inline-flex rounded-md px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide",
-                roleBadgeClass(membership.role, isTargetOwner)
+                getCommunityMemberRoleManagementBadgeClass(membership.role, isTargetOwner)
               )}
             >
-              {roleLabel(membership.role, isTargetOwner)}
+              {getCommunityMemberRoleManagementLabel(membership.role, isTargetOwner)}
             </span>
           </div>
         </Link>

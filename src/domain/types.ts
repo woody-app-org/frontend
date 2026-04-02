@@ -54,6 +54,12 @@ export interface Membership {
   joinedAt?: string;
 }
 
+/** Participante ativa com papel resolvido (lista “quem participa”, futuros DTOs da API). */
+export interface CommunityMemberListItem {
+  user: User;
+  role: CommunityMemberRole;
+}
+
 /** Status de pedido de entrada (fila moderada por owner/admin). */
 export type JoinRequestStatus = "pending" | "approved" | "rejected";
 
