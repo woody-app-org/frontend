@@ -19,7 +19,8 @@ export interface ProfilePostsSectionProps {
   onPreviousPage: () => void;
   onNextPage: () => void;
   onPin?: (postId: string) => void;
-  onReport?: (postId: string) => void;
+  onPostUpdated?: (post: Post) => void;
+  onPostDeleted?: (postId: string) => void;
   className?: string;
   /** Título da seção (bloco “Posts / Publicações”). */
   sectionTitle?: string;
@@ -43,7 +44,8 @@ export function ProfilePostsSection({
   onPreviousPage,
   onNextPage,
   onPin,
-  onReport,
+  onPostUpdated,
+  onPostDeleted,
   className,
   sectionTitle = "Publicações",
   sectionDescription = "Posts publicados em comunidades — cada um mostra o espaço de origem.",
@@ -83,7 +85,8 @@ export function ProfilePostsSection({
             <PostCard
               post={post}
               onPin={onPin}
-              onReport={onReport}
+              onPostUpdated={onPostUpdated}
+              onPostDeleted={onPostDeleted}
             />
           </li>
         ))}

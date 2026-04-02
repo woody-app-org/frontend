@@ -1,5 +1,7 @@
 /**
- * Contratos de leitura/mutação de posts para o mock.
+ * Contratos de leitura/mutação de posts e comentários para o mock.
+ *
+ * Integração futura: rotas em `src/lib/backendIntegrationHints.ts` (content + comentários).
  * TODO(backend): trocar implementações por `fetch`/`axios` apontando para rotas REST/GraphQL;
  * manter assinaturas ou adaptadores finos para não reescrever hooks/UI.
  *
@@ -22,7 +24,11 @@ import {
   getPostById,
   getRepliesEnrichedByCommentId,
 } from "../selectors";
-import { appendCommentForPost, togglePostLikeForUser } from "../mocks/postInteractionMockStore";
+import {
+  appendCommentForPost,
+  getSeedPostRowById,
+  togglePostLikeForUser,
+} from "../mocks/postInteractionMockStore";
 
 const MOCK_DELAY_MS = 400;
 
@@ -37,15 +43,21 @@ export async function getPostByIdMock(postId: string, viewerId: string): Promise
 }
 
 /** TODO(backend): GET /posts/:postId/comments */
-export async function getCommentsByPostIdMock(postId: string): Promise<Comment[]> {
+export async function getCommentsByPostIdMock(
+  postId: string,
+  viewerId?: string
+): Promise<Comment[]> {
   await delay(Math.round(MOCK_DELAY_MS * 0.55));
-  return getCommentsEnrichedByPostId(postId);
+  return getCommentsEnrichedByPostId(postId, viewerId);
 }
 
 /** TODO(backend): GET /comments/:parentCommentId/replies */
-export async function getRepliesByCommentIdMock(parentCommentId: string): Promise<Comment[]> {
+export async function getRepliesByCommentIdMock(
+  parentCommentId: string,
+  viewerId?: string
+): Promise<Comment[]> {
   await delay(Math.round(MOCK_DELAY_MS * 0.5));
-  return getRepliesEnrichedByCommentId(parentCommentId);
+  return getRepliesEnrichedByCommentId(parentCommentId, viewerId);
 }
 
 /** TODO(backend): POST /posts/:postId/like ou DELETE conforme estado */
@@ -80,7 +92,9 @@ export async function createCommentMock(
     parentCommentId: parentCommentId ?? null,
   });
   if (!row) return { ok: false, error: "Não foi possível publicar (post ou comentário pai inválido)." };
-  return { ok: true, comment: enrichComment(row) };
+  const postRow = getSeedPostRowById(postId);
+  const postAuthorId = postRow?.authorId ?? "";
+  return { ok: true, comment: enrichComment(row, { viewerId, postAuthorId }) };
 }
 
 /** Fachada única para trocar por cliente HTTP sem espalhar imports na UI. */

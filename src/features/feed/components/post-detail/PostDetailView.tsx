@@ -9,6 +9,9 @@ import { PostDetailHeader } from "./PostDetailHeader";
 
 export interface PostDetailViewProps {
   post: Post;
+  /** Destino após a autora excluir o post no detalhe. */
+  postDeleteRedirectTo?: string;
+  onPostUpdated?: (post: Post) => void;
   comments: Comment[];
   isCommentsLoading: boolean;
   commentsError: string | null;
@@ -23,6 +26,8 @@ export interface PostDetailViewProps {
 
 export function PostDetailView({
   post,
+  postDeleteRedirectTo,
+  onPostUpdated,
   comments,
   isCommentsLoading,
   commentsError,
@@ -48,7 +53,11 @@ export function PostDetailView({
   return (
     <Card className="border-[var(--woody-accent)]/15 bg-[var(--woody-card)] px-4 py-4 sm:px-6 sm:py-5">
       <div className="space-y-5">
-        <PostDetailHeader post={post} />
+        <PostDetailHeader
+          post={post}
+          postDeleteRedirectTo={postDeleteRedirectTo}
+          onPostUpdated={onPostUpdated}
+        />
         <PostDetailContent post={post} />
         <PostDetailActions
           post={post}
@@ -79,6 +88,7 @@ export function PostDetailView({
           />
 
           <CommentsList
+            post={post}
             postId={post.id}
             comments={comments}
             isLoading={isCommentsLoading}

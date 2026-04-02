@@ -59,6 +59,16 @@ export function logoutMock(): void {
   setStoredUser(null);
 }
 
+/**
+ * Encerra sessão com latência semelhante à API (revogação de token, etc.).
+ * A UI pode continuar usando `logoutMock` síncrono via `AuthContext`; use este quando o fluxo for assíncrono.
+ */
+/** Simula POST /auth/logout — ver `BACKEND_ROUTE_HINTS.session` em `src/lib/backendIntegrationHints.ts`. */
+export async function logoutSessionMock(): Promise<void> {
+  await new Promise((r) => setTimeout(r, MOCK_DELAY_MS));
+  logoutMock();
+}
+
 export function getAuthUser(): AuthUser | null {
   return getStoredUser();
 }

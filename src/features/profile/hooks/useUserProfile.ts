@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import type { UseUserProfileReturn } from "../types";
+import type { Post, UseUserProfileReturn } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { getProfile, getProfilePosts } from "../services/profile.service";
 
@@ -64,6 +64,14 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
   const previousPage = useCallback(() => setPage((p) => Math.max(1, p - 1)), []);
   const refetch = useCallback(() => fetchProfile(), [fetchProfile]);
 
+  const updatePostInList = useCallback((updated: Post) => {
+    setPosts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  }, []);
+
+  const removePostFromList = useCallback((postId: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }, []);
+
   return {
     profile,
     posts,
@@ -75,5 +83,7 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     nextPage,
     previousPage,
     refetch,
+    updatePostInList,
+    removePostFromList,
   };
 }

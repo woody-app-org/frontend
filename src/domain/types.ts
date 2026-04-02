@@ -81,6 +81,12 @@ export interface PostCommunityPreview {
 }
 
 /**
+ * Quando a autora do post oculta um comentário de terceiros, outras leitoras veem máscara;
+ * autora do post e autora do comentário continuam vendo o texto (regra típica de moderação leve).
+ */
+export type CommentContentModerationMask = "hidden_by_post_author";
+
+/**
  * Comentário no thread de um post (forma enriquecida para UI).
  * Payload de API típico: ids + texto + timestamps; `author` costuma vir expandido ou via join.
  */
@@ -95,6 +101,15 @@ export interface Comment {
   content: string;
   /** ISO 8601 recomendado para integração com backend. */
   createdAt: string;
+  /** Soft-delete: comentário some do thread após exclusão pela autora. */
+  deletedAt?: string | null;
+  /** Autora do post ocultou este comentário de terceiras (ISO 8601). */
+  hiddenByPostAuthorAt?: string | null;
+  /**
+   * Preenchido em `enrichComment` quando há `viewerId` + contexto do post.
+   * UI usa `getCommentContentForViewer` para texto seguro a exibir.
+   */
+  contentModerationMask?: CommentContentModerationMask | null;
 }
 
 /**
@@ -119,6 +134,10 @@ export interface Post {
   /** Tags opcionais no nível do post (além do contexto da comunidade). */
   tags?: string[];
   createdAt: string;
+  /** Preenchido após edição (ISO 8601); omitido se nunca editado. */
+  updatedAt?: string | null;
+  /** Soft-delete: post tratado como removido nas leituras do mock/API. */
+  deletedAt?: string | null;
   likesCount: number;
   commentsCount: number;
   /**

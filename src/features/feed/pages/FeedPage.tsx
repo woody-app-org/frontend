@@ -121,7 +121,6 @@ export function FeedPage() {
                       onLike={togglePostLike}
                       isLikePending={isPostLikePending(post.id)}
                       onPin={(id) => console.log("Pin", id)}
-                      onReport={(id) => console.log("Report", id)}
                     />
                   </li>
                 ))}

@@ -74,6 +74,9 @@ export interface UseUserProfileReturn {
   nextPage: () => void;
   previousPage: () => void;
   refetch: () => void;
+  /** Atualiza um post na lista local (edição mock). */
+  updatePostInList: (post: Post) => void;
+  removePostFromList: (postId: string) => void;
 }
 
 export type { Post, User };

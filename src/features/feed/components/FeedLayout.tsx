@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Bell, MessageCircle, User } from "lucide-react";
-import { useAuth } from "@/features/auth/context/AuthContext";
+import { Bell, MessageCircle } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { cn } from "@/lib/utils";
 import { SearchModal } from "@/features/search/components/SearchModal";
+import { UserAccountMenu } from "./UserAccountMenu";
 
 export interface FeedLayoutProps {
   children: React.ReactNode;
@@ -51,9 +51,6 @@ const styles = {
   iconBtnHidden: "hidden md:flex",
   bellWrap: "relative",
   badge: "absolute top-1.5 right-1.5 size-1.5 rounded-full bg-amber-400",
-  avatarBtn:
-    "size-10 flex items-center justify-center rounded-full hover:bg-white/10 overflow-hidden ring-1 ring-white/15 shrink-0",
-  avatarImg: "size-8 rounded-full object-cover",
 } as const;
 
 const SCROLL_KEYS = [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp"] as const;
@@ -80,7 +77,6 @@ function isInsideDialogLayer(node: EventTarget | null): boolean {
 }
 
 export function FeedLayout({ children, className, showRightPanel = true }: FeedLayoutProps) {
-  const { user } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -190,19 +186,7 @@ export function FeedLayout({ children, className, showRightPanel = true }: FeedL
                 <Bell className="size-5" />
                 <span className={styles.badge} aria-hidden />
               </button>
-              <Link
-                to={user ? `/profile/${user.id}` : "/auth/login"}
-                className={styles.avatarBtn}
-                aria-label={user ? "Ir para meu perfil" : "Entrar"}
-              >
-                {user?.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="" className={styles.avatarImg} />
-                ) : (
-                  <span className="flex size-8 items-center justify-center rounded-full bg-white/15 text-white">
-                    <User className="size-[1.35rem]" aria-hidden />
-                  </span>
-                )}
-              </Link>
+              <UserAccountMenu />
             </div>
           </div>
           </header>

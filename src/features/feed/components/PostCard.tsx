@@ -1,22 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, MoreVertical, Pin, Flag, Clock, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Clock, Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyMotion, woodySurface } from "@/lib/woody-ui";
 import type { Post } from "../types";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
+import { PostOverflowMenu } from "./PostOverflowMenu";
 
 // --- Helpers ---
 
@@ -42,7 +37,7 @@ const styles = {
   authorPronouns: "text-[var(--woody-muted)] text-xs",
   timestamp: "flex items-center gap-1 text-[var(--woody-muted)] text-xs mt-0.5",
   menuTrigger:
-    "shrink-0 text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-1.5 min-w-[2rem] min-h-[2rem]",
+    "shrink-0 touch-manipulation text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-2 min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 sm:p-1.5",
   titleRow:
     "flex flex-wrap items-center gap-2 gap-y-1 mt-2",
   title: "font-bold text-[var(--woody-text)] text-base sm:text-[1.05rem] leading-snug",
@@ -64,7 +59,9 @@ const styles = {
 export interface PostCardProps {
   post: Post;
   onPin?: (postId: string) => void;
-  onReport?: (postId: string) => void;
+  /** Sincroniza lista local (ex.: perfil) após edição mock. */
+  onPostUpdated?: (post: Post) => void;
+  onPostDeleted?: (postId: string) => void;
   onLike?: (postId: string) => void | Promise<void>;
   isLikePending?: boolean;
   className?: string;
@@ -78,13 +75,15 @@ export interface PostCardProps {
 export function PostCard({
   post,
   onPin,
-  onReport,
+  onPostUpdated,
+  onPostDeleted,
   onLike,
   isLikePending = false,
   className,
   postListingContext = "feed",
 }: PostCardProps) {
   const navigate = useNavigate();
+  const viewerId = useViewerId();
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -157,37 +156,14 @@ export function PostCard({
             </div>
           </Link>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              data-post-ignore-open="true"
-              className={styles.menuTrigger}
-              aria-label="Abrir menu"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <MoreVertical className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-[var(--woody-card)] border-[var(--woody-accent)]/20">
-            <DropdownMenuItem
-              onClick={() => onPin?.(post.id)}
-              className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
-            >
-              <Pin className="size-4 mr-2" />
-              Fixar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => onReport?.(post.id)}
-              className="text-[var(--woody-accent)] focus:bg-[var(--woody-accent)]/10"
-            >
-              <Flag className="size-4 mr-2" />
-              Reportar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <PostOverflowMenu
+          post={post}
+          viewerId={viewerId}
+          onPin={onPin}
+          onPostUpdated={onPostUpdated}
+          onPostDeleted={onPostDeleted}
+          triggerClassName={styles.menuTrigger}
+        />
       </CardHeader>
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>

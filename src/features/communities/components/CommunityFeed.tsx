@@ -70,7 +70,6 @@ export function CommunityFeed({
                   post={post}
                   postListingContext="community"
                   onPin={(id) => console.log("Pin", id)}
-                  onReport={(id) => console.log("Report", id)}
                 />
               </li>
             ))}

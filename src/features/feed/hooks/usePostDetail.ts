@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
-import { getPostById } from "@/domain/selectors";
+import { getCommentsEnrichedByPostId, getPostById } from "@/domain/selectors";
 import {
   getPostInteractionsVersion,
   subscribePostInteractions,
@@ -76,7 +76,7 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
         setIsLoading(false);
       });
 
-    const commentsTask = postCommentsMockApi.listByPostId(postId)
+    const commentsTask = postCommentsMockApi.listByPostId(postId, viewerId)
       .then((commentsData) => {
         setComments(commentsData);
       })
@@ -98,8 +98,8 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   useEffect(() => {
     void postInteractionRev;
     if (!postId) return;
-    const next = getPostById(postId, viewerId) ?? null;
-    setPost(next);
+    setPost(getPostById(postId, viewerId) ?? null);
+    setComments(getCommentsEnrichedByPostId(postId, viewerId));
   }, [postId, viewerId, postInteractionRev]);
 
   const toggleLike = useCallback(async () => {

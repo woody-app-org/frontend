@@ -40,6 +40,8 @@ export function ProfilePage() {
     nextPage,
     previousPage,
     refetch,
+    updatePostInList,
+    removePostFromList,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
 
@@ -137,7 +139,8 @@ export function ProfilePage() {
                   onPreviousPage={previousPage}
                   onNextPage={nextPage}
                   onPin={(id) => console.log("Pin", id)}
-                  onReport={(id) => console.log("Report", id)}
+                  onPostUpdated={updatePostInList}
+                  onPostDeleted={removePostFromList}
                   hideSectionHeader
                 />
               ) : null}

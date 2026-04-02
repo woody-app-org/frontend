@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
 import type { User } from "@/domain/types";
+import { postComposerFieldStyles } from "../lib/postComposerFieldStyles";
 import { getUserById } from "@/domain/selectors";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
@@ -35,10 +36,6 @@ const styles = {
   authorName: "font-semibold text-[var(--woody-text)] text-[0.95rem] leading-tight truncate",
   authorPronouns: "text-[var(--woody-muted)] text-xs",
   formBlock: "flex-1 min-w-0 space-y-3 mt-3",
-  input:
-    "h-11 rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/20 focus-visible:border-[var(--woody-accent)]/30 transition-colors",
-  textarea:
-    "min-h-20 resize-none sm:resize-y rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] leading-relaxed focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/20 focus-visible:border-[var(--woody-accent)]/30 transition-colors",
   toolbarRow: "flex items-center justify-between gap-3 pt-1",
   toolbar: "flex items-center gap-0.5",
   toolbarBtn:
@@ -129,14 +126,14 @@ export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
             placeholder="Criar tópico"
             value={topic}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setTopic(e.target.value)}
-            className={styles.input}
+            className={postComposerFieldStyles.input}
           />
           <Textarea
             placeholder="Lorem ipsum dolor sit amet consectetur adipiscing elit risus..."
             value={content}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
             rows={3}
-            className={styles.textarea}
+            className={cn(postComposerFieldStyles.textarea, "min-h-20 resize-none sm:resize-y")}
           />
 
           {/* Toolbar + Botão Postar */}

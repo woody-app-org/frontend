@@ -6,6 +6,7 @@ export { AuthCard } from "./components/AuthCard";
 export { LoginForm } from "./components/LoginForm";
 export { AuthPromoPanel } from "./components/AuthPromoPanel";
 export { AuthInputField } from "./components/AuthInputField";
+export { LogoutConfirmationDialog } from "./components/LogoutConfirmationDialog";
 export { OnboardingProvider, useOnboardingDraftContext } from "./onboarding/OnboardingContext";
 export { useOnboardingDraftContext as useOnboarding } from "./onboarding/OnboardingContext";
 export { OnboardingFlow } from "./onboarding/OnboardingFlow";

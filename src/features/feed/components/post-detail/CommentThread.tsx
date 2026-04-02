@@ -1,10 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import type { Comment } from "@/domain/types";
+import type { Comment, Post } from "@/domain/types";
 import { buildCommentThreadTree } from "@/domain/lib/commentThreads";
 import { cn } from "@/lib/utils";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { CommentThreadItem } from "./CommentThreadItem";
 
 export interface CommentThreadProps {
+  post: Post;
   postId: string;
   comments: Comment[];
   replyingToCommentId: string | null;
@@ -16,6 +18,7 @@ export interface CommentThreadProps {
 }
 
 export function CommentThread({
+  post,
   postId,
   comments,
   replyingToCommentId,
@@ -24,6 +27,7 @@ export function CommentThread({
   isCreatingComment,
   className,
 }: CommentThreadProps) {
+  const viewerId = useViewerId();
   const tree = useMemo(() => buildCommentThreadTree(postId, comments), [postId, comments]);
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
@@ -53,6 +57,8 @@ export function CommentThread({
       {tree.map((node) => (
         <div key={node.comment.id} className="py-4 first:pt-0 last:pb-0 sm:py-5">
           <CommentThreadItem
+            post={post}
+            viewerId={viewerId}
             node={node}
             depth={0}
             expandedIds={expandedIds}
