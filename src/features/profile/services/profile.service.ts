@@ -1,61 +1,9 @@
+import axios from "axios";
 import type { UserProfile, ProfilePostsResponse, ProfileUpdatePayload } from "../types";
-import { MOCK_USER_PROFILE } from "../mocks/profile.mock";
 import { applyUserDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
-import { getPostsByAuthorId, getUserById } from "@/domain/selectors";
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function cloneProfile(p: UserProfile): UserProfile {
-  return {
-    ...p,
-    socialLinks: p.socialLinks.map((s) => ({ ...s })),
-    interests: p.interests.map((i) => ({ ...i })),
-    suggestions: p.suggestions.map((s) => ({ ...s })),
-  };
-}
-
-function profileFromSeedUser(userId: string): UserProfile | null {
-  const u = getUserById(userId);
-  if (!u) return null;
-  return {
-    id: u.id,
-    name: u.name,
-    username: u.username,
-    avatarUrl: u.avatarUrl,
-    pronouns: u.pronouns,
-    bannerUrl: null,
-    bio: u.bio ?? "",
-    location: undefined,
-    role: undefined,
-    socialLinks: [],
-    interests: [],
-    suggestions: [],
-  };
-}
-
-function getStaticBaseProfile(userId: string): UserProfile | null {
-  if (MOCK_USER_PROFILE.id === userId) return cloneProfile(MOCK_USER_PROFILE);
-  const fromSeed = profileFromSeedUser(userId);
-  return fromSeed ? cloneProfile(fromSeed) : null;
-}
-
-/** Rascunhos locais pós-edição (substituído depois por resposta da API). */
-const profileDraftByUserId = new Map<string, UserProfile>();
-
-function getResolvedProfile(userId: string): UserProfile | null {
-  const base = getStaticBaseProfile(userId);
-  if (!base) return null;
-  const draft = profileDraftByUserId.get(userId);
-  if (!draft) return base;
-  return {
-    ...draft,
-    socialLinks: draft.socialLinks.map((s) => ({ ...s })),
-    interests: draft.interests.map((i) => ({ ...i })),
-    suggestions: draft.suggestions.map((s) => ({ ...s })),
-  };
-}
+import { getAuthUser } from "@/features/auth/services/auth.service";
+import { api, getApiErrorMessage } from "@/lib/api";
+import { mapPostFromApi, mapUserProfileFromApi } from "@/lib/apiMappers";
 
 export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { ok: true } | { ok: false; error: string } {
   const name = payload.name?.trim() ?? "";
@@ -93,81 +41,74 @@ export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { o
 }
 
 export async function getProfile(userId: string): Promise<UserProfile | null> {
-  await delay(350);
-  return getResolvedProfile(userId);
+  try {
+    const { data } = await api.get(`/users/${encodeURIComponent(userId)}`);
+    return mapUserProfileFromApi(data);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) return null;
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar perfil."));
+  }
 }
 
 export type UpdateProfileResult =
   | { ok: true; profile: UserProfile }
   | { ok: false; error: string };
 
-/**
- * Persistência mock: grava sobre o rascunho em memória.
- * Integração HTTP: mapear para `BACKEND_ROUTE_HINTS.profile.updateProfile` em `@/lib/backendIntegrationHints`.
- */
 export async function updateProfile(userId: string, payload: ProfileUpdatePayload): Promise<UpdateProfileResult> {
-  await delay(550);
   const validated = validateProfileUpdatePayload(payload);
   if (!validated.ok) return validated;
 
-  const current = getResolvedProfile(userId);
-  if (!current) return { ok: false, error: "Perfil não encontrado." };
+  const session = getAuthUser();
+  if (!session || session.id !== userId) {
+    return { ok: false, error: "Só pode editar o seu próprio perfil." };
+  }
 
-  const username = payload.username!.trim().toLowerCase();
-  const cleanedInterests =
-    payload.interests !== undefined
-      ? payload.interests
-          .map((i) => ({ ...i, label: i.label.trim() }))
-          .filter((i) => i.label.length > 0)
-      : current.interests;
-
-  const next: UserProfile = {
-    ...current,
-    name: payload.name!.trim(),
-    username,
-    bio: (payload.bio ?? "").trim(),
-    pronouns: payload.pronouns?.trim() || undefined,
-    location: payload.location?.trim() || undefined,
-    role: payload.role?.trim() || undefined,
-    avatarUrl: payload.avatarUrl !== undefined ? payload.avatarUrl : current.avatarUrl,
-    bannerUrl: payload.bannerUrl !== undefined ? payload.bannerUrl : current.bannerUrl,
-    interests: cleanedInterests.map((i) => ({ ...i })),
-  };
-
-  profileDraftByUserId.set(userId, next);
-  applyUserDisplayPatch(userId, {
-    name: next.name,
-    username: next.username,
-    avatarUrl: next.avatarUrl,
-    bio: next.bio,
-    pronouns: next.pronouns,
-  });
-  return { ok: true, profile: next };
+  try {
+    const { data } = await api.patch("/users/me", {
+      name: payload.name!.trim(),
+      username: payload.username!.trim(),
+      bio: (payload.bio ?? "").trim(),
+      pronouns: payload.pronouns?.trim() || undefined,
+      location: payload.location?.trim() || undefined,
+      role: payload.role?.trim() || undefined,
+      avatarUrl: payload.avatarUrl,
+      bannerUrl: payload.bannerUrl,
+      interests: payload.interests?.map((i) => ({ id: i.id, label: i.label.trim() })),
+    });
+    const next = mapUserProfileFromApi(data);
+    applyUserDisplayPatch(userId, {
+      name: next.name,
+      username: next.username,
+      avatarUrl: next.avatarUrl,
+      bio: next.bio,
+      pronouns: next.pronouns,
+    });
+    return { ok: true, profile: next };
+  } catch (e) {
+    return { ok: false, error: getApiErrorMessage(e, "Falha ao guardar perfil.") };
+  }
 }
 
-/**
- * Busca posts da usuária (todas as comunidades em que publicou), com paginação em cima do seed único.
- */
 export async function getProfilePosts(
   userId: string,
   page: number,
   pageSize: number = 10,
-  /** Sessão da visitante: curtidas e contadores alinhados ao mock. */
   viewerId: string
 ): Promise<ProfilePostsResponse> {
-  await delay(400);
-  const pool = getPostsByAuthorId(userId, viewerId);
-  const totalCount = pool.length;
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const items = pool.slice(start, end);
-
-  return {
-    items,
-    page,
-    pageSize,
-    totalCount,
-    hasNextPage: end < totalCount,
-    hasPreviousPage: page > 1,
-  };
+  try {
+    const { data } = await api.get(`/users/${encodeURIComponent(userId)}/posts`, {
+      params: { page, pageSize },
+    });
+    const items = (data.items ?? []).map((p: unknown) => mapPostFromApi(p as Record<string, unknown>, viewerId));
+    return {
+      items,
+      page: data.page ?? page,
+      pageSize: data.pageSize ?? pageSize,
+      totalCount: data.totalCount ?? items.length,
+      hasNextPage: Boolean(data.hasNextPage),
+      hasPreviousPage: Boolean(data.hasPreviousPage),
+    };
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar posts do perfil."));
+  }
 }

@@ -16,10 +16,18 @@ export { CommunityMemberRoleIndicator } from "./components/CommunityMemberRoleIn
 export { CommunityNotFound } from "./components/CommunityNotFound";
 export { CommunityEditDialog } from "./components/community-settings/CommunityEditDialog";
 export {
-  getCommunityResolvedBySlug,
+  fetchAllCommunities,
+  fetchCommunityById,
+  fetchCommunityBySlug,
+  fetchCommunityJoinRequestRows,
+  fetchCommunityMembers,
+  fetchCommunityPosts,
+  fetchMyCommunityIdSet,
   getCommunityResolvedById,
+  getCommunityResolvedBySlug,
   updateCommunity,
   validateCommunityUpdatePayload,
+  type JoinRequestWithUser,
 } from "./services/community.service";
 export {
   joinCommunityPublic,

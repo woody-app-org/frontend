@@ -10,12 +10,13 @@ import {
 import { cn } from "@/lib/utils";
 import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import { sortActiveMembershipsByHierarchy } from "@/domain/communityMemberRole";
-import type { Community, Membership, User } from "@/domain/types";
+import type { Community, CommunityMemberListItem, Membership, User } from "@/domain/types";
 import {
   getPendingJoinRequestsForCommunity,
   getUserById,
   getMembershipsInCommunity,
 } from "@/domain/selectors";
+import type { JoinRequestWithUser } from "../../services/community.service";
 import { MemberRow } from "./MemberRow";
 import { PendingRequestRow } from "./PendingRequestRow";
 
@@ -27,6 +28,9 @@ export interface CommunityMembersManagerDialogProps {
   actorIsOwner: boolean;
   listRevision: number;
   onListChanged: () => void;
+  /** Quando definido, lista de membros vem da API em vez do seed. */
+  liveMemberList?: CommunityMemberListItem[];
+  liveJoinRequestRows?: JoinRequestWithUser[];
 }
 
 export function CommunityMembersManagerDialog({
@@ -37,11 +41,36 @@ export function CommunityMembersManagerDialog({
   actorIsOwner,
   listRevision,
   onListChanged,
+  liveMemberList,
+  liveJoinRequestRows,
 }: CommunityMembersManagerDialogProps) {
   const [tab, setTab] = useState<"members" | "requests">("members");
 
   const { activeMembers, pendingRequests, requestUsers, memberRows } = useMemo(() => {
     void listRevision;
+    if (liveMemberList) {
+      const syntheticMemberships: Membership[] = liveMemberList.map((m) => ({
+        id: `m-${m.user.id}`,
+        userId: m.user.id,
+        communityId: community.id,
+        role: m.role,
+        status: "active",
+      }));
+      const sorted = sortActiveMembershipsByHierarchy(syntheticMemberships, community);
+      const memberPairs: { membership: Membership; user: User }[] = [];
+      for (const mem of sorted) {
+        const u = liveMemberList.find((x) => x.user.id === mem.userId)?.user;
+        if (u) memberPairs.push({ membership: mem, user: u });
+      }
+      const jr = liveJoinRequestRows ?? [];
+      return {
+        activeMembers: sorted,
+        pendingRequests: jr.map((r) => r.request),
+        requestUsers: jr,
+        memberRows: memberPairs,
+      };
+    }
+
     const all = getMembershipsInCommunity(community.id);
     const activeMembers = all.filter((m) => m.status === "active");
     const sorted = sortActiveMembershipsByHierarchy(activeMembers, community);
@@ -62,7 +91,7 @@ export function CommunityMembersManagerDialog({
       requestUsers: reqUsers,
       memberRows: memberPairs,
     };
-  }, [community, listRevision]);
+  }, [community, listRevision, liveMemberList, liveJoinRequestRows]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

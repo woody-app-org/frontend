@@ -1,103 +1,78 @@
 /**
- * Contratos de leitura/mutação de posts e comentários para o mock.
- *
- * Integração futura: rotas em `src/lib/backendIntegrationHints.ts` (content + comentários).
- * TODO(backend): trocar implementações por `fetch`/`axios` apontando para rotas REST/GraphQL;
- * manter assinaturas ou adaptadores finos para não reescrever hooks/UI.
- *
- * ## Comentários (mapa para API futura)
- *
- * | Operação | Mock atual | Payload / notas |
- * |----------|------------|-----------------|
- * | Listar thread do post (raiz + aninhados) | `getCommentsByPostIdMock` | `GET /posts/:postId/comments` — hoje retorna lista plana; UI monta árvore. |
- * | Listar só replies de um comentário | `getRepliesByCommentIdMock` | `GET /comments/:id/replies` — pronto para paginação sob demanda. |
- * | Criar comentário raiz | `createCommentMock(..., null)` | `POST /posts/:postId/comments` body `{ content }`. |
- * | Criar resposta | `createCommentMock(..., parentId)` | mesmo endpoint + `{ content, parentCommentId }`. |
- *
- * A UI (`usePostDetail`) usa só listagem completa + `createComment`; `getRepliesByCommentIdMock` fica
- * disponível quando o backend paginar replies por nó.
+ * Leitura e mutação de posts e comentários via API Woody.
  */
 import type { Comment, Post } from "../types";
-import {
-  enrichComment,
-  getCommentsEnrichedByPostId,
-  getPostById,
-  getRepliesEnrichedByCommentId,
-} from "../selectors";
-import {
-  appendCommentForPost,
-  getSeedPostRowById,
-  togglePostLikeForUser,
-} from "../mocks/postInteractionMockStore";
+import { api, getApiErrorMessage } from "@/lib/api";
+import { mapCommentFromApi, mapPostFromApi } from "@/lib/apiMappers";
+import axios from "axios";
 
-const MOCK_DELAY_MS = 400;
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/** TODO(backend): GET /posts/:postId */
 export async function getPostByIdMock(postId: string, viewerId: string): Promise<Post | null> {
-  await delay(MOCK_DELAY_MS);
-  return getPostById(postId, viewerId) ?? null;
+  try {
+    const { data } = await api.get(`/posts/${encodeURIComponent(postId)}`);
+    return mapPostFromApi(data as Record<string, unknown>, viewerId);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) return null;
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar o post."));
+  }
 }
 
-/** TODO(backend): GET /posts/:postId/comments */
-export async function getCommentsByPostIdMock(
-  postId: string,
-  viewerId?: string
-): Promise<Comment[]> {
-  await delay(Math.round(MOCK_DELAY_MS * 0.55));
-  return getCommentsEnrichedByPostId(postId, viewerId);
+export async function getCommentsByPostIdMock(postId: string, _viewerId?: string): Promise<Comment[]> {
+  const { data } = await api.get(`/posts/${encodeURIComponent(postId)}/comments`);
+  const list = data as unknown[];
+  return list.map((c) => mapCommentFromApi(c as Record<string, unknown>));
 }
 
-/** TODO(backend): GET /comments/:parentCommentId/replies */
 export async function getRepliesByCommentIdMock(
-  parentCommentId: string,
-  viewerId?: string
+  _parentCommentId: string,
+  _viewerId?: string
 ): Promise<Comment[]> {
-  await delay(Math.round(MOCK_DELAY_MS * 0.5));
-  return getRepliesEnrichedByCommentId(parentCommentId, viewerId);
+  // A API atual devolve a lista completa em GET /posts/:id/comments; a UI monta a árvore localmente.
+  return [];
 }
 
-/** TODO(backend): POST /posts/:postId/like ou DELETE conforme estado */
 export async function togglePostLikeMock(
   postId: string,
   viewerId: string
 ): Promise<{ likedByCurrentUser: boolean; likesCount: number } | null> {
-  await delay(Math.round(MOCK_DELAY_MS * 0.45));
-  return togglePostLikeForUser(viewerId, postId);
+  const post = await getPostByIdMock(postId, viewerId);
+  if (!post) return null;
+  try {
+    if (post.likedByCurrentUser) {
+      await api.delete(`/posts/${encodeURIComponent(postId)}/like`);
+    } else {
+      await api.post(`/posts/${encodeURIComponent(postId)}/like`);
+    }
+    const next = await getPostByIdMock(postId, viewerId);
+    if (!next) return null;
+    return { likedByCurrentUser: next.likedByCurrentUser, likesCount: next.likesCount };
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Falha ao atualizar gosto."));
+  }
 }
 
 export type CreateCommentMockResult =
   | { ok: true; comment: Comment }
   | { ok: false; error: string };
 
-/** TODO(backend): POST /posts/:postId/comments */
 export async function createCommentMock(
   postId: string,
-  viewerId: string,
+  _viewerId: string,
   content: string,
   parentCommentId?: string | null
 ): Promise<CreateCommentMockResult> {
-  await delay(Math.round(MOCK_DELAY_MS * 0.65));
   const trimmed = content.trim();
   if (!trimmed) return { ok: false, error: "Escreva uma mensagem antes de enviar." };
-
-  const row = appendCommentForPost({
-    postId,
-    authorId: viewerId,
-    content: trimmed,
-    createdAt: new Date().toISOString(),
-    parentCommentId: parentCommentId ?? null,
-  });
-  if (!row) return { ok: false, error: "Não foi possível publicar (post ou comentário pai inválido)." };
-  const postRow = getSeedPostRowById(postId);
-  const postAuthorId = postRow?.authorId ?? "";
-  return { ok: true, comment: enrichComment(row, { viewerId, postAuthorId }) };
+  try {
+    const { data } = await api.post(`/posts/${encodeURIComponent(postId)}/comments`, {
+      content: trimmed,
+      parentCommentId: parentCommentId ?? undefined,
+    });
+    return { ok: true, comment: mapCommentFromApi(data as Record<string, unknown>) };
+  } catch (e) {
+    return { ok: false, error: getApiErrorMessage(e, "Não foi possível publicar o comentário.") };
+  }
 }
 
-/** Fachada única para trocar por cliente HTTP sem espalhar imports na UI. */
 export const postCommentsMockApi = {
   listByPostId: getCommentsByPostIdMock,
   listRepliesByParentId: getRepliesByCommentIdMock,

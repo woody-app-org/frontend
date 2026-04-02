@@ -1,16 +1,15 @@
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HeartHandshake, Search, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
-import type { CommunityCategory } from "@/domain/types";
-import { subscribeCommunityDrafts, getCommunityDraftsVersion } from "@/domain/mocks/communityDraftStore";
-import { SEED_COMMUNITIES } from "@/domain/mocks/seed";
-import { getCommunityById } from "@/domain/selectors";
+import type { Community, CommunityCategory } from "@/domain/types";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { CommunityCard } from "../components/CommunityCard";
 import { CommunitiesEmptyState } from "../components/CommunitiesEmptyState";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
-import { getCommunityCategoryLabel, getMyCommunities } from "../lib/communitiesPageModel";
+import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
+import { fetchAllCommunities, fetchMyCommunityIdSet } from "../services/community.service";
+import { getAuthUser } from "@/features/auth/services/auth.service";
 
 const CATEGORY_ORDER: CommunityCategory[] = [
   "carreira",
@@ -30,28 +29,54 @@ function normalizeSearch(s: string): string {
 
 export function CommunitiesPage() {
   const viewerId = useViewerId();
-  const communityDraftRev = useSyncExternalStore(
-    subscribeCommunityDrafts,
-    getCommunityDraftsVersion,
-    getCommunityDraftsVersion
-  );
-  const myCommunities = useMemo(() => {
-    void communityDraftRev;
-    return getMyCommunities(viewerId);
-  }, [viewerId, communityDraftRev]);
-  const memberIds = useMemo(() => new Set(myCommunities.map((c) => c.id)), [myCommunities]);
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [myIds, setMyIds] = useState<Set<string>>(new Set());
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      try {
+        const list = await fetchAllCommunities();
+        if (cancel) return;
+        setCommunities(list);
+        setLoadError(null);
+        if (getAuthUser()) {
+          const ids = await fetchMyCommunityIdSet();
+          if (!cancel) setMyIds(ids);
+        } else {
+          setMyIds(new Set());
+        }
+      } catch {
+        if (!cancel) {
+          setLoadError("Não foi possível carregar as comunidades.");
+          setCommunities([]);
+        }
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [viewerId]);
+
+  const memberIds = myIds;
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CommunityCategory | "all">("all");
 
   const categoriesPresent = useMemo(() => {
-    const set = new Set(SEED_COMMUNITIES.map((c) => c.category));
+    const set = new Set(communities.map((c) => c.category));
     return CATEGORY_ORDER.filter((c) => set.has(c));
-  }, []);
+  }, [communities]);
+
+  const myCommunities = useMemo(
+    () => communities.filter((c) => memberIds.has(c.id)),
+    [communities, memberIds]
+  );
 
   const filteredGrid = useMemo(() => {
     const q = normalizeSearch(query);
-    const list = SEED_COMMUNITIES.filter((c) => {
+    const list = communities.filter((c) => {
       if (category !== "all" && c.category !== category) return false;
       if (!q) return true;
       const catLabel = normalizeSearch(getCommunityCategoryLabel(c.category));
@@ -62,12 +87,9 @@ export function CommunitiesPage() {
         catLabel.includes(q) ||
         c.tags.some((t) => normalizeSearch(t).includes(q))
       );
-    })
-      .map((c) => getCommunityById(c.id))
-      .filter((c): c is NonNullable<typeof c> => c != null);
-    void communityDraftRev;
+    });
     return [...list].sort((a, b) => b.memberCount - a.memberCount);
-  }, [query, category, communityDraftRev]);
+  }, [query, category, communities]);
 
   return (
     <FeedLayout>
@@ -113,6 +135,12 @@ export function CommunitiesPage() {
             </div>
           </div>
         </header>
+
+        {loadError ? (
+          <p className="rounded-xl border border-[var(--woody-accent)]/15 bg-[var(--woody-nav)]/5 px-4 py-3 text-sm text-[var(--woody-muted)]">
+            {loadError}
+          </p>
+        ) : null}
 
         {myCommunities.length > 0 ? (
           <section className="space-y-3" aria-labelledby="my-communities-heading">
