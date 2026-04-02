@@ -18,6 +18,8 @@ export interface SeedPost {
   createdAt: string;
   likesCount: number;
   commentsCount: number;
+  updatedAt?: string | null;
+  deletedAt?: string | null;
 }
 
 /** Comentário persistido no mock (sem `author` expandido até o enrich). */
@@ -30,6 +32,8 @@ export interface SeedComment {
   content: string;
   /** ISO 8601. */
   createdAt: string;
+  deletedAt?: string | null;
+  hiddenByPostAuthorAt?: string | null;
 }
 
 const avatar = (id: string, sig: string) =>

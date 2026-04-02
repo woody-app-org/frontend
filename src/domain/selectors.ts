@@ -77,6 +77,10 @@ export function getPostCommunityPreview(communityId: string): PostCommunityPrevi
   return c ? postCommunityPreviewFromCommunity(c) : undefined;
 }
 
+function isSeedPostRowVisible(raw: SeedPost): boolean {
+  return raw.deletedAt == null || raw.deletedAt === "";
+}
+
 export function enrichPost(raw: SeedPost, viewerId?: string): Post {
   const authorId = raw.authorId ?? raw.author.id;
   const author = getUserById(authorId) ?? raw.author;
@@ -91,6 +95,8 @@ export function enrichPost(raw: SeedPost, viewerId?: string): Post {
     imageUrl: raw.imageUrl,
     tags: raw.tags ? [...raw.tags] : undefined,
     createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+    deletedAt: raw.deletedAt,
     likesCount: raw.likesCount,
     commentsCount: raw.commentsCount,
     likedByCurrentUser,
@@ -98,11 +104,26 @@ export function enrichPost(raw: SeedPost, viewerId?: string): Post {
   };
 }
 
-export function enrichComment(raw: SeedComment): Comment {
+export interface EnrichCommentOptions {
+  viewerId?: string;
+  /** Obrigatório para calcular `contentModerationMask` quando há ocultação. */
+  postAuthorId: string;
+}
+
+export function enrichComment(raw: SeedComment, options: EnrichCommentOptions): Comment {
   const author = getUserById(raw.authorId);
   if (!author) {
     throw new Error(`enrichComment: usuária ${raw.authorId} não encontrada no seed`);
   }
+
+  let contentModerationMask: Comment["contentModerationMask"];
+  if (raw.hiddenByPostAuthorAt && options.viewerId != null && options.viewerId !== "") {
+    const v = options.viewerId;
+    if (options.postAuthorId !== v && raw.authorId !== v) {
+      contentModerationMask = "hidden_by_post_author";
+    }
+  }
+
   return {
     id: raw.id,
     postId: raw.postId,
@@ -111,32 +132,43 @@ export function enrichComment(raw: SeedComment): Comment {
     author,
     content: raw.content,
     createdAt: raw.createdAt,
+    deletedAt: raw.deletedAt,
+    hiddenByPostAuthorAt: raw.hiddenByPostAuthorAt,
+    contentModerationMask,
   };
 }
 
 /** Lista comentários do mock, ordenados do mais antigo ao mais recente. */
-export function getCommentsEnrichedByPostId(postId: string): Comment[] {
+export function getCommentsEnrichedByPostId(postId: string, viewerId?: string): Comment[] {
+  const post = getSeedPostRowById(postId);
+  const postAuthorId = post?.authorId ?? "";
   return getMutableCommentRows()
-    .filter((c) => c.postId === postId)
+    .filter((c) => c.postId === postId && (c.deletedAt == null || c.deletedAt === ""))
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .map((c) => enrichComment(c));
+    .map((c) => enrichComment(c, { viewerId, postAuthorId }));
 }
 
 /** Respostas diretas de um comentário (ordenadas por data). */
-export function getRepliesEnrichedByCommentId(parentCommentId: string): Comment[] {
-  return getMutableCommentRows()
-    .filter((c) => c.parentCommentId === parentCommentId)
+export function getRepliesEnrichedByCommentId(parentCommentId: string, viewerId?: string): Comment[] {
+  const comments = getMutableCommentRows();
+  const parent = comments.find((c) => c.id === parentCommentId);
+  const postAuthorId = parent ? getSeedPostRowById(parent.postId)?.authorId ?? "" : "";
+  return comments
+    .filter((c) => c.parentCommentId === parentCommentId && (c.deletedAt == null || c.deletedAt === ""))
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .map((c) => enrichComment(c));
+    .map((c) => enrichComment(c, { viewerId, postAuthorId }));
 }
 
 export function getPostById(postId: string, viewerId?: string): Post | undefined {
   const raw = getSeedPostRowById(postId);
-  return raw ? enrichPost(raw, viewerId) : undefined;
+  if (!raw || !isSeedPostRowVisible(raw)) return undefined;
+  return enrichPost(raw, viewerId);
 }
 
 export function getAllSeedPostsEnriched(viewerId?: string): Post[] {
-  return getMutablePostRows().map((p) => enrichPost(p, viewerId));
+  return getMutablePostRows()
+    .filter(isSeedPostRowVisible)
+    .map((p) => enrichPost(p, viewerId));
 }
 
 /** Posts recentes apenas das comunidades em que a usuária participa (mock). */
@@ -149,12 +181,14 @@ export function getRecentPostsInUserCommunities(userId: string, limit = 5, viewe
 export function getPostsByCommunityId(communityId: string, viewerId?: string): Post[] {
   return getMutablePostRows()
     .filter((p) => p.communityId === communityId)
+    .filter(isSeedPostRowVisible)
     .map((p) => enrichPost(p, viewerId));
 }
 
 export function getPostsByAuthorId(authorId: string, viewerId?: string): Post[] {
   return getMutablePostRows()
     .filter((p) => p.authorId === authorId)
+    .filter(isSeedPostRowVisible)
     .map((p) => enrichPost(p, viewerId));
 }
 

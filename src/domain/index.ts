@@ -1,5 +1,6 @@
 export type {
   Comment,
+  CommentContentModerationMask,
   Community,
   CommunityCategory,
   CommunityMemberListItem,
@@ -28,6 +29,20 @@ export {
   isOwnProfile,
 } from "./permissions";
 export type { CommunityMembershipStatusResult } from "./permissions";
+export {
+  canDeleteOwnComment,
+  canDeletePost,
+  canEditPost,
+  canHideCommentOnOwnedPost,
+  canReportComment,
+  canReportPost,
+} from "./contentModerationPermissions";
+export {
+  getCommentContentForViewer,
+  HIDDEN_COMMENT_PLACEHOLDER,
+  isCommentContentMaskedForViewer,
+  isPostRemoved,
+} from "./lib/contentModerationDisplay";
 export {
   compareActiveMembershipsByHierarchy,
   communityMemberRoleRank,
@@ -68,6 +83,7 @@ export {
   enrichPost,
   postCommunityPreviewFromCommunity,
 } from "./selectors";
+export type { EnrichCommentOptions } from "./selectors";
 export { pickPostInteractionState } from "./lib/postInteractionHelpers";
 export {
   buildCommentThreadTree,
@@ -90,5 +106,13 @@ export {
   resetPostInteractionMockStore,
   subscribePostInteractions,
 } from "./mocks/postInteractionMockStore";
+export {
+  getContentReportsVersion,
+  hasViewerReportedComment,
+  hasViewerReportedPost,
+  resetContentReportMockStore,
+  subscribeContentReports,
+} from "./mocks/contentReportMockStore";
 export * from "./services/platformMock.service";
 export * from "./services/postMock.service";
+export * from "./services/contentModerationMock.service";
