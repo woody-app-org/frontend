@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { Comment } from "@/domain/types";
+import type { Comment, Post } from "@/domain/types";
 import { getRootCommentsByPostId } from "@/domain/lib/commentThreads";
 import { CommentThread } from "./CommentThread";
 import { CommentsEmptyState } from "./CommentsEmptyState";
@@ -23,6 +23,7 @@ function CommentsListSkeleton({ rows = 3 }: { rows?: number }) {
 }
 
 export interface CommentsListProps {
+  post: Post;
   postId: string;
   comments: Comment[];
   isLoading: boolean;
@@ -35,6 +36,7 @@ export interface CommentsListProps {
 }
 
 export function CommentsList({
+  post,
   postId,
   comments,
   isLoading,
@@ -76,6 +78,7 @@ export function CommentsList({
 
   return (
     <CommentThread
+      post={post}
       postId={postId}
       comments={comments}
       replyingToCommentId={replyingToCommentId}

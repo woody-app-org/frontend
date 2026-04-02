@@ -88,6 +88,7 @@ export function PostDetailView({
           />
 
           <CommentsList
+            post={post}
             postId={post.id}
             comments={comments}
             isLoading={isCommentsLoading}

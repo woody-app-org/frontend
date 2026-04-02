@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import type { Post } from "@/domain/types";
 import type { CommentThreadNode } from "@/domain/lib/commentThreads";
 import { COMMENT_THREAD_ACTION_INDENT, commentRepliesRegionId } from "./commentThreadLayout";
 import { CommentItem } from "./CommentItem";
@@ -7,6 +8,8 @@ import { ReplyComposer } from "./ReplyComposer";
 import { ReplyToggle } from "./ReplyToggle";
 
 export interface CommentThreadItemProps {
+  post: Post;
+  viewerId: string;
   node: CommentThreadNode;
   depth: number;
   expandedIds: ReadonlySet<string>;
@@ -19,6 +22,8 @@ export interface CommentThreadItemProps {
 }
 
 export function CommentThreadItem({
+  post,
+  viewerId,
   node,
   depth,
   expandedIds,
@@ -48,7 +53,13 @@ export function CommentThreadItem({
 
   return (
     <div className={cn(depth > 0 && "min-w-0")}>
-      <CommentItem comment={comment} nested={depth > 0} className="py-0" />
+      <CommentItem
+        post={post}
+        comment={comment}
+        viewerId={viewerId}
+        nested={depth > 0}
+        className="py-0"
+      />
       <div className={cn("mt-1.5 space-y-2", COMMENT_THREAD_ACTION_INDENT)}>
         <div className="flex flex-wrap items-stretch gap-x-2 gap-y-2 sm:items-center sm:gap-x-3">
           {!isReplyOpen ? (
@@ -95,6 +106,8 @@ export function CommentThreadItem({
           {replies.map((child) => (
             <CommentThreadItem
               key={child.comment.id}
+              post={post}
+              viewerId={viewerId}
               node={child}
               depth={depth + 1}
               expandedIds={expandedIds}
