@@ -2,6 +2,7 @@ export type {
   Comment,
   Community,
   CommunityCategory,
+  CommunityMemberListItem,
   CommunityMemberRole,
   CommunityVisibility,
   JoinRequest,
@@ -28,6 +29,15 @@ export {
 } from "./permissions";
 export type { CommunityMembershipStatusResult } from "./permissions";
 export {
+  compareActiveMembershipsByHierarchy,
+  communityMemberRoleRank,
+  getCommunityMemberRoleManagementBadgeClass,
+  getCommunityMemberRoleManagementLabel,
+  getCommunityMemberRolePublicLabel,
+  resolveEffectiveCommunityRole,
+  sortActiveMembershipsByHierarchy,
+} from "./communityMemberRole";
+export {
   getAllSeedPostsEnriched,
   getRecentPostsInUserCommunities,
   getActiveMembershipsForUser,
@@ -37,6 +47,7 @@ export {
   getCommunityBySlug,
   getCommunityIdsForUser,
   getActiveMemberCountForCommunity,
+  getCommunityMemberListItems,
   getCommunityMemberUsers,
   getCommentsEnrichedByPostId,
   getRepliesEnrichedByCommentId,
@@ -46,6 +57,7 @@ export {
   getMembershipForUserInCommunity,
   getMembershipsForUser,
   getPendingJoinRequestsForCommunity,
+  getViewerCommunityRole,
   getPostById,
   getPostCommunityPreview,
   getPostsByAuthorId,

@@ -3,10 +3,12 @@ import { Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
-import type { User } from "@/domain/types";
+import type { CommunityMemberListItem } from "@/domain/types";
+import { CommunityMemberRoleIndicator } from "@/features/communities/components/CommunityMemberRoleIndicator";
 
 export interface CommunityMembersPreviewProps {
-  members: User[];
+  /** Ordem esperada: criadora, admins, membros (ex.: `getCommunityMemberListItems`). */
+  members: CommunityMemberListItem[];
   /** Limite de avatares visíveis antes do resumo "+N". */
   maxVisible?: number;
   className?: string;
@@ -47,7 +49,7 @@ export function CommunityMembersPreview({
         <p className="mt-4 text-sm text-[var(--woody-muted)]">Nenhuma participante listada ainda.</p>
       ) : (
         <ul className="mt-4 space-y-2.5 list-none p-0 m-0">
-          {visible.map((user) => (
+          {visible.map(({ user, role }) => (
             <li key={user.id}>
               <Link
                 to={`/profile/${user.id}`}
@@ -60,7 +62,10 @@ export function CommunityMembersPreview({
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                    <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
+                    <CommunityMemberRoleIndicator role={role} variant="participant" />
+                  </div>
                   <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
                 </div>
               </Link>

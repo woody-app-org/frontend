@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils";
 import { woodyFocus, woodySurface } from "@/lib/woody-ui";
 import type { Community } from "@/domain/types";
 import { subscribeCommunityDrafts, getCommunityDraftsVersion } from "@/domain/mocks/communityDraftStore";
-import { getCommunitiesForUser } from "@/domain/selectors";
+import { getCommunitiesForUser, getViewerCommunityRole } from "@/domain/selectors";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
+import { CommunityMemberRoleIndicator } from "@/features/communities/components/CommunityMemberRoleIndicator";
 
 const styles = {
   card: woodySurface.card,
@@ -24,7 +25,10 @@ const styles = {
   ),
   avatar: "size-11 shrink-0 rounded-xl border border-[var(--woody-accent)]/15",
   name: "text-sm font-semibold text-[var(--woody-text)] truncate group-hover:text-[var(--woody-nav)] transition-colors",
-  meta: "mt-0.5 flex flex-wrap items-center gap-2",
+  /** Papel + categoria; contagem fica sempre na linha de baixo (`metaCount`). */
+  meta: "mt-0.5 flex flex-col gap-1",
+  metaBadges: "flex flex-wrap items-center gap-2",
+  metaCount: "text-[0.6875rem] text-[var(--woody-muted)]",
   cat: cn(
     "rounded-full bg-[var(--woody-nav)]/12 px-2 py-0.5 text-[0.6875rem] font-semibold",
     "text-[var(--woody-text)] ring-1 ring-[var(--woody-accent)]/12"
@@ -98,7 +102,7 @@ export function ProfileCommunitiesSection({
       <ul className={cn(styles.grid, "list-none p-0 m-0")}>
         {communities.map((c) => (
           <li key={c.id}>
-            <ProfileCommunityCompactLink community={c} />
+            <ProfileCommunityCompactLink community={c} userId={userId} />
           </li>
         ))}
       </ul>
@@ -126,8 +130,9 @@ export function ProfileCommunitiesSection({
   );
 }
 
-function ProfileCommunityCompactLink({ community }: { community: Community }) {
+function ProfileCommunityCompactLink({ community, userId }: { community: Community; userId: string }) {
   const cat = getCommunityCategoryLabel(community.category);
+  const viewerRole = getViewerCommunityRole(userId, community) ?? "member";
 
   return (
     <Link to={`/communities/${community.slug}`} className={styles.item} aria-label={`Abrir comunidade ${community.name}`}>
@@ -140,10 +145,13 @@ function ProfileCommunityCompactLink({ community }: { community: Community }) {
       <div className="min-w-0 flex-1">
         <p className={styles.name}>{community.name}</p>
         <div className={styles.meta}>
-          <span className={styles.cat}>{cat}</span>
-          <span className="text-[0.6875rem] text-[var(--woody-muted)]">
+          <div className={styles.metaBadges}>
+            <CommunityMemberRoleIndicator role={viewerRole} variant="profile" />
+            <span className={styles.cat}>{cat}</span>
+          </div>
+          <p className={cn(styles.metaCount, "m-0 leading-snug")}>
             {community.memberCount} {community.memberCount === 1 ? "membro" : "membros"}
-          </span>
+          </p>
         </div>
       </div>
       <ChevronRight className="size-4 shrink-0 text-[var(--woody-muted)] opacity-60 group-hover:opacity-100" aria-hidden />

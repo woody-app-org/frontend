@@ -12,6 +12,7 @@ export { CommunityAboutCard } from "./components/CommunityAboutCard";
 export { CommunityTopicsCard } from "./components/CommunityTopicsCard";
 export { CommunityRulesQuickCard } from "./components/CommunityRulesQuickCard";
 export { CommunityMembersPreview } from "./components/CommunityMembersPreview";
+export { CommunityMemberRoleIndicator } from "./components/CommunityMemberRoleIndicator";
 export { CommunityNotFound } from "./components/CommunityNotFound";
 export { CommunityEditDialog } from "./components/community-settings/CommunityEditDialog";
 export {

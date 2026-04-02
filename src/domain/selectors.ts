@@ -1,6 +1,12 @@
+import {
+  compareActiveMembershipsByHierarchy,
+  resolveEffectiveCommunityRole,
+} from "./communityMemberRole";
 import type {
   Comment,
   Community,
+  CommunityMemberListItem,
+  CommunityMemberRole,
   JoinRequest,
   Membership,
   Post,
@@ -168,6 +174,13 @@ export function getMembershipForUserInCommunity(
   return getMembershipRows().find((m) => m.userId === userId && m.communityId === communityId);
 }
 
+/** Papel efetivo da usuária na comunidade (só memberships ativas). */
+export function getViewerCommunityRole(userId: string, community: Community): CommunityMemberRole | undefined {
+  const m = getMembershipForUserInCommunity(userId, community.id);
+  if (!m || m.status !== "active") return undefined;
+  return resolveEffectiveCommunityRole(m, community);
+}
+
 /** Todas as filiações da comunidade (ativas, pendentes, banidas, etc.). */
 export function getMembershipsInCommunity(communityId: string): Membership[] {
   return getMembershipRows().filter((m) => m.communityId === communityId);
@@ -219,14 +232,24 @@ export function getFollowingUserIds(followerId: string): string[] {
   return [...new Set(SEED_FOLLOWS.filter((f) => f.followerId === followerId).map((f) => f.followingId))];
 }
 
-/** Usuárias que participam da comunidade (mock por membership ativa; futuro: API). */
+/**
+ * Participantes ativos ordenados: criadora, admins, demais membros (mock/API).
+ */
+export function getCommunityMemberListItems(communityId: string): CommunityMemberListItem[] {
+  const community = getCommunityById(communityId);
+  if (!community) return [];
+  const active = getMembershipRows().filter((m) => m.communityId === communityId && m.status === "active");
+  active.sort((a, b) => compareActiveMembershipsByHierarchy(a, b, community));
+  const items: CommunityMemberListItem[] = [];
+  for (const m of active) {
+    const user = getUserById(m.userId);
+    if (!user) continue;
+    items.push({ user, role: resolveEffectiveCommunityRole(m, community) });
+  }
+  return items;
+}
+
+/** @deprecated Prefira `getCommunityMemberListItems` quando precisar do papel. Ordem: owner → admin → member. */
 export function getCommunityMemberUsers(communityId: string): User[] {
-  const ids = [
-    ...new Set(
-      getMembershipRows()
-        .filter((m) => m.communityId === communityId && m.status === "active")
-        .map((m) => m.userId)
-    ),
-  ];
-  return ids.map((id) => getUserById(id)).filter((u): u is User => u != null);
+  return getCommunityMemberListItems(communityId).map((row) => row.user);
 }

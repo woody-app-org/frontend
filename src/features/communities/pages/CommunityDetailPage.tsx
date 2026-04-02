@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import {
   getActiveMemberCountForCommunity,
-  getCommunityMemberUsers,
+  getCommunityMemberListItems,
   getJoinRequestForUserInCommunity,
   getPostsByCommunityId,
   isUserMemberOfCommunity,
@@ -13,7 +13,7 @@ import {
   subscribePostInteractions,
 } from "@/domain/mocks/postInteractionMockStore";
 import { getCommunityMembershipStatus } from "@/domain/permissions";
-import type { Community, Post, User } from "@/domain/types";
+import type { Community, CommunityMemberListItem, Post } from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { woodyLayout } from "@/lib/woody-ui";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
@@ -40,7 +40,7 @@ const COMMUNITY_FEED_PAGE_SIZE = 10;
 interface CommunityDetailLoadedProps {
   community: Community;
   posts: Post[];
-  members: User[];
+  members: CommunityMemberListItem[];
   dataRevision: number;
   onDataChanged: () => void;
 }
@@ -222,7 +222,7 @@ export function CommunityDetailPage() {
 
   const members = useMemo(() => {
     void revision;
-    return community ? getCommunityMemberUsers(community.id) : [];
+    return community ? getCommunityMemberListItems(community.id) : [];
   }, [community, revision]);
 
   if (!communitySlug) {
