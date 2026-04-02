@@ -37,6 +37,8 @@ export {
   canReportComment,
   canReportPost,
 } from "./contentModerationPermissions";
+export type { ContentReportReasonCode, SubmitContentReportInput } from "./contentReport";
+export { CONTENT_REPORT_REASON_OPTIONS } from "./contentReport";
 export {
   getCommentContentForViewer,
   HIDDEN_COMMENT_PLACEHOLDER,
@@ -108,11 +110,13 @@ export {
 } from "./mocks/postInteractionMockStore";
 export {
   getContentReportsVersion,
+  getMockContentReportRecords,
   hasViewerReportedComment,
   hasViewerReportedPost,
   resetContentReportMockStore,
   subscribeContentReports,
 } from "./mocks/contentReportMockStore";
+export type { MockContentReportRecord } from "./mocks/contentReportMockStore";
 export * from "./services/platformMock.service";
 export * from "./services/postMock.service";
 export * from "./services/contentModerationMock.service";

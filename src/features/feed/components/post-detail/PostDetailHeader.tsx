@@ -43,7 +43,6 @@ export function PostDetailHeader({
           post={post}
           viewerId={viewerId}
           onPin={(id) => console.log("Pin", id)}
-          onReport={(id) => console.log("Report", id)}
           deleteRedirectTo={postDeleteRedirectTo}
           onPostUpdated={onPostUpdated}
           stopTriggerPropagation={false}

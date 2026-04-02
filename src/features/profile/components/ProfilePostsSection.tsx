@@ -19,7 +19,6 @@ export interface ProfilePostsSectionProps {
   onPreviousPage: () => void;
   onNextPage: () => void;
   onPin?: (postId: string) => void;
-  onReport?: (postId: string) => void;
   onPostUpdated?: (post: Post) => void;
   onPostDeleted?: (postId: string) => void;
   className?: string;
@@ -45,7 +44,6 @@ export function ProfilePostsSection({
   onPreviousPage,
   onNextPage,
   onPin,
-  onReport,
   onPostUpdated,
   onPostDeleted,
   className,
@@ -87,7 +85,6 @@ export function ProfilePostsSection({
             <PostCard
               post={post}
               onPin={onPin}
-              onReport={onReport}
               onPostUpdated={onPostUpdated}
               onPostDeleted={onPostDeleted}
             />

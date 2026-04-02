@@ -59,7 +59,6 @@ const styles = {
 export interface PostCardProps {
   post: Post;
   onPin?: (postId: string) => void;
-  onReport?: (postId: string) => void;
   /** Sincroniza lista local (ex.: perfil) após edição mock. */
   onPostUpdated?: (post: Post) => void;
   onPostDeleted?: (postId: string) => void;
@@ -76,7 +75,6 @@ export interface PostCardProps {
 export function PostCard({
   post,
   onPin,
-  onReport,
   onPostUpdated,
   onPostDeleted,
   onLike,
@@ -162,7 +160,6 @@ export function PostCard({
           post={post}
           viewerId={viewerId}
           onPin={onPin}
-          onReport={onReport}
           onPostUpdated={onPostUpdated}
           onPostDeleted={onPostDeleted}
           triggerClassName={styles.menuTrigger}

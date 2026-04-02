@@ -31,8 +31,10 @@ export const BACKEND_ROUTE_HINTS = {
     deletePost: "DELETE /posts/:postId",
     deleteComment: "DELETE /comments/:commentId",
     hideComment: "POST /posts/:postId/comments/:commentId/hide",
-    reportPost: "POST /reports { targetType: 'post', postId }",
-    reportComment: "POST /reports { targetType: 'comment', commentId }",
+    reportPost:
+      "POST /reports { targetType: 'post', postId, reasonCode, details? } — reasonCode: harassment|spam|inappropriate|community_rules|other",
+    reportComment:
+      "POST /reports { targetType: 'comment', commentId, postId, reasonCode, details? }",
   },
   session: {
     logout: "POST /auth/logout",

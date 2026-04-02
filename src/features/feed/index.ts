@@ -4,6 +4,8 @@ export { PostCard } from "./components/PostCard";
 export { PostOverflowMenu } from "./components/PostOverflowMenu";
 export { EditPostDialog } from "./components/EditPostDialog";
 export { DeletePostConfirmationDialog } from "./components/DeletePostConfirmationDialog";
+export { ReportContentModal } from "./components/report/ReportContentModal";
+export type { ReportContentTarget } from "./components/report/ReportContentModal";
 export { CreatePostCard } from "./components/CreatePostCard";
 export { FeedTabs } from "./components/FeedTabs";
 export { Sidebar } from "./components/Sidebar";

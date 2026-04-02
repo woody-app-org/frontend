@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { Flag, MoreVertical, Pencil, Pin, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,19 @@ import {
   canEditPost,
   canReportPost,
 } from "@/domain/contentModerationPermissions";
+import {
+  getContentReportsVersion,
+  subscribeContentReports,
+} from "@/domain/mocks/contentReportMockStore";
 import { deletePostMock } from "@/domain/services/contentModerationMock.service";
 import { EditPostDialog } from "./EditPostDialog";
 import { DeletePostConfirmationDialog } from "./DeletePostConfirmationDialog";
+import { ReportContentModal } from "./report/ReportContentModal";
 
 export interface PostOverflowMenuProps {
   post: Post;
   viewerId: string;
   onPin?: (postId: string) => void;
-  onReport?: (postId: string) => void;
   triggerClassName?: string;
   /** Após exclusão bem-sucedida, navegar (ex.: `/feed` na página de detalhe). */
   deleteRedirectTo?: string;
@@ -40,7 +44,6 @@ export function PostOverflowMenu({
   post,
   viewerId,
   onPin,
-  onReport,
   triggerClassName,
   deleteRedirectTo,
   onPostUpdated,
@@ -48,8 +51,16 @@ export function PostOverflowMenu({
   stopTriggerPropagation = true,
 }: PostOverflowMenuProps) {
   const navigate = useNavigate();
+  const reportRev = useSyncExternalStore(
+    subscribeContentReports,
+    getContentReportsVersion,
+    getContentReportsVersion
+  );
+  void reportRev;
+
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -134,12 +145,11 @@ export function PostOverflowMenu({
           ) : null}
           {showReport ? (
             <DropdownMenuItem
-              variant="destructive"
-              className="text-[var(--woody-accent)] focus:bg-[var(--woody-accent)]/10"
-              onClick={() => onReport?.(post.id)}
+              className="text-[var(--woody-muted)] focus:bg-[var(--woody-nav)]/10 focus:text-[var(--woody-text)]"
+              onClick={() => setReportOpen(true)}
             >
-              <Flag className="mr-2 size-4" />
-              Reportar
+              <Flag className="mr-2 size-4 opacity-80" />
+              Denunciar
             </DropdownMenuItem>
           ) : null}
         </DropdownMenuContent>
@@ -165,6 +175,15 @@ export function PostOverflowMenu({
           isDeleting={isDeleting}
           errorMessage={deleteError}
           onConfirm={handleDelete}
+        />
+      ) : null}
+
+      {reportOpen ? (
+        <ReportContentModal
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          viewerId={viewerId}
+          target={{ kind: "post", post }}
         />
       ) : null}
     </>

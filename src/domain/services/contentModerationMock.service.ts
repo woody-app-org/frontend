@@ -23,6 +23,7 @@ import {
   updatePostRowForAuthor,
 } from "../mocks/postInteractionMockStore";
 import { enrichComment, enrichPost, getPostById } from "../selectors";
+import type { SubmitContentReportInput } from "../contentReport";
 import type { Comment, Post } from "../types";
 
 const MOCK_DELAY_MS = 400;
@@ -153,12 +154,14 @@ export async function hideCommentMock(
   };
 }
 
-/** TODO(backend): POST /reports { targetType: 'post', postId, reason? } */
+/** TODO(backend): POST /reports { targetType: 'post', postId, reasonCode, details? } */
 export async function reportPostMock(
   postId: string,
-  viewerId: string
+  viewerId: string,
+  input: SubmitContentReportInput
 ): Promise<ContentModerationResult<{ reported: true }>> {
   await delay(Math.round(MOCK_DELAY_MS * 0.6));
+  const details = input.details?.trim() || undefined;
   const current = getPostById(postId, viewerId);
   if (!current) {
     return { ok: false, code: "not_found", message: "Publicação não encontrada." };
@@ -170,19 +173,24 @@ export async function reportPostMock(
       message: "Não é possível denunciar esta publicação.",
     };
   }
-  const first = recordPostReport(viewerId, postId);
+  const first = recordPostReport(viewerId, postId, {
+    reasonCode: input.reasonCode,
+    details,
+  });
   if (!first) {
     return { ok: false, code: "conflict", message: "Você já enviou uma denúncia para este conteúdo." };
   }
   return { ok: true, data: { reported: true } };
 }
 
-/** TODO(backend): POST /reports { targetType: 'comment', commentId, reason? } */
+/** TODO(backend): POST /reports { targetType: 'comment', commentId, postId, reasonCode, details? } */
 export async function reportCommentMock(
   commentId: string,
-  viewerId: string
+  viewerId: string,
+  input: SubmitContentReportInput
 ): Promise<ContentModerationResult<{ reported: true }>> {
   await delay(Math.round(MOCK_DELAY_MS * 0.6));
+  const details = input.details?.trim() || undefined;
   const row = getSeedCommentRowById(commentId);
   if (!row) {
     return { ok: false, code: "not_found", message: "Comentário não encontrado." };
@@ -203,7 +211,11 @@ export async function reportCommentMock(
       message: "Não é possível denunciar este comentário.",
     };
   }
-  const first = recordCommentReport(viewerId, commentId);
+  const first = recordCommentReport(viewerId, commentId, {
+    postId: row.postId,
+    reasonCode: input.reasonCode,
+    details,
+  });
   if (!first) {
     return { ok: false, code: "conflict", message: "Você já enviou uma denúncia para este conteúdo." };
   }
