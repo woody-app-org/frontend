@@ -3,13 +3,26 @@ import { Clock, ChevronLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { Post } from "@/domain/types";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "../PostCommunityContextBar";
+import { PostOverflowMenu } from "../PostOverflowMenu";
 
 export interface PostDetailHeaderProps {
   post: Post;
+  /** Após excluir no detalhe, navegar para esta rota. */
+  postDeleteRedirectTo?: string;
+  onPostUpdated?: (post: Post) => void;
 }
 
-export function PostDetailHeader({ post }: PostDetailHeaderProps) {
+const menuTriggerClass =
+  "shrink-0 text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-1.5 min-w-[2.25rem] min-h-[2.25rem]";
+
+export function PostDetailHeader({
+  post,
+  postDeleteRedirectTo = "/feed",
+  onPostUpdated,
+}: PostDetailHeaderProps) {
+  const viewerId = useViewerId();
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -26,6 +39,16 @@ export function PostDetailHeader({ post }: PostDetailHeaderProps) {
             Voltar
           </Link>
         </Button>
+        <PostOverflowMenu
+          post={post}
+          viewerId={viewerId}
+          onPin={(id) => console.log("Pin", id)}
+          onReport={(id) => console.log("Report", id)}
+          deleteRedirectTo={postDeleteRedirectTo}
+          onPostUpdated={onPostUpdated}
+          stopTriggerPropagation={false}
+          triggerClassName={menuTriggerClass}
+        />
       </div>
 
       {post.community ? <PostCommunityContextBar preview={post.community} variant="community" /> : null}

@@ -66,6 +66,7 @@ export function PostDetailPage() {
             ) : null}
             <PostDetailView
               post={post}
+              postDeleteRedirectTo="/feed"
               comments={comments}
               isCommentsLoading={isCommentsLoading}
               commentsError={commentsError}
