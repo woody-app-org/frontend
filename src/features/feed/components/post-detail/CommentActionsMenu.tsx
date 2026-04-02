@@ -106,7 +106,7 @@ export function CommentActionsMenu({ post, comment, viewerId }: CommentActionsMe
               type="button"
               variant="ghost"
               size="icon-xs"
-              className="shrink-0 text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)] min-h-9 min-w-9 sm:min-h-8 sm:min-w-8"
+              className="touch-manipulation shrink-0 text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)] min-h-11 min-w-11 sm:min-h-8 sm:min-w-8"
               aria-label="Ações do comentário"
             >
               <MoreVertical className="size-4" />

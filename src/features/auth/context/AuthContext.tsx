@@ -4,6 +4,7 @@ import {
   getAuthUser,
   loginMock,
   logoutMock,
+  logoutSessionMock,
   patchStoredUser,
   registerMock,
 } from "../services/auth.service";
@@ -17,6 +18,8 @@ interface AuthContextValue {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
+  /** Encerra sessão com latência de API mock; preferir no fluxo “Sair” na UI. */
+  logoutAsync: () => Promise<void>;
   /** Atualiza dados da sessão e o `localStorage` (ex.: nome após editar perfil). */
   patchUser: (patch: Partial<AuthUser>) => void;
 }
@@ -48,6 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const logoutAsync = useCallback(async () => {
+    await logoutSessionMock();
+    setUser(null);
+  }, []);
+
   const patchUser = useCallback((patch: Partial<AuthUser>) => {
     const next = patchStoredUser(patch);
     if (next) setUser(next);
@@ -60,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
+    logoutAsync,
     patchUser,
   };
 

@@ -37,7 +37,7 @@ const styles = {
   authorPronouns: "text-[var(--woody-muted)] text-xs",
   timestamp: "flex items-center gap-1 text-[var(--woody-muted)] text-xs mt-0.5",
   menuTrigger:
-    "shrink-0 text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-1.5 min-w-[2rem] min-h-[2rem]",
+    "shrink-0 touch-manipulation text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-2 min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 sm:p-1.5",
   titleRow:
     "flex flex-wrap items-center gap-2 gap-y-1 mt-2",
   title: "font-bold text-[var(--woody-text)] text-base sm:text-[1.05rem] leading-snug",

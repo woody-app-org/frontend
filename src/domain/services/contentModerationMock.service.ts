@@ -1,6 +1,16 @@
 /**
  * Mutações mock de gestão/moderacao de conteúdo.
- * TODO(backend): substituir por cliente HTTP; manter assinaturas ou adaptadores finos.
+ *
+ * Integração futura: ver `BACKEND_ROUTE_HINTS.content` em `src/lib/backendIntegrationHints.ts`.
+ * Substituições típicas: `fetch`/`axios` por função, mantendo `ContentModerationResult` ou adapter.
+ *
+ * | Mock | Alvo HTTP (hint) |
+ * |------|------------------|
+ * | `updatePostMock` | PATCH /posts/:postId |
+ * | `deletePostMock` | DELETE /posts/:postId |
+ * | `deleteCommentMock` | DELETE /comments/:commentId |
+ * | `hideCommentMock` | POST ocultar comentário |
+ * | `reportPostMock` / `reportCommentMock` | POST /reports |
  */
 import {
   canDeleteOwnComment,

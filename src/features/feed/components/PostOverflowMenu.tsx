@@ -19,6 +19,7 @@ import {
   getContentReportsVersion,
   subscribeContentReports,
 } from "@/domain/mocks/contentReportMockStore";
+import { cn } from "@/lib/utils";
 import { deletePostMock } from "@/domain/services/contentModerationMock.service";
 import { EditPostDialog } from "./EditPostDialog";
 import { DeletePostConfirmationDialog } from "./DeletePostConfirmationDialog";
@@ -101,7 +102,7 @@ export function PostOverflowMenu({
             size="icon-xs"
             type="button"
             data-post-ignore-open={stopTriggerPropagation ? "true" : undefined}
-            className={triggerClassName}
+            className={cn("touch-manipulation", triggerClassName)}
             aria-label="Menu da publicação"
             onClick={stopTriggerPropagation ? (e) => e.stopPropagation() : undefined}
           >

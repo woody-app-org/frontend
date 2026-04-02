@@ -1,5 +1,7 @@
 /**
- * Contratos de leitura/mutação de posts para o mock.
+ * Contratos de leitura/mutação de posts e comentários para o mock.
+ *
+ * Integração futura: rotas em `src/lib/backendIntegrationHints.ts` (content + comentários).
  * TODO(backend): trocar implementações por `fetch`/`axios` apontando para rotas REST/GraphQL;
  * manter assinaturas ou adaptadores finos para não reescrever hooks/UI.
  *

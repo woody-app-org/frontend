@@ -13,6 +13,7 @@ export { RightPanel } from "./components/RightPanel";
 export { MobileBottomNav } from "./components/MobileBottomNav";
 export { Pagination } from "./components/Pagination";
 export { FeedLayout } from "./components/FeedLayout";
+export { UserAccountMenu } from "./components/UserAccountMenu";
 export { FeedSkeleton } from "./components/FeedSkeleton";
 export { FeedEmptyState } from "./components/FeedEmptyState";
 export { FeedErrorState } from "./components/FeedErrorState";

@@ -78,7 +78,9 @@ export function CommentItem({ post, comment, viewerId, nested = false, className
               {formatCommentTimestamp(comment.createdAt)}
             </span>
           </header>
-          <CommentActionsMenu post={post} comment={comment} viewerId={viewerId} />
+          <div className="shrink-0 self-start pt-0.5">
+            <CommentActionsMenu post={post} comment={comment} viewerId={viewerId} />
+          </div>
         </div>
         {isCommentContentMaskedForViewer(comment) ? (
           <HiddenCommentPlaceholder nested={nested} />
