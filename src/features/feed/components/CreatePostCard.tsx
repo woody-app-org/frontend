@@ -6,6 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { woodySurface } from "@/lib/woody-ui";
+import type { User } from "@/domain/types";
+import { postComposerFieldStyles } from "../lib/postComposerFieldStyles";
+import { getUserById } from "@/domain/selectors";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
 
 // --- Helpers ---
 
@@ -18,20 +24,10 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-// --- Mock (pronouns opcional para header) ---
-
-const MOCK_USER = {
-  name: "Seu nome",
-  pronouns: undefined as string | undefined,
-  avatarUrl:
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-};
-
 // --- Estilos padronizados (consistente com PostCard) ---
 
 const styles = {
-  card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] flex flex-col gap-0 py-0",
+  card: cn(woodySurface.card, "flex flex-col gap-0 py-0 transition-shadow duration-200 hover:shadow-[0_4px_14px_rgba(92,58,59,0.06)]"),
   content: "px-4 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5",
   header: "flex flex-row items-start gap-3",
   headerLeft: "flex min-w-0 flex-1 items-start gap-3",
@@ -40,17 +36,13 @@ const styles = {
   authorName: "font-semibold text-[var(--woody-text)] text-[0.95rem] leading-tight truncate",
   authorPronouns: "text-[var(--woody-muted)] text-xs",
   formBlock: "flex-1 min-w-0 space-y-3 mt-3",
-  input:
-    "h-11 rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/20 focus-visible:border-[var(--woody-accent)]/30 transition-colors",
-  textarea:
-    "min-h-20 resize-none sm:resize-y rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] leading-relaxed focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/20 focus-visible:border-[var(--woody-accent)]/30 transition-colors",
   toolbarRow: "flex items-center justify-between gap-3 pt-1",
   toolbar: "flex items-center gap-0.5",
   toolbarBtn:
     "size-9 rounded-md text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)] transition-colors [&_svg]:size-4",
   submitBtn:
     "rounded-xl h-9 px-5 bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:bg-[var(--woody-nav)]/80 transition-colors disabled:opacity-50 disabled:pointer-events-none",
-} as const;
+};
 
 const TOOLBAR_ACTIONS = [
   { Icon: ImagePlus, ariaLabel: "Adicionar imagem" },
@@ -65,7 +57,24 @@ export interface CreatePostCardProps {
   className?: string;
 }
 
+function mergeSessionIntoSeedUser(seed: User, sessionId: string, authId: string | undefined, authName?: string, authAvatar?: string, authUsername?: string): User {
+  if (authId !== sessionId) return seed;
+  return {
+    ...seed,
+    name: authName?.trim() || seed.name,
+    username: authUsername?.trim() || seed.username,
+    avatarUrl: authAvatar !== undefined ? (authAvatar || null) : seed.avatarUrl,
+  };
+}
+
 export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
+  const viewerId = useViewerId();
+  const { user: authUser } = useAuth();
+  const seedUser = getUserById(viewerId);
+  const currentUser =
+    seedUser != null
+      ? mergeSessionIntoSeedUser(seedUser, viewerId, authUser?.id, authUser?.name, authUser?.avatarUrl, authUser?.username)
+      : undefined;
   const [topic, setTopic] = useState("");
   const [content, setContent] = useState("");
 
@@ -79,6 +88,10 @@ export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
 
   const isSubmitDisabled = !topic.trim() && !content.trim();
 
+  if (!currentUser) {
+    return null;
+  }
+
   return (
     <Card className={cn(styles.card, className)}>
       <CardContent className={styles.content}>
@@ -86,19 +99,19 @@ export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <Avatar size="default" className={styles.avatar}>
-              <AvatarImage src={MOCK_USER.avatarUrl} alt={MOCK_USER.name} />
+              <AvatarImage src={currentUser.avatarUrl ?? undefined} alt={currentUser.name} />
               <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
-                {getInitials(MOCK_USER.name)}
+                {getInitials(currentUser.name)}
               </AvatarFallback>
             </Avatar>
             <div className={styles.headerMeta}>
               <div className="flex flex-wrap items-baseline gap-1">
-                <span className={styles.authorName}>{MOCK_USER.name}</span>
-                {MOCK_USER.pronouns && (
+                <span className={styles.authorName}>{currentUser.name}</span>
+                {currentUser.pronouns && (
                   <>
                     <span className={styles.authorPronouns}>•</span>
                     <span className={cn(styles.authorPronouns, "truncate")}>
-                      {MOCK_USER.pronouns}
+                      {currentUser.pronouns}
                     </span>
                   </>
                 )}
@@ -113,14 +126,14 @@ export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
             placeholder="Criar tópico"
             value={topic}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setTopic(e.target.value)}
-            className={styles.input}
+            className={postComposerFieldStyles.input}
           />
           <Textarea
             placeholder="Lorem ipsum dolor sit amet consectetur adipiscing elit risus..."
             value={content}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
             rows={3}
-            className={styles.textarea}
+            className={cn(postComposerFieldStyles.textarea, "min-h-20 resize-none sm:resize-y")}
           />
 
           {/* Toolbar + Botão Postar */}

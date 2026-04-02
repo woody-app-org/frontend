@@ -45,7 +45,19 @@ export function ProfileSkeleton({ className }: { className?: string }) {
               <Skeleton className={cn("h-4 w-3/4", styles.skeleton)} />
             </CardContent>
           </Card>
+          <Card className={styles.card}>
+            <CardHeader className="pb-2">
+              <Skeleton className={cn("h-5 w-32", styles.skeleton)} />
+              <Skeleton className={cn("h-3 w-full max-w-md mt-2", styles.skeleton)} />
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className={cn("h-[4.5rem] w-full rounded-xl", styles.skeleton)} />
+              ))}
+            </CardContent>
+          </Card>
           <div className="space-y-4">
+            <Skeleton className={cn("h-5 w-28", styles.skeleton)} />
             {[1, 2].map((i) => (
               <Card key={i} className={styles.card}>
                 <CardHeader className="flex flex-row items-start gap-3 px-4 py-3">

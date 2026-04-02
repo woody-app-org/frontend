@@ -1,8 +1,11 @@
+import { useMemo, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
+import { subscribeUserDisplayPatches, getUserDisplayPatchesVersion } from "@/domain/mocks/userDisplayPatchStore";
+import { getUserById } from "@/domain/selectors";
 
 const MOCK_SUGGESTIONS: { id: string; name: string; avatarUrl: string }[] = [];
 
@@ -58,7 +61,7 @@ function getInitials(name: string): string {
 
 const styles = {
   panel:
-    "hidden md:flex flex-col w-full min-w-0 bg-[var(--woody-bg)] border-l border-[var(--woody-nav)]/15",
+    "hidden md:flex flex-col w-full min-w-0 min-h-0 bg-[var(--woody-bg)] border-l border-[var(--woody-nav)]/15 overflow-y-auto",
   panelInner: "p-4 space-y-4",
   sectionTitle:
     "text-base font-bold text-[var(--woody-text)] mb-3",
@@ -67,10 +70,11 @@ const styles = {
   cardContent: "p-4",
   list: "space-y-0",
   item:
-    "flex items-center gap-3 rounded-md py-2 px-1 -mx-1 cursor-pointer transition-colors min-w-0",
+    "flex items-start gap-3 rounded-md py-2 px-1 -mx-1 cursor-pointer transition-colors min-w-0",
   itemHover: "hover:bg-[var(--woody-nav)]/8",
   itemAvatar: "size-9 shrink-0",
-  itemName: "text-sm font-medium text-[var(--woody-text)] truncate min-w-0",
+  itemName:
+    "flex-1 min-w-0 text-sm font-medium leading-snug text-[var(--woody-text)] break-words [overflow-wrap:anywhere]",
   emptyState:
     "flex items-center gap-2 py-3 text-sm text-[var(--woody-muted)]",
   emptyStateIcon: "size-4 shrink-0 text-[var(--woody-muted)]/80",
@@ -104,6 +108,18 @@ function UserRow({ user, className }: { user: UserItem; className?: string }) {
 
 export function RightPanel({ className }: RightPanelProps) {
   const hasSuggestions = MOCK_SUGGESTIONS.length > 0;
+  const userDisplayRev = useSyncExternalStore(
+    subscribeUserDisplayPatches,
+    getUserDisplayPatchesVersion,
+    getUserDisplayPatchesVersion
+  );
+  const followingResolved = useMemo(() => {
+    void userDisplayRev;
+    return MOCK_FOLLOWING.map((item) => {
+      const u = getUserById(item.id);
+      return u ? { id: u.id, name: u.name, avatarUrl: u.avatarUrl ?? item.avatarUrl } : item;
+    });
+  }, [userDisplayRev]);
 
   return (
     <aside className={cn(styles.panel, className)}>
@@ -132,7 +148,7 @@ export function RightPanel({ className }: RightPanelProps) {
           <Card className={styles.card}>
             <CardContent className={styles.cardContent}>
               <ul className={styles.list}>
-                {MOCK_FOLLOWING.map((user) => (
+                {followingResolved.map((user) => (
                   <UserRow key={user.id} user={user} />
                 ))}
               </ul>

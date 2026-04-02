@@ -1,4 +1,4 @@
-import type { Post, User } from "@/features/feed/types";
+import type { Post, User } from "@/domain/types";
 
 /** Link de rede social / conexão do perfil */
 export interface SocialLink {
@@ -39,7 +39,20 @@ export interface UserProfile {
   isFollowing?: boolean;
 }
 
-/** Resposta paginada de posts do perfil (reutiliza Post do feed) */
+/** Payload para `updateProfile` / futura API REST. */
+export interface ProfileUpdatePayload {
+  name: string;
+  username: string;
+  bio: string;
+  pronouns?: string;
+  location?: string;
+  role?: string;
+  avatarUrl?: string | null;
+  bannerUrl?: string | null;
+  interests?: InterestTag[];
+}
+
+/** Resposta paginada de posts do perfil */
 export interface ProfilePostsResponse {
   items: Post[];
   page: number;
@@ -61,7 +74,9 @@ export interface UseUserProfileReturn {
   nextPage: () => void;
   previousPage: () => void;
   refetch: () => void;
+  /** Atualiza um post na lista local (edição mock). */
+  updatePostInList: (post: Post) => void;
+  removePostFromList: (postId: string) => void;
 }
 
-// Re-export para uso no perfil (evita acoplamento direto ao feed)
 export type { Post, User };

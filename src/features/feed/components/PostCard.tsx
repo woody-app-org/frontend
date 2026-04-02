@@ -1,20 +1,17 @@
-import { Link } from "react-router-dom";
-import { Heart, MessageCircle, MoreVertical, Pin, Flag, Clock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Heart, MessageCircle, Clock, Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { woodyMotion, woodySurface } from "@/lib/woody-ui";
 import type { Post } from "../types";
+import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { PostCommunityContextBar } from "./PostCommunityContextBar";
+import { PostOverflowMenu } from "./PostOverflowMenu";
 
 // --- Helpers ---
 
@@ -26,8 +23,11 @@ function formatCount(count: number): string {
 // --- Estilos padronizados (evitar classes gigantes inline) ---
 
 const styles = {
-  card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] flex flex-col gap-0 px-4 pt-3 pb-3 sm:px-4",
+  card: cn(
+    woodySurface.card,
+    woodyMotion.postCardHover,
+    "flex flex-col gap-0 px-4 pt-3 pb-3 sm:px-4 overflow-hidden"
+  ),
   header:
     "flex flex-row items-start justify-between gap-3 p-0",
   headerLeft: "flex min-w-0 flex-1 items-start gap-3",
@@ -37,7 +37,7 @@ const styles = {
   authorPronouns: "text-[var(--woody-muted)] text-xs",
   timestamp: "flex items-center gap-1 text-[var(--woody-muted)] text-xs mt-0.5",
   menuTrigger:
-    "shrink-0 text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-1.5 min-w-[2rem] min-h-[2rem]",
+    "shrink-0 touch-manipulation text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-2 min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 sm:p-1.5",
   titleRow:
     "flex flex-wrap items-center gap-2 gap-y-1 mt-2",
   title: "font-bold text-[var(--woody-text)] text-base sm:text-[1.05rem] leading-snug",
@@ -52,18 +52,38 @@ const styles = {
     "flex items-center gap-5 mt-3 pt-0.5 text-[var(--woody-muted)]",
   footerItem:
     "flex items-center gap-1.5 text-xs transition-colors rounded-md py-1 px-1.5 -mx-1.5 hover:text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/5 [&_svg]:size-3.5",
-} as const;
+};
 
 // --- Component ---
 
 export interface PostCardProps {
   post: Post;
   onPin?: (postId: string) => void;
-  onReport?: (postId: string) => void;
+  /** Sincroniza lista local (ex.: perfil) após edição mock. */
+  onPostUpdated?: (post: Post) => void;
+  onPostDeleted?: (postId: string) => void;
+  onLike?: (postId: string) => void | Promise<void>;
+  isLikePending?: boolean;
   className?: string;
+  /**
+   * `community`: chip da comunidade como indicador (sem link), adequado à página da própria comunidade.
+   * @default "feed"
+   */
+  postListingContext?: "feed" | "community";
 }
 
-export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
+export function PostCard({
+  post,
+  onPin,
+  onPostUpdated,
+  onPostDeleted,
+  onLike,
+  isLikePending = false,
+  className,
+  postListingContext = "feed",
+}: PostCardProps) {
+  const navigate = useNavigate();
+  const viewerId = useViewerId();
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -71,14 +91,45 @@ export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
     .slice(0, 2)
     .toUpperCase();
 
+  const openPost = () => navigate(`/posts/${post.id}`);
+  const openPostComments = () => navigate(`/posts/${post.id}?focus=comments`);
+
+  const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("a,button,[data-post-ignore-open='true']")) return;
+    openPost();
+  };
+
+  const handleCardKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    openPost();
+  };
+
   return (
-    <Card className={cn(styles.card, className)}>
-      <CardHeader className={styles.header}>
+    <Card
+      className={cn(
+        styles.card,
+        "cursor-pointer",
+        postListingContext === "community" && "px-4 pb-4 pt-3 sm:px-6 sm:pb-5 sm:pt-4",
+        className
+      )}
+      role="button"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+    >
+      {post.community ? (
+        <PostCommunityContextBar preview={post.community} variant={postListingContext} />
+      ) : null}
+      <CardHeader className={cn(styles.header, post.community && "pt-2 sm:pt-3")}>
         <div className={styles.headerLeft}>
           <Link
             to={`/profile/${post.author.id}`}
+            data-post-ignore-open="true"
             className="flex min-w-0 flex-1 items-start gap-3 rounded-md -m-1.5 p-1.5 hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
             aria-label={`Ver perfil de ${post.author.name}`}
+            onClick={(event) => event.stopPropagation()}
           >
             <Avatar size="default" className={styles.avatar}>
               <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} />
@@ -105,42 +156,25 @@ export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
             </div>
           </Link>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className={styles.menuTrigger}
-              aria-label="Abrir menu"
-            >
-              <MoreVertical className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-[var(--woody-card)] border-[var(--woody-accent)]/20">
-            <DropdownMenuItem
-              onClick={() => onPin?.(post.id)}
-              className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
-            >
-              <Pin className="size-4 mr-2" />
-              Fixar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => onReport?.(post.id)}
-              className="text-[var(--woody-accent)] focus:bg-[var(--woody-accent)]/10"
-            >
-              <Flag className="size-4 mr-2" />
-              Reportar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <PostOverflowMenu
+          post={post}
+          viewerId={viewerId}
+          onPin={onPin}
+          onPostUpdated={onPostUpdated}
+          onPostDeleted={onPostDeleted}
+          triggerClassName={styles.menuTrigger}
+        />
       </CardHeader>
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
-          {post.topic && <span className={styles.pill}>{post.topic}</span>}
+          {post.tags?.map((tag) => (
+            <span key={tag} className={styles.pill}>
+              {tag}
+            </span>
+          ))}
         </div>
-        <p className={cn(styles.content, (post.title || post.topic) && "mt-2")}>
+        <p className={cn(styles.content, (post.title || post.tags?.length) && "mt-2")}>
           {post.content}
         </p>
         {post.imageUrl && (
@@ -149,14 +183,45 @@ export function PostCard({ post, onPin, onReport, className }: PostCardProps) {
           </div>
         )}
         <div className={styles.footer}>
-          <span className={styles.footerItem}>
-            <Heart className="size-[1em] stroke-current" strokeWidth={1.75} />
+          <button
+            type="button"
+            data-post-ignore-open="true"
+            disabled={isLikePending}
+            className={cn(
+              styles.footerItem,
+              post.likedByCurrentUser && "text-[var(--woody-accent)] bg-[var(--woody-accent)]/8",
+              isLikePending && "opacity-70 cursor-not-allowed"
+            )}
+            aria-label={post.likedByCurrentUser ? "Descurtir publicação" : "Curtir publicação"}
+            aria-pressed={post.likedByCurrentUser}
+            onClick={(event) => {
+              event.stopPropagation();
+              void onLike?.(post.id);
+            }}
+          >
+            {isLikePending ? (
+              <Loader2 className="size-[1em] animate-spin" strokeWidth={2} />
+            ) : (
+              <Heart
+                className={cn("size-[1em] stroke-current", post.likedByCurrentUser && "fill-current")}
+                strokeWidth={1.75}
+              />
+            )}
             {formatCount(post.likesCount)}
-          </span>
-          <span className={styles.footerItem}>
+          </button>
+          <button
+            type="button"
+            data-post-ignore-open="true"
+            className={styles.footerItem}
+            aria-label="Abrir comentários da publicação"
+            onClick={(event) => {
+              event.stopPropagation();
+              openPostComments();
+            }}
+          >
             <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
             {formatCount(post.commentsCount)}
-          </span>
+          </button>
         </div>
       </CardContent>
     </Card>
