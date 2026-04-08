@@ -151,7 +151,10 @@ export function PostCard({
               </div>
               <div className={styles.timestamp}>
                 <Clock className="size-3 shrink-0" aria-hidden />
-                <span>{post.createdAt}</span>
+                <span>
+                  {post.createdAt}
+                  <span className="text-[var(--woody-muted)]/80"> · #{post.id}</span>
+                </span>
               </div>
             </div>
           </Link>

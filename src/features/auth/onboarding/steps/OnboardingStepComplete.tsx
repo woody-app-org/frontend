@@ -4,6 +4,7 @@ import { Heart, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { buildRegisterCredentialsFromDraft } from "../lib/buildOnboardingPayload";
+import { persistOnboardingCommunityJoins } from "../services/onboardingCommunityJoins.service";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
@@ -27,7 +28,11 @@ export function OnboardingStepComplete() {
     setErrorMessage(null);
     setIsSubmitting(true);
     try {
+      const communityIds = [...(draft.joinedCommunityIds ?? [])];
       await registerUser(credentials);
+      if (communityIds.length > 0) {
+        await persistOnboardingCommunityJoins(communityIds);
+      }
       resetDraft();
       navigate("/feed", { replace: true });
     } catch (err) {
@@ -79,10 +84,8 @@ export function OnboardingStepComplete() {
       )}
 
       <div className="rounded-2xl border border-white/10 bg-[var(--auth-panel-beige)]/[0.06] px-4 py-5 sm:px-6 text-sm text-[var(--auth-text-on-maroon)]/84 leading-relaxed shadow-sm">
-        Ao entrar, você verá o feed e poderá ajustar perfil, notificações e privacidade. Na integração com o
-        backend, interesses e entradas em comunidades podem ser sincronizados logo após a sessão — a estrutura já
-        está separada em <span className="font-medium opacity-90">cadastro</span> e{" "}
-        <span className="font-medium opacity-90">dados complementares</span>.
+        Ao entrar, você verá o feed e poderá ajustar perfil, notificações e privacidade. As comunidades que
+        escolheu são associadas à sua conta neste momento (entradas diretas nas públicas e pedidos nas privadas).
       </div>
 
       <div className={cn(onboardingStyles.footerRow, "mt-8 justify-center sm:justify-end border-t-0 pt-2")}>

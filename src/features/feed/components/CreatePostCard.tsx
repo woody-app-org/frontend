@@ -12,6 +12,7 @@ import { postComposerFieldStyles } from "../lib/postComposerFieldStyles";
 import { getUserById } from "@/domain/selectors";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { useMeComposerUser } from "@/features/profile/hooks/useMeComposerUser";
 
 // --- Helpers ---
 
@@ -69,12 +70,28 @@ function mergeSessionIntoSeedUser(seed: User, sessionId: string, authId: string 
 
 export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
   const viewerId = useViewerId();
-  const { user: authUser } = useAuth();
+  const { user: authUser, isAuthenticated } = useAuth();
+  const { user: meFromApi } = useMeComposerUser();
   const seedUser = getUserById(viewerId);
-  const currentUser =
+  const seedMerged =
     seedUser != null
       ? mergeSessionIntoSeedUser(seedUser, viewerId, authUser?.id, authUser?.name, authUser?.avatarUrl, authUser?.username)
       : undefined;
+
+  /** Sessão real: nunca misturar avatar do seed (ex. Unsplash) com a conta logada. */
+  const sessionOnlyUser: User | undefined =
+    authUser != null
+      ? {
+          id: authUser.id,
+          name: authUser.name?.trim() || authUser.username,
+          username: authUser.username,
+          avatarUrl: authUser.avatarUrl ?? null,
+          pronouns: undefined,
+          bio: undefined,
+        }
+      : undefined;
+
+  const currentUser = isAuthenticated ? (meFromApi ?? sessionOnlyUser) : seedMerged;
   const [topic, setTopic] = useState("");
   const [content, setContent] = useState("");
 
@@ -129,7 +146,7 @@ export function CreatePostCard({ onSubmit, className }: CreatePostCardProps) {
             className={postComposerFieldStyles.input}
           />
           <Textarea
-            placeholder="Lorem ipsum dolor sit amet consectetur adipiscing elit risus..."
+            placeholder="Partilhe algo com a comunidade…"
             value={content}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
             rows={3}

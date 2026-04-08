@@ -19,6 +19,6 @@ export type OnboardingDraft = {
   /** Usuária optou por pular foto nesta sessão */
   skippedProfilePhoto?: boolean;
   interestIds?: string[];
-  /** IDs de comunidades que a usuária “entrou” durante o onboarding (mock). */
+  /** IDs de comunidades escolhidas no onboarding; persistidas na API após registo (JWT). */
   joinedCommunityIds?: string[];
 };

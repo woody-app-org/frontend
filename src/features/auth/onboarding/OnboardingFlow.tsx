@@ -16,7 +16,8 @@ export function OnboardingFlow() {
   const { pathname } = useLocation();
   const { goBack } = useOnboardingNavigation();
 
-  if (isAuthenticated) {
+  /** Durante a etapa 6 o registo acabou de criar a sessão; ainda precisamos de persistir joins e navegar. */
+  if (isAuthenticated && step !== 6) {
     return <Navigate to="/feed" replace />;
   }
 

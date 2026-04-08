@@ -65,7 +65,7 @@ export function FeedPage() {
       ? {
           title: "Nenhuma publicação de quem você segue",
           description:
-            "Siga mais perfis ou volte ao “Em alta” / “Para você”. As pessoas que você acompanha ainda não têm posts recentes no mock.",
+            "Siga mais perfis ou volte ao “Em alta” / “Para você”. Quem você acompanha ainda não tem publicações recentes na base.",
         }
       : undefined;
 
