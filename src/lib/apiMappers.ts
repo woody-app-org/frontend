@@ -1,5 +1,6 @@
 import type { Comment, Community, CommunityCategory, Post, User } from "@/domain/types";
 import type { SocialLink, UserProfile } from "@/features/profile/types";
+import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
 
 const PLATFORMS = new Set(["instagram", "facebook", "twitter", "tiktok", "linkedin", "other"]);
 
@@ -62,7 +63,7 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
     content: asString(raw.content),
     imageUrl: raw.imageUrl ?? null,
     tags: Array.isArray(raw.tags) ? raw.tags.map((t: unknown) => String(t)) : undefined,
-    createdAt: asString(raw.createdAt),
+    createdAt: formatDisplayDateTimeFromIso(asString(raw.createdAt)),
     updatedAt: raw.updatedAt ?? null,
     deletedAt: raw.deletedAt ?? null,
     likesCount: Number(raw.likesCount ?? 0),
@@ -95,7 +96,7 @@ export function mapCommentFromApi(raw: ApiRecord): Comment {
     authorId: asString(raw.authorId),
     author: mapUserFromApi(raw.author ?? {}),
     content: asString(raw.content),
-    createdAt: asString(raw.createdAt),
+    createdAt: formatDisplayDateTimeFromIso(asString(raw.createdAt)),
     deletedAt: raw.deletedAt ?? null,
     hiddenByPostAuthorAt: raw.hiddenByPostAuthorAt ?? null,
     contentModerationMask: raw.contentModerationMask ?? null,

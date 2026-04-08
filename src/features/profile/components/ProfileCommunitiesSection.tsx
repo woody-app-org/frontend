@@ -1,15 +1,17 @@
-import { useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, UsersRound } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodySurface } from "@/lib/woody-ui";
-import type { Community } from "@/domain/types";
-import { subscribeCommunityDrafts, getCommunityDraftsVersion } from "@/domain/mocks/communityDraftStore";
-import { getCommunitiesForUser, getViewerCommunityRole } from "@/domain/selectors";
+import type { Community, CommunityMemberRole } from "@/domain/types";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
 import { CommunityMemberRoleIndicator } from "@/features/communities/components/CommunityMemberRoleIndicator";
+import {
+  fetchUserCommunityMemberships,
+  type UserCommunityMembershipRow,
+} from "@/features/users/services/userSocial.service";
 
 const styles = {
   card: woodySurface.card,
@@ -25,7 +27,6 @@ const styles = {
   ),
   avatar: "size-11 shrink-0 rounded-xl border border-[var(--woody-accent)]/15",
   name: "text-sm font-semibold text-[var(--woody-text)] truncate group-hover:text-[var(--woody-nav)] transition-colors",
-  /** Papel + categoria; contagem fica sempre na linha de baixo (`metaCount`). */
   meta: "mt-0.5 flex flex-col gap-1",
   metaBadges: "flex flex-wrap items-center gap-2",
   metaCount: "text-[0.6875rem] text-[var(--woody-muted)]",
@@ -53,17 +54,14 @@ function initials(name: string): string {
 
 export interface ProfileCommunitiesSectionProps {
   userId: string;
-  /** Se é o perfil da usuária logada (mock), ajusta o texto descritivo. */
   isOwnProfile?: boolean;
-  /** Primeiro nome ou apelido para texto na terceira pessoa. */
   shortName?: string;
-  /** Sem `Card` externo — útil dentro de abas. */
   bare?: boolean;
   className?: string;
 }
 
 /**
- * Comunidades em que a usuária participa (fonte: memberships do mock / futura API).
+ * Comunidades em que a utilizadora participa (API: GET /users/:id/communities).
  */
 export function ProfileCommunitiesSection({
   userId,
@@ -72,22 +70,35 @@ export function ProfileCommunitiesSection({
   bare = false,
   className,
 }: ProfileCommunitiesSectionProps) {
-  const communityDraftRev = useSyncExternalStore(
-    subscribeCommunityDrafts,
-    getCommunityDraftsVersion,
-    getCommunityDraftsVersion
-  );
-  const communities = useMemo(() => {
-    void communityDraftRev;
-    return getCommunitiesForUser(userId);
-  }, [userId, communityDraftRev]);
+  const [rows, setRows] = useState<UserCommunityMembershipRow[]>([]);
+  const [loadState, setLoadState] = useState<"loading" | "ok" | "error">("loading");
+
+  const load = useCallback(async () => {
+    setLoadState("loading");
+    try {
+      const data = await fetchUserCommunityMemberships(userId);
+      setRows(data);
+      setLoadState("ok");
+    } catch {
+      setRows([]);
+      setLoadState("error");
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const blurb = isOwnProfile
     ? "Espaços onde você conversa e constrói vínculos na Woody."
     : `Espaços onde ${shortName ?? "esta pessoa"} participa na Woody.`;
 
   const body =
-    communities.length === 0 ? (
+    loadState === "loading" ? (
+      <p className="text-sm text-[var(--woody-muted)] py-4">A carregar comunidades…</p>
+    ) : loadState === "error" ? (
+      <p className="text-sm text-[var(--woody-muted)] py-4">Não foi possível carregar as comunidades.</p>
+    ) : rows.length === 0 ? (
       <div className={styles.emptyWrap}>
         <div className={styles.emptyIcon}>
           <UsersRound className="size-5" aria-hidden />
@@ -100,9 +111,9 @@ export function ProfileCommunitiesSection({
       </div>
     ) : (
       <ul className={cn(styles.grid, "list-none p-0 m-0")}>
-        {communities.map((c) => (
-          <li key={c.id}>
-            <ProfileCommunityCompactLink community={c} userId={userId} />
+        {rows.map((r) => (
+          <li key={r.community.id}>
+            <ProfileCommunityCompactLink community={r.community} role={r.role} />
           </li>
         ))}
       </ul>
@@ -130,12 +141,21 @@ export function ProfileCommunitiesSection({
   );
 }
 
-function ProfileCommunityCompactLink({ community, userId }: { community: Community; userId: string }) {
+function ProfileCommunityCompactLink({
+  community,
+  role,
+}: {
+  community: Community;
+  role: CommunityMemberRole;
+}) {
   const cat = getCommunityCategoryLabel(community.category);
-  const viewerRole = getViewerCommunityRole(userId, community) ?? "member";
 
   return (
-    <Link to={`/communities/${community.slug}`} className={styles.item} aria-label={`Abrir comunidade ${community.name}`}>
+    <Link
+      to={`/communities/${community.slug}`}
+      className={styles.item}
+      aria-label={`Abrir comunidade ${community.name}`}
+    >
       <Avatar className={styles.avatar}>
         <AvatarImage src={community.avatarUrl ?? undefined} alt="" className="object-cover" />
         <AvatarFallback className="rounded-xl bg-[var(--woody-nav)]/10 text-xs font-bold text-[var(--woody-text)]">
@@ -146,7 +166,7 @@ function ProfileCommunityCompactLink({ community, userId }: { community: Communi
         <p className={styles.name}>{community.name}</p>
         <div className={styles.meta}>
           <div className={styles.metaBadges}>
-            <CommunityMemberRoleIndicator role={viewerRole} variant="profile" />
+            <CommunityMemberRoleIndicator role={role} variant="profile" />
             <span className={styles.cat}>{cat}</span>
           </div>
           <p className={cn(styles.metaCount, "m-0 leading-snug")}>
