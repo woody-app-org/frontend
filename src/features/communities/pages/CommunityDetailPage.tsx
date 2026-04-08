@@ -7,9 +7,11 @@ import { woodyLayout } from "@/lib/woody-ui";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
 import {
+  fetchAllCommunityMembers,
   fetchCommunityBySlug,
   fetchCommunityJoinRequestRows,
-  fetchCommunityMembers,
+  fetchCommunityMembersPage,
+  fetchMyCommunityMembership,
   fetchCommunityPosts,
   type JoinRequestWithUser,
 } from "../services/community.service";
@@ -34,7 +36,10 @@ const COMMUNITY_FEED_PAGE_SIZE = 10;
 interface CommunityDetailLoadedProps {
   community: Community;
   posts: Post[];
-  members: CommunityMemberListItem[];
+  previewMembers: CommunityMemberListItem[];
+  managerMembers: CommunityMemberListItem[];
+  viewerMembershipRole: CommunityMemberListItem["role"] | null;
+  viewerIsMember: boolean;
   joinRows: JoinRequestWithUser[];
   dataRevision: number;
   onDataChanged: () => void;
@@ -45,7 +50,10 @@ interface CommunityDetailLoadedProps {
 function CommunityDetailLoaded({
   community,
   posts,
-  members,
+  previewMembers,
+  managerMembers,
+  viewerMembershipRole,
+  viewerIsMember,
   joinRows,
   dataRevision,
   onDataChanged,
@@ -59,10 +67,9 @@ function CommunityDetailLoaded({
   const [accessNotice, setAccessNotice] = useState<string | null>(null);
   const [feedPage, setFeedPage] = useState(1);
 
-  const myRow = members.find((m) => m.user.id === viewerId);
-  const isMember = Boolean(myRow);
   const isOwner = community.ownerUserId === viewerId;
-  const isAdminRole = myRow?.role === "admin";
+  const isAdminRole = viewerMembershipRole === "admin";
+  const isMember = viewerIsMember;
   const canMod = isOwner || isAdminRole;
 
   const membershipStatus = joinPending && !isMember ? "pending" : isMember ? "active" : "none";
@@ -191,7 +198,7 @@ function CommunityDetailLoaded({
           actorIsOwner={isOwner}
           listRevision={dataRevision}
           onListChanged={onDataChanged}
-          liveMemberList={members}
+          liveMemberList={managerMembers}
           liveJoinRequestRows={joinRows}
         />
       ) : null}
@@ -225,7 +232,11 @@ function CommunityDetailLoaded({
           <CommunityAboutCard community={community} memberCount={memberCount} />
           <CommunityTopicsCard tags={community.tags} />
           <CommunityRulesQuickCard community={community} />
-          <CommunityMembersPreview members={members} />
+          <CommunityMembersPreview
+            communityId={community.id}
+            memberCount={memberCount}
+            members={previewMembers}
+          />
         </aside>
       </div>
     </div>
@@ -242,7 +253,10 @@ export function CommunityDetailPage() {
   const [loadState, setLoadState] = useState<"loading" | "ok" | "error">("loading");
   const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [members, setMembers] = useState<CommunityMemberListItem[]>([]);
+  const [previewMembers, setPreviewMembers] = useState<CommunityMemberListItem[]>([]);
+  const [managerMembers, setManagerMembers] = useState<CommunityMemberListItem[]>([]);
+  const [viewerMembershipRole, setViewerMembershipRole] = useState<CommunityMemberListItem["role"] | null>(null);
+  const [viewerIsMember, setViewerIsMember] = useState(false);
   const [joinRows, setJoinRows] = useState<JoinRequestWithUser[]>([]);
   const [joinPending, setJoinPending] = useState(false);
 
@@ -250,13 +264,10 @@ export function CommunityDetailPage() {
 
   useEffect(() => {
     if (!communitySlug) {
-      setLoadState("ok");
-      setCommunity(null);
       return;
     }
 
     let cancelled = false;
-    setLoadState("loading");
 
     (async () => {
       try {
@@ -265,30 +276,36 @@ export function CommunityDetailPage() {
         if (!c) {
           setCommunity(null);
           setPosts([]);
-          setMembers([]);
+          setPreviewMembers([]);
+          setManagerMembers([]);
+          setViewerMembershipRole(null);
+          setViewerIsMember(false);
           setJoinRows([]);
           setLoadState("ok");
           return;
         }
 
-        const [postsList, mems] = await Promise.all([
+        const [postsList, previewPage, myMembership] = await Promise.all([
           fetchCommunityPosts(c.id, viewerId, 1, 200),
-          fetchCommunityMembers(c.id),
+          fetchCommunityMembersPage(c.id, 1, 8),
+          fetchMyCommunityMembership(c.id),
         ]);
         if (cancelled) return;
 
-        const isMod =
-          c.ownerUserId === viewerId ||
-          mems.some((m) => m.user.id === viewerId && (m.role === "admin" || m.role === "owner"));
+        const isOwner = c.ownerUserId === viewerId;
+        const isMod = isOwner || myMembership.role === "admin" || myMembership.role === "owner";
+        const fullMembers = isMod ? await fetchAllCommunityMembers(c.id) : previewPage.items;
         const jrows = isMod ? await fetchCommunityJoinRequestRows(c.id) : [];
         if (cancelled) return;
 
         setCommunity(c);
         setPosts(postsList);
-        setMembers(mems);
+        setPreviewMembers(previewPage.items);
+        setManagerMembers(fullMembers);
+        setViewerMembershipRole(myMembership.role);
+        setViewerIsMember(myMembership.isMember);
         setJoinRows(jrows);
-        const isMember = mems.some((m) => m.user.id === viewerId);
-        if (isMember) setJoinPending(false);
+        if (myMembership.isMember) setJoinPending(false);
         setLoadState("ok");
       } catch {
         if (!cancelled) {
@@ -369,7 +386,10 @@ export function CommunityDetailPage() {
         key={community.id}
         community={community}
         posts={posts}
-        members={members}
+        previewMembers={previewMembers}
+        managerMembers={managerMembers}
+        viewerMembershipRole={viewerMembershipRole}
+        viewerIsMember={viewerIsMember}
         joinRows={joinRows}
         dataRevision={revision}
         onDataChanged={bump}
