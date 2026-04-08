@@ -91,13 +91,98 @@ function mapMemberRole(r: string): CommunityMemberRole {
   return "member";
 }
 
+function memberRoleOrder(role: CommunityMemberRole): number {
+  if (role === "owner") return 0;
+  if (role === "admin") return 1;
+  return 2;
+}
+
+function normalizeMemberList(rows: { user: Record<string, unknown>; role: string }[]): CommunityMemberListItem[] {
+  return rows
+    .map((row) => ({
+      user: mapUserFromApi(row.user),
+      role: mapMemberRole(row.role),
+    }))
+    .sort((a, b) => {
+      const roleDiff = memberRoleOrder(a.role) - memberRoleOrder(b.role);
+      if (roleDiff !== 0) return roleDiff;
+      return a.user.name.localeCompare(b.user.name, "pt-BR", { sensitivity: "base" });
+    });
+}
+
+export interface FetchCommunityMembersPageResult {
+  items: CommunityMemberListItem[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  hasNextPage: boolean;
+}
+
+export async function fetchCommunityMembersPage(
+  communityId: string,
+  page: number = 1,
+  pageSize: number = 20
+): Promise<FetchCommunityMembersPageResult> {
+  const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/members`, {
+    params: { page, pageSize },
+  });
+
+  if (Array.isArray(data)) {
+    const items = normalizeMemberList(data as { user: Record<string, unknown>; role: string }[]);
+    return {
+      items,
+      page: 1,
+      pageSize: items.length || pageSize,
+      totalCount: items.length,
+      hasNextPage: false,
+    };
+  }
+
+  const payload = data as {
+    items?: { user: Record<string, unknown>; role: string }[];
+    page?: number;
+    pageSize?: number;
+    totalCount?: number;
+    hasNextPage?: boolean;
+  };
+  const items = normalizeMemberList(payload.items ?? []);
+  return {
+    items,
+    page: payload.page ?? page,
+    pageSize: payload.pageSize ?? pageSize,
+    totalCount: payload.totalCount ?? items.length,
+    hasNextPage: payload.hasNextPage ?? false,
+  };
+}
+
+export async function fetchAllCommunityMembers(communityId: string): Promise<CommunityMemberListItem[]> {
+  const all: CommunityMemberListItem[] = [];
+  let page = 1;
+  let hasNext = true;
+  while (hasNext) {
+    const chunk = await fetchCommunityMembersPage(communityId, page, 50);
+    all.push(...chunk.items);
+    hasNext = chunk.hasNextPage;
+    page += 1;
+  }
+  return all;
+}
+
+export async function fetchMyCommunityMembership(
+  communityId: string
+): Promise<{ isMember: boolean; role: CommunityMemberRole | null }> {
+  try {
+    const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/members/me`);
+    const role = mapMemberRole((data?.role as string) ?? "member");
+    if (!data?.isMember) return { isMember: false, role: null };
+    return { isMember: true, role };
+  } catch {
+    return { isMember: false, role: null };
+  }
+}
+
 export async function fetchCommunityMembers(communityId: string): Promise<CommunityMemberListItem[]> {
-  const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/members`);
-  const rows = data as { user: Record<string, unknown>; role: string }[];
-  return rows.map((row) => ({
-    user: mapUserFromApi(row.user),
-    role: mapMemberRole(row.role),
-  }));
+  return fetchAllCommunityMembers(communityId);
 }
 
 export interface JoinRequestWithUser {
@@ -149,7 +234,8 @@ export function getCommunityResolvedBySlug(slug: string): Community | undefined 
 }
 
 /** @deprecated Prefer `fetchCommunityById` (API). */
-export function getCommunityResolvedById(_id: string): Community | undefined {
+export function getCommunityResolvedById(id: string): Community | undefined {
+  void id;
   return undefined;
 }
 
