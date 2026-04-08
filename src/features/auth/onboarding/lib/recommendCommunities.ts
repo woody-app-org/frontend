@@ -1,5 +1,4 @@
 import type { Community, CommunityCategory } from "@/domain/types";
-import { SEED_COMMUNITIES } from "@/domain/mocks/seed";
 import { ONBOARDING_INTERESTS } from "../constants";
 
 const CATEGORY_BY_INTEREST: Partial<Record<string, CommunityCategory[]>> = {
@@ -30,7 +29,7 @@ function interestKeywords(interestIds: string[]): string[] {
   return [...set];
 }
 
-/** Pontua comunidades com base nos interesses (mock local; futuro: endpoint de recomendação). */
+/** Pontua comunidades com base nos interesses do onboarding (lista já vinda da API). */
 export function scoreCommunityForOnboarding(
   community: Community,
   interestIds: string[]
@@ -58,11 +57,13 @@ export function scoreCommunityForOnboarding(
   return score;
 }
 
-export function getRecommendedCommunitiesForOnboarding(
+/** Ordena uma lista vinda da API (ex. `GET /communities`) por afinidade com os interesses do onboarding. */
+export function rankCommunitiesForOnboarding(
+  communities: Community[],
   interestIds: string[],
   limit = 8
 ): Community[] {
-  const ranked = [...SEED_COMMUNITIES].map((c) => ({
+  const ranked = [...communities].map((c) => ({
     c,
     s: scoreCommunityForOnboarding(c, interestIds),
   }));

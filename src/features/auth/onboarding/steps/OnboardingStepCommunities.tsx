@@ -1,28 +1,42 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Compass, Sparkles } from "lucide-react";
+import type { Community } from "@/domain/types";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
-import { getRecommendedCommunitiesForOnboarding } from "../lib/recommendCommunities";
-import { mockPersistCommunityJoins } from "../services/onboardingActionsMock";
+import { fetchOnboardingCommunitySuggestions } from "../services/onboardingCommunity.service";
 import { OnboardingCommunityToggleCard } from "../components/OnboardingCommunityToggleCard";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 
+type LoadState = { status: "loading" } | { status: "ok"; communities: Community[] } | { status: "error" };
+
 /**
- * Etapa 5 — comunidades sugeridas (join mock; futuro: API de membership).
+ * Etapa 5 — comunidades sugeridas a partir de `GET /communities` e interesses do draft.
+ * As entradas são gravadas na API só após o registo (etapa 6), quando existe JWT.
  */
 export function OnboardingStepCommunities() {
   const { draft, updateDraft } = useOnboardingDraftContext();
   const { goNext } = useOnboardingNavigation();
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
 
   const joinedIds = new Set(draft.joinedCommunityIds ?? []);
+  const interestsKey = (draft.interestIds ?? []).slice().sort().join(",");
 
-  const communities = useMemo(() => {
-    const ids = draft.interestIds ?? [];
-    return getRecommendedCommunitiesForOnboarding(ids, 8);
-  }, [draft.interestIds]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoadState({ status: "loading" });
+    fetchOnboardingCommunitySuggestions(draft.interestIds ?? [], 8)
+      .then((communities) => {
+        if (!cancelled) setLoadState({ status: "ok", communities });
+      })
+      .catch(() => {
+        if (!cancelled) setLoadState({ status: "error" });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [interestsKey]);
 
   if (!draft.account) {
     return <Navigate to="/auth/onboarding/1" replace />;
@@ -35,15 +49,7 @@ export function OnboardingStepCommunities() {
     updateDraft({ joinedCommunityIds: [...next] });
   };
 
-  const handleContinue = async () => {
-    setIsSyncing(true);
-    try {
-      await mockPersistCommunityJoins([...joinedIds]);
-      goNext();
-    } finally {
-      setIsSyncing(false);
-    }
-  };
+  const communities = loadState.status === "ok" ? loadState.communities : [];
 
   return (
     <div>
@@ -55,11 +61,32 @@ export function OnboardingStepCommunities() {
       <OnboardingStepHeader
         icon={Compass}
         title="Comunidades para entrar"
-        lead="Combinamos estes espaços com o que você marcou. Toque para entrar ou sair — você ainda explora tudo depois no app."
+        lead="Combinamos estes espaços com o que você marcou e com as comunidades reais da Woody. Toque para escolher — ao concluir o cadastro, entramos por você nas públicas e pedimos acesso nas privadas."
         trustNote="Participar é sempre da sua escolha. Nada aqui é automático sem o seu toque."
       />
 
-      {communities.length === 0 ? (
+      {loadState.status === "loading" ? (
+        <p
+          className="rounded-2xl border border-white/12 bg-[var(--auth-panel-beige)]/[0.05] px-5 py-10 text-center text-sm text-[var(--auth-text-on-maroon)]/80"
+          role="status"
+        >
+          A carregar comunidades…
+        </p>
+      ) : loadState.status === "error" ? (
+        <div
+          className="flex flex-col items-center gap-3 rounded-2xl border border-white/12 bg-[var(--auth-panel-beige)]/[0.05] px-5 py-10 text-center"
+          role="alert"
+        >
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/10 text-[var(--auth-text-on-maroon)]/75">
+            <Compass className="size-6" aria-hidden />
+          </div>
+          <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]/90">Não foi possível carregar as comunidades</p>
+          <p className="text-xs text-[var(--auth-text-on-maroon)]/65 max-w-sm leading-relaxed">
+            Verifique a ligação à API e tente voltar a esta etapa. Pode continuar e explorar comunidades depois no
+            menu.
+          </p>
+        </div>
+      ) : communities.length === 0 ? (
         <div
           className="flex flex-col items-center gap-3 rounded-2xl border border-white/12 bg-[var(--auth-panel-beige)]/[0.05] px-5 py-10 text-center"
           role="status"
@@ -67,22 +94,17 @@ export function OnboardingStepCommunities() {
           <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/10 text-[var(--auth-text-on-maroon)]/75">
             <Compass className="size-6" aria-hidden />
           </div>
-          <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]/90">Nada por aqui ainda</p>
+          <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]/90">Nenhuma comunidade na base ainda</p>
           <p className="text-xs text-[var(--auth-text-on-maroon)]/65 max-w-sm leading-relaxed">
-            Não encontramos sugestões neste mock. Avance para finalizar — em produção a API devolveria comunidades
-            alinhadas aos seus interesses.
+            Avance para finalizar — quando houver grupos na plataforma, eles aparecerão aqui ou na lista completa de
+            comunidades.
           </p>
         </div>
       ) : (
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pb-1">
           {communities.map((c) => (
             <li key={c.id} className="min-w-0">
-              <OnboardingCommunityToggleCard
-                community={c}
-                joined={joinedIds.has(c.id)}
-                onToggle={() => toggle(c.id)}
-                disabled={isSyncing}
-              />
+              <OnboardingCommunityToggleCard community={c} joined={joinedIds.has(c.id)} onToggle={() => toggle(c.id)} />
             </li>
           ))}
         </ul>
@@ -96,14 +118,8 @@ export function OnboardingStepCommunities() {
 
       <div className={onboardingStyles.footerRow}>
         <span />
-        <button
-          type="button"
-          onClick={() => void handleContinue()}
-          disabled={isSyncing}
-          className={onboardingStyles.primaryBtn}
-          aria-busy={isSyncing}
-        >
-          {isSyncing ? "Salvando…" : "Continuar"}
+        <button type="button" onClick={() => goNext()} className={onboardingStyles.primaryBtn}>
+          Continuar
         </button>
       </div>
     </div>

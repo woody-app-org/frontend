@@ -29,7 +29,7 @@ export async function mockPersistInterests(
 }
 
 /**
- * Simula joins em comunidades. Substituir por chamadas `POST /communities/:id/join` ou batch.
+ * @deprecated O onboarding usa `persistOnboardingCommunityJoins` após o registo.
  */
 export async function mockPersistCommunityJoins(
   _communityIds: string[],

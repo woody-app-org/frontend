@@ -4,14 +4,23 @@ import { AUTH_TOKEN_KEY } from "@/features/auth/constants";
 /**
  * Base da API: sempre termina em `/api` (prefixo dos controllers ASP.NET).
  * Se `VITE_API_BASE_URL` for só o host (ex. Railway sem `/api`), acrescenta `/api`.
+ *
+ * Em `vite` com modo development, o default é HTTP na porta do Kestrel (5000) para evitar
+ * pedidos HTTPS com certificado de dev não confiável a partir de http://localhost:5173.
  */
 function resolveApiBaseUrl(): string {
   const raw = import.meta.env.VITE_API_BASE_URL?.toString().trim();
-  const fallback = "http://localhost:5000/api";
-  if (!raw) return fallback;
-  const noTrail = raw.replace(/\/+$/, "");
-  if (noTrail.endsWith("/api")) return noTrail;
-  return `${noTrail}/api`;
+  if (raw) {
+    const noTrail = raw.replace(/\/+$/, "");
+    if (noTrail.endsWith("/api")) return noTrail;
+    return `${noTrail}/api`;
+  }
+  if (import.meta.env.DEV) {
+    return "http://localhost:5000/api";
+  }
+  throw new Error(
+    "VITE_API_BASE_URL não definido. Configure no painel de deploy (build) ou em .env.production."
+  );
 }
 
 const baseURL = resolveApiBaseUrl();
