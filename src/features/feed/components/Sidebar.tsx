@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Search, UsersRound } from "lucide-react";
+import { Home, PenLine, Search, UsersRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 
@@ -7,10 +7,18 @@ export interface SidebarProps {
   className?: string;
   onOpenSearch?: () => void;
   isSearchOpen?: boolean;
+  onOpenCreatePost?: () => void;
+  isCreatePostOpen?: boolean;
 }
 
 /** Navegação macro do app: apenas áreas principais (ex.: Home). Filtros do feed ficam na área central. */
-export function Sidebar({ className, onOpenSearch, isSearchOpen }: SidebarProps) {
+export function Sidebar({
+  className,
+  onOpenSearch,
+  isSearchOpen,
+  onOpenCreatePost,
+  isCreatePostOpen,
+}: SidebarProps) {
   return (
     <aside
       className={cn(
@@ -55,6 +63,23 @@ export function Sidebar({ className, onOpenSearch, isSearchOpen }: SidebarProps)
           <UsersRound className="size-5 shrink-0" aria-hidden />
           Comunidades
         </NavLink>
+
+        <button
+          type="button"
+          onClick={onOpenCreatePost}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-[background-color,color,box-shadow] duration-200",
+            woodyFocus.ringSidebar,
+            isCreatePostOpen
+              ? "bg-[var(--woody-item-active)] text-white font-semibold shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+              : "text-[var(--woody-sidebar-text-inactive)] font-medium hover:bg-[var(--woody-item-hover)]"
+          )}
+          aria-label="Nova publicação"
+          aria-pressed={!!isCreatePostOpen}
+        >
+          <PenLine className="size-5 shrink-0" aria-hidden />
+          Criar publicação
+        </button>
 
         <button
           type="button"

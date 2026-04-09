@@ -131,6 +131,8 @@ export interface Post {
   title: string;
   content: string;
   imageUrl: string | null;
+  /** Galeria quando a API devolve várias URLs (ex.: `post_images`). */
+  imageUrls?: string[];
   /** Tags opcionais no nível do post (além do contexto da comunidade). */
   tags?: string[];
   createdAt: string;

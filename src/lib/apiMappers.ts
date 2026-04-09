@@ -54,6 +54,9 @@ export function mapCommunityFromApi(raw: ApiRecord): Community {
 export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
   const author = mapUserFromApi(raw.author ?? {});
   const comm = raw.community ? mapCommunityPreviewFromApi(raw.community) : undefined;
+  const imageUrls = Array.isArray(raw.imageUrls) ? raw.imageUrls.map((u: unknown) => String(u)) : undefined;
+  const primaryImage =
+    imageUrls && imageUrls.length > 0 ? imageUrls[0] : (raw.imageUrl != null ? String(raw.imageUrl) : null);
   return {
     id: asString(raw.id),
     communityId: asString(raw.communityId),
@@ -61,7 +64,8 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
     author,
     title: asString(raw.title),
     content: asString(raw.content),
-    imageUrl: raw.imageUrl ?? null,
+    imageUrl: primaryImage || null,
+    imageUrls: imageUrls && imageUrls.length > 0 ? imageUrls : undefined,
     tags: Array.isArray(raw.tags) ? raw.tags.map((t: unknown) => String(t)) : undefined,
     createdAt: formatDisplayDateTimeFromIso(asString(raw.createdAt)),
     updatedAt: raw.updatedAt ?? null,
