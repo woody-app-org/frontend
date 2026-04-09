@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { Home, PenLine, Search, UsersRound } from "lucide-react";
+import catIllustration from "@/assets/cat.svg";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 
@@ -99,17 +100,20 @@ export function Sidebar({
         </button>
       </nav>
 
-      <div className="p-4 flex justify-center opacity-80 shrink-0">
-        <svg width="120" height="80" viewBox="0 0 120 80" fill="none" className="opacity-80" aria-hidden>
-          <rect x="10" y="45" width="100" height="8" rx="2" fill="#5D4E37" />
-          <ellipse cx="35" cy="38" rx="12" ry="10" fill="#1a1a1a" />
-          <path d="M25 38 L30 35 L35 38 L40 35 L45 38" stroke="#1a1a1a" strokeWidth="2" fill="none" />
-          <circle cx="38" cy="36" r="1.5" fill="#fff" />
-          <rect x="55" y="52" width="12" height="18" rx="2" fill="#5D4E37" />
-          <path d="M58 52 L66 42 L74 52 Z" fill="#2D5A27" />
-          <rect x="75" y="52" width="12" height="18" rx="2" fill="#5D4E37" />
-          <path d="M78 52 L86 42 L94 52 Z" fill="#2D5A27" />
-        </svg>
+      <div className="flex shrink-0 justify-center p-4 opacity-90" aria-hidden>
+        <div className="relative flex h-[96px] w-[156px] items-end justify-center">
+          <img
+            src={catIllustration}
+            alt=""
+            className="relative z-[1] max-h-[82px] w-auto max-w-[138px] translate-y-1 object-contain object-bottom select-none"
+            draggable={false}
+          />
+          {/* Galho: sai da esquerda do bloco; ponta só arredondada à direita */}
+          <div
+            className="absolute bottom-5 -left-1 z-0 h-[14px] w-[calc(100%+0.5rem)] max-w-[170px] rounded-r-full rounded-l-full bg-[#5D4E37] shadow-[inset_0_-2px_0_rgba(0,0,0,0.14)]"
+            aria-hidden
+          />
+        </div>
       </div>
     </aside>
   );
