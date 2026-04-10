@@ -25,17 +25,23 @@ export function OnboardingStepCommunities() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoadState({ status: "loading" });
-    fetchOnboardingCommunitySuggestions(draft.interestIds ?? [], 8)
-      .then((communities) => {
+    const interestIds = draft.interestIds ?? [];
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setLoadState({ status: "loading" });
+      try {
+        const communities = await fetchOnboardingCommunitySuggestions(interestIds, 8);
         if (!cancelled) setLoadState({ status: "ok", communities });
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setLoadState({ status: "error" });
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };
+    // interestsKey serializa draft.interestIds (evita re-fetch só por nova referência de array).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [interestsKey]);
 
   if (!draft.account) {
