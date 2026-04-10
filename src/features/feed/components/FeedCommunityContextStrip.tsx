@@ -44,7 +44,7 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
   return (
     <section
       className={cn(
-        "rounded-2xl border border-[var(--woody-accent)]/12 bg-[var(--woody-card)]/60 px-3 py-3 sm:px-4",
+        "rounded-2xl border border-[var(--woody-accent)]/16 bg-[var(--woody-card)]/95 px-3 py-3 sm:px-4 shadow-[0_1px_3px_rgba(58,45,36,0.05)]",
         className
       )}
       aria-label="Comunidades em contexto"

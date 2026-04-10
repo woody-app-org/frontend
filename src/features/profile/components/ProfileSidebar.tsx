@@ -8,7 +8,7 @@ import type { UserProfile } from "../types";
 const styles = {
   wrapper: "hidden md:flex flex-col w-full min-w-0 space-y-4",
   card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)]",
+    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(58,45,36,0.06)]",
   cardHeader: "px-4 pt-4 pb-1",
   title: "text-base font-bold text-[var(--woody-text)]",
   cardContent: "p-4 pt-0",

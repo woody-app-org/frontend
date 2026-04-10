@@ -7,6 +7,9 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { cn } from "@/lib/utils";
 import { SearchModal } from "@/features/search/components/SearchModal";
 import { UserAccountMenu } from "./UserAccountMenu";
+import { CreatePostComposerProvider, useCreatePostComposer } from "../context/CreatePostComposerContext";
+import { CreatePostModal } from "./CreatePostModal";
+import logoWordmark from "@/assets/logo-black.svg";
 
 export interface FeedLayoutProps {
   children: React.ReactNode;
@@ -38,16 +41,16 @@ const SCROLL_WRAPPER =
 
 const styles = {
   header:
-    "sticky top-0 z-50 w-full bg-[var(--woody-header)] text-white shrink-0",
+    "sticky top-0 z-50 w-full bg-[var(--woody-header)] text-[var(--woody-text)] border-b border-[var(--woody-divider)] shadow-[0_1px_0_rgba(58,45,36,0.04)] shrink-0",
   headerInner:
     "flex items-center justify-between h-14 md:h-16 gap-3 md:gap-4",
   logoArea:
-    "flex items-center shrink-0 h-full min-h-14 md:min-h-16 md:w-[260px] md:bg-[var(--woody-header-logo)]",
-  logo: "flex items-center shrink-0 md:justify-start",
-  logoText: "text-2xl font-bold tracking-tight text-white select-none",
+    "flex items-center justify-center shrink-0 h-full min-h-14 md:min-h-16 md:w-[260px] md:bg-[var(--woody-header-logo)] md:border-r md:border-[var(--woody-divider)]",
+  logo:
+    "flex max-w-full shrink-0 items-center justify-center px-3 md:w-full md:px-4 outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-header-logo)]",
   right: "flex items-center gap-1 md:gap-2 shrink-0 md:w-[320px] md:justify-end",
   iconBtn:
-    "size-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0",
+    "size-10 flex items-center justify-center rounded-full text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 transition-colors shrink-0",
   iconBtnHidden: "hidden md:flex",
   bellWrap: "relative",
   badge: "absolute top-1.5 right-1.5 size-1.5 rounded-full bg-amber-400",
@@ -76,8 +79,16 @@ function isInsideDialogLayer(node: EventTarget | null): boolean {
   );
 }
 
-export function FeedLayout({ children, className, showRightPanel = true }: FeedLayoutProps) {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+function FeedLayoutShell({
+  children,
+  className,
+  showRightPanel,
+  isSearchOpen,
+  setIsSearchOpen,
+}: FeedLayoutProps & {
+  isSearchOpen: boolean;
+  setIsSearchOpen: (v: boolean) => void;
+}) {
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
 
   // Só no desktop: trava scroll do body para o wrapper interno controlar (mobile usa scroll nativo).
@@ -155,10 +166,11 @@ export function FeedLayout({ children, className, showRightPanel = true }: FeedL
   }, []);
 
   return (
-    <div className={cn(LAYOUT_ROOT, className)}>
-      <div ref={scrollWrapperRef} className={cn(SCROLL_WRAPPER)}>
-        <div className={cn(LAYOUT_CONTAINER, "flex flex-col")}>
-          <header className={styles.header}>
+    <CreatePostComposerProvider>
+      <div className={cn(LAYOUT_ROOT, className)}>
+        <div ref={scrollWrapperRef} className={cn(SCROLL_WRAPPER)}>
+          <div className={cn(LAYOUT_CONTAINER, "flex flex-col")}>
+            <header className={styles.header}>
           <div className={styles.headerInner}>
             <div className={styles.logoArea}>
               <Link
@@ -166,7 +178,14 @@ export function FeedLayout({ children, className, showRightPanel = true }: FeedL
                 className={styles.logo}
                 aria-label="Woody - Início"
               >
-                <span className={styles.logoText}>W</span>
+                <img
+                  src={logoWordmark}
+                  alt=""
+                  width={399}
+                  height={83}
+                  decoding="async"
+                  className="h-7 w-auto max-w-[min(220px,calc(100vw-10rem))] object-contain object-center md:max-w-[min(220px,100%)] md:h-8 select-none"
+                />
               </Link>
             </div>
 
@@ -199,10 +218,10 @@ export function FeedLayout({ children, className, showRightPanel = true }: FeedL
                 : "md:grid-cols-[250px_minmax(0,1fr)]"
             )}
           >
-            <Sidebar
+            <FeedLayoutSidebarBridge
               className="md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:self-start"
-              onOpenSearch={() => setIsSearchOpen(true)}
               isSearchOpen={isSearchOpen}
+              setIsSearchOpen={setIsSearchOpen}
             />
             <main className="min-w-0 flex flex-col pb-16 md:pb-0 pt-4 md:pt-5" aria-label="Feed principal">
               {children}
@@ -217,6 +236,46 @@ export function FeedLayout({ children, className, showRightPanel = true }: FeedL
       <MobileBottomNav onOpenSearch={() => setIsSearchOpen(true)} isSearchOpen={isSearchOpen} />
 
       <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
-    </div>
+      <CreatePostModal />
+      </div>
+    </CreatePostComposerProvider>
+  );
+}
+
+/** Sidebar dentro do provider para aceder a `openCreatePostModal`. */
+function FeedLayoutSidebarBridge({
+  className,
+  isSearchOpen,
+  setIsSearchOpen,
+}: {
+  className?: string;
+  isSearchOpen: boolean;
+  setIsSearchOpen: (v: boolean) => void;
+}) {
+  const { openCreatePostModal, createPostOpen } = useCreatePostComposer();
+
+  return (
+    <Sidebar
+      className={className}
+      onOpenSearch={() => setIsSearchOpen(true)}
+      isSearchOpen={isSearchOpen}
+      onOpenCreatePost={openCreatePostModal}
+      isCreatePostOpen={createPostOpen}
+    />
+  );
+}
+
+export function FeedLayout({ children, className, showRightPanel = true }: FeedLayoutProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  return (
+    <FeedLayoutShell
+      className={className}
+      showRightPanel={showRightPanel}
+      isSearchOpen={isSearchOpen}
+      setIsSearchOpen={setIsSearchOpen}
+    >
+      {children}
+    </FeedLayoutShell>
   );
 }

@@ -23,6 +23,7 @@ import {
 import type { CommunityMembershipActionResult } from "../services/communityMembership.service";
 import { CommunityHero } from "../components/CommunityHero";
 import { CommunityFeed } from "../components/CommunityFeed";
+import { useCreatePostComposer } from "@/features/feed/context/CreatePostComposerContext";
 import { CommunityAboutCard } from "../components/CommunityAboutCard";
 import { CommunityTopicsCard } from "../components/CommunityTopicsCard";
 import { CommunityRulesQuickCard } from "../components/CommunityRulesQuickCard";
@@ -61,6 +62,7 @@ function CommunityDetailLoaded({
   setJoinPending,
 }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
+  const { setPageComposerCommunity } = useCreatePostComposer();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const [ctaBusy, setCtaBusy] = useState(false);
@@ -71,6 +73,12 @@ function CommunityDetailLoaded({
   const isAdminRole = viewerMembershipRole === "admin";
   const isMember = viewerIsMember;
   const canMod = isOwner || isAdminRole;
+
+  useEffect(() => {
+    if (isMember) setPageComposerCommunity(community);
+    else setPageComposerCommunity(null);
+    return () => setPageComposerCommunity(null);
+  }, [community, isMember, setPageComposerCommunity]);
 
   const membershipStatus = joinPending && !isMember ? "pending" : isMember ? "active" : "none";
 
@@ -210,22 +218,24 @@ function CommunityDetailLoaded({
           "2xl:grid-cols-[minmax(28rem,1fr)_22rem] 2xl:gap-x-12"
         )}
       >
-        <CommunityFeed
-          community={community}
-          posts={paginatedPosts}
-          totalPostCount={totalPosts}
-          postsPerPage={COMMUNITY_FEED_PAGE_SIZE}
-          page={feedPage}
-          hasNextPage={hasNextFeedPage}
-          hasPreviousPage={hasPreviousFeedPage}
-          onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
-          onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
-          className="order-3 min-w-0 xl:order-1"
-        />
+        <div className="order-2 flex min-w-0 flex-col gap-8 md:gap-10 xl:order-1">
+          <CommunityFeed
+            community={community}
+            posts={paginatedPosts}
+            totalPostCount={totalPosts}
+            postsPerPage={COMMUNITY_FEED_PAGE_SIZE}
+            page={feedPage}
+            hasNextPage={hasNextFeedPage}
+            hasPreviousPage={hasPreviousFeedPage}
+            onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
+            onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
+            className="min-w-0"
+          />
+        </div>
 
         <aside
           className={cn(
-            "order-2 flex min-w-0 flex-col gap-5 md:gap-6",
+            "order-3 flex min-w-0 flex-col gap-5 md:gap-6",
             "xl:order-2 xl:self-start"
           )}
         >
@@ -244,11 +254,12 @@ function CommunityDetailLoaded({
 }
 
 /**
- * Detalhe da comunidade por slug (`/communities/:communitySlug`).
+ * Miolo da página: tem de renderizar-se **dentro** de `FeedLayout` (provider do compositor).
  */
-export function CommunityDetailPage() {
+function CommunityDetailPageContent() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
   const viewerId = useViewerId();
+  const { registerCommunityRefresh } = useCreatePostComposer();
   const [revision, setRevision] = useState(0);
   const [loadState, setLoadState] = useState<"loading" | "ok" | "error">("loading");
   const [community, setCommunity] = useState<Community | null>(null);
@@ -261,6 +272,11 @@ export function CommunityDetailPage() {
   const [joinPending, setJoinPending] = useState(false);
 
   const bump = useCallback(() => setRevision((n) => n + 1), []);
+
+  useEffect(() => {
+    registerCommunityRefresh(bump);
+    return () => registerCommunityRefresh(null);
+  }, [bump, registerCommunityRefresh]);
 
   useEffect(() => {
     if (!communitySlug) {
@@ -322,80 +338,81 @@ export function CommunityDetailPage() {
 
   if (!communitySlug) {
     return (
-      <FeedLayout showRightPanel={false}>
-        <div
-          className={cn(
-            "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
-            woodyLayout.pagePadWide
-          )}
-        >
-          <CommunityNotFound />
-        </div>
-      </FeedLayout>
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
+          woodyLayout.pagePadWide
+        )}
+      >
+        <CommunityNotFound />
+      </div>
     );
   }
 
   if (loadState === "loading") {
     return (
-      <FeedLayout showRightPanel={false}>
-        <div
-          className={cn(
-            "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
-            woodyLayout.pagePadWide
-          )}
-        >
-          A carregar comunidade…
-        </div>
-      </FeedLayout>
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
+          woodyLayout.pagePadWide
+        )}
+      >
+        A carregar comunidade…
+      </div>
     );
   }
 
   if (loadState === "error") {
     return (
-      <FeedLayout showRightPanel={false}>
-        <div
-          className={cn(
-            "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
-            woodyLayout.pagePadWide
-          )}
-        >
-          Não foi possível carregar esta comunidade.
-        </div>
-      </FeedLayout>
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
+          woodyLayout.pagePadWide
+        )}
+      >
+        Não foi possível carregar esta comunidade.
+      </div>
     );
   }
 
   if (!community) {
     return (
-      <FeedLayout showRightPanel={false}>
-        <div
-          className={cn(
-            "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
-            woodyLayout.pagePadWide
-          )}
-        >
-          <CommunityNotFound />
-        </div>
-      </FeedLayout>
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
+          woodyLayout.pagePadWide
+        )}
+      >
+        <CommunityNotFound />
+      </div>
     );
   }
 
   return (
+    <CommunityDetailLoaded
+      key={community.id}
+      community={community}
+      posts={posts}
+      previewMembers={previewMembers}
+      managerMembers={managerMembers}
+      viewerMembershipRole={viewerMembershipRole}
+      viewerIsMember={viewerIsMember}
+      joinRows={joinRows}
+      dataRevision={revision}
+      onDataChanged={bump}
+      joinPending={joinPending}
+      setJoinPending={setJoinPending}
+    />
+  );
+}
+
+/**
+ * Detalhe da comunidade por slug (`/communities/:communitySlug`).
+ */
+export function CommunityDetailPage() {
+  return (
     <FeedLayout showRightPanel={false}>
-      <CommunityDetailLoaded
-        key={community.id}
-        community={community}
-        posts={posts}
-        previewMembers={previewMembers}
-        managerMembers={managerMembers}
-        viewerMembershipRole={viewerMembershipRole}
-        viewerIsMember={viewerIsMember}
-        joinRows={joinRows}
-        dataRevision={revision}
-        onDataChanged={bump}
-        joinPending={joinPending}
-        setJoinPending={setJoinPending}
-      />
+      <CommunityDetailPageContent />
     </FeedLayout>
   );
 }

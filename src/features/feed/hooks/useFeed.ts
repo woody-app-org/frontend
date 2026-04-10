@@ -24,6 +24,11 @@ interface UseFeedReturn {
   nextPage: () => void;
   previousPage: () => void;
   refetch: () => void;
+  /**
+   * Após criar publicação: se o feed não está na página 1, volta à página 1 (recarrega do servidor).
+   * Na página 1, insere o post no topo sem duplicar.
+   */
+  registerNewPostFromComposer: (post: Post) => void;
   togglePostLike: (postId: string) => Promise<void>;
   isPostLikePending: (postId: string) => boolean;
 }
@@ -56,6 +61,8 @@ export function useFeed(): UseFeedReturn {
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const [pendingLikePostIds, setPendingLikePostIds] = useState<Set<string>>(new Set());
   const isFirstLoadRef = useRef(true);
+  const pageRef = useRef(page);
+  pageRef.current = page;
 
   const fetchFeed = useCallback(async () => {
     void userDisplayRev;
@@ -100,6 +107,17 @@ export function useFeed(): UseFeedReturn {
   const refetch = useCallback(() => {
     fetchFeed();
   }, [fetchFeed]);
+
+  const registerNewPostFromComposer = useCallback((post: Post) => {
+    if (pageRef.current !== 1) {
+      setPage(1);
+      return;
+    }
+    setPosts((prev) => {
+      if (prev.some((p) => p.id === post.id)) return prev;
+      return [post, ...prev];
+    });
+  }, []);
 
   const togglePostLike = useCallback(
     async (postId: string) => {
@@ -182,6 +200,7 @@ export function useFeed(): UseFeedReturn {
     nextPage,
     previousPage,
     refetch,
+    registerNewPostFromComposer,
     togglePostLike,
     isPostLikePending,
   };

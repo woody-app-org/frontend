@@ -16,12 +16,12 @@ import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 
 const triggerClass =
-  "size-11 md:size-10 flex items-center justify-center rounded-full hover:bg-white/10 overflow-hidden ring-1 ring-white/15 shrink-0";
+  "size-11 md:size-10 flex items-center justify-center rounded-full hover:bg-[var(--woody-nav)]/10 overflow-hidden ring-1 ring-[var(--woody-divider)] shrink-0";
 
 const avatarImgClass = "size-8 rounded-full object-cover md:size-8";
 
 export interface UserAccountMenuProps {
-  /** Estilo do botão no header (tema escuro). */
+  /** Estilo do botão no header (tema claro). */
   className?: string;
 }
 
@@ -41,7 +41,7 @@ export function UserAccountMenu({ className }: UserAccountMenuProps) {
         className={cn(triggerClass, className)}
         aria-label="Entrar"
       >
-        <span className="flex size-8 items-center justify-center rounded-full bg-white/15 text-white">
+        <span className="flex size-8 items-center justify-center rounded-full bg-[var(--woody-nav)]/12 text-[var(--woody-nav)]">
           <User className="size-[1.35rem]" aria-hidden />
         </span>
       </Link>
@@ -55,14 +55,14 @@ export function UserAccountMenu({ className }: UserAccountMenuProps) {
           <Button
             type="button"
             variant="ghost"
-            className={cn(triggerClass, "p-0 text-white hover:bg-white/10", woodyFocus.ring, className)}
+            className={cn(triggerClass, "p-0 text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10", woodyFocus.ring, className)}
             aria-label="Menu da conta"
             aria-haspopup="menu"
           >
             {user.avatarUrl ? (
               <img src={user.avatarUrl} alt="" className={avatarImgClass} />
             ) : (
-              <span className="flex size-8 items-center justify-center rounded-full bg-white/15 text-white">
+              <span className="flex size-8 items-center justify-center rounded-full bg-[var(--woody-nav)]/12 text-[var(--woody-nav)]">
                 <User className="size-[1.35rem]" aria-hidden />
               </span>
             )}

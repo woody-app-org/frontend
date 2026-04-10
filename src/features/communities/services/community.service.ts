@@ -73,6 +73,27 @@ export async function fetchMyCommunityIdSet(): Promise<Set<string>> {
   }
 }
 
+/** Comunidades em que a utilizadora é membro ativa (para selector do composer). */
+export async function fetchMyCommunitiesForComposer(): Promise<Community[]> {
+  const idSet = await fetchMyCommunityIdSet();
+  if (idSet.size === 0) return [];
+
+  const rows = await Promise.all(
+    [...idSet].map(async (id) => {
+      try {
+        const { data } = await api.get(`/communities/${encodeURIComponent(id)}`);
+        return mapCommunityFromApi(data as Record<string, unknown>);
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  return rows
+    .filter((c): c is Community => c != null)
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
+}
+
 export async function fetchCommunityPosts(
   communityId: string,
   viewerId: string,
