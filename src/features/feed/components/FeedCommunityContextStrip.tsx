@@ -16,6 +16,7 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
   const [mode, setMode] = useState<"mine" | "explore" | "empty" | "loading">("loading");
 
   const load = useCallback(async () => {
+    await Promise.resolve();
     setMode("loading");
     try {
       const all = await fetchAllCommunities();
@@ -38,7 +39,9 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
   }, [isAuthenticated]);
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, [load]);
 
   return (

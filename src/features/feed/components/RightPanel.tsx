@@ -76,6 +76,7 @@ export function RightPanel({ className }: RightPanelProps) {
   const [loadState, setLoadState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   const load = useCallback(async () => {
+    await Promise.resolve();
     if (!isAuthenticated) {
       setSuggestions([]);
       setFollowing([]);
@@ -96,7 +97,9 @@ export function RightPanel({ className }: RightPanelProps) {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, [load]);
 
   const hasSuggestions = suggestions.length > 0;

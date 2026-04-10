@@ -78,8 +78,12 @@ function FeedPageContent() {
     if (!st?.createdPostTitle) return;
     const t = st.createdPostTitle.trim();
     const short = t.length > 56 ? `${t.slice(0, 53)}…` : t;
-    setPostCreatedBanner(short ? `«${short}» foi publicada com sucesso.` : "Publicação criada com sucesso.");
-    navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
+    const path = `${location.pathname}${location.search}`;
+    void (async () => {
+      await Promise.resolve();
+      setPostCreatedBanner(short ? `«${short}» foi publicada com sucesso.` : "Publicação criada com sucesso.");
+      navigate(path, { replace: true, state: {} });
+    })();
   }, [location.pathname, location.search, location.state, navigate]);
 
   useEffect(() => {

@@ -74,6 +74,7 @@ export function ProfileCommunitiesSection({
   const [loadState, setLoadState] = useState<"loading" | "ok" | "error">("loading");
 
   const load = useCallback(async () => {
+    await Promise.resolve();
     setLoadState("loading");
     try {
       const data = await fetchUserCommunityMemberships(userId);
@@ -86,7 +87,9 @@ export function ProfileCommunitiesSection({
   }, [userId]);
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => {
+      void load();
+    });
   }, [load]);
 
   const blurb = isOwnProfile
