@@ -94,6 +94,13 @@ export function PostCard({
   const openPost = () => navigate(`/posts/${post.id}`);
   const openPostComments = () => navigate(`/posts/${post.id}?focus=comments`);
 
+  const imageGallery =
+    post.imageUrls && post.imageUrls.length > 0
+      ? post.imageUrls
+      : post.imageUrl
+        ? [post.imageUrl]
+        : [];
+
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
     if (target.closest("a,button,[data-post-ignore-open='true']")) return;
@@ -180,11 +187,30 @@ export function PostCard({
         <p className={cn(styles.content, (post.title || post.tags?.length) && "mt-2")}>
           {post.content}
         </p>
-        {post.imageUrl && (
+        {imageGallery.length === 1 ? (
           <div className={styles.imageWrap}>
-            <img src={post.imageUrl} alt="" className={styles.image} />
+            <img src={imageGallery[0]} alt="" className={styles.image} />
           </div>
-        )}
+        ) : imageGallery.length > 1 ? (
+          <div
+            className="mt-3 flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
+            data-post-ignore-open="true"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="list"
+            aria-label="Imagens da publicação"
+          >
+            {imageGallery.map((src, idx) => (
+              <div
+                key={`${idx}-${src.slice(0, 48)}`}
+                role="listitem"
+                className={cn(styles.imageWrap, "min-w-[min(100%,280px)] shrink-0 snap-center max-w-[85vw]")}
+              >
+                <img src={src} alt="" className={styles.image} />
+              </div>
+            ))}
+          </div>
+        ) : null}
         <div className={styles.footer}>
           <button
             type="button"

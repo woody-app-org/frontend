@@ -1,5 +1,6 @@
 export { FeedPage } from "./pages/FeedPage";
 export { PostDetailPage } from "./pages/PostDetailPage";
+export { CreatePostPage } from "./pages/CreatePostPage";
 export { PostCard } from "./components/PostCard";
 export { PostOverflowMenu } from "./components/PostOverflowMenu";
 export { EditPostDialog } from "./components/EditPostDialog";

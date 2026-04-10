@@ -56,15 +56,36 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+/** Extrai texto útil de corpos JSON da API (incl. ProblemDetails do ASP.NET). */
+export function getMessageFromApiResponseData(data: unknown): string | null {
+  if (data == null || typeof data !== "object") return null;
+  const o = data as Record<string, unknown>;
+  if (typeof o.error === "string" && o.error.trim()) return o.error.trim();
+  if (typeof o.detail === "string" && o.detail.trim()) return o.detail.trim();
+  if (typeof o.message === "string" && o.message.trim()) return o.message.trim();
+  if (typeof o.title === "string" && o.title.trim()) {
+    const t = o.title.trim();
+    if (t !== "Bad Request" && t !== "Not Found" && t !== "Forbidden") return t;
+  }
+  const errors = o.errors;
+  if (errors && typeof errors === "object" && errors !== null) {
+    for (const key of Object.keys(errors as Record<string, unknown>)) {
+      const arr = (errors as Record<string, unknown[]>)[key];
+      if (Array.isArray(arr) && arr[0] != null && typeof arr[0] === "string") return String(arr[0]);
+    }
+  }
+  return null;
+}
+
 /** Extrai mensagem de erro de resposta Axios ou genérica. */
 export function getApiErrorMessage(err: unknown, fallback = "Algo deu errado."): string {
   if (axios.isAxiosError(err)) {
-    const data = err.response?.data as { error?: string; message?: string } | undefined;
-    if (data?.error && typeof data.error === "string") return data.error;
-    if (data?.message && typeof data.message === "string") return data.message;
+    const fromBody = getMessageFromApiResponseData(err.response?.data);
+    if (fromBody) return fromBody;
     if (err.response?.status === 401) return "Sessão inválida ou credenciais incorretas.";
     if (err.response?.status === 403) return "Sem permissão para esta ação.";
     if (err.response?.status === 404) return "Recurso não encontrado.";
+    if (err.response?.status === 400) return "Pedido inválido. Verifica os dados enviados.";
   }
   if (err instanceof Error) return err.message;
   return fallback;

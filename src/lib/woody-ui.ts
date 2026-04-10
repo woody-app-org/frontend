@@ -7,17 +7,17 @@ import { cn } from "@/lib/utils";
 
 export const woodySurface = {
   card: cn(
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)]",
-    "shadow-[0_1px_3px_rgba(92,58,59,0.06)]"
+    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
+    "shadow-[0_1px_3px_rgba(58,45,36,0.06)]"
   ),
   /** Heróis / destaques com elevação um pouco maior */
   cardHero: cn(
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)]",
-    "shadow-[0_2px_10px_rgba(92,58,59,0.08)]"
+    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
+    "shadow-[0_2px_10px_rgba(58,45,36,0.07)]"
   ),
   emptyDashed: cn(
-    "rounded-2xl border border-dashed border-[var(--woody-accent)]/28",
-    "bg-[var(--woody-card)]/95 shadow-[0_1px_3px_rgba(92,58,59,0.05)]"
+    "rounded-2xl border border-dashed border-[var(--woody-accent)]/26",
+    "bg-[var(--woody-card)]/95 shadow-[0_1px_3px_rgba(58,45,36,0.04)]"
   ),
 } as const;
 
@@ -25,10 +25,10 @@ export const woodyMotion = {
   /** Cartões clicáveis (ex. CommunityCard). */
   cardHover: cn(
     "transition-[box-shadow,border-color] duration-200 ease-out",
-    "hover:border-[var(--woody-accent)]/30 hover:shadow-[0_6px_22px_rgba(92,58,59,0.09)]"
+    "hover:border-[var(--woody-accent)]/22 hover:shadow-[0_6px_22px_rgba(58,45,36,0.07)]"
   ),
   /** Variação mais suave para listas densas (ex. PostCard). */
-  postCardHover: "transition-shadow duration-200 ease-out hover:shadow-[0_4px_14px_rgba(92,58,59,0.075)]",
+  postCardHover: "transition-shadow duration-200 ease-out hover:shadow-[0_4px_14px_rgba(58,45,36,0.06)]",
 } as const;
 
 export const woodyFocus = {
@@ -37,14 +37,14 @@ export const woodyFocus = {
     "focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-bg)]"
   ),
   ringSidebar: cn(
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/35",
     "focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-sidebar)]"
   ),
 } as const;
 
 export const woodySection = {
   headerRow: "mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-end sm:justify-between sm:gap-4",
-  eyebrow: "mb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[var(--woody-accent)]",
+  eyebrow: "mb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[var(--woody-nav)]/85",
   title: "text-lg font-bold tracking-tight text-[var(--woody-text)] sm:text-xl",
   subtitle: "mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--woody-muted)]",
 } as const;

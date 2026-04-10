@@ -40,7 +40,7 @@ function formatMemberCount(n: number): string {
 
 const shell = cn(
   woodySurface.cardHero,
-  "relative overflow-hidden shadow-[0_8px_28px_rgba(92,58,59,0.09)]"
+  "relative overflow-hidden shadow-[0_8px_28px_rgba(58,45,36,0.08)]"
 );
 
 const styles = {

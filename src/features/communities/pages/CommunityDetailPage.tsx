@@ -7,9 +7,11 @@ import { woodyLayout } from "@/lib/woody-ui";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
 import {
+  fetchAllCommunityMembers,
   fetchCommunityBySlug,
   fetchCommunityJoinRequestRows,
-  fetchCommunityMembers,
+  fetchCommunityMembersPage,
+  fetchMyCommunityMembership,
   fetchCommunityPosts,
   type JoinRequestWithUser,
 } from "../services/community.service";
@@ -21,6 +23,7 @@ import {
 import type { CommunityMembershipActionResult } from "../services/communityMembership.service";
 import { CommunityHero } from "../components/CommunityHero";
 import { CommunityFeed } from "../components/CommunityFeed";
+import { useCreatePostComposer } from "@/features/feed/context/CreatePostComposerContext";
 import { CommunityAboutCard } from "../components/CommunityAboutCard";
 import { CommunityTopicsCard } from "../components/CommunityTopicsCard";
 import { CommunityRulesQuickCard } from "../components/CommunityRulesQuickCard";
@@ -34,7 +37,10 @@ const COMMUNITY_FEED_PAGE_SIZE = 10;
 interface CommunityDetailLoadedProps {
   community: Community;
   posts: Post[];
-  members: CommunityMemberListItem[];
+  previewMembers: CommunityMemberListItem[];
+  managerMembers: CommunityMemberListItem[];
+  viewerMembershipRole: CommunityMemberListItem["role"] | null;
+  viewerIsMember: boolean;
   joinRows: JoinRequestWithUser[];
   dataRevision: number;
   onDataChanged: () => void;
@@ -45,7 +51,10 @@ interface CommunityDetailLoadedProps {
 function CommunityDetailLoaded({
   community,
   posts,
-  members,
+  previewMembers,
+  managerMembers,
+  viewerMembershipRole,
+  viewerIsMember,
   joinRows,
   dataRevision,
   onDataChanged,
@@ -53,17 +62,23 @@ function CommunityDetailLoaded({
   setJoinPending,
 }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
+  const { setPageComposerCommunity } = useCreatePostComposer();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const [ctaBusy, setCtaBusy] = useState(false);
   const [accessNotice, setAccessNotice] = useState<string | null>(null);
   const [feedPage, setFeedPage] = useState(1);
 
-  const myRow = members.find((m) => m.user.id === viewerId);
-  const isMember = Boolean(myRow);
   const isOwner = community.ownerUserId === viewerId;
-  const isAdminRole = myRow?.role === "admin";
+  const isAdminRole = viewerMembershipRole === "admin";
+  const isMember = viewerIsMember;
   const canMod = isOwner || isAdminRole;
+
+  useEffect(() => {
+    if (isMember) setPageComposerCommunity(community);
+    else setPageComposerCommunity(null);
+    return () => setPageComposerCommunity(null);
+  }, [community, isMember, setPageComposerCommunity]);
 
   const membershipStatus = joinPending && !isMember ? "pending" : isMember ? "active" : "none";
 
@@ -191,7 +206,7 @@ function CommunityDetailLoaded({
           actorIsOwner={isOwner}
           listRevision={dataRevision}
           onListChanged={onDataChanged}
-          liveMemberList={members}
+          liveMemberList={managerMembers}
           liveJoinRequestRows={joinRows}
         />
       ) : null}
@@ -203,29 +218,35 @@ function CommunityDetailLoaded({
           "2xl:grid-cols-[minmax(28rem,1fr)_22rem] 2xl:gap-x-12"
         )}
       >
-        <CommunityFeed
-          community={community}
-          posts={paginatedPosts}
-          totalPostCount={totalPosts}
-          postsPerPage={COMMUNITY_FEED_PAGE_SIZE}
-          page={feedPage}
-          hasNextPage={hasNextFeedPage}
-          hasPreviousPage={hasPreviousFeedPage}
-          onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
-          onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
-          className="order-3 min-w-0 xl:order-1"
-        />
+        <div className="order-2 flex min-w-0 flex-col gap-8 md:gap-10 xl:order-1">
+          <CommunityFeed
+            community={community}
+            posts={paginatedPosts}
+            totalPostCount={totalPosts}
+            postsPerPage={COMMUNITY_FEED_PAGE_SIZE}
+            page={feedPage}
+            hasNextPage={hasNextFeedPage}
+            hasPreviousPage={hasPreviousFeedPage}
+            onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
+            onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
+            className="min-w-0"
+          />
+        </div>
 
         <aside
           className={cn(
-            "order-2 flex min-w-0 flex-col gap-5 md:gap-6",
+            "order-3 flex min-w-0 flex-col gap-5 md:gap-6",
             "xl:order-2 xl:self-start"
           )}
         >
           <CommunityAboutCard community={community} memberCount={memberCount} />
           <CommunityTopicsCard tags={community.tags} />
           <CommunityRulesQuickCard community={community} />
-          <CommunityMembersPreview members={members} />
+          <CommunityMembersPreview
+            communityId={community.id}
+            memberCount={memberCount}
+            members={previewMembers}
+          />
         </aside>
       </div>
     </div>
@@ -233,30 +254,36 @@ function CommunityDetailLoaded({
 }
 
 /**
- * Detalhe da comunidade por slug (`/communities/:communitySlug`).
+ * Miolo da página: tem de renderizar-se **dentro** de `FeedLayout` (provider do compositor).
  */
-export function CommunityDetailPage() {
+function CommunityDetailPageContent() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
   const viewerId = useViewerId();
+  const { registerCommunityRefresh } = useCreatePostComposer();
   const [revision, setRevision] = useState(0);
   const [loadState, setLoadState] = useState<"loading" | "ok" | "error">("loading");
   const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [members, setMembers] = useState<CommunityMemberListItem[]>([]);
+  const [previewMembers, setPreviewMembers] = useState<CommunityMemberListItem[]>([]);
+  const [managerMembers, setManagerMembers] = useState<CommunityMemberListItem[]>([]);
+  const [viewerMembershipRole, setViewerMembershipRole] = useState<CommunityMemberListItem["role"] | null>(null);
+  const [viewerIsMember, setViewerIsMember] = useState(false);
   const [joinRows, setJoinRows] = useState<JoinRequestWithUser[]>([]);
   const [joinPending, setJoinPending] = useState(false);
 
   const bump = useCallback(() => setRevision((n) => n + 1), []);
 
   useEffect(() => {
+    registerCommunityRefresh(bump);
+    return () => registerCommunityRefresh(null);
+  }, [bump, registerCommunityRefresh]);
+
+  useEffect(() => {
     if (!communitySlug) {
-      setLoadState("ok");
-      setCommunity(null);
       return;
     }
 
     let cancelled = false;
-    setLoadState("loading");
 
     (async () => {
       try {
@@ -265,30 +292,36 @@ export function CommunityDetailPage() {
         if (!c) {
           setCommunity(null);
           setPosts([]);
-          setMembers([]);
+          setPreviewMembers([]);
+          setManagerMembers([]);
+          setViewerMembershipRole(null);
+          setViewerIsMember(false);
           setJoinRows([]);
           setLoadState("ok");
           return;
         }
 
-        const [postsList, mems] = await Promise.all([
+        const [postsList, previewPage, myMembership] = await Promise.all([
           fetchCommunityPosts(c.id, viewerId, 1, 200),
-          fetchCommunityMembers(c.id),
+          fetchCommunityMembersPage(c.id, 1, 8),
+          fetchMyCommunityMembership(c.id),
         ]);
         if (cancelled) return;
 
-        const isMod =
-          c.ownerUserId === viewerId ||
-          mems.some((m) => m.user.id === viewerId && (m.role === "admin" || m.role === "owner"));
+        const isOwner = c.ownerUserId === viewerId;
+        const isMod = isOwner || myMembership.role === "admin" || myMembership.role === "owner";
+        const fullMembers = isMod ? await fetchAllCommunityMembers(c.id) : previewPage.items;
         const jrows = isMod ? await fetchCommunityJoinRequestRows(c.id) : [];
         if (cancelled) return;
 
         setCommunity(c);
         setPosts(postsList);
-        setMembers(mems);
+        setPreviewMembers(previewPage.items);
+        setManagerMembers(fullMembers);
+        setViewerMembershipRole(myMembership.role);
+        setViewerIsMember(myMembership.isMember);
         setJoinRows(jrows);
-        const isMember = mems.some((m) => m.user.id === viewerId);
-        if (isMember) setJoinPending(false);
+        if (myMembership.isMember) setJoinPending(false);
         setLoadState("ok");
       } catch {
         if (!cancelled) {
@@ -305,77 +338,81 @@ export function CommunityDetailPage() {
 
   if (!communitySlug) {
     return (
-      <FeedLayout showRightPanel={false}>
-        <div
-          className={cn(
-            "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
-            woodyLayout.pagePadWide
-          )}
-        >
-          <CommunityNotFound />
-        </div>
-      </FeedLayout>
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
+          woodyLayout.pagePadWide
+        )}
+      >
+        <CommunityNotFound />
+      </div>
     );
   }
 
   if (loadState === "loading") {
     return (
-      <FeedLayout showRightPanel={false}>
-        <div
-          className={cn(
-            "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
-            woodyLayout.pagePadWide
-          )}
-        >
-          A carregar comunidade…
-        </div>
-      </FeedLayout>
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
+          woodyLayout.pagePadWide
+        )}
+      >
+        A carregar comunidade…
+      </div>
     );
   }
 
   if (loadState === "error") {
     return (
-      <FeedLayout showRightPanel={false}>
-        <div
-          className={cn(
-            "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
-            woodyLayout.pagePadWide
-          )}
-        >
-          Não foi possível carregar esta comunidade.
-        </div>
-      </FeedLayout>
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
+          woodyLayout.pagePadWide
+        )}
+      >
+        Não foi possível carregar esta comunidade.
+      </div>
     );
   }
 
   if (!community) {
     return (
-      <FeedLayout showRightPanel={false}>
-        <div
-          className={cn(
-            "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
-            woodyLayout.pagePadWide
-          )}
-        >
-          <CommunityNotFound />
-        </div>
-      </FeedLayout>
+      <div
+        className={cn(
+          "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
+          woodyLayout.pagePadWide
+        )}
+      >
+        <CommunityNotFound />
+      </div>
     );
   }
 
   return (
+    <CommunityDetailLoaded
+      key={community.id}
+      community={community}
+      posts={posts}
+      previewMembers={previewMembers}
+      managerMembers={managerMembers}
+      viewerMembershipRole={viewerMembershipRole}
+      viewerIsMember={viewerIsMember}
+      joinRows={joinRows}
+      dataRevision={revision}
+      onDataChanged={bump}
+      joinPending={joinPending}
+      setJoinPending={setJoinPending}
+    />
+  );
+}
+
+/**
+ * Detalhe da comunidade por slug (`/communities/:communitySlug`).
+ */
+export function CommunityDetailPage() {
+  return (
     <FeedLayout showRightPanel={false}>
-      <CommunityDetailLoaded
-        key={community.id}
-        community={community}
-        posts={posts}
-        members={members}
-        joinRows={joinRows}
-        dataRevision={revision}
-        onDataChanged={bump}
-        joinPending={joinPending}
-        setJoinPending={setJoinPending}
-      />
+      <CommunityDetailPageContent />
     </FeedLayout>
   );
 }

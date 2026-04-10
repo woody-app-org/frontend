@@ -40,7 +40,7 @@ export function SearchModal({ open, onOpenChange, className }: SearchModalProps)
         <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 sm:p-6">
           <DialogHeader className="mb-0 shrink-0">
             <div className="min-w-0">
-              <DialogTitle className="text-[var(--woody-header)]">{title}</DialogTitle>
+              <DialogTitle className="text-[var(--woody-text)]">{title}</DialogTitle>
               <div className="mt-1 text-sm text-[var(--woody-muted)]">
                 Postagens, pessoas e comunidades — um único lugar.
               </div>
