@@ -24,7 +24,7 @@ export function MobileBottomNav({ className, onOpenSearch, isSearchOpen }: Mobil
   return (
     <nav
       className={cn(
-        "md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around py-2 px-1.5 bg-[var(--woody-header)]/95 backdrop-blur-md border-t border-[var(--woody-divider)] shadow-[0_-4px_20px_rgba(7,54,32,0.05)] safe-area-pb",
+        "md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around py-2 px-1.5 bg-[var(--woody-header)]/95 backdrop-blur-md border-t border-[var(--woody-divider)] shadow-[0_-4px_20px_rgba(58,45,36,0.05)] safe-area-pb",
         className
       )}
     >

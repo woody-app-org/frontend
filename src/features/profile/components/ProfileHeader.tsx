@@ -8,7 +8,7 @@ import type { UserProfile } from "../types";
 
 const styles = {
   card:
-    "rounded-2xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(7,54,32,0.05)] overflow-hidden",
+    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(58,45,36,0.06)] overflow-hidden",
   bannerWrap: "w-full min-h-[10rem] sm:min-h-[12rem] md:min-h-[14rem] overflow-hidden",
   banner: "w-full h-40 sm:h-48 md:h-56 min-h-[10rem] sm:min-h-[12rem] md:min-h-[14rem] object-cover bg-[var(--woody-nav)]/10",
   content: "px-4 md:px-6 pt-2 pb-4 md:pb-6",

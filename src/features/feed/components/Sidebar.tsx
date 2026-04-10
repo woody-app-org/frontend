@@ -24,7 +24,7 @@ export function Sidebar({
     <aside
       className={cn(
         "hidden md:flex flex-col w-[260px] shrink-0 min-h-0 bg-[var(--woody-sidebar)]",
-        "border-r border-[var(--woody-divider)] shadow-[1px_0_0_rgba(7,54,32,0.04)]",
+        "border-r border-[var(--woody-divider)] shadow-[1px_0_0_rgba(58,45,36,0.04)]",
         className
       )}
     >

@@ -21,7 +21,7 @@ function getInitials(name: string): string {
 const styles = {
   card: cn(
     woodySurface.card,
-    "flex flex-col gap-0 py-0 transition-shadow duration-200 hover:shadow-[0_4px_14px_rgba(7,54,32,0.06)]"
+    "flex flex-col gap-0 py-0 transition-shadow duration-200 hover:shadow-[0_4px_14px_rgba(58,45,36,0.06)]"
   ),
   content: "px-4 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5",
   header: "flex flex-row items-start gap-3",

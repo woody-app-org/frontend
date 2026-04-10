@@ -41,7 +41,7 @@ const SCROLL_WRAPPER =
 
 const styles = {
   header:
-    "sticky top-0 z-50 w-full bg-[var(--woody-header)] text-[var(--woody-text)] border-b border-[var(--woody-divider)] shadow-[0_1px_0_rgba(7,54,32,0.04)] shrink-0",
+    "sticky top-0 z-50 w-full bg-[var(--woody-header)] text-[var(--woody-text)] border-b border-[var(--woody-divider)] shadow-[0_1px_0_rgba(58,45,36,0.04)] shrink-0",
   headerInner:
     "flex items-center justify-between h-14 md:h-16 gap-3 md:gap-4",
   logoArea:

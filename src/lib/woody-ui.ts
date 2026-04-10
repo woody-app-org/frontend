@@ -7,17 +7,17 @@ import { cn } from "@/lib/utils";
 
 export const woodySurface = {
   card: cn(
-    "rounded-2xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)]",
-    "shadow-[0_1px_3px_rgba(7,54,32,0.05)]"
+    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
+    "shadow-[0_1px_3px_rgba(58,45,36,0.06)]"
   ),
   /** Heróis / destaques com elevação um pouco maior */
   cardHero: cn(
-    "rounded-2xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)]",
-    "shadow-[0_2px_10px_rgba(7,54,32,0.07)]"
+    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
+    "shadow-[0_2px_10px_rgba(58,45,36,0.07)]"
   ),
   emptyDashed: cn(
-    "rounded-2xl border border-dashed border-[var(--woody-accent)]/22",
-    "bg-[var(--woody-card)]/95 shadow-[0_1px_3px_rgba(7,54,32,0.04)]"
+    "rounded-2xl border border-dashed border-[var(--woody-accent)]/26",
+    "bg-[var(--woody-card)]/95 shadow-[0_1px_3px_rgba(58,45,36,0.04)]"
   ),
 } as const;
 
@@ -25,10 +25,10 @@ export const woodyMotion = {
   /** Cartões clicáveis (ex. CommunityCard). */
   cardHover: cn(
     "transition-[box-shadow,border-color] duration-200 ease-out",
-    "hover:border-[var(--woody-accent)]/22 hover:shadow-[0_6px_22px_rgba(7,54,32,0.07)]"
+    "hover:border-[var(--woody-accent)]/22 hover:shadow-[0_6px_22px_rgba(58,45,36,0.07)]"
   ),
   /** Variação mais suave para listas densas (ex. PostCard). */
-  postCardHover: "transition-shadow duration-200 ease-out hover:shadow-[0_4px_14px_rgba(7,54,32,0.06)]",
+  postCardHover: "transition-shadow duration-200 ease-out hover:shadow-[0_4px_14px_rgba(58,45,36,0.06)]",
 } as const;
 
 export const woodyFocus = {

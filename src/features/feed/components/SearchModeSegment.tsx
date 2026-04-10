@@ -33,7 +33,7 @@ export function SearchModeSegment({ value, onChange, className }: SearchModeSegm
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-y-1 left-1 rounded-full bg-[var(--woody-card)] shadow-[0_1px_2px_rgba(7,54,32,0.06)] border border-[var(--woody-divider)]/80 transition-transform duration-200 ease-out"
+        className="pointer-events-none absolute inset-y-1 left-1 rounded-full bg-[var(--woody-card)] shadow-[0_1px_2px_rgba(58,45,36,0.06)] border border-[var(--woody-divider)]/80 transition-transform duration-200 ease-out"
         style={{
           width: PILL_WIDTH,
           transform: `translateX(calc(${activeIndex} * (100% + ${GAP_REM})))`,
