@@ -23,7 +23,7 @@ export function FeedTabs({ activeFilter, onFilterChange, className }: FeedTabsPr
   return (
     <div
       className={cn(
-        "relative grid grid-cols-3 gap-1.5 p-1.5 rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-card)]/75 shadow-[0_1px_3px_rgba(92,58,59,0.05)]",
+        "relative grid grid-cols-3 gap-1.5 p-1.5 rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-card)]/75 shadow-[0_1px_3px_rgba(7,54,32,0.05)]",
         className
       )}
       role="tablist"

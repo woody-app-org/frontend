@@ -26,7 +26,7 @@ export function CreatePostModal() {
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-4 sm:p-6">
           <DialogHeader className="mb-0 shrink-0">
             <div className="min-w-0">
-              <DialogTitle className="text-[var(--woody-header)]">Nova publicação</DialogTitle>
+              <DialogTitle className="text-[var(--woody-text)]">Nova publicação</DialogTitle>
               <p className="mt-1 text-sm text-[var(--woody-muted)]">
                 Escolhe a comunidade, o texto e opcionalmente tags ou imagem — igual à versão completa.
               </p>

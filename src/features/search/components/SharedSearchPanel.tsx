@@ -83,10 +83,7 @@ export function SharedSearchPanel({
       <SearchModeSegment
         value={mode}
         onChange={onModeChange}
-        className={cn(
-          "w-full max-w-[480px] self-start shrink-0",
-          "bg-black/5 border-black/10 [&>button]:text-[var(--woody-text)] [&>button[aria-selected='false']]:text-[var(--woody-muted)]"
-        )}
+        className="w-full max-w-[480px] self-start shrink-0"
       />
 
       <div

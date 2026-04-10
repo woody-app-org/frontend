@@ -24,7 +24,7 @@ export function Sidebar({
     <aside
       className={cn(
         "hidden md:flex flex-col w-[260px] shrink-0 min-h-0 bg-[var(--woody-sidebar)]",
-        "shadow-[8px_0_20px_rgba(0,0,0,0.18),4px_0_12px_rgba(0,0,0,0.12)]",
+        "border-r border-[var(--woody-divider)] shadow-[1px_0_0_rgba(7,54,32,0.04)]",
         className
       )}
     >
@@ -107,11 +107,6 @@ export function Sidebar({
             alt=""
             className="relative z-[1] max-h-[82px] w-auto max-w-[138px] translate-y-1 object-contain object-bottom select-none"
             draggable={false}
-          />
-          {/* Galho: sai da esquerda do bloco; ponta só arredondada à direita */}
-          <div
-            className="absolute bottom-5 -left-1 z-0 h-[14px] w-[calc(100%+0.5rem)] max-w-[170px] rounded-r-full rounded-l-full bg-[#5D4E37] shadow-[inset_0_-2px_0_rgba(0,0,0,0.14)]"
-            aria-hidden
           />
         </div>
       </div>

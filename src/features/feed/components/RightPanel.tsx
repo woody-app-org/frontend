@@ -30,7 +30,7 @@ const styles = {
   panelInner: "p-4 space-y-4",
   sectionTitle: "text-base font-bold text-[var(--woody-text)] mb-3",
   card:
-    "rounded-2xl border border-[var(--woody-accent)]/20 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(92,58,59,0.06)] py-0 gap-0",
+    "rounded-2xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(7,54,32,0.05)] py-0 gap-0",
   cardContent: "p-4",
   list: "space-y-0",
   item:

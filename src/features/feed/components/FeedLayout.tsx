@@ -9,7 +9,7 @@ import { SearchModal } from "@/features/search/components/SearchModal";
 import { UserAccountMenu } from "./UserAccountMenu";
 import { CreatePostComposerProvider, useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { CreatePostModal } from "./CreatePostModal";
-import logoWordmark from "@/assets/logo.svg";
+import logoWordmark from "@/assets/logo-black.svg";
 
 export interface FeedLayoutProps {
   children: React.ReactNode;
@@ -41,16 +41,16 @@ const SCROLL_WRAPPER =
 
 const styles = {
   header:
-    "sticky top-0 z-50 w-full bg-[var(--woody-header)] text-white shrink-0",
+    "sticky top-0 z-50 w-full bg-[var(--woody-header)] text-[var(--woody-text)] border-b border-[var(--woody-divider)] shadow-[0_1px_0_rgba(7,54,32,0.04)] shrink-0",
   headerInner:
     "flex items-center justify-between h-14 md:h-16 gap-3 md:gap-4",
   logoArea:
-    "flex items-center justify-center shrink-0 h-full min-h-14 md:min-h-16 md:w-[260px] md:bg-[var(--woody-header-logo)]",
+    "flex items-center justify-center shrink-0 h-full min-h-14 md:min-h-16 md:w-[260px] md:bg-[var(--woody-header-logo)] md:border-r md:border-[var(--woody-divider)]",
   logo:
-    "flex max-w-full shrink-0 items-center justify-center px-3 md:w-full md:px-4 outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-header-logo)]",
+    "flex max-w-full shrink-0 items-center justify-center px-3 md:w-full md:px-4 outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-header-logo)]",
   right: "flex items-center gap-1 md:gap-2 shrink-0 md:w-[320px] md:justify-end",
   iconBtn:
-    "size-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0",
+    "size-10 flex items-center justify-center rounded-full text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 transition-colors shrink-0",
   iconBtnHidden: "hidden md:flex",
   bellWrap: "relative",
   badge: "absolute top-1.5 right-1.5 size-1.5 rounded-full bg-amber-400",
