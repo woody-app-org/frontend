@@ -25,10 +25,13 @@ export async function fetchUserCommunityMemberships(userId: string): Promise<Use
   }
 }
 
-export async function fetchMyFollowing(): Promise<User[]> {
-  const { data } = await api.get("/users/me/following");
-  const list = data as unknown[];
-  return (list ?? []).map((u) => mapUserFromApi(u as Record<string, unknown>));
+export async function fetchMyFollowing(page = 1, pageSize = 50): Promise<User[]> {
+  const { data } = await api.get("/users/me/following", {
+    params: { page, pageSize: Math.min(Math.max(pageSize, 1), 50) },
+  });
+  const raw = data as Record<string, unknown> | unknown[];
+  const list = Array.isArray(raw) ? raw : ((raw?.items as unknown[]) ?? []);
+  return list.map((u) => mapUserFromApi(u as Record<string, unknown>));
 }
 
 export async function fetchMySuggestions(take = 8): Promise<User[]> {

@@ -45,4 +45,6 @@ export const MOCK_USER_PROFILE: UserProfile = {
   interests: MOCK_INTERESTS,
   suggestions: MOCK_SUGGESTIONS,
   isFollowing: false,
+  followersCount: 0,
+  followingCount: 0,
 };

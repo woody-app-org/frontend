@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import type { ReactNode } from "react";
 import type { UserProfile } from "../types";
 
 const styles = {
@@ -26,8 +27,6 @@ const styles = {
   tags: "flex flex-wrap gap-2 mt-2",
   tag:
     "inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium bg-[var(--woody-nav)]/10 text-[var(--woody-text)] border border-[var(--woody-accent)]/15",
-  followBtn:
-    "rounded-lg bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 text-sm font-medium shrink-0 transition-transform active:scale-[0.98]",
   editBtn:
     "rounded-lg border border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/8 text-sm font-medium shrink-0 transition-transform active:scale-[0.98]",
   bio: "text-[var(--woody-text)]/90 text-sm leading-relaxed mt-4 whitespace-pre-wrap break-words",
@@ -47,9 +46,17 @@ export interface ProfileHeaderProps {
   className?: string;
   isOwnProfile?: boolean;
   onEditProfile?: () => void;
+  /** Botão de seguir (montado pelo pai quando há sessão e não é o próprio perfil). */
+  followSlot?: ReactNode;
 }
 
-export function ProfileHeader({ profile, className, isOwnProfile = false, onEditProfile }: ProfileHeaderProps) {
+export function ProfileHeader({
+  profile,
+  className,
+  isOwnProfile = false,
+  onEditProfile,
+  followSlot,
+}: ProfileHeaderProps) {
   return (
     <Card className={cn(styles.card, className)}>
       <div className={styles.bannerWrap}>
@@ -113,10 +120,8 @@ export function ProfileHeader({ profile, className, isOwnProfile = false, onEdit
               <Pencil className="size-4" />
               Ajustar meu perfil
             </Button>
-          ) : !isOwnProfile ? (
-            <Button className={cn(styles.followBtn, woodyFocus.ring)} variant="secondary" size="sm">
-              {profile.isFollowing ? "Seguindo" : "Seguir"}
-            </Button>
+          ) : !isOwnProfile && followSlot ? (
+            followSlot
           ) : null}
         </div>
         {profile.bio && <p className={styles.bio}>{profile.bio}</p>}

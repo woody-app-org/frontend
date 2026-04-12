@@ -155,5 +155,13 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
     interests,
     suggestions: Array.isArray(raw.suggestions) ? raw.suggestions : [],
     isFollowing: raw.isFollowing ?? undefined,
+    followersCount:
+      raw.followersCount !== undefined && raw.followersCount !== null
+        ? Number(raw.followersCount)
+        : undefined,
+    followingCount:
+      raw.followingCount !== undefined && raw.followingCount !== null
+        ? Number(raw.followingCount)
+        : undefined,
   };
 }

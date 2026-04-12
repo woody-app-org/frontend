@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { FeedErrorState } from "@/features/feed/components/FeedErrorState";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { FollowProfileButton } from "../components/FollowProfileButton";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { ProfileHeader } from "../components/ProfileHeader";
 import { EditProfileDialog } from "../components/EditProfileDialog";
@@ -26,7 +27,7 @@ const TABS: { id: ProfileTab; label: string }[] = [
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { user: authUser, patchUser } = useAuth();
+  const { user: authUser, patchUser, isAuthenticated } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [editOpen, setEditOpen] = useState(false);
   const {
@@ -42,6 +43,7 @@ export function ProfilePage() {
     refetch,
     updatePostInList,
     removePostFromList,
+    applyFollowPatch,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
 
@@ -85,6 +87,16 @@ export function ProfilePage() {
               className="mb-5 md:mb-6"
               isOwnProfile={isOwnProfile}
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
+              followSlot={
+                !isOwnProfile && isAuthenticated ? (
+                  <FollowProfileButton
+                    targetUserId={profile.id}
+                    initialIsFollowing={profile.isFollowing}
+                    initialFollowersCount={profile.followersCount}
+                    onCommit={applyFollowPatch}
+                  />
+                ) : undefined
+              }
             />
             {isOwnProfile ? (
               <EditProfileDialog
