@@ -9,6 +9,7 @@ import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { togglePostLikeMock } from "@/domain/services/postMock.service";
 import type { Post, FeedFilter } from "../types";
 import { getFeed } from "../services/feed.service";
+import { SOCIAL_GRAPH_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 
 interface UseFeedReturn {
   posts: Post[];
@@ -63,6 +64,8 @@ export function useFeed(): UseFeedReturn {
   const isFirstLoadRef = useRef(true);
   const pageRef = useRef(page);
   pageRef.current = page;
+  const filterRef = useRef(filter);
+  filterRef.current = filter;
   /** Troca de tab ou recarga “desde zero”: mostrar skeleton em vez de posts do filtro anterior. */
   const expectEmptyFeedRef = useRef(false);
 
@@ -93,6 +96,15 @@ export function useFeed(): UseFeedReturn {
 
   useEffect(() => {
     fetchFeed();
+  }, [fetchFeed]);
+
+  useEffect(() => {
+    const onFollowGraphChanged = () => {
+      if (filterRef.current !== "following") return;
+      void fetchFeed();
+    };
+    window.addEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
+    return () => window.removeEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
   }, [fetchFeed]);
 
   const setFilter = useCallback((newFilter: FeedFilter) => {

@@ -12,6 +12,8 @@ const followingOutlineClass =
 
 export interface FollowProfileButtonProps {
   targetUserId: string;
+  /** Para `aria-label` acessível (ex.: leitores de ecrã). */
+  targetDisplayName?: string;
   initialIsFollowing: boolean | undefined;
   initialFollowersCount: number | undefined;
   onCommit: (patch: { isFollowing: boolean; followersCount: number }) => void;
@@ -23,6 +25,7 @@ export interface FollowProfileButtonProps {
  */
 export function FollowProfileButton({
   targetUserId,
+  targetDisplayName,
   initialIsFollowing,
   initialFollowersCount,
   onCommit,
@@ -36,6 +39,13 @@ export function FollowProfileButton({
     onCommit,
   });
 
+  const who = targetDisplayName?.trim() || "este perfil";
+  const ariaLabel = busy
+    ? "A atualizar relação de seguir"
+    : isFollowing
+      ? `Deixar de seguir ${who}`
+      : `Seguir ${who}`;
+
   return (
     <div className={cn("flex min-w-0 flex-col items-stretch gap-1.5 sm:items-end", className)}>
       <Button
@@ -45,12 +55,14 @@ export function FollowProfileButton({
         disabled={busy}
         aria-busy={busy}
         aria-pressed={isFollowing}
+        aria-label={ariaLabel}
         onClick={() => {
           clearError();
           void toggleFollow();
         }}
         className={cn(
           woodyFocus.ring,
+          "touch-manipulation min-h-10 sm:min-h-9",
           isFollowing ? followingOutlineClass : followPrimaryClass,
           busy && "opacity-90"
         )}

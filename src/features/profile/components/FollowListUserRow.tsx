@@ -27,8 +27,8 @@ export function FollowListUserRow({ user, className, onNavigate }: FollowListUse
         onClick={onNavigate}
         className={cn(
           woodyFocus.ring,
-          "flex min-w-0 items-center gap-3 rounded-xl px-2 py-2.5 sm:gap-3.5 sm:px-3 sm:py-3",
-          "transition-colors hover:bg-[var(--woody-nav)]/8"
+          "touch-manipulation flex min-w-0 items-center gap-3 rounded-xl px-2 py-2.5 sm:gap-3.5 sm:px-3 sm:py-3",
+          "transition-colors hover:bg-[var(--woody-nav)]/8 active:bg-[var(--woody-nav)]/12"
         )}
       >
         <Avatar className="size-11 shrink-0 border border-[var(--woody-accent)]/12 sm:size-12">

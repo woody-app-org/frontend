@@ -1,3 +1,12 @@
+/**
+ * Cliente HTTP para a rede de seguir (alinhado a `UsersController` no backend).
+ *
+ * - `GET .../follow/status` — contagens + `isFollowing` do visitante
+ * - `POST|DELETE .../follow` — mutação (resposta com `followersCount` do alvo)
+ * - `GET .../followers` | `.../following` — listas paginadas (`items`, `totalCount`, …)
+ *
+ * Para invalidar UI noutros ecrãs após mutação, ver `dispatchSocialGraphChanged` em `@/lib/socialGraphEvents`.
+ */
 import type { User } from "@/domain/types";
 import { api, getApiErrorMessage } from "@/lib/api";
 import { mapUserFromApi } from "@/lib/apiMappers";

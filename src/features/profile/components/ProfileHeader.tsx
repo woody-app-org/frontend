@@ -17,7 +17,9 @@ const styles = {
   avatarWrap: "shrink-0",
   avatar:
     "size-20 sm:size-[5.5rem] md:size-24 rounded-full border-4 border-[var(--woody-card)] shadow-md ring-2 ring-[var(--woody-accent)]/10",
-  infoRow: "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-4",
+  infoRow:
+    "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-4 sm:gap-4",
+  actionsCol: "flex w-full flex-col items-stretch gap-2 sm:w-auto sm:shrink-0 sm:items-end sm:pt-1",
   meta: "flex-1 min-w-0 flex flex-col gap-0.5",
   nameBlock: "min-w-0",
   name: "font-bold text-[var(--woody-text)] text-lg md:text-xl truncate",
@@ -114,18 +116,20 @@ export function ProfileHeader({
             </div>
           </div>
           {isOwnProfile && onEditProfile ? (
-            <Button
-              type="button"
-              className={cn(styles.editBtn, woodyFocus.ring)}
-              variant="outline"
-              size="sm"
-              onClick={onEditProfile}
-            >
-              <Pencil className="size-4" />
-              Ajustar meu perfil
-            </Button>
+            <div className={styles.actionsCol}>
+              <Button
+                type="button"
+                className={cn(styles.editBtn, woodyFocus.ring, "touch-manipulation min-h-10 w-full sm:min-h-9 sm:w-auto")}
+                variant="outline"
+                size="sm"
+                onClick={onEditProfile}
+              >
+                <Pencil className="size-4" />
+                Ajustar meu perfil
+              </Button>
+            </div>
           ) : !isOwnProfile && followSlot ? (
-            followSlot
+            <div className={styles.actionsCol}>{followSlot}</div>
           ) : null}
         </div>
         {profile.bio && <p className={styles.bio}>{profile.bio}</p>}

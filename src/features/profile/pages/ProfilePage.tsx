@@ -18,6 +18,7 @@ import { useProfilePermissions } from "@/features/auth/hooks/useProfilePermissio
 import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
+import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
 
 type ProfileTab = "posts" | "communities" | "about";
 
@@ -60,6 +61,7 @@ export function ProfilePage() {
     (patch: { isFollowing: boolean; followersCount: number }) => {
       applyFollowPatch(patch);
       bumpFollowLists();
+      dispatchSocialGraphChanged();
     },
     [applyFollowPatch, bumpFollowLists]
   );
@@ -124,6 +126,7 @@ export function ProfilePage() {
                 !isOwnProfile && isAuthenticated ? (
                   <FollowProfileButton
                     targetUserId={profile.id}
+                    targetDisplayName={profile.name}
                     initialIsFollowing={profile.isFollowing}
                     initialFollowersCount={profile.followersCount}
                     onCommit={handleFollowCommit}

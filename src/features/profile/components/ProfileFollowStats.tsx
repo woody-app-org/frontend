@@ -34,9 +34,10 @@ export function ProfileFollowStats({
       <button
         type="button"
         onClick={onOpenFollowers}
+        title="Ver lista de seguidores"
         className={cn(
           woodyFocus.ring,
-          "rounded-md px-1 py-0.5 text-left font-medium text-[var(--woody-text)]/90 underline-offset-2 hover:underline"
+          "touch-manipulation min-h-11 rounded-md px-1.5 py-1.5 text-left font-medium text-[var(--woody-text)]/90 underline-offset-2 hover:underline sm:min-h-0 sm:px-1 sm:py-0.5"
         )}
       >
         <span className="tabular-nums text-[var(--woody-text)]">{fmt(followersCount)}</span>
@@ -50,9 +51,10 @@ export function ProfileFollowStats({
       <button
         type="button"
         onClick={onOpenFollowing}
+        title="Ver lista de contas a seguir"
         className={cn(
           woodyFocus.ring,
-          "rounded-md px-1 py-0.5 text-left font-medium text-[var(--woody-text)]/90 underline-offset-2 hover:underline"
+          "touch-manipulation min-h-11 rounded-md px-1.5 py-1.5 text-left font-medium text-[var(--woody-text)]/90 underline-offset-2 hover:underline sm:min-h-0 sm:px-1 sm:py-0.5"
         )}
       >
         <span className="tabular-nums text-[var(--woody-text)]">{fmt(followingCount)}</span>

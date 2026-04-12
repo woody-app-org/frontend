@@ -10,6 +10,7 @@ import {
   fetchMySuggestions,
 } from "@/features/users/services/userSocial.service";
 import type { User } from "@/domain/types";
+import { SOCIAL_GRAPH_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 
 export interface RightPanelProps {
   className?: string;
@@ -100,6 +101,14 @@ export function RightPanel({ className }: RightPanelProps) {
     queueMicrotask(() => {
       void load();
     });
+  }, [load]);
+
+  useEffect(() => {
+    const onSocialChange = () => {
+      void load();
+    };
+    window.addEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onSocialChange);
+    return () => window.removeEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onSocialChange);
   }, [load]);
 
   const hasSuggestions = suggestions.length > 0;

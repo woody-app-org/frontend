@@ -55,6 +55,12 @@ export function ProfileFollowListsDialog({
 
   const shortName = profileName.split(/\s+/)[0] || profileName;
 
+  const showInitialLoading = loading && items.length === 0;
+  const showFullError = Boolean(error && !loading && items.length === 0);
+  const showInlineError = Boolean(error && items.length > 0);
+  const showEmpty = !loading && !error && items.length === 0;
+  const showList = items.length > 0;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -95,52 +101,97 @@ export function ProfileFollowListsDialog({
               type="button"
               role="tab"
               aria-selected={kind === "followers"}
-              className={tabClass(kind === "followers")}
+              className={cn(tabClass(kind === "followers"), "touch-manipulation")}
               onClick={() => onKindChange("followers")}
             >
-              Seguidores ({followersCount.toLocaleString("pt-PT")})
+              <span className="block leading-tight">
+                Seguidores
+                <span className="hidden sm:inline">
+                  {" "}
+                  ({followersCount.toLocaleString("pt-PT")})
+                </span>
+              </span>
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={kind === "following"}
-              className={tabClass(kind === "following")}
+              className={cn(tabClass(kind === "following"), "touch-manipulation")}
               onClick={() => onKindChange("following")}
             >
-              A seguir ({followingCount.toLocaleString("pt-PT")})
+              <span className="block leading-tight">
+                A seguir
+                <span className="hidden sm:inline">
+                  {" "}
+                  ({followingCount.toLocaleString("pt-PT")})
+                </span>
+              </span>
             </button>
           </div>
         </DialogHeader>
 
         <div className={cn(woodyDialogScroll, "min-h-0 flex-1 px-3 py-2 sm:px-4 sm:py-3")}>
-          {loading && items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-16 text-[var(--woody-muted)]">
+          {showInitialLoading ? (
+            <div
+              className="flex flex-col items-center justify-center gap-3 py-16 text-[var(--woody-muted)]"
+              role="status"
+              aria-live="polite"
+            >
               <Loader2 className="size-8 animate-spin text-[var(--woody-nav)]" aria-hidden />
               <p className="text-sm">A carregar…</p>
             </div>
           ) : null}
 
-          {error && !loading ? (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
+          {showFullError ? (
+            <div className="flex flex-col items-center gap-3 px-1 py-10 text-center">
               <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-              <Button type="button" variant="outline" size="sm" onClick={() => void retry()}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="touch-manipulation min-h-10"
+                onClick={() => void retry()}
+              >
                 Tentar outra vez
               </Button>
             </div>
           ) : null}
 
-          {!loading && !error && items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-14 text-center text-[var(--woody-muted)]">
+          {showInlineError ? (
+            <div
+              className="mb-3 rounded-xl border border-red-500/25 bg-red-500/[0.06] px-3 py-2.5 text-center sm:px-4"
+              role="alert"
+            >
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2 touch-manipulation min-h-9"
+                onClick={() => void loadMore()}
+              >
+                Tentar carregar mais
+              </Button>
+            </div>
+          ) : null}
+
+          {showEmpty ? (
+            <div className="flex flex-col items-center justify-center gap-2 px-2 py-14 text-center text-[var(--woody-muted)]">
               <Users className="size-10 opacity-40" aria-hidden />
-              <p className="text-sm">
+              <p className="text-sm font-medium text-[var(--woody-text)]/80">
                 {kind === "followers"
                   ? "Ainda não há seguidores por aqui."
                   : "Ainda não segue ninguém."}
               </p>
+              <p className="max-w-xs text-xs leading-relaxed text-[var(--woody-muted)]">
+                {kind === "followers"
+                  ? "Quando alguém seguir este perfil, aparece nesta lista."
+                  : "Quando seguir contas, elas surgem aqui."}
+              </p>
             </div>
           ) : null}
 
-          {!error && items.length > 0 ? (
+          {showList ? (
             <ul className="m-0 space-y-0.5 p-0">
               {items.map((u) => (
                 <FollowListUserRow
@@ -152,19 +203,19 @@ export function ProfileFollowListsDialog({
             </ul>
           ) : null}
 
-          {hasNextPage && !error ? (
+          {hasNextPage && !showFullError ? (
             <div className="mt-3 flex justify-center pb-2 sm:mt-4">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="min-h-10 w-full max-w-xs sm:w-auto"
+                className="min-h-11 w-full max-w-xs touch-manipulation sm:min-h-10 sm:w-auto"
                 disabled={loadingMore}
                 onClick={() => void loadMore()}
               >
                 {loadingMore ? (
                   <span className="inline-flex items-center gap-2">
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
                     A carregar…
                   </span>
                 ) : (
