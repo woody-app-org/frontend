@@ -11,6 +11,7 @@ import { woodyMotion, woodySurface } from "@/lib/woody-ui";
 import type { Post } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
+import { PostProfileContextBar } from "./PostProfileContextBar";
 import { PostOverflowMenu } from "./PostOverflowMenu";
 
 // --- Helpers ---
@@ -101,6 +102,9 @@ export function PostCard({
         ? [post.imageUrl]
         : [];
 
+  const hasContextBar = Boolean(post.community) || post.publicationContext === "profile";
+  const showProfileContext = post.publicationContext === "profile" && !post.community;
+
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
     if (target.closest("a,button,[data-post-ignore-open='true']")) return;
@@ -128,8 +132,14 @@ export function PostCard({
     >
       {post.community ? (
         <PostCommunityContextBar preview={post.community} variant={postListingContext} />
+      ) : showProfileContext ? (
+        <PostProfileContextBar
+          authorId={post.author.id}
+          authorDisplayName={post.author.name}
+          variant={postListingContext}
+        />
       ) : null}
-      <CardHeader className={cn(styles.header, post.community && "pt-2 sm:pt-3")}>
+      <CardHeader className={cn(styles.header, hasContextBar && "pt-2 sm:pt-3")}>
         <div className={styles.headerLeft}>
           <Link
             to={`/profile/${post.author.id}`}
