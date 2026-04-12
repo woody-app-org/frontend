@@ -33,7 +33,8 @@ export function CreatePostPage() {
         <div>
           <h1 className={woodySection.title}>Nova publicação</h1>
           <p className={woodySection.subtitle}>
-            Escolha a comunidade, escreva o texto e opcionalmente adicione tags ou uma imagem.
+            Publica no teu perfil ou numa comunidade em que participas; depois escreve o texto e, se quiseres, tags ou
+            uma imagem.
           </p>
         </div>
 
