@@ -1,4 +1,4 @@
-import type { Community, CommunityCategory, JoinRequest, Membership, User } from "../types";
+import type { Community, CommunityCategory, JoinRequest, Membership, PostPublicationContext, User } from "../types";
 
 export interface SeedFollow {
   followerId: string;
@@ -8,6 +8,8 @@ export interface SeedFollow {
 /** Post bruto alinhado ao seed (autor expandido + `authorId` para DTO/API). */
 export interface SeedPost {
   id: string;
+  /** Omitido ou `community` = post em comunidade (comportamento atual do seed). */
+  publicationContext?: PostPublicationContext;
   communityId: string;
   authorId: string;
   author: User;

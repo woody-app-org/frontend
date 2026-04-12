@@ -1,4 +1,4 @@
-import type { Comment, Community, CommunityCategory, Post, User } from "@/domain/types";
+import type { Comment, Community, CommunityCategory, Post, PostPublicationContext, User } from "@/domain/types";
 import type { SocialLink, UserProfile } from "@/features/profile/types";
 import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
 
@@ -51,15 +51,31 @@ export function mapCommunityFromApi(raw: ApiRecord): Community {
   };
 }
 
+function mapPublicationContextFromApi(raw: ApiRecord): PostPublicationContext {
+  const v = raw.publicationContext;
+  if (v === "profile" || v === "community") return v;
+  const cid = raw.communityId;
+  if (cid != null && String(cid).length > 0) return "community";
+  return "profile";
+}
+
 export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
   const author = mapUserFromApi(raw.author ?? {});
+  const publicationContext = mapPublicationContextFromApi(raw);
   const comm = raw.community ? mapCommunityPreviewFromApi(raw.community) : undefined;
   const imageUrls = Array.isArray(raw.imageUrls) ? raw.imageUrls.map((u: unknown) => String(u)) : undefined;
   const primaryImage =
     imageUrls && imageUrls.length > 0 ? imageUrls[0] : (raw.imageUrl != null ? String(raw.imageUrl) : null);
+  const communityId =
+    publicationContext === "profile"
+      ? null
+      : raw.communityId != null && String(raw.communityId).length > 0
+        ? String(raw.communityId)
+        : null;
   return {
     id: asString(raw.id),
-    communityId: asString(raw.communityId),
+    publicationContext,
+    communityId,
     authorId: asString(raw.authorId),
     author,
     title: asString(raw.title),
