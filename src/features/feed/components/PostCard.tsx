@@ -71,6 +71,11 @@ export interface PostCardProps {
    * @default "feed"
    */
   postListingContext?: "feed" | "community";
+  /**
+   * `profile`: no perfil da autora omitimos a faixa “Publicação no perfil” (redundante).
+   * @default "feed"
+   */
+  postSurface?: "feed" | "community" | "profile";
 }
 
 export function PostCard({
@@ -82,6 +87,7 @@ export function PostCard({
   isLikePending = false,
   className,
   postListingContext = "feed",
+  postSurface = "feed",
 }: PostCardProps) {
   const navigate = useNavigate();
   const viewerId = useViewerId();
@@ -102,8 +108,10 @@ export function PostCard({
         ? [post.imageUrl]
         : [];
 
-  const hasContextBar = Boolean(post.community) || post.publicationContext === "profile";
-  const showProfileContext = post.publicationContext === "profile" && !post.community;
+  const hasContextBar =
+    Boolean(post.community) || (post.publicationContext === "profile" && postSurface !== "profile");
+  const showProfileContext =
+    post.publicationContext === "profile" && !post.community && postSurface !== "profile";
 
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;

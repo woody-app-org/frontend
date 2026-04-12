@@ -75,6 +75,7 @@ export function PostComposerForm({
   const [communityLoadError, setCommunityLoadError] = useState(false);
   const [communityReloadKey, setCommunityReloadKey] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successKind, setSuccessKind] = useState<PostPublicationContext>("profile");
 
   const isCommunityFlow = !!forcedCommunity || publishTarget === "community";
   const canPickTarget = !forcedCommunity;
@@ -209,7 +210,10 @@ export function PostComposerForm({
       setContent("");
       setTagsRaw("");
       clearImage();
-      if (composerFeedback === "full") setShowSuccess(true);
+      if (composerFeedback === "full") {
+        setSuccessKind(context);
+        setShowSuccess(true);
+      }
       onPostCreated?.(post);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Falha ao publicar.");
@@ -246,7 +250,9 @@ export function PostComposerForm({
           role="status"
           aria-live="polite"
         >
-          Publicação criada com sucesso.
+          {successKind === "profile"
+            ? "Publicação criada no teu perfil."
+            : "Publicação criada na comunidade."}
         </p>
       )}
 

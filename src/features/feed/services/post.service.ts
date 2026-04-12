@@ -9,6 +9,9 @@ const MAX_IMAGE_FILE_BYTES = 450 * 1024;
 export const POST_COMPOSER_TITLE_MAX_LENGTH = 200;
 export const POST_COMPOSER_TAGS_MAX_COUNT = 20;
 
+/**
+ * Corpo de `POST /posts`. Campos estáveis para evoluções futuras (rascunhos, edição) sem mudar o contrato base.
+ */
 export interface CreatePostPayload {
   publicationContext: PostPublicationContext;
   /** Obrigatório quando `publicationContext` é <code>community</code>. */

@@ -13,6 +13,7 @@ import {
   fetchCommunityMembersPage,
   fetchMyCommunityMembership,
   fetchCommunityPosts,
+  CommunityPostsForbiddenError,
   type JoinRequestWithUser,
 } from "../services/community.service";
 import {
@@ -46,6 +47,8 @@ interface CommunityDetailLoadedProps {
   onDataChanged: () => void;
   joinPending: boolean;
   setJoinPending: (v: boolean) => void;
+  /** Feed de posts não carregado (ex. 403 em comunidade privada sem acesso). */
+  postsFeedAccessDenied: boolean;
 }
 
 function CommunityDetailLoaded({
@@ -60,6 +63,7 @@ function CommunityDetailLoaded({
   onDataChanged,
   joinPending,
   setJoinPending,
+  postsFeedAccessDenied,
 }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
   const { setPageComposerCommunity } = useCreatePostComposer();
@@ -229,6 +233,7 @@ function CommunityDetailLoaded({
             hasPreviousPage={hasPreviousFeedPage}
             onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
             onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
+            feedAccessRestricted={postsFeedAccessDenied}
             className="min-w-0"
           />
         </div>
@@ -270,6 +275,7 @@ function CommunityDetailPageContent() {
   const [viewerIsMember, setViewerIsMember] = useState(false);
   const [joinRows, setJoinRows] = useState<JoinRequestWithUser[]>([]);
   const [joinPending, setJoinPending] = useState(false);
+  const [postsFeedAccessDenied, setPostsFeedAccessDenied] = useState(false);
 
   const bump = useCallback(() => setRevision((n) => n + 1), []);
 
@@ -297,12 +303,24 @@ function CommunityDetailPageContent() {
           setViewerMembershipRole(null);
           setViewerIsMember(false);
           setJoinRows([]);
+          setPostsFeedAccessDenied(false);
           setLoadState("ok");
           return;
         }
 
-        const [postsList, previewPage, myMembership] = await Promise.all([
-          fetchCommunityPosts(c.id, viewerId, 1, 200),
+        const postsPromise = (async () => {
+          try {
+            return { posts: await fetchCommunityPosts(c.id, viewerId, 1, 200), denied: false as const };
+          } catch (e) {
+            if (e instanceof CommunityPostsForbiddenError) {
+              return { posts: [] as Post[], denied: true as const };
+            }
+            throw e;
+          }
+        })();
+
+        const [postsResult, previewPage, myMembership] = await Promise.all([
+          postsPromise,
           fetchCommunityMembersPage(c.id, 1, 8),
           fetchMyCommunityMembership(c.id),
         ]);
@@ -315,7 +333,8 @@ function CommunityDetailPageContent() {
         if (cancelled) return;
 
         setCommunity(c);
-        setPosts(postsList);
+        setPosts(postsResult.posts);
+        setPostsFeedAccessDenied(postsResult.denied);
         setPreviewMembers(previewPage.items);
         setManagerMembers(fullMembers);
         setViewerMembershipRole(myMembership.role);
@@ -402,6 +421,7 @@ function CommunityDetailPageContent() {
       onDataChanged={bump}
       joinPending={joinPending}
       setJoinPending={setJoinPending}
+      postsFeedAccessDenied={postsFeedAccessDenied}
     />
   );
 }

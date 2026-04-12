@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { Post } from "@/domain/types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "../PostCommunityContextBar";
+import { PostProfileContextBar } from "../PostProfileContextBar";
 import { PostOverflowMenu } from "../PostOverflowMenu";
 
 export interface PostDetailHeaderProps {
@@ -50,7 +51,15 @@ export function PostDetailHeader({
         />
       </div>
 
-      {post.community ? <PostCommunityContextBar preview={post.community} variant="community" /> : null}
+      {post.community ? (
+        <PostCommunityContextBar preview={post.community} variant="community" />
+      ) : post.publicationContext === "profile" ? (
+        <PostProfileContextBar
+          authorId={post.author.id}
+          authorDisplayName={post.author.name}
+          variant="community"
+        />
+      ) : null}
 
       <div className="flex items-start gap-3">
         <Link

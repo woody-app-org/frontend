@@ -23,7 +23,7 @@ export function CreatePostModal() {
         )}
         aria-label="Nova publicação"
       >
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-4 sm:p-6">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-3 sm:gap-4 sm:p-6">
           <DialogHeader className="mb-0 shrink-0">
             <div className="min-w-0">
               <DialogTitle className="text-[var(--woody-text)]">Nova publicação</DialogTitle>
