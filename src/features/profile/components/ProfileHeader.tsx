@@ -48,6 +48,8 @@ export interface ProfileHeaderProps {
   onEditProfile?: () => void;
   /** Botão de seguir (montado pelo pai quando há sessão e não é o próprio perfil). */
   followSlot?: ReactNode;
+  /** Contadores seguidores / a seguir (clicáveis). */
+  followStats?: ReactNode;
 }
 
 export function ProfileHeader({
@@ -56,6 +58,7 @@ export function ProfileHeader({
   isOwnProfile = false,
   onEditProfile,
   followSlot,
+  followStats,
 }: ProfileHeaderProps) {
   return (
     <Card className={cn(styles.card, className)}>
@@ -98,6 +101,7 @@ export function ProfileHeader({
               {profile.username ? (
                 <p className="text-sm text-[var(--woody-muted)] mt-0.5">@{profile.username}</p>
               ) : null}
+              {followStats ? <div className="mt-2">{followStats}</div> : null}
               {profile.interests.length > 0 && (
                 <div className={styles.tags}>
                   {profile.interests.slice(0, 5).map((tag) => (

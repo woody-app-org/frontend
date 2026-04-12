@@ -1,4 +1,6 @@
+import type { User } from "@/domain/types";
 import { api, getApiErrorMessage } from "@/lib/api";
+import { mapUserFromApi } from "@/lib/apiMappers";
 
 export interface FollowStatusResponse {
   targetUserId: string;
@@ -15,6 +17,62 @@ export interface FollowMutationResponse {
 
 function asRecord(data: unknown): Record<string, unknown> {
   return data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+}
+
+export interface PaginatedUsersResult {
+  items: User[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+function mapPaginatedUsers(data: unknown): PaginatedUsersResult {
+  const raw = asRecord(data);
+  const rawItems = Array.isArray(raw.items) ? raw.items : [];
+  return {
+    items: rawItems.map((u) => mapUserFromApi(asRecord(u))),
+    page: Number(raw.page ?? 1),
+    pageSize: Number(raw.pageSize ?? rawItems.length),
+    totalCount: Number(raw.totalCount ?? rawItems.length),
+    hasNextPage: Boolean(raw.hasNextPage),
+    hasPreviousPage: Boolean(raw.hasPreviousPage),
+  };
+}
+
+const listPageSizeClamp = (n: number) => Math.min(50, Math.max(1, Math.floor(n)));
+
+/** `GET /users/:userId/followers` */
+export async function fetchUserFollowersPage(
+  userId: string,
+  page: number,
+  pageSize: number = 30
+): Promise<PaginatedUsersResult> {
+  try {
+    const { data } = await api.get(`/users/${encodeURIComponent(userId)}/followers`, {
+      params: { page, pageSize: listPageSizeClamp(pageSize) },
+    });
+    return mapPaginatedUsers(data);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar seguidores."));
+  }
+}
+
+/** `GET /users/:userId/following` */
+export async function fetchUserFollowingPage(
+  userId: string,
+  page: number,
+  pageSize: number = 30
+): Promise<PaginatedUsersResult> {
+  try {
+    const { data } = await api.get(`/users/${encodeURIComponent(userId)}/following`, {
+      params: { page, pageSize: listPageSizeClamp(pageSize) },
+    });
+    return mapPaginatedUsers(data);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar quem segue."));
+  }
 }
 
 /**
