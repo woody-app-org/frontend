@@ -45,6 +45,7 @@ export const MOCK_USER_PROFILE: UserProfile = {
   interests: MOCK_INTERESTS,
   suggestions: MOCK_SUGGESTIONS,
   isFollowing: false,
-  followersCount: 0,
-  followingCount: 0,
+  /** Valores ilustrativos quando o perfil mock é usado fora da API. */
+  followersCount: 42,
+  followingCount: 18,
 };

@@ -651,19 +651,47 @@ export function buildPlatformSeed(): {
     },
   ];
 
+  /** Relações de follow (mock local / `getFollowingUserIds` / seletores). Deduplicado no fim. */
   const follows: SeedFollow[] = [];
+  const addFollow = (followerId: string, followingId: string) => {
+    if (followerId === followingId) return;
+    follows.push({ followerId, followingId });
+  };
+
   const viewer = "1";
-  const followTargets = [2, 5, 7, 8, 12, 15, 18, 21, 4, 11];
-  for (const t of followTargets) {
-    follows.push({ followerId: viewer, followingId: String(t) });
-  }
+  /** Quem a utilizadora "1" segue — painel “Seguindo” e grafo no mock. */
+  const followTargets = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+  for (const t of followTargets) addFollow(viewer, String(t));
+
+  /**
+   * Perfil id "2": muitos seguidores (>30) para testar modal/listagem e “Carregar mais”.
+   * Perfil id "2" também segue várias contas — testar separador “A seguir”.
+   */
+  for (let fid = 3; fid <= 24; fid++) addFollow(String(fid), "2");
+  for (let tid = 3; tid <= 22; tid++) addFollow("2", String(tid));
+
+  /** Perfil id "3": rede média (contagens e listas sem ser extremo). */
+  for (let fid = 4; fid <= 16; fid++) addFollow(String(fid), "3");
+  for (let tid = 4; tid <= 14; tid++) addFollow("3", String(tid));
+
+  /** “Yara” (última do seed) segue poucas pessoas — bom para estado vazio quase vazio em “seguindo”. */
+  addFollow("24", "2");
+  addFollow("24", "3");
+  addFollow("24", "4");
+
+  /** Grafo extra entre contas 2–8 (variedade para feeds/selectors). */
   for (let a = 2; a <= 8; a++) {
     for (let b = 1; b <= 3; b++) {
       const tgt = ((a * 4 + b) % 20) + 2;
-      if (String(a) !== String(tgt))
-        follows.push({ followerId: String(a), followingId: String(tgt) });
+      if (String(a) !== String(tgt)) addFollow(String(a), String(tgt));
     }
   }
+
+  const followDedup = new Map<string, SeedFollow>();
+  for (const f of follows) {
+    followDedup.set(`${f.followerId}\u0000${f.followingId}`, f);
+  }
+  const followsUnique = [...followDedup.values()];
 
   const authorsByCommunity = new Map<string, string[]>();
   for (const m of memberships) {
@@ -774,5 +802,5 @@ export function buildPlatformSeed(): {
     p.commentsCount = countByPost.get(p.id) ?? 0;
   }
 
-  return { users, communities, memberships, follows, posts, postComments, joinRequests };
+  return { users, communities, memberships, follows: followsUnique, posts, postComments, joinRequests };
 }
