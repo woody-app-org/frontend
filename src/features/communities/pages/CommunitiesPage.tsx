@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { HeartHandshake, Search, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import { HeartHandshake, Plus, Search, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
 import type { Community, CommunityCategory } from "@/domain/types";
@@ -127,6 +128,21 @@ export function CommunitiesPage() {
               Explore por tema, encontre grupos com propósito claro e entre quando se sentir à vontade —
               tudo permanece centrado em segurança e curadoria.
             </p>
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <Link
+                to="/communities/nova"
+                className={cn(
+                  woodyFocus.ring,
+                  "inline-flex items-center gap-2 rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)]/90 px-3 py-2 text-sm font-semibold text-[var(--woody-text)] shadow-sm transition-colors hover:bg-[var(--woody-nav)]/8"
+                )}
+              >
+                <Plus className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+                Criar comunidade
+              </Link>
+              <span className="text-xs text-[var(--woody-muted)] max-sm:w-full sm:pl-1">
+                Disponível para contas Woody Pro.
+              </span>
+            </div>
             <div className="flex flex-wrap items-center gap-3 pt-1 text-sm text-[var(--woody-text)]/90">
               <span className="inline-flex items-center gap-2 rounded-xl bg-[var(--woody-bg)]/80 px-3 py-2 ring-1 ring-[var(--woody-accent)]/10">
                 <HeartHandshake className="size-4 shrink-0 text-[var(--woody-accent)]" aria-hidden />

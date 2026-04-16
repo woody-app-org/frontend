@@ -14,7 +14,7 @@ import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { RootRedirect } from "@/app/RootRedirect";
 import { CreatePostPage, FeedPage, PostDetailPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
-import { CommunitiesPage, CommunityDetailPage } from "@/features/communities";
+import { CommunitiesPage, CommunityDetailPage, CreateCommunityPage } from "@/features/communities";
 
 export const router = createBrowserRouter([
   {
@@ -75,6 +75,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "communities/nova",
+        element: (
+          <ProtectedRoute>
+            <CreateCommunityPage />
           </ProtectedRoute>
         ),
       },
