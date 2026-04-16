@@ -25,6 +25,7 @@ export function mapUserFromApi(raw: ApiRecord): User {
     avatarUrl: raw.avatarUrl ?? null,
     bio: raw.bio ?? undefined,
     pronouns: raw.pronouns ?? undefined,
+    showProBadge: Boolean(raw.showProBadge),
   };
 }
 
@@ -163,5 +164,6 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
       raw.followingCount !== undefined && raw.followingCount !== null
         ? Number(raw.followingCount)
         : undefined,
+    showProBadge: Boolean(raw.showProBadge),
   };
 }

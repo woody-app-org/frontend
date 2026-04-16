@@ -39,6 +39,7 @@ export interface UserProfile {
   isFollowing?: boolean;
   followersCount?: number;
   followingCount?: number;
+  showProBadge?: boolean;
 }
 
 /** Payload para `updateProfile` / futura API REST. */

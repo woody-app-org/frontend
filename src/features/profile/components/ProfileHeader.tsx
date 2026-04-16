@@ -91,6 +91,14 @@ export function ProfileHeader({
             <div className={styles.nameBlock}>
               <div className="flex flex-wrap items-baseline gap-1.5">
                 <h1 className={styles.name}>{profile.name}</h1>
+                {profile.showProBadge ? (
+                  <span
+                    className="inline-flex shrink-0 items-center rounded-md border border-amber-500/35 bg-amber-500/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-950 dark:text-amber-100"
+                    title="Woody Pro"
+                  >
+                    Pro
+                  </span>
+                ) : null}
                 {profile.pronouns && (
                   <>
                     <span className={styles.pronouns}>•</span>
