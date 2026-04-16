@@ -15,38 +15,43 @@ export function useMeComposerUser(): { user: User | null; isLoading: boolean } {
 
   useEffect(() => {
     if (!isAuthenticated || !auth) {
-      setUser(null);
+      void (async () => {
+        await Promise.resolve();
+        setUser(null);
+      })();
       return;
     }
 
     let cancelled = false;
-    setIsLoading(true);
+    const usernameFallback = auth.username;
 
-    api
-      .get("/users/me")
-      .then(({ data }) => {
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setIsLoading(true);
+      try {
+        const { data } = await api.get("/users/me");
         if (cancelled) return;
         const p = mapUserProfileFromApi(data as Record<string, unknown>);
         setUser({
           id: p.id,
           name: p.name,
-          username: p.username ?? auth.username,
+          username: p.username ?? usernameFallback,
           avatarUrl: p.avatarUrl,
           pronouns: p.pronouns,
           bio: p.bio,
         });
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setUser(null);
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setIsLoading(false);
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, auth?.id, auth?.username]);
+  }, [isAuthenticated, auth]);
 
   return { user, isLoading };
 }

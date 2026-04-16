@@ -1,4 +1,4 @@
-import type { Post } from "@/domain/types";
+import type { Post, PostPublicationContext } from "@/domain/types";
 import axios from "axios";
 import { api, getApiErrorMessage, getMessageFromApiResponseData } from "@/lib/api";
 import { mapPostFromApi } from "@/lib/apiMappers";
@@ -9,8 +9,13 @@ const MAX_IMAGE_FILE_BYTES = 450 * 1024;
 export const POST_COMPOSER_TITLE_MAX_LENGTH = 200;
 export const POST_COMPOSER_TAGS_MAX_COUNT = 20;
 
+/**
+ * Corpo de `POST /posts`. Campos estáveis para evoluções futuras (rascunhos, edição) sem mudar o contrato base.
+ */
 export interface CreatePostPayload {
-  communityId: string;
+  publicationContext: PostPublicationContext;
+  /** Obrigatório quando `publicationContext` é <code>community</code>. */
+  communityId?: string;
   title: string;
   content: string;
   tags?: string[];
@@ -61,10 +66,15 @@ export async function createPost(payload: CreatePostPayload, viewerId: string): 
 
   try {
     const body: Record<string, unknown> = {
-      communityId: payload.communityId,
+      publicationContext: payload.publicationContext,
       title,
       content,
     };
+    if (payload.publicationContext === "community") {
+      const cid = payload.communityId?.trim();
+      if (!cid) throw new Error("Escolhe uma comunidade.");
+      body.communityId = cid;
+    }
     if (payload.tags && payload.tags.length > 0) body.tags = payload.tags;
     if (payload.imageUrls && payload.imageUrls.length > 0) body.imageUrls = payload.imageUrls;
     else if (payload.imageUrl) body.imageUrl = payload.imageUrl;

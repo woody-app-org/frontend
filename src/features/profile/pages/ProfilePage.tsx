@@ -3,6 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { FeedErrorState } from "@/features/feed/components/FeedErrorState";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { FollowProfileButton } from "../components/FollowProfileButton";
+import { ProfileFollowListsDialog } from "../components/ProfileFollowListsDialog";
+import { ProfileFollowStats } from "../components/ProfileFollowStats";
+import type { ProfileFollowListKind } from "../hooks/useProfileFollowUsersList";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { ProfileHeader } from "../components/ProfileHeader";
 import { EditProfileDialog } from "../components/EditProfileDialog";
@@ -14,6 +18,7 @@ import { useProfilePermissions } from "@/features/auth/hooks/useProfilePermissio
 import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
+import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
 
 type ProfileTab = "posts" | "communities" | "about";
 
@@ -26,9 +31,11 @@ const TABS: { id: ProfileTab; label: string }[] = [
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { user: authUser, patchUser } = useAuth();
+  const { user: authUser, patchUser, isAuthenticated } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [editOpen, setEditOpen] = useState(false);
+  const [followList, setFollowList] = useState<ProfileFollowListKind | null>(null);
+  const [followListsRevision, setFollowListsRevision] = useState(0);
   const {
     profile,
     posts,
@@ -42,8 +49,30 @@ export function ProfilePage() {
     refetch,
     updatePostInList,
     removePostFromList,
+    applyFollowPatch,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
+
+  const bumpFollowLists = useCallback(() => {
+    setFollowListsRevision((n) => n + 1);
+  }, []);
+
+  const handleFollowCommit = useCallback(
+    (patch: { isFollowing: boolean; followersCount: number }) => {
+      applyFollowPatch(patch);
+      bumpFollowLists();
+      dispatchSocialGraphChanged();
+    },
+    [applyFollowPatch, bumpFollowLists]
+  );
+
+  const handleFollowListOpenChange = useCallback((open: boolean) => {
+    if (!open) setFollowList(null);
+  }, []);
+
+  const handleFollowListKindChange = useCallback((kind: ProfileFollowListKind) => {
+    setFollowList(kind);
+  }, []);
 
   const handleProfileSaved = useCallback(
     (next: UserProfile) => {
@@ -85,6 +114,36 @@ export function ProfilePage() {
               className="mb-5 md:mb-6"
               isOwnProfile={isOwnProfile}
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
+              followStats={
+                <ProfileFollowStats
+                  followersCount={profile.followersCount ?? 0}
+                  followingCount={profile.followingCount ?? 0}
+                  onOpenFollowers={() => setFollowList("followers")}
+                  onOpenFollowing={() => setFollowList("following")}
+                />
+              }
+              followSlot={
+                !isOwnProfile && isAuthenticated ? (
+                  <FollowProfileButton
+                    targetUserId={profile.id}
+                    targetDisplayName={profile.name}
+                    initialIsFollowing={profile.isFollowing}
+                    initialFollowersCount={profile.followersCount}
+                    onCommit={handleFollowCommit}
+                  />
+                ) : undefined
+              }
+            />
+            <ProfileFollowListsDialog
+              open={followList !== null}
+              onOpenChange={handleFollowListOpenChange}
+              profileUserId={profile.id}
+              profileName={profile.name}
+              kind={followList ?? "followers"}
+              onKindChange={handleFollowListKindChange}
+              followersCount={profile.followersCount ?? 0}
+              followingCount={profile.followingCount ?? 0}
+              refreshEpoch={followListsRevision}
             />
             {isOwnProfile ? (
               <EditProfileDialog

@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Mail } from "lucide-react";
+import { CheckCircle2, Loader2, Mail } from "lucide-react";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
-import { MOCK_EMAIL_VERIFICATION_CODE } from "../constants";
 import { emailVerificationCodeSchema, type EmailVerificationCodeFormData } from "../validation";
-import { mockSendVerificationCode, mockVerifyEmailCode } from "../services/emailVerificationMock";
+import { useConfirmEmailCode } from "../hooks/useConfirmEmailCode";
+import { useResendEmailCode } from "../hooks/useResendEmailCode";
 import { OnboardingCodeInput } from "../components/OnboardingCodeInput";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
@@ -21,17 +21,18 @@ function pause(ms: number): Promise<void> {
 }
 
 /**
- * Etapa 2 — verificação de e-mail (handlers mockados substituíveis por API).
+ * Etapa 2 — verificação de e-mail via API real.
  */
 export function OnboardingStepVerifyEmail() {
   const { draft, updateDraft } = useOnboardingDraftContext();
   const { goNext } = useOnboardingNavigation();
-  const [verifyError, setVerifyError] = useState<string | null>(null);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [sendFeedback, setSendFeedback] = useState<string | null>(null);
+  const email = draft.account?.email;
+  const { isVerifying, verifyError, clearVerifyError, confirmCode } = useConfirmEmailCode(email);
+  const { isSending, sendFeedback, sendError, sendInitialCode, resendCode, clearSendError } =
+    useResendEmailCode(email);
   const [cooldown, setCooldown] = useState(0);
   const [isAdvancing, setIsAdvancing] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const initialSendDone = useRef(false);
 
   const form = useForm<EmailVerificationCodeFormData>({
@@ -49,52 +50,44 @@ export function OnboardingStepVerifyEmail() {
     return () => window.clearInterval(t);
   }, [cooldown]);
 
-  const runSendCode = useCallback(async () => {
-    const email = draft.account?.email;
-    if (!email) return;
-    setIsSending(true);
-    setSendFeedback(null);
-    try {
-      await mockSendVerificationCode(email);
-      setSendFeedback("Se não aparecer na caixa de entrada, confira o spam.");
+  const runInitialSendCode = useCallback(async () => {
+    const sent = await sendInitialCode();
+    if (sent) {
       setCooldown(RESEND_COOLDOWN_S);
-    } finally {
-      setIsSending(false);
     }
-  }, [draft.account?.email]);
+  }, [sendInitialCode]);
 
   useEffect(() => {
-    if (!draft.account?.email || initialSendDone.current) return;
+    if (!email || initialSendDone.current) return;
     initialSendDone.current = true;
-    void runSendCode();
-  }, [draft.account?.email, runSendCode]);
+    void runInitialSendCode();
+  }, [email, runInitialSendCode]);
 
   if (!draft.account) {
     return <Navigate to="/auth/onboarding/1" replace />;
   }
 
   const onSubmit = form.handleSubmit(async (data) => {
-    setVerifyError(null);
-    setIsVerifying(true);
-    try {
-      const result = await mockVerifyEmailCode(data.code);
-      if (!result.ok) {
-        setVerifyError(result.error ?? "Não foi possível verificar.");
-        return;
-      }
-      setIsVerifying(false);
-      updateDraft({ emailVerified: true });
-      setIsAdvancing(true);
-      await pause(ADVANCE_DELAY_MS);
-      goNext();
-    } finally {
-      setIsVerifying(false);
+    clearSendError();
+    const verified = await confirmCode(data.code);
+    if (!verified) {
+      return;
     }
+
+    updateDraft({ emailVerified: true });
+    setIsConfirmed(true);
+    setIsAdvancing(true);
+    await pause(ADVANCE_DELAY_MS);
+    goNext();
   });
 
   const handleResend = async () => {
     if (cooldown > 0 || isSending || isVerifying || isAdvancing) return;
-    await runSendCode();
+    clearVerifyError();
+    const sent = await resendCode();
+    if (sent) {
+      setCooldown(RESEND_COOLDOWN_S);
+    }
   };
 
   return (
@@ -106,9 +99,21 @@ export function OnboardingStepVerifyEmail() {
           aria-live="polite"
           aria-busy="true"
         >
-          <Loader2 className="size-9 animate-spin text-[var(--auth-text-on-maroon)]" aria-hidden />
-          <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]">Preparando a próxima etapa…</p>
-          <p className="text-xs text-[var(--auth-text-on-maroon)]/70 max-w-xs">Quase lá. Só um instante.</p>
+          {isConfirmed ? (
+            <>
+              <CheckCircle2 className="size-9 text-emerald-200" aria-hidden />
+              <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]">E-mail confirmado com sucesso!</p>
+              <p className="text-xs text-[var(--auth-text-on-maroon)]/70 max-w-xs">
+                Preparando a próxima etapa...
+              </p>
+            </>
+          ) : (
+            <>
+              <Loader2 className="size-9 animate-spin text-[var(--auth-text-on-maroon)]" aria-hidden />
+              <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]">Preparando a próxima etapa…</p>
+              <p className="text-xs text-[var(--auth-text-on-maroon)]/70 max-w-xs">Quase lá. Só um instante.</p>
+            </>
+          )}
         </div>
       ) : null}
 
@@ -116,12 +121,8 @@ export function OnboardingStepVerifyEmail() {
         icon={Mail}
         title="Confirme seu e-mail"
         lead={`Enviamos um código de 6 dígitos para ${draft.account.email}. Insira abaixo para seguir com segurança.`}
-        trustNote="Ninguém vê este código além de você. Na versão final, ele expira após alguns minutos."
+        trustNote="Ninguém vê este código além de você. O código expira em alguns minutos."
       />
-
-      <div className={cn(onboardingStyles.demoCallout, "mb-6")}>
-        Demonstração: código <span className="font-mono font-semibold">{MOCK_EMAIL_VERIFICATION_CODE}</span>
-      </div>
 
       <form onSubmit={onSubmit} className="space-y-6">
         {verifyError && (
@@ -130,6 +131,14 @@ export function OnboardingStepVerifyEmail() {
             role="alert"
           >
             {verifyError}
+          </p>
+        )}
+        {sendError && (
+          <p
+            className="text-sm text-red-200 bg-red-900/35 rounded-xl px-3 py-2.5 border border-red-400/20"
+            role="alert"
+          >
+            {sendError}
           </p>
         )}
 
@@ -143,7 +152,10 @@ export function OnboardingStepVerifyEmail() {
             render={({ field, fieldState }) => (
               <OnboardingCodeInput
                 value={field.value}
-                onChange={(v) => field.onChange(v)}
+                onChange={(v) => {
+                  if (verifyError) clearVerifyError();
+                  field.onChange(v);
+                }}
                 disabled={isVerifying || isAdvancing}
                 hasError={!!fieldState.error || !!verifyError}
                 isComplete={codeValid && !verifyError && !isVerifying}

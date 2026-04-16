@@ -11,6 +11,7 @@ import type {
   Membership,
   Post,
   PostCommunityPreview,
+  PostPublicationContext,
   User,
 } from "./types";
 import { getCommunityDraft } from "./mocks/communityDraftStore";
@@ -85,9 +86,12 @@ export function enrichPost(raw: SeedPost, viewerId?: string): Post {
   const authorId = raw.authorId ?? raw.author.id;
   const author = getUserById(authorId) ?? raw.author;
   const likedByCurrentUser = viewerId != null && viewerId !== "" ? isPostLikedByUser(viewerId, raw.id) : false;
+  const publicationContext: PostPublicationContext = raw.publicationContext ?? "community";
+  const communityId = publicationContext === "profile" ? null : raw.communityId;
   return {
     id: raw.id,
-    communityId: raw.communityId,
+    publicationContext,
+    communityId,
     authorId,
     author,
     title: raw.title,
@@ -100,7 +104,10 @@ export function enrichPost(raw: SeedPost, viewerId?: string): Post {
     likesCount: raw.likesCount,
     commentsCount: raw.commentsCount,
     likedByCurrentUser,
-    community: getPostCommunityPreview(raw.communityId),
+    community:
+      publicationContext === "profile" || communityId == null
+        ? undefined
+        : getPostCommunityPreview(communityId),
   };
 }
 
@@ -175,7 +182,9 @@ export function getAllSeedPostsEnriched(viewerId?: string): Post[] {
 export function getRecentPostsInUserCommunities(userId: string, limit = 5, viewerId?: string): Post[] {
   const allowed = new Set(getCommunityIdsForUser(userId));
   const vid = viewerId ?? userId;
-  return getAllSeedPostsEnriched(vid).filter((p) => allowed.has(p.communityId)).slice(0, limit);
+  return getAllSeedPostsEnriched(vid)
+    .filter((p) => p.communityId != null && allowed.has(p.communityId))
+    .slice(0, limit);
 }
 
 export function getPostsByCommunityId(communityId: string, viewerId?: string): Post[] {

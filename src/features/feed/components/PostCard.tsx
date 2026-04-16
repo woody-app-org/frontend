@@ -11,6 +11,7 @@ import { woodyMotion, woodySurface } from "@/lib/woody-ui";
 import type { Post } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
+import { PostProfileContextBar } from "./PostProfileContextBar";
 import { PostOverflowMenu } from "./PostOverflowMenu";
 
 // --- Helpers ---
@@ -70,6 +71,11 @@ export interface PostCardProps {
    * @default "feed"
    */
   postListingContext?: "feed" | "community";
+  /**
+   * `profile`: no perfil da autora omitimos a faixa “Publicação no perfil” (redundante).
+   * @default "feed"
+   */
+  postSurface?: "feed" | "community" | "profile";
 }
 
 export function PostCard({
@@ -81,6 +87,7 @@ export function PostCard({
   isLikePending = false,
   className,
   postListingContext = "feed",
+  postSurface = "feed",
 }: PostCardProps) {
   const navigate = useNavigate();
   const viewerId = useViewerId();
@@ -100,6 +107,11 @@ export function PostCard({
       : post.imageUrl
         ? [post.imageUrl]
         : [];
+
+  const hasContextBar =
+    Boolean(post.community) || (post.publicationContext === "profile" && postSurface !== "profile");
+  const showProfileContext =
+    post.publicationContext === "profile" && !post.community && postSurface !== "profile";
 
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
@@ -128,8 +140,14 @@ export function PostCard({
     >
       {post.community ? (
         <PostCommunityContextBar preview={post.community} variant={postListingContext} />
+      ) : showProfileContext ? (
+        <PostProfileContextBar
+          authorId={post.author.id}
+          authorDisplayName={post.author.name}
+          variant={postListingContext}
+        />
       ) : null}
-      <CardHeader className={cn(styles.header, post.community && "pt-2 sm:pt-3")}>
+      <CardHeader className={cn(styles.header, hasContextBar && "pt-2 sm:pt-3")}>
         <div className={styles.headerLeft}>
           <Link
             to={`/profile/${post.author.id}`}

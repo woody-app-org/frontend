@@ -48,6 +48,10 @@ export function OnboardingStepComplete() {
     return <Navigate to="/auth/onboarding/1" replace />;
   }
 
+  if (!draft.emailVerified) {
+    return <Navigate to="/auth/onboarding/2" replace />;
+  }
+
   return (
     <div className="text-center sm:text-left">
       <div className="mx-auto mb-4 flex size-[3.75rem] items-center justify-center rounded-3xl bg-gradient-to-br from-[var(--auth-button)]/35 to-[var(--auth-panel-beige)]/12 text-[var(--auth-text-on-maroon)] ring-1 ring-white/10 sm:mx-0 motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:duration-500">

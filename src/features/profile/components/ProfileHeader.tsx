@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import type { ReactNode } from "react";
 import type { UserProfile } from "../types";
 
 const styles = {
@@ -16,7 +17,9 @@ const styles = {
   avatarWrap: "shrink-0",
   avatar:
     "size-20 sm:size-[5.5rem] md:size-24 rounded-full border-4 border-[var(--woody-card)] shadow-md ring-2 ring-[var(--woody-accent)]/10",
-  infoRow: "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-4",
+  infoRow:
+    "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-4 sm:gap-4",
+  actionsCol: "flex w-full flex-col items-stretch gap-2 sm:w-auto sm:shrink-0 sm:items-end sm:pt-1",
   meta: "flex-1 min-w-0 flex flex-col gap-0.5",
   nameBlock: "min-w-0",
   name: "font-bold text-[var(--woody-text)] text-lg md:text-xl truncate",
@@ -26,8 +29,6 @@ const styles = {
   tags: "flex flex-wrap gap-2 mt-2",
   tag:
     "inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium bg-[var(--woody-nav)]/10 text-[var(--woody-text)] border border-[var(--woody-accent)]/15",
-  followBtn:
-    "rounded-lg bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 text-sm font-medium shrink-0 transition-transform active:scale-[0.98]",
   editBtn:
     "rounded-lg border border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/8 text-sm font-medium shrink-0 transition-transform active:scale-[0.98]",
   bio: "text-[var(--woody-text)]/90 text-sm leading-relaxed mt-4 whitespace-pre-wrap break-words",
@@ -47,9 +48,20 @@ export interface ProfileHeaderProps {
   className?: string;
   isOwnProfile?: boolean;
   onEditProfile?: () => void;
+  /** Botão de seguir (montado pelo pai quando há sessão e não é o próprio perfil). */
+  followSlot?: ReactNode;
+  /** Contadores seguidores / a seguir (clicáveis). */
+  followStats?: ReactNode;
 }
 
-export function ProfileHeader({ profile, className, isOwnProfile = false, onEditProfile }: ProfileHeaderProps) {
+export function ProfileHeader({
+  profile,
+  className,
+  isOwnProfile = false,
+  onEditProfile,
+  followSlot,
+  followStats,
+}: ProfileHeaderProps) {
   return (
     <Card className={cn(styles.card, className)}>
       <div className={styles.bannerWrap}>
@@ -91,6 +103,7 @@ export function ProfileHeader({ profile, className, isOwnProfile = false, onEdit
               {profile.username ? (
                 <p className="text-sm text-[var(--woody-muted)] mt-0.5">@{profile.username}</p>
               ) : null}
+              {followStats ? <div className="mt-2">{followStats}</div> : null}
               {profile.interests.length > 0 && (
                 <div className={styles.tags}>
                   {profile.interests.slice(0, 5).map((tag) => (
@@ -103,20 +116,20 @@ export function ProfileHeader({ profile, className, isOwnProfile = false, onEdit
             </div>
           </div>
           {isOwnProfile && onEditProfile ? (
-            <Button
-              type="button"
-              className={cn(styles.editBtn, woodyFocus.ring)}
-              variant="outline"
-              size="sm"
-              onClick={onEditProfile}
-            >
-              <Pencil className="size-4" />
-              Ajustar meu perfil
-            </Button>
-          ) : !isOwnProfile ? (
-            <Button className={cn(styles.followBtn, woodyFocus.ring)} variant="secondary" size="sm">
-              {profile.isFollowing ? "Seguindo" : "Seguir"}
-            </Button>
+            <div className={styles.actionsCol}>
+              <Button
+                type="button"
+                className={cn(styles.editBtn, woodyFocus.ring, "touch-manipulation min-h-10 w-full sm:min-h-9 sm:w-auto")}
+                variant="outline"
+                size="sm"
+                onClick={onEditProfile}
+              >
+                <Pencil className="size-4" />
+                Ajustar meu perfil
+              </Button>
+            </div>
+          ) : !isOwnProfile && followSlot ? (
+            <div className={styles.actionsCol}>{followSlot}</div>
           ) : null}
         </div>
         {profile.bio && <p className={styles.bio}>{profile.bio}</p>}

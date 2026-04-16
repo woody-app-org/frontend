@@ -82,6 +82,8 @@ export function CreatePostComposerProvider({ children }: { children: ReactNode }
   );
 }
 
+/** Hook do contexto do compositor (ficheiro partilhado com o provider para HMR). */
+// eslint-disable-next-line react-refresh/only-export-components -- hook acoplado ao provider
 export function useCreatePostComposer(): CreatePostComposerContextValue {
   const ctx = useContext(CreatePostComposerContext);
   if (!ctx) {

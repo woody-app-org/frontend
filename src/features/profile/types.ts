@@ -37,6 +37,8 @@ export interface UserProfile {
   interests: InterestTag[];
   suggestions: ProfileSuggestion[];
   isFollowing?: boolean;
+  followersCount?: number;
+  followingCount?: number;
 }
 
 /** Payload para `updateProfile` / futura API REST. */
@@ -77,6 +79,8 @@ export interface UseUserProfileReturn {
   /** Atualiza um post na lista local (edição mock). */
   updatePostInList: (post: Post) => void;
   removePostFromList: (postId: string) => void;
+  /** Após seguir/deixar de seguir, mantém o perfil alinhado à API sem refetch completo. */
+  applyFollowPatch: (patch: { isFollowing: boolean; followersCount: number }) => void;
 }
 
 export type { Post, User };

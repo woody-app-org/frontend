@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { ImagePlus, Loader2, X } from "lucide-react";
+import { ImagePlus, Loader2, UserRound, Users, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Community, Post } from "@/domain/types";
+import type { Community, Post, PostPublicationContext } from "@/domain/types";
 import { fetchMyCommunitiesForComposer } from "@/features/communities/services/community.service";
 import { postComposerFieldStyles } from "../lib/postComposerFieldStyles";
 import {
@@ -21,6 +21,16 @@ const selectClass = cn(
   postComposerFieldStyles.input,
   "w-full appearance-none bg-[var(--woody-bg)] pr-9 cursor-pointer"
 );
+
+function targetOptionClass(selected: boolean) {
+  return cn(
+    "flex w-full cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors",
+    "focus-within:outline-none focus-within:ring-2 focus-within:ring-[var(--woody-nav)]/25",
+    selected
+      ? "border-[var(--woody-nav)] bg-[var(--woody-nav)]/10 text-[var(--woody-text)] shadow-sm"
+      : "border-[var(--woody-accent)]/18 bg-[var(--woody-bg)] text-[var(--woody-text)] hover:border-[var(--woody-accent)]/35"
+  );
+}
 
 export interface PostComposerFormProps {
   viewerId: string;
@@ -45,8 +55,14 @@ export function PostComposerForm({
   const idBase = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [publishTarget, setPublishTarget] = useState<PostPublicationContext>(() => {
+    if (forcedCommunity) return "community";
+    if (initialCommunityId) return "community";
+    return "profile";
+  });
+
   const [myCommunities, setMyCommunities] = useState<Community[]>([]);
-  const [loadingCommunities, setLoadingCommunities] = useState(!forcedCommunity);
+  const [loadingCommunities, setLoadingCommunities] = useState(false);
   const [communityId, setCommunityId] = useState(forcedCommunity?.id ?? "");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -59,6 +75,10 @@ export function PostComposerForm({
   const [communityLoadError, setCommunityLoadError] = useState(false);
   const [communityReloadKey, setCommunityReloadKey] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successKind, setSuccessKind] = useState<PostPublicationContext>("profile");
+
+  const isCommunityFlow = !!forcedCommunity || publishTarget === "community";
+  const canPickTarget = !forcedCommunity;
 
   useEffect(() => {
     if (composerFeedback === "full" && showSuccess) {
@@ -70,8 +90,14 @@ export function PostComposerForm({
   useEffect(() => {
     if (forcedCommunity) {
       setCommunityId(forcedCommunity.id);
+      setPublishTarget("community");
       setLoadingCommunities(false);
       setCommunityLoadError(false);
+      return;
+    }
+
+    if (publishTarget !== "community") {
+      setLoadingCommunities(false);
       return;
     }
 
@@ -100,7 +126,7 @@ export function PostComposerForm({
     return () => {
       cancelled = true;
     };
-  }, [forcedCommunity, initialCommunityId, communityReloadKey]);
+  }, [forcedCommunity, initialCommunityId, communityReloadKey, publishTarget]);
 
   useEffect(() => {
     if (!imageFile) {
@@ -135,11 +161,17 @@ export function PostComposerForm({
 
   const handleSubmit = async () => {
     setFormError(null);
-    const cid = forcedCommunity?.id ?? communityId;
-    if (!cid) {
-      setFormError("Escolha uma comunidade.");
-      return;
+
+    const context: PostPublicationContext = forcedCommunity ? "community" : publishTarget;
+
+    if (context === "community") {
+      const cid = forcedCommunity?.id ?? communityId;
+      if (!cid) {
+        setFormError("Escolhe uma comunidade.");
+        return;
+      }
     }
+
     if (!title.trim() || !content.trim()) {
       setFormError("Preencha o título e o conteúdo.");
       return;
@@ -162,7 +194,9 @@ export function PostComposerForm({
 
       const post = await createPost(
         {
-          communityId: cid,
+          publicationContext: context,
+          communityId:
+            context === "community" ? (forcedCommunity?.id ?? communityId) : undefined,
           title: title.trim(),
           content: content.trim(),
           tags: tags.length ? tags : undefined,
@@ -176,7 +210,10 @@ export function PostComposerForm({
       setContent("");
       setTagsRaw("");
       clearImage();
-      if (composerFeedback === "full") setShowSuccess(true);
+      if (composerFeedback === "full") {
+        setSuccessKind(context);
+        setShowSuccess(true);
+      }
       onPostCreated?.(post);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Falha ao publicar.");
@@ -185,35 +222,95 @@ export function PostComposerForm({
     }
   };
 
-  const canPickCommunity = !forcedCommunity;
   const noMemberships =
-    !forcedCommunity && !loadingCommunities && !communityLoadError && myCommunities.length === 0;
+    isCommunityFlow && !forcedCommunity && !loadingCommunities && !communityLoadError && myCommunities.length === 0;
+
+  const communityBlocking =
+    isCommunityFlow &&
+    !forcedCommunity &&
+    (loadingCommunities || communityLoadError || noMemberships || !communityId);
+
+  const fieldsDisabled = submitting || (isCommunityFlow && !forcedCommunity && loadingCommunities);
+
   const submitDisabled =
-    submitting ||
-    noMemberships ||
-    (!forcedCommunity && !communityId) ||
-    !title.trim() ||
-    !content.trim();
+    submitting || communityBlocking || !title.trim() || !content.trim();
 
   const previewSrc = imagePreviewUrl ?? (imageUrlInput.trim() ? imageUrlInput.trim() : null);
-  const fieldsDisabled = submitting || loadingCommunities;
+
+  const contentPlaceholder =
+    publishTarget === "profile" && !forcedCommunity
+      ? "Partilha algo no teu perfil…"
+      : "Partilha algo com a comunidade…";
 
   return (
-    <div
-      className={cn("space-y-3", className)}
-      aria-busy={submitting}
-    >
+    <div className={cn("space-y-3", className)} aria-busy={submitting}>
       {composerFeedback === "full" && showSuccess && (
         <p
           className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-950 dark:text-emerald-100"
           role="status"
           aria-live="polite"
         >
-          Publicação criada com sucesso.
+          {successKind === "profile"
+            ? "Publicação criada no teu perfil."
+            : "Publicação criada na comunidade."}
         </p>
       )}
 
-      {canPickCommunity && (
+      {canPickTarget && (
+        <div className="space-y-2">
+          <span id={`${idBase}-target-legend`} className="text-sm font-medium text-[var(--woody-text)]">
+            Onde queres publicar?
+          </span>
+          <div
+            className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+            role="radiogroup"
+            aria-labelledby={`${idBase}-target-legend`}
+          >
+            <label className={targetOptionClass(publishTarget === "profile")}>
+              <input
+                type="radio"
+                className="sr-only"
+                name={`${idBase}-publish-target`}
+                checked={publishTarget === "profile"}
+                onChange={() => {
+                  setPublishTarget("profile");
+                  setFormError(null);
+                }}
+                disabled={submitting}
+              />
+              <UserRound className="mt-0.5 size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+              <span className="min-w-0">
+                <span className="block font-semibold leading-tight">No meu perfil</span>
+                <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
+                  Visível no teu perfil; não precisas de comunidade.
+                </span>
+              </span>
+            </label>
+            <label className={targetOptionClass(publishTarget === "community")}>
+              <input
+                type="radio"
+                className="sr-only"
+                name={`${idBase}-publish-target`}
+                checked={publishTarget === "community"}
+                onChange={() => {
+                  setPublishTarget("community");
+                  setFormError(null);
+                }}
+                disabled={submitting}
+              />
+              <Users className="mt-0.5 size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+              <span className="min-w-0">
+                <span className="block font-semibold leading-tight">Numa comunidade</span>
+                <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
+                  Só comunidades em que participas e podes publicar.
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {isCommunityFlow && !forcedCommunity && (
         <div className="space-y-1.5">
           <label htmlFor={`${idBase}-community`} className="text-sm font-medium text-[var(--woody-text)]">
             Comunidade
@@ -238,7 +335,7 @@ export function PostComposerForm({
             </div>
           ) : noMemberships ? (
             <p className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
-              Precisa de participar numa comunidade para publicar.{" "}
+              Precisas de participar numa comunidade para publicar aqui.{" "}
               <Link
                 to="/communities"
                 className="font-semibold text-[var(--woody-nav)] underline-offset-2 hover:underline"
@@ -303,7 +400,7 @@ export function PostComposerForm({
         </label>
         <Textarea
           id={`${idBase}-content`}
-          placeholder="Partilhe algo com a comunidade…"
+          placeholder={contentPlaceholder}
           value={content}
           onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
           rows={4}

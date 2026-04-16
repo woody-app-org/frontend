@@ -6,7 +6,7 @@ import type {
   Post,
   User,
 } from "@/domain/types";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { api, getApiErrorMessage } from "@/lib/api";
 import { mapCommunityFromApi, mapPostFromApi, mapUserFromApi } from "@/lib/apiMappers";
 import type { CommunityUpdatePayload, CommunityUpdateResult } from "../types";
@@ -94,17 +94,32 @@ export async function fetchMyCommunitiesForComposer(): Promise<Community[]> {
     .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
 }
 
+/** API devolveu 403 (ex.: comunidade privada sem membership ativa). O chamador trata sem falhar a página toda. */
+export class CommunityPostsForbiddenError extends Error {
+  constructor() {
+    super("Community posts forbidden");
+    this.name = "CommunityPostsForbiddenError";
+  }
+}
+
 export async function fetchCommunityPosts(
   communityId: string,
   viewerId: string,
   page: number = 1,
   pageSize: number = 100
 ): Promise<Post[]> {
-  const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/posts`, {
-    params: { page, pageSize },
-  });
-  const items = data.items ?? [];
-  return (items as unknown[]).map((p) => mapPostFromApi(p as Record<string, unknown>, viewerId));
+  try {
+    const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/posts`, {
+      params: { page, pageSize },
+    });
+    const items = data.items ?? [];
+    return (items as unknown[]).map((p) => mapPostFromApi(p as Record<string, unknown>, viewerId));
+  } catch (e) {
+    if (isAxiosError(e) && e.response?.status === 403) {
+      throw new CommunityPostsForbiddenError();
+    }
+    throw e;
+  }
 }
 
 function mapMemberRole(r: string): CommunityMemberRole {

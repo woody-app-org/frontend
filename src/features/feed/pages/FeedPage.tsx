@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { PenLine } from "lucide-react";
 import { FeedLayout } from "../components/FeedLayout";
 import { FeedTabs } from "../components/FeedTabs";
@@ -16,27 +16,87 @@ import { woodyLayout, woodySection } from "@/lib/woody-ui";
 import { Button } from "@/components/ui/button";
 import type { FeedFilter } from "../types";
 import { useCreatePostComposer } from "../context/CreatePostComposerContext";
+import { useAuth } from "@/features/auth/context/AuthContext";
+
+const linkClass = "font-semibold text-[var(--woody-nav)] underline-offset-2 hover:underline";
 
 const FEED_HEADLINES: Record<
   FeedFilter,
   { title: string; subtitle: string; icon: typeof Flame }
 > = {
   trending: {
-    title: "Em alta entre as comunidades",
-    subtitle: "Publicações com mais conversa agora — sempre com contexto do grupo de origem.",
+    title: "Em alta",
+    subtitle:
+      "Ordenado por conversa (gostos e comentários) e relevância das comunidades — inclui posts públicos e de perfil visíveis na Woody.",
     icon: Flame,
   },
   forYou: {
     title: "Para você",
-    subtitle: "Prioriza os grupos em que você participa e abre espaço para novas descobertas.",
+    subtitle:
+      "Mistura exploratória: comunidades públicas, contas que segues e grupos dos quais participas — a ordem vem do servidor, diferente de “Em alta”.",
     icon: Compass,
   },
   following: {
-    title: "Das pessoas que você segue",
-    subtitle: "Atualizações das perfis que você acompanha na plataforma.",
+    title: "Seguindo",
+    subtitle:
+      "Só posts de pessoas que segues ou de comunidades em que és membra — o mais recente primeiro.",
     icon: UserRoundCheck,
   },
 };
+
+function feedEmptyState(filter: FeedFilter, isAuthenticated: boolean): { title: string; description: ReactNode } {
+  if (filter === "following" && !isAuthenticated) {
+    return {
+      title: "Inicia sessão para ver Seguindo",
+      description: (
+        <>
+          Este feed mostra conteúdo das contas que segues e das comunidades em que participas.{" "}
+          <Link to="/auth/login" className={linkClass}>
+            Iniciar sessão
+          </Link>
+        </>
+      ),
+    };
+  }
+  if (filter === "following") {
+    return {
+      title: "Ainda não há nada no Seguindo",
+      description: (
+        <>
+          Segue pessoas ou entra em comunidades — o feed é montado no servidor a partir dessas ligações.{" "}
+          <Link to="/communities" className={linkClass}>
+            Explorar comunidades
+          </Link>
+        </>
+      ),
+    };
+  }
+  if (filter === "forYou") {
+    return {
+      title: "O teu “Para você” está vazio",
+      description: (
+        <>
+          Quando existir conteúdo público ou ligado à tua conta, aparece aqui com uma ordem própria (exploratória).{" "}
+          <Link to="/communities" className={linkClass}>
+            Ver comunidades
+          </Link>
+        </>
+      ),
+    };
+  }
+  return {
+    title: "Nada em destaque por agora",
+    description: (
+      <>
+        O feed “Em alta” junta o que tem mais interação entre o que podes ver (perfil e comunidades públicas, ou
+        privadas onde participas).{" "}
+        <Link to="/communities" className={linkClass}>
+          Explorar comunidades
+        </Link>
+      </>
+    ),
+  };
+}
 
 /**
  * Conteúdo do feed renderizado **dentro** de `FeedLayout` (onde está o `CreatePostComposerProvider`).
@@ -45,6 +105,7 @@ const FEED_HEADLINES: Record<
 function FeedPageContent() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [postCreatedBanner, setPostCreatedBanner] = useState<string | null>(null);
 
   const {
@@ -78,8 +139,12 @@ function FeedPageContent() {
     if (!st?.createdPostTitle) return;
     const t = st.createdPostTitle.trim();
     const short = t.length > 56 ? `${t.slice(0, 53)}…` : t;
-    setPostCreatedBanner(short ? `«${short}» foi publicada com sucesso.` : "Publicação criada com sucesso.");
-    navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
+    const path = `${location.pathname}${location.search}`;
+    void (async () => {
+      await Promise.resolve();
+      setPostCreatedBanner(short ? `«${short}» foi publicada com sucesso.` : "Publicação criada com sucesso.");
+      navigate(path, { replace: true, state: {} });
+    })();
   }, [location.pathname, location.search, location.state, navigate]);
 
   useEffect(() => {
@@ -91,18 +156,12 @@ function FeedPageContent() {
   const hasPosts = posts.length > 0;
   const hasBlockingError = !hasPosts && !!error;
   const hasInlineError = hasPosts && !!error;
-  const showInitialLoading = isLoading && !hasLoadedOnce;
+  /** Primeira visita ou troca de tab (lista limpa): skeleton em vez de lista antiga. */
+  const showInitialLoading = isLoading && (!hasLoadedOnce || !hasPosts);
   const headline = FEED_HEADLINES[filter];
   const HeadlineIcon = headline.icon;
 
-  const emptyState =
-    filter === "following"
-      ? {
-          title: "Nenhuma publicação de quem você segue",
-          description:
-            "Siga mais perfis ou volte ao “Em alta” / “Para você”. Quem você acompanha ainda não tem publicações recentes na base.",
-        }
-      : undefined;
+  const emptyState = useMemo(() => feedEmptyState(filter, isAuthenticated), [filter, isAuthenticated]);
 
   return (
     <div
@@ -148,7 +207,7 @@ function FeedPageContent() {
         {hasBlockingError && <FeedErrorState message={error?.message} onRetry={refetch} />}
 
         {!showInitialLoading && !error && !hasPosts && (
-          <FeedEmptyState title={emptyState?.title} description={emptyState?.description} />
+          <FeedEmptyState title={emptyState.title} description={emptyState.description} />
         )}
 
         {hasInlineError && (

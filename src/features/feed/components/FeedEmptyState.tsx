@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { FileQuestion } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
@@ -5,7 +6,7 @@ import { woodySurface } from "@/lib/woody-ui";
 export interface FeedEmptyStateProps {
   className?: string;
   title?: string;
-  description?: string;
+  description?: ReactNode;
 }
 
 export function FeedEmptyState({

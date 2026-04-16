@@ -9,6 +9,7 @@ import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { togglePostLikeMock } from "@/domain/services/postMock.service";
 import type { Post, FeedFilter } from "../types";
 import { getFeed } from "../services/feed.service";
+import { SOCIAL_GRAPH_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 
 interface UseFeedReturn {
   posts: Post[];
@@ -63,14 +64,20 @@ export function useFeed(): UseFeedReturn {
   const isFirstLoadRef = useRef(true);
   const pageRef = useRef(page);
   pageRef.current = page;
+  const filterRef = useRef(filter);
+  filterRef.current = filter;
+  /** Troca de tab ou recarga “desde zero”: mostrar skeleton em vez de posts do filtro anterior. */
+  const expectEmptyFeedRef = useRef(false);
 
   const fetchFeed = useCallback(async () => {
     void userDisplayRev;
     void communityDraftRev;
     void postInteractionRev;
-    const isInitialLoad = isFirstLoadRef.current;
-    setIsLoading(isInitialLoad);
-    setIsRefreshing(!isInitialLoad);
+    const treatAsFullLoad = isFirstLoadRef.current || expectEmptyFeedRef.current;
+    if (expectEmptyFeedRef.current) expectEmptyFeedRef.current = false;
+
+    setIsLoading(treatAsFullLoad);
+    setIsRefreshing(!treatAsFullLoad);
     setError(null);
     try {
       const response = await getFeed(page, filter, viewerId);
@@ -91,9 +98,24 @@ export function useFeed(): UseFeedReturn {
     fetchFeed();
   }, [fetchFeed]);
 
+  useEffect(() => {
+    const onFollowGraphChanged = () => {
+      if (filterRef.current !== "following") return;
+      void fetchFeed();
+    };
+    window.addEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
+    return () => window.removeEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
+  }, [fetchFeed]);
+
   const setFilter = useCallback((newFilter: FeedFilter) => {
-    setFilterState(newFilter);
-    setPage(1);
+    setFilterState((prev) => {
+      if (prev === newFilter) return prev;
+      expectEmptyFeedRef.current = true;
+      setPosts([]);
+      setPage(1);
+      setError(null);
+      return newFilter;
+    });
   }, []);
 
   const nextPage = useCallback(() => {
@@ -108,16 +130,16 @@ export function useFeed(): UseFeedReturn {
     fetchFeed();
   }, [fetchFeed]);
 
-  const registerNewPostFromComposer = useCallback((post: Post) => {
-    if (pageRef.current !== 1) {
-      setPage(1);
-      return;
-    }
-    setPosts((prev) => {
-      if (prev.some((p) => p.id === post.id)) return prev;
-      return [post, ...prev];
-    });
-  }, []);
+  const registerNewPostFromComposer = useCallback(
+    (_post: Post) => {
+      if (pageRef.current !== 1) {
+        setPage(1);
+        return;
+      }
+      void fetchFeed();
+    },
+    [fetchFeed]
+  );
 
   const togglePostLike = useCallback(
     async (postId: string) => {
