@@ -80,6 +80,9 @@ export interface PostCommunityPreview {
   category: CommunityCategory;
 }
 
+/** Onde o post foi publicado (alinhado à API: `publicationContext`). */
+export type PostPublicationContext = "profile" | "community";
+
 /**
  * Quando a autora do post oculta um comentário de terceiros, outras leitoras veem máscara;
  * autora do post e autora do comentário continuam vendo o texto (regra típica de moderação leve).
@@ -124,7 +127,9 @@ export interface PostInteractionState {
 
 export interface Post {
   id: string;
-  communityId: string;
+  publicationContext: PostPublicationContext;
+  /** Comunidade quando o post é de comunidade; `null` no perfil. */
+  communityId: string | null;
   /** Alinhado ao autor expandido; em DTOs crus costuma vir só `authorId`. */
   authorId: string;
   author: User;

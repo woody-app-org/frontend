@@ -72,6 +72,18 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     setPosts((prev) => prev.filter((p) => p.id !== postId));
   }, []);
 
+  const applyFollowPatch = useCallback((patch: { isFollowing: boolean; followersCount: number }) => {
+    setProfile((p) =>
+      p
+        ? {
+            ...p,
+            isFollowing: patch.isFollowing,
+            followersCount: patch.followersCount,
+          }
+        : null
+    );
+  }, []);
+
   return {
     profile,
     posts,
@@ -85,5 +97,6 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     refetch,
     updatePostInList,
     removePostFromList,
+    applyFollowPatch,
   };
 }

@@ -48,7 +48,7 @@ export function ProfilePostsSection({
   onPostDeleted,
   className,
   sectionTitle = "Publicações",
-  sectionDescription = "Posts publicados em comunidades — cada um mostra o espaço de origem.",
+  sectionDescription = "No teu perfil e nas comunidades (só as que quem visita pode ver). Cada cartão indica se é publicação de perfil ou de grupo.",
   hideSectionHeader = false,
 }: ProfilePostsSectionProps) {
   const header = hideSectionHeader ? null : (
@@ -71,7 +71,11 @@ export function ProfilePostsSection({
     return (
       <div className={className}>
         {header}
-        <FeedEmptyState className="py-8" />
+        <FeedEmptyState
+          className="py-8"
+          title="Sem publicações visíveis"
+          description="Ainda não há posts no perfil, ou as publicações em comunidades privadas só aparecem para quem participa delas."
+        />
       </div>
     );
   }
@@ -84,6 +88,7 @@ export function ProfilePostsSection({
           <li key={post.id}>
             <PostCard
               post={post}
+              postSurface="profile"
               onPin={onPin}
               onPostUpdated={onPostUpdated}
               onPostDeleted={onPostDeleted}

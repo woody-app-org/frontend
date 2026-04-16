@@ -23,12 +23,13 @@ export function CreatePostModal() {
         )}
         aria-label="Nova publicação"
       >
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-4 sm:p-6">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-3 sm:gap-4 sm:p-6">
           <DialogHeader className="mb-0 shrink-0">
             <div className="min-w-0">
               <DialogTitle className="text-[var(--woody-text)]">Nova publicação</DialogTitle>
               <p className="mt-1 text-sm text-[var(--woody-muted)]">
-                Escolhe a comunidade, o texto e opcionalmente tags ou imagem — igual à versão completa.
+                Escolhe se publicas no teu perfil ou numa comunidade; depois preenche o texto e, se quiseres, tags ou
+                imagem.
               </p>
             </div>
             <DialogClose asChild>

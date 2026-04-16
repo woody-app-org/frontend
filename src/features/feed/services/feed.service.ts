@@ -3,6 +3,9 @@ import { api, getApiErrorMessage } from "@/lib/api";
 import { mapPostFromApi } from "@/lib/apiMappers";
 import type { PaginatedResponse, FeedFilter } from "../types";
 
+/**
+ * `GET /api/feed` — `filter`: `trending` | `forYou` | `following` (lógica e ordenação no servidor).
+ */
 export async function getFeed(
   page: number,
   filter: FeedFilter,
