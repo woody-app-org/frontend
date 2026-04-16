@@ -29,9 +29,6 @@ export const ONBOARDING_STEP_LABELS: Record<number, string> = {
 
 export const ONBOARDING_DRAFT_STORAGE_KEY = "woody_onboarding_draft";
 
-/** Código fixo mockado para a etapa de verificação de e-mail (substituir por API). */
-export const MOCK_EMAIL_VERIFICATION_CODE = "424242";
-
 export const ONBOARDING_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 /** Máximo de interesses selecionáveis na etapa 4. */
