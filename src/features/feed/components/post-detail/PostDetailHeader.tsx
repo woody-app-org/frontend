@@ -7,6 +7,7 @@ import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "../PostCommunityContextBar";
 import { PostProfileContextBar } from "../PostProfileContextBar";
 import { PostOverflowMenu } from "../PostOverflowMenu";
+import { ProBadge } from "@/features/subscription/components/ProBadge";
 
 export interface PostDetailHeaderProps {
   post: Post;
@@ -74,7 +75,10 @@ export function PostDetailHeader({
           </Avatar>
         </Link>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[var(--woody-text)]">{post.author.name}</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="text-sm font-semibold text-[var(--woody-text)]">{post.author.name}</p>
+            {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
+          </div>
           <div className="mt-0.5 flex items-center gap-1 text-xs text-[var(--woody-muted)]">
             <Clock className="size-3" />
             <span>{post.createdAt}</span>

@@ -67,6 +67,7 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
           {isAuthenticated ? (
             <Link
               to="/communities/nova"
+              title="Criar comunidade — disponível com plano Woody Pro"
               className={cn(
                 woodyFocus.ring,
                 "text-xs font-semibold text-[var(--woody-muted)] hover:text-[var(--woody-nav)] hover:underline"

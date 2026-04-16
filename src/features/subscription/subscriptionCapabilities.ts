@@ -1,3 +1,11 @@
+/**
+ * Feature gating derivado da sessão (`AuthUser.subscription`) e alinhado ao backend (`UserSubscriptionStateDto`).
+ *
+ * Extensões previstas (sem implementar aqui):
+ * - Compra/upgrade: nova rota ou fluxo que atualize a assinatura e faça refresh da sessão (re-login ou endpoint `me`).
+ * - Renovação/cancelamento: refletidos em `status`, `currentPeriodEnd`, `cancelAtPeriodEnd` vindos da API.
+ * - Webhooks/gateway: atualizam `UserSubscription` no servidor; o cliente continua a confiar na API, não no JWT sozinho.
+ */
 import type { AuthUserSubscription, EffectiveSubscriptionPlan } from "./types";
 
 function normalizePlan(v: unknown): EffectiveSubscriptionPlan {

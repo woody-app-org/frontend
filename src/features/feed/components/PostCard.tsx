@@ -13,6 +13,7 @@ import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
 import { PostProfileContextBar } from "./PostProfileContextBar";
 import { PostOverflowMenu } from "./PostOverflowMenu";
+import { ProBadge } from "@/features/subscription/components/ProBadge";
 
 // --- Helpers ---
 
@@ -165,6 +166,7 @@ export function PostCard({
             <div className={styles.headerMeta}>
               <div className="flex flex-wrap items-baseline gap-1">
                 <span className={styles.authorName}>{post.author.name}</span>
+                {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
                 {post.author.pronouns && (
                   <>
                     <span className={styles.authorPronouns}>•</span>

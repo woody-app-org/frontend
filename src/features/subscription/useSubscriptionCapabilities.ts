@@ -8,6 +8,7 @@ import {
   shouldShowProBadge as shouldShowProBadgeFn,
 } from "./subscriptionCapabilities";
 
+/** Capacidades da sessão atual para UI (sempre complementar validação no servidor). */
 export interface SubscriptionCapabilities {
   subscription: AuthUserSubscription | undefined;
   isProUser: boolean;

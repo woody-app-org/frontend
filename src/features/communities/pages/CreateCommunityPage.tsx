@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
+import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 import {
   createCommunity,
@@ -104,18 +105,18 @@ export function CreateCommunityPage() {
               "space-y-4 rounded-2xl border border-[var(--woody-accent)]/16 px-5 py-8 sm:px-8"
             )}
           >
-            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--woody-nav)]/10 px-3 py-1 text-xs font-semibold text-[var(--woody-text)] ring-1 ring-[var(--woody-accent)]/15">
-              <Sparkles className="size-3.5 text-[var(--woody-nav)]" aria-hidden />
-              Woody Pro
+            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--woody-nav)]/10 px-3 py-1 ring-1 ring-[var(--woody-accent)]/15">
+              <Sparkles className="size-3.5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+              <ProBadge variant="inline" />
             </div>
             <h1 className="text-xl font-bold text-[var(--woody-text)] sm:text-2xl">Criar comunidade</h1>
             <p className="text-sm leading-relaxed text-[var(--woody-muted)]">
-              Este espaço é para quem quer abrir e moderar um grupo próprio na Woody. Por agora, apenas contas{" "}
-              <span className="font-medium text-[var(--woody-text)]">Pro</span> podem criar comunidades — assim
-              mantemos curadoria e ferramentas de moderação alinhadas ao produto.
+              Abrir um grupo próprio na Woody é uma funcionalidade{" "}
+              <span className="font-medium text-[var(--woody-text)]">Pro</span> — a moderação da comunidade continua a
+              depender do teu papel (dona ou administradora) dentro do espaço, não do plano em cada ação.
             </p>
             <p className="text-sm text-[var(--woody-muted)]">
-              O upgrade pago entra em breve; até lá, podes explorar e juntar-te às comunidades existentes.
+              Compra e renovação de plano chegam em breve; até lá, explora e participa nas comunidades existentes.
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
               <Button asChild variant="outline" className={cn(woodyFocus.ring, "touch-manipulation")}>
