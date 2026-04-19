@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { UpgradeProDialog } from "@/features/subscription/components/UpgradeProDialog";
 import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 import {
   createCommunity,
@@ -116,9 +117,21 @@ export function CreateCommunityPage() {
               depender do teu papel (dona ou administradora) dentro do espaço, não do plano em cada ação.
             </p>
             <p className="text-sm text-[var(--woody-muted)]">
-              Compra e renovação de plano chegam em breve; até lá, explora e participa nas comunidades existentes.
+              Subscreve o Woody Pro com pagamento seguro (Stripe). O plano só fica ativo após confirmação no servidor.
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
+              <UpgradeProDialog>
+                <Button
+                  type="button"
+                  className={cn(
+                    woodyFocus.ring,
+                    "touch-manipulation bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90"
+                  )}
+                >
+                  <Sparkles className="mr-2 size-4" aria-hidden />
+                  Subscrever Pro
+                </Button>
+              </UpgradeProDialog>
               <Button asChild variant="outline" className={cn(woodyFocus.ring, "touch-manipulation")}>
                 <Link to="/communities">Explorar comunidades</Link>
               </Button>

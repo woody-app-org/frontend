@@ -1,5 +1,6 @@
 import type { Comment, Community, CommunityCategory, Post, PostPublicationContext, User } from "@/domain/types";
 import type { SocialLink, UserProfile } from "@/features/profile/types";
+import { mapSubscription } from "@/features/auth/services/auth.service";
 import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
 
 const PLATFORMS = new Set(["instagram", "facebook", "twitter", "tiktok", "linkedin", "other"]);
@@ -165,5 +166,6 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
         ? Number(raw.followingCount)
         : undefined,
     showProBadge: Boolean(raw.showProBadge),
+    subscription: raw.subscription != null ? mapSubscription(raw.subscription) : undefined,
   };
 }

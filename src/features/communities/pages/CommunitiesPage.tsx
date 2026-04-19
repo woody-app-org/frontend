@@ -12,6 +12,8 @@ import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
 import { fetchAllCommunities, fetchMyCommunityIdSet } from "../services/community.service";
 import { getAuthUser } from "@/features/auth/services/auth.service";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { UpgradeProDialog } from "@/features/subscription/components/UpgradeProDialog";
+import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 
 const CATEGORY_ORDER: CommunityCategory[] = [
   "carreira",
@@ -31,6 +33,7 @@ function normalizeSearch(s: string): string {
 
 export function CommunitiesPage() {
   const viewerId = useViewerId();
+  const { isProUser } = useSubscriptionCapabilities();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [myIds, setMyIds] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -140,6 +143,20 @@ export function CommunitiesPage() {
                 <Plus className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
                 Criar comunidade
               </Link>
+              {!isProUser ? (
+                <UpgradeProDialog>
+                  <button
+                    type="button"
+                    className={cn(
+                      woodyFocus.ring,
+                      "inline-flex items-center gap-2 rounded-xl border border-[var(--woody-nav)]/35 bg-[var(--woody-nav)]/12 px-3 py-2 text-sm font-semibold text-[var(--woody-text)] shadow-sm transition-colors hover:bg-[var(--woody-nav)]/18"
+                    )}
+                  >
+                    <Sparkles className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+                    Subscrever Pro
+                  </button>
+                </UpgradeProDialog>
+              ) : null}
               <span className="flex max-sm:w-full flex-wrap items-center gap-1.5 text-xs text-[var(--woody-muted)] sm:pl-1">
                 <ProBadge variant="inline" />
                 <span>Criação requer plano Pro.</span>

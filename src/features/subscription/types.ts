@@ -5,6 +5,8 @@ export type EffectiveSubscriptionPlan = "free" | "pro";
 export interface AuthUserSubscription {
   effectivePlan: EffectiveSubscriptionPlan;
   billingPlan: EffectiveSubscriptionPlan;
+  /** Catálogo comercial (ex. `pro_monthly`); opcional até API enviar. */
+  planCode?: string | null;
   status: string;
   currentPeriodEnd?: string | null;
   cancelAtPeriodEnd?: boolean;
