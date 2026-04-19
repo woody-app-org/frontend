@@ -15,7 +15,7 @@ import { RootRedirect } from "@/app/RootRedirect";
 import { CreatePostPage, FeedPage, PostDetailPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
 import { CommunitiesPage, CommunityDetailPage, CreateCommunityPage } from "@/features/communities";
-import { AssinaturaCanceladaPage, AssinaturaSucessoPage } from "@/features/subscription/pages";
+import { AssinaturaCanceladaPage, AssinaturaSucessoPage, PlanosPage } from "@/features/subscription/pages";
 
 export const router = createBrowserRouter([
   {
@@ -116,6 +116,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AssinaturaCanceladaPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "planos",
+        element: (
+          <ProtectedRoute>
+            <PlanosPage />
           </ProtectedRoute>
         ),
       },

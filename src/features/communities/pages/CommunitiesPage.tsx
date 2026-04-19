@@ -12,7 +12,7 @@ import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
 import { fetchAllCommunities, fetchMyCommunityIdSet } from "../services/community.service";
 import { getAuthUser } from "@/features/auth/services/auth.service";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
-import { UpgradeProDialog } from "@/features/subscription/components/UpgradeProDialog";
+import { CreateCommunityEntry } from "@/features/subscription/components/CreateCommunityEntry";
 import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 
 const CATEGORY_ORDER: CommunityCategory[] = [
@@ -133,8 +133,7 @@ export function CommunitiesPage() {
               tudo permanece centrado em segurança e curadoria.
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-2">
-              <Link
-                to="/communities/nova"
+              <CreateCommunityEntry
                 className={cn(
                   woodyFocus.ring,
                   "inline-flex items-center gap-2 rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)]/90 px-3 py-2 text-sm font-semibold text-[var(--woody-text)] shadow-sm transition-colors hover:bg-[var(--woody-nav)]/8"
@@ -142,24 +141,20 @@ export function CommunitiesPage() {
               >
                 <Plus className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
                 Criar comunidade
+              </CreateCommunityEntry>
+              <Link
+                to="/planos"
+                className={cn(
+                  woodyFocus.ring,
+                  "inline-flex items-center gap-1.5 rounded-xl border border-[var(--woody-nav)]/25 bg-[var(--woody-nav)]/10 px-3 py-2 text-sm font-semibold text-[var(--woody-text)] shadow-sm transition-colors hover:bg-[var(--woody-nav)]/16"
+                )}
+              >
+                <Sparkles className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+                Ver planos
               </Link>
-              {!isProUser ? (
-                <UpgradeProDialog>
-                  <button
-                    type="button"
-                    className={cn(
-                      woodyFocus.ring,
-                      "inline-flex items-center gap-2 rounded-xl border border-[var(--woody-nav)]/35 bg-[var(--woody-nav)]/12 px-3 py-2 text-sm font-semibold text-[var(--woody-text)] shadow-sm transition-colors hover:bg-[var(--woody-nav)]/18"
-                    )}
-                  >
-                    <Sparkles className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
-                    Subscrever Pro
-                  </button>
-                </UpgradeProDialog>
-              ) : null}
               <span className="flex max-sm:w-full flex-wrap items-center gap-1.5 text-xs text-[var(--woody-muted)] sm:pl-1">
                 <ProBadge variant="inline" />
-                <span>Criação requer plano Pro.</span>
+                <span>{isProUser ? "Tens criação de comunidades ativa." : "Criação de comunidades é Pro — o botão abre o resumo e checkout."}</span>
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3 pt-1 text-sm text-[var(--woody-text)]/90">

@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
-import { UpgradeProDialog } from "@/features/subscription/components/UpgradeProDialog";
 import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
+import { useProCheckout } from "@/features/subscription/hooks/useProCheckout";
+import { ProPlanCheckoutActions } from "@/features/subscription/components/ProPlanCheckoutActions";
 import {
   createCommunity,
   ProSubscriptionRequiredError,
@@ -33,6 +34,7 @@ export function CreateCommunityPage() {
   const navigate = useNavigate();
   const formId = useId();
   const { canCreateCommunity } = useSubscriptionCapabilities();
+  const { startCheckout, loadingCode, error } = useProCheckout();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -119,19 +121,16 @@ export function CreateCommunityPage() {
             <p className="text-sm text-[var(--woody-muted)]">
               Subscreve o Woody Pro com pagamento seguro (Stripe). O plano só fica ativo após confirmação no servidor.
             </p>
-            <div className="flex flex-wrap gap-2 pt-1">
-              <UpgradeProDialog>
-                <Button
-                  type="button"
-                  className={cn(
-                    woodyFocus.ring,
-                    "touch-manipulation bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90"
-                  )}
-                >
-                  <Sparkles className="mr-2 size-4" aria-hidden />
-                  Subscrever Pro
-                </Button>
-              </UpgradeProDialog>
+            <ProPlanCheckoutActions
+              className="pt-1"
+              startCheckout={startCheckout}
+              loadingCode={loadingCode}
+              error={error}
+            />
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button asChild variant="outline" className={cn(woodyFocus.ring, "touch-manipulation")}>
+                <Link to="/planos">Ver página de planos</Link>
+              </Button>
               <Button asChild variant="outline" className={cn(woodyFocus.ring, "touch-manipulation")}>
                 <Link to="/communities">Explorar comunidades</Link>
               </Button>

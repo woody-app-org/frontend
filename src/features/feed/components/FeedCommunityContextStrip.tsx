@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { CreateCommunityEntry } from "@/features/subscription/components/CreateCommunityEntry";
 import { fetchAllCommunities, fetchMyCommunityIdSet } from "@/features/communities/services/community.service";
 import type { Community } from "@/domain/types";
 
@@ -65,16 +66,14 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {isAuthenticated ? (
-            <Link
-              to="/communities/nova"
-              title="Criar comunidade — disponível com plano Woody Pro"
+            <CreateCommunityEntry
               className={cn(
                 woodyFocus.ring,
                 "text-xs font-semibold text-[var(--woody-muted)] hover:text-[var(--woody-nav)] hover:underline"
               )}
             >
               Nova comunidade
-            </Link>
+            </CreateCommunityEntry>
           ) : null}
           <Link
             to="/communities"
