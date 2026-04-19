@@ -13,6 +13,7 @@ import { useSubscriptionCapabilities } from "../useSubscriptionCapabilities";
 import { useProCheckout } from "../hooks/useProCheckout";
 import { PRO_ANNUAL_CHECKOUT_PLAN_CODE, PRO_MONTHLY_CHECKOUT_PLAN_CODE } from "../constants";
 import { WOODY_FREE_INCLUDES } from "../lib/subscriptionCopy";
+import { SubscriptionAccountPanel } from "../components/SubscriptionAccountPanel";
 
 function PlanPill({ children, active }: { children: ReactNode; active?: boolean }) {
   return (
@@ -31,7 +32,7 @@ function PlanPill({ children, active }: { children: ReactNode; active?: boolean 
 
 export function PlanosPage() {
   const { patchUser } = useAuth();
-  const { isProUser, subscription } = useSubscriptionCapabilities();
+  const { isProUser, subscription, canOpenBillingPortal } = useSubscriptionCapabilities();
   const { startCheckout, loadingCode, error } = useProCheckout();
 
   useEffect(() => {
@@ -77,6 +78,14 @@ export function PlanosPage() {
             confirmado no servidor após o pagamento.
           </p>
         </header>
+
+        {isProUser || canOpenBillingPortal ? (
+          <SubscriptionAccountPanel
+            subscription={subscription}
+            isProUser={isProUser}
+            canOpenBillingPortal={canOpenBillingPortal}
+          />
+        ) : null}
 
         {error ? (
           <p className="rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-200" role="alert">

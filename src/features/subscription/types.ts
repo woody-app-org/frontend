@@ -11,4 +11,6 @@ export interface AuthUserSubscription {
   currentPeriodEnd?: string | null;
   cancelAtPeriodEnd?: boolean;
   showProBadge?: boolean;
+  /** Indica se o backend expôs `cus_…` Stripe — permite abrir o Customer Billing Portal. */
+  canOpenBillingPortal?: boolean;
 }

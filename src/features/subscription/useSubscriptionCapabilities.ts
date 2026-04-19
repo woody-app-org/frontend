@@ -14,6 +14,8 @@ export interface SubscriptionCapabilities {
   isProUser: boolean;
   canCreateCommunity: boolean;
   shouldShowProBadge: boolean;
+  /** Cliente Stripe associado na base — abre o portal seguro da Stripe. */
+  canOpenBillingPortal: boolean;
   canAccessPremiumFeature: (featureId: string) => boolean;
 }
 
@@ -27,6 +29,7 @@ export function useSubscriptionCapabilities(): SubscriptionCapabilities {
       isProUser: isProUserFn(subscription),
       canCreateCommunity: canCreateCommunityFn(subscription),
       shouldShowProBadge: shouldShowProBadgeFn(subscription),
+      canOpenBillingPortal: Boolean(subscription?.canOpenBillingPortal),
       canAccessPremiumFeature: (featureId: string) => canAccessPremiumFeatureFn(subscription, featureId),
     }),
     [user],

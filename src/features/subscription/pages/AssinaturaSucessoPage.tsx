@@ -65,6 +65,16 @@ export function AssinaturaSucessoPage() {
             <>
               <h1 className="text-xl font-bold text-[var(--woody-text)] sm:text-2xl">Obrigada!</h1>
               <p className="text-sm leading-relaxed text-[var(--woody-muted)]">{hint}</p>
+              <p className="text-xs leading-relaxed text-[var(--woody-muted)]">
+                Para método de pagamento ou cancelamento no futuro, usa{" "}
+                <Link
+                  to="/planos"
+                  className="font-medium text-[var(--woody-nav)] underline-offset-2 hover:underline"
+                >
+                  Planos
+                </Link>{" "}
+                — a gestão do cartão fica na área hospedada da Stripe.
+              </p>
             </>
           ) : null}
 

@@ -30,6 +30,7 @@ const defaultSubscription = (): AuthUserSubscription => ({
   currentPeriodEnd: null,
   cancelAtPeriodEnd: false,
   showProBadge: false,
+  canOpenBillingPortal: false,
 });
 
 export function mapSubscription(raw: unknown): AuthUserSubscription {
@@ -43,6 +44,7 @@ export function mapSubscription(raw: unknown): AuthUserSubscription {
     currentPeriodEnd: o.currentPeriodEnd != null ? String(o.currentPeriodEnd) : null,
     cancelAtPeriodEnd: Boolean(o.cancelAtPeriodEnd),
     showProBadge: Boolean(o.showProBadge),
+    canOpenBillingPortal: Boolean(o.canOpenBillingPortal),
   };
 }
 
