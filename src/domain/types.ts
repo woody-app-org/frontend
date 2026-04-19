@@ -25,6 +25,8 @@ export interface User {
   avatarUrl: string | null;
   bio?: string;
   pronouns?: string;
+  /** Benefício Pro visível em posts/comentários (API `showProBadge`). */
+  showProBadge?: boolean;
 }
 
 export interface Community {

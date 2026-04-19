@@ -9,7 +9,7 @@ import type {
 import axios, { isAxiosError } from "axios";
 import { api, getApiErrorMessage } from "@/lib/api";
 import { mapCommunityFromApi, mapPostFromApi, mapUserFromApi } from "@/lib/apiMappers";
-import type { CommunityUpdatePayload, CommunityUpdateResult } from "../types";
+import type { CommunityUpdatePayload, CommunityUpdateResult, CreateCommunityPayload } from "../types";
 
 function normalizeTags(tags: string[]): string[] {
   const seen = new Set<string>();
@@ -59,9 +59,53 @@ export async function fetchCommunityBySlug(slug: string): Promise<Community | nu
   }
 }
 
+export class ProSubscriptionRequiredError extends Error {
+  readonly code = "pro_required" as const;
+  constructor(message?: string) {
+    super(message ?? "Criar comunidades é uma funcionalidade Woody Pro.");
+    this.name = "ProSubscriptionRequiredError";
+  }
+}
+
 export async function fetchAllCommunities(): Promise<Community[]> {
   const { data } = await api.get("/communities");
   return (data as unknown[]).map((c) => mapCommunityFromApi(c as Record<string, unknown>));
+}
+
+export async function createCommunity(payload: CreateCommunityPayload): Promise<Community> {
+  const validated = validateCommunityUpdatePayload({
+    name: payload.name,
+    description: payload.description,
+    category: payload.category,
+    tags: payload.tags,
+    rules: payload.rules,
+    avatarUrl: payload.avatarUrl ?? null,
+    coverUrl: payload.coverUrl ?? null,
+    visibility: payload.visibility,
+  });
+  if (!validated.ok) throw new Error(validated.error);
+
+  try {
+    const { data } = await api.post("/communities", {
+      name: payload.name.trim(),
+      description: payload.description.trim(),
+      category: payload.category,
+      tags: normalizeTags(payload.tags),
+      rules: payload.rules.trim(),
+      visibility: payload.visibility,
+      avatarUrl: payload.avatarUrl?.trim() || null,
+      coverUrl: payload.coverUrl?.trim() || null,
+    });
+    return mapCommunityFromApi(data as Record<string, unknown>);
+  } catch (e) {
+    if (isAxiosError(e) && e.response?.status === 403) {
+      const body = e.response?.data as { code?: string; error?: string } | undefined;
+      if (body?.code === "pro_required") {
+        throw new ProSubscriptionRequiredError(typeof body.error === "string" ? body.error : undefined);
+      }
+    }
+    throw new Error(getApiErrorMessage(e, "Não foi possível criar a comunidade."));
+  }
 }
 
 export async function fetchMyCommunityIdSet(): Promise<Set<string>> {

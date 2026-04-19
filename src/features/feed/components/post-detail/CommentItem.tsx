@@ -6,6 +6,7 @@ import { isCommentContentMaskedForViewer } from "@/domain/lib/contentModerationD
 import { formatCommentTimestamp } from "./formatCommentTimestamp";
 import { CommentActionsMenu } from "./CommentActionsMenu";
 import { HiddenCommentPlaceholder } from "./HiddenCommentPlaceholder";
+import { ProBadge } from "@/features/subscription/components/ProBadge";
 
 export interface CommentItemProps {
   post: Post;
@@ -51,15 +52,18 @@ export function CommentItem({ post, comment, viewerId, nested = false, className
       <div className="min-w-0 flex-1">
         <div className="flex gap-2">
           <header className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <Link
-              to={`/profile/${author.id}`}
-              className={cn(
-                "truncate font-semibold text-[var(--woody-text)] hover:underline underline-offset-2",
-                nested ? "text-[0.8125rem] sm:text-sm" : "text-sm"
-              )}
-            >
-              {author.name}
-            </Link>
+            <span className="inline-flex min-w-0 max-w-full items-center gap-1">
+              <Link
+                to={`/profile/${author.id}`}
+                className={cn(
+                  "min-w-0 truncate font-semibold text-[var(--woody-text)] hover:underline underline-offset-2",
+                  nested ? "text-[0.8125rem] sm:text-sm" : "text-sm"
+                )}
+              >
+                {author.name}
+              </Link>
+              {author.showProBadge ? <ProBadge variant="inline" /> : null}
+            </span>
             <span
               className={cn(
                 "truncate text-[var(--woody-muted)]",

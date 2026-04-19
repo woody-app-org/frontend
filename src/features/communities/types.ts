@@ -15,3 +15,15 @@ export interface CommunityUpdatePayload {
 export type CommunityUpdateResult =
   | { ok: true; community: Community }
   | { ok: false; error: string };
+
+/** Corpo de `POST /communities` (alinhado ao DTO da API). */
+export interface CreateCommunityPayload {
+  name: string;
+  description: string;
+  category: CommunityCategory;
+  tags: string[];
+  rules: string;
+  visibility: CommunityVisibility;
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
+}

@@ -1,4 +1,5 @@
 export { CommunitiesPage } from "./pages/CommunitiesPage";
+export { CreateCommunityPage } from "./pages/CreateCommunityPage";
 export { CommunityDetailPage } from "./pages/CommunityDetailPage";
 export { CommunityCard } from "./components/CommunityCard";
 export { CommunityTag } from "./components/CommunityTag";
@@ -27,6 +28,8 @@ export {
   getCommunityResolvedBySlug,
   updateCommunity,
   validateCommunityUpdatePayload,
+  createCommunity,
+  ProSubscriptionRequiredError,
   type JoinRequestWithUser,
 } from "./services/community.service";
 export {

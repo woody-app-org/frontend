@@ -14,7 +14,8 @@ import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { RootRedirect } from "@/app/RootRedirect";
 import { CreatePostPage, FeedPage, PostDetailPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
-import { CommunitiesPage, CommunityDetailPage } from "@/features/communities";
+import { CommunitiesPage, CommunityDetailPage, CreateCommunityPage } from "@/features/communities";
+import { AssinaturaCanceladaPage, AssinaturaSucessoPage, PlanosPage } from "@/features/subscription/pages";
 
 export const router = createBrowserRouter([
   {
@@ -79,6 +80,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "communities/nova",
+        element: (
+          <ProtectedRoute>
+            <CreateCommunityPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "communities",
         element: (
           <ProtectedRoute>
@@ -91,6 +100,30 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <CommunityDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "assinatura/sucesso",
+        element: (
+          <ProtectedRoute>
+            <AssinaturaSucessoPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "assinatura/cancelado",
+        element: (
+          <ProtectedRoute>
+            <AssinaturaCanceladaPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "planos",
+        element: (
+          <ProtectedRoute>
+            <PlanosPage />
           </ProtectedRoute>
         ),
       },

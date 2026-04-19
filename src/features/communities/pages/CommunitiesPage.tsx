@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { HeartHandshake, Search, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import { HeartHandshake, Plus, Search, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
 import type { Community, CommunityCategory } from "@/domain/types";
@@ -10,6 +11,9 @@ import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { getCommunityCategoryLabel } from "../lib/communitiesPageModel";
 import { fetchAllCommunities, fetchMyCommunityIdSet } from "../services/community.service";
 import { getAuthUser } from "@/features/auth/services/auth.service";
+import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { CreateCommunityEntry } from "@/features/subscription/components/CreateCommunityEntry";
+import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 
 const CATEGORY_ORDER: CommunityCategory[] = [
   "carreira",
@@ -29,6 +33,7 @@ function normalizeSearch(s: string): string {
 
 export function CommunitiesPage() {
   const viewerId = useViewerId();
+  const { isProUser } = useSubscriptionCapabilities();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [myIds, setMyIds] = useState<Set<string>>(new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -127,6 +132,31 @@ export function CommunitiesPage() {
               Explore por tema, encontre grupos com propósito claro e entre quando se sentir à vontade —
               tudo permanece centrado em segurança e curadoria.
             </p>
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <CreateCommunityEntry
+                className={cn(
+                  woodyFocus.ring,
+                  "inline-flex items-center gap-2 rounded-xl border border-[var(--woody-accent)]/20 bg-[var(--woody-bg)]/90 px-3 py-2 text-sm font-semibold text-[var(--woody-text)] shadow-sm transition-colors hover:bg-[var(--woody-nav)]/8"
+                )}
+              >
+                <Plus className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+                Criar comunidade
+              </CreateCommunityEntry>
+              <Link
+                to="/planos"
+                className={cn(
+                  woodyFocus.ring,
+                  "inline-flex items-center gap-1.5 rounded-xl border border-[var(--woody-nav)]/25 bg-[var(--woody-nav)]/10 px-3 py-2 text-sm font-semibold text-[var(--woody-text)] shadow-sm transition-colors hover:bg-[var(--woody-nav)]/16"
+                )}
+              >
+                <Sparkles className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+                Ver planos
+              </Link>
+              <span className="flex max-sm:w-full flex-wrap items-center gap-1.5 text-xs text-[var(--woody-muted)] sm:pl-1">
+                <ProBadge variant="inline" />
+                <span>{isProUser ? "Tens criação de comunidades ativa." : "Criação de comunidades é Pro — o botão abre o resumo e checkout."}</span>
+              </span>
+            </div>
             <div className="flex flex-wrap items-center gap-3 pt-1 text-sm text-[var(--woody-text)]/90">
               <span className="inline-flex items-center gap-2 rounded-xl bg-[var(--woody-bg)]/80 px-3 py-2 ring-1 ring-[var(--woody-accent)]/10">
                 <HeartHandshake className="size-4 shrink-0 text-[var(--woody-accent)]" aria-hidden />
