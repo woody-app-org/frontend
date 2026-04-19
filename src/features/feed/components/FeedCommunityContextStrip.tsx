@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { CreateCommunityEntry } from "@/features/subscription/components/CreateCommunityEntry";
 import { fetchAllCommunities, fetchMyCommunityIdSet } from "@/features/communities/services/community.service";
 import type { Community } from "@/domain/types";
 
@@ -63,16 +64,28 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
               : "Onde você conversa"}
           </p>
         </div>
-        <Link
-          to="/communities"
-          className={cn(
-            "flex shrink-0 items-center gap-0.5 text-xs font-semibold text-[var(--woody-nav)] hover:underline",
-            woodyFocus.ring
-          )}
-        >
-          Ver todas
-          <ChevronRight className="size-3.5" aria-hidden />
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          {isAuthenticated ? (
+            <CreateCommunityEntry
+              className={cn(
+                woodyFocus.ring,
+                "text-xs font-semibold text-[var(--woody-muted)] hover:text-[var(--woody-nav)] hover:underline"
+              )}
+            >
+              Nova comunidade
+            </CreateCommunityEntry>
+          ) : null}
+          <Link
+            to="/communities"
+            className={cn(
+              "flex items-center gap-0.5 text-xs font-semibold text-[var(--woody-nav)] hover:underline",
+              woodyFocus.ring
+            )}
+          >
+            Ver todas
+            <ChevronRight className="size-3.5" aria-hidden />
+          </Link>
+        </div>
       </div>
 
       {mode === "loading" ? (

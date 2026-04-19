@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import type { ReactNode } from "react";
 import type { UserProfile } from "../types";
+import { ProBadge } from "@/features/subscription/components/ProBadge";
 
 const styles = {
   card:
@@ -91,6 +92,7 @@ export function ProfileHeader({
             <div className={styles.nameBlock}>
               <div className="flex flex-wrap items-baseline gap-1.5">
                 <h1 className={styles.name}>{profile.name}</h1>
+                {profile.showProBadge ? <ProBadge variant="profile" /> : null}
                 {profile.pronouns && (
                   <>
                     <span className={styles.pronouns}>•</span>

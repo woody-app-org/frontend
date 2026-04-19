@@ -1,9 +1,13 @@
+import type { AuthUserSubscription } from "@/features/subscription/types";
+
 export interface AuthUser {
   id: string;
   username: string;
   email?: string;
   avatarUrl?: string;
   name?: string;
+  /** Presente após login/registo com API ≥ assinaturas; sessões antigas podem omitir até novo login. */
+  subscription?: AuthUserSubscription;
 }
 
 /** Sessão atual (espelho de `AuthUser` para vocabulário alinhado ao backend). */

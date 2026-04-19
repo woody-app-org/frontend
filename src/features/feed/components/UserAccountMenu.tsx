@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -88,6 +88,12 @@ export function UserAccountMenu({ className }: UserAccountMenuProps) {
             <Link to={`/profile/${user.id}`} className="flex items-center gap-2">
               <User className="size-4 opacity-80" aria-hidden />
               Meu perfil
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer focus:bg-[var(--woody-nav)]/10">
+            <Link to="/planos" className="flex items-center gap-2">
+              <Sparkles className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
+              Planos e assinatura
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />

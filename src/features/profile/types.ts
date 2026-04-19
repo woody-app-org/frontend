@@ -1,4 +1,5 @@
 import type { Post, User } from "@/domain/types";
+import type { AuthUserSubscription } from "@/features/subscription/types";
 
 /** Link de rede social / conexão do perfil */
 export interface SocialLink {
@@ -39,6 +40,9 @@ export interface UserProfile {
   isFollowing?: boolean;
   followersCount?: number;
   followingCount?: number;
+  showProBadge?: boolean;
+  /** Presente em `GET /users/me` quando a API envia o estado de assinatura. */
+  subscription?: AuthUserSubscription;
 }
 
 /** Payload para `updateProfile` / futura API REST. */

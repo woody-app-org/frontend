@@ -1,3 +1,4 @@
+import type { AuthUserSubscription } from "@/features/subscription/types";
 import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
 import { AUTH_STORAGE_KEY, AUTH_TOKEN_KEY } from "../constants";
 import { syncAuthUserToDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
@@ -7,7 +8,7 @@ function getStoredUser(): AuthUser | null {
   try {
     const raw = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as AuthUser;
+    return normalizeStoredUser(JSON.parse(raw) as AuthUser);
   } catch {
     return null;
   }
@@ -21,14 +22,53 @@ function setStoredUser(user: AuthUser | null): void {
   }
 }
 
-function mapAuthUser(raw: { id: string; username: string; email?: string; name?: string; avatarUrl?: string }): AuthUser {
+const defaultSubscription = (): AuthUserSubscription => ({
+  effectivePlan: "free",
+  billingPlan: "free",
+  planCode: "free",
+  status: "active",
+  currentPeriodEnd: null,
+  cancelAtPeriodEnd: false,
+  showProBadge: false,
+  canOpenBillingPortal: false,
+});
+
+export function mapSubscription(raw: unknown): AuthUserSubscription {
+  if (!raw || typeof raw !== "object") return defaultSubscription();
+  const o = raw as Record<string, unknown>;
+  return {
+    effectivePlan: o.effectivePlan === "pro" ? "pro" : "free",
+    billingPlan: o.billingPlan === "pro" ? "pro" : "free",
+    planCode: o.planCode != null ? String(o.planCode) : null,
+    status: typeof o.status === "string" ? o.status : "active",
+    currentPeriodEnd: o.currentPeriodEnd != null ? String(o.currentPeriodEnd) : null,
+    cancelAtPeriodEnd: Boolean(o.cancelAtPeriodEnd),
+    showProBadge: Boolean(o.showProBadge),
+    canOpenBillingPortal: Boolean(o.canOpenBillingPortal),
+  };
+}
+
+function mapAuthUser(raw: {
+  id: string;
+  username: string;
+  email?: string;
+  name?: string;
+  avatarUrl?: string;
+  subscription?: unknown;
+}): AuthUser {
   return {
     id: String(raw.id),
     username: raw.username,
     email: raw.email,
     name: raw.name ?? raw.username,
     avatarUrl: raw.avatarUrl,
+    subscription: mapSubscription(raw.subscription),
   };
+}
+
+function normalizeStoredUser(u: AuthUser): AuthUser {
+  if (u.subscription) return u;
+  return { ...u, subscription: defaultSubscription() };
 }
 
 export async function loginMock(credentials: LoginCredentials): Promise<AuthUser> {
@@ -86,6 +126,13 @@ export async function logoutSessionMock(): Promise<void> {
 
 export function getAuthUser(): AuthUser | null {
   return getStoredUser();
+}
+
+/** Atualiza o estado de assinatura a partir de `GET /users/me` (inclui `subscription` só para a própria utilizadora). */
+export async function fetchMySubscriptionState(): Promise<AuthUserSubscription> {
+  const { data } = await api.get("/users/me");
+  const raw = data as Record<string, unknown>;
+  return mapSubscription(raw.subscription);
 }
 
 export function patchStoredUser(patch: Partial<AuthUser>): AuthUser | null {

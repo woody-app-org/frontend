@@ -15,6 +15,7 @@ import {
   removeMember,
   setCommunityMemberRole,
 } from "../../services/communityMembership.service";
+import { ProBadge } from "@/features/subscription/components/ProBadge";
 
 function initials(name: string): string {
   return name
@@ -73,7 +74,10 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 text-left">
-            <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+              <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
+              {user.showProBadge ? <ProBadge variant="inline" /> : null}
+            </div>
             <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
             <span
               className={cn(
