@@ -4,6 +4,8 @@ import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import {
   acceptConversationRequest,
+  deleteConversationMessage,
+  editConversationMessage,
   fetchConversationMessages,
   fetchMyConversations,
   fetchPendingReceived,
@@ -18,12 +20,7 @@ import { ConversationList } from "../components/ConversationList";
 import { ConversationRequestsSection } from "../components/ConversationRequestsSection";
 import { ConversationChatPanel } from "../components/ConversationChatPanel";
 import { sortConversationsByActivity } from "../lib/sortConversations";
-
-function sortMessages(a: MessageResponseDto, b: MessageResponseDto) {
-  const t = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-  if (t !== 0) return t;
-  return a.id - b.id;
-}
+import { sortMessagesChronological } from "../lib/sortMessages";
 
 export function ConversationsPage() {
   const navigate = useNavigate();
@@ -41,7 +38,6 @@ export function ConversationsPage() {
   const [pendingReceived, setPendingReceived] = useState<ConversationResponseDto[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [messages, setMessages] = useState<MessageResponseDto[]>([]);
-  const [draft, setDraft] = useState("");
   const [loadingLists, setLoadingLists] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -63,7 +59,7 @@ export function ConversationsPage() {
     setLoadingMessages(true);
     try {
       const page = await fetchConversationMessages(conversationId, 1, 200);
-      setMessages([...page.items].sort(sortMessages));
+      setMessages([...page.items].sort(sortMessagesChronological));
     } catch {
       setMessages([]);
     } finally {
@@ -90,10 +86,10 @@ export function ConversationsPage() {
   const mergeMessage = useCallback((next: MessageResponseDto) => {
     setMessages((prev) => {
       const idx = prev.findIndex((m) => m.id === next.id);
-      if (idx === -1) return [...prev, next].sort(sortMessages);
+      if (idx === -1) return [...prev, next].sort(sortMessagesChronological);
       const copy = [...prev];
       copy[idx] = next;
-      return copy.sort(sortMessages);
+      return copy.sort(sortMessagesChronological);
     });
   }, []);
 
@@ -148,6 +144,7 @@ export function ConversationsPage() {
   );
 
   const handleAccept = async (id: number) => {
+    setSendError(null);
     setActionBusyId(id);
     try {
       await acceptConversationRequest(id);
@@ -161,6 +158,7 @@ export function ConversationsPage() {
   };
 
   const handleReject = async (id: number) => {
+    setSendError(null);
     setActionBusyId(id);
     try {
       await rejectConversationRequest(id);
@@ -173,17 +171,28 @@ export function ConversationsPage() {
     }
   };
 
-  const handleSend = async () => {
+  const handleSendMessage = async (payload: {
+    body?: string | null;
+    attachmentUrls?: string[] | null;
+  }) => {
     if (selectedId == null) return;
-    const text = draft.trim();
-    if (!text) return;
-    setSendError(null);
-    try {
-      await sendConversationMessage(selectedId, { body: text });
-      setDraft("");
-    } catch (e) {
-      setSendError(e instanceof Error ? e.message : "Falha ao enviar.");
-    }
+    const msg = await sendConversationMessage(selectedId, payload);
+    mergeMessage(msg);
+    void reloadLists();
+  };
+
+  const handleEditMessage = async (messageId: number, body: string) => {
+    if (selectedId == null) return;
+    const msg = await editConversationMessage(selectedId, messageId, body);
+    mergeMessage(msg);
+    void reloadLists();
+  };
+
+  const handleDeleteMessage = async (messageId: number) => {
+    if (selectedId == null) return;
+    await deleteConversationMessage(selectedId, messageId);
+    await reloadMessages(selectedId);
+    await reloadLists();
   };
 
   const showMobileChat = Boolean(routeConversationId);
@@ -196,6 +205,11 @@ export function ConversationsPage() {
           <p className={woodySection.subtitle}>
             Inbox com pedidos e conversas. Atualiza em tempo real; abre um chat para ver o histórico completo.
           </p>
+          {sendError ? (
+            <p className="mt-3 max-w-xl text-sm text-red-600" role="alert">
+              {sendError}
+            </p>
+          ) : null}
         </header>
 
         <div
@@ -256,14 +270,14 @@ export function ConversationsPage() {
               </div>
             ) : (
               <ConversationChatPanel
+                key={selectedId}
                 peer={activePeer}
                 messages={messages}
                 loadingMessages={loadingMessages}
                 myNumericId={myNumericId}
-                draft={draft}
-                onDraftChange={setDraft}
-                sendError={sendError}
-                onSend={() => void handleSend()}
+                onSendMessage={handleSendMessage}
+                onEditMessage={handleEditMessage}
+                onDeleteMessage={handleDeleteMessage}
                 onBack={() => navigate("/messages")}
               />
             )}

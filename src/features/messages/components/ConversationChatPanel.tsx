@@ -1,20 +1,20 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import type { ConversationPeerPreviewDto, MessageResponseDto } from "../types";
+import { DmComposer } from "./DmComposer";
+import { DmMessageList } from "./DmMessageList";
 
 export interface ConversationChatPanelProps {
   peer: ConversationPeerPreviewDto | null;
   messages: MessageResponseDto[];
   loadingMessages: boolean;
   myNumericId: number;
-  draft: string;
-  onDraftChange: (v: string) => void;
-  sendError: string | null;
-  onSend: () => void;
+  onSendMessage: (payload: { body?: string | null; attachmentUrls?: string[] | null }) => Promise<void>;
+  onEditMessage: (messageId: number, body: string) => Promise<void>;
+  onDeleteMessage: (messageId: number) => Promise<void>;
   onBack: () => void;
 }
 
@@ -23,13 +23,13 @@ export function ConversationChatPanel({
   messages,
   loadingMessages,
   myNumericId,
-  draft,
-  onDraftChange,
-  sendError,
-  onSend,
+  onSendMessage,
+  onEditMessage,
+  onDeleteMessage,
   onBack,
 }: ConversationChatPanelProps) {
   const label = peer ? peer.displayName ?? peer.username : "Conversa";
+  const [mutationHint, setMutationHint] = useState<string | null>(null);
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--woody-bg)]">
@@ -58,71 +58,42 @@ export function ConversationChatPanel({
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 md:p-4">
-        {loadingMessages ? (
-          <p className="text-sm text-[var(--woody-muted)]">A carregar mensagens…</p>
-        ) : messages.length === 0 ? (
-          <p className="py-8 text-center text-sm text-[var(--woody-muted)]">Ainda não há mensagens nesta conversa.</p>
-        ) : (
-          <ul className="m-0 flex list-none flex-col gap-3 p-0">
-            {messages.map((m) => (
-              <li
-                key={m.id}
-                className={cn(
-                  "max-w-[min(100%,28rem)] rounded-2xl border px-3 py-2 text-sm shadow-sm",
-                  m.sender.id === myNumericId
-                    ? "self-end border-[var(--woody-nav)]/22 bg-[var(--woody-nav)]/8"
-                    : "self-start border-[var(--woody-divider)] bg-[var(--woody-card)]"
-                )}
-              >
-                <p className="mb-1 text-xs font-medium text-[var(--woody-muted)]">
-                  {m.sender.displayName ?? m.sender.username}
-                  {m.isEdited ? " · editada" : ""}
-                </p>
-                {m.isDeleted ? (
-                  <p className="italic text-[var(--woody-muted)]">Mensagem apagada</p>
-                ) : (
-                  <>
-                    {m.body ? <p className="whitespace-pre-wrap break-words">{m.body}</p> : null}
-                    {m.attachments?.length ? (
-                      <ul className="mt-2 list-none space-y-1 p-0">
-                        {m.attachments.map((a) => (
-                          <li key={a.id}>
-                            <a
-                              href={a.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs font-medium text-[var(--woody-nav)] underline"
-                            >
-                              Ver imagem
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <footer className="shrink-0 border-t border-[var(--woody-divider)] bg-[var(--woody-header)]/40 p-3 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none">
-        {sendError ? <p className="mb-2 text-xs text-red-600">{sendError}</p> : null}
-        <div className="flex flex-col gap-2 md:flex-row md:items-end">
-          <Textarea
-            value={draft}
-            onChange={(e) => onDraftChange(e.target.value)}
-            placeholder="Mensagem…"
-            rows={2}
-            className="min-h-[44px] flex-1 resize-none md:min-h-0"
-          />
-          <Button type="button" className="min-h-10 w-full shrink-0 md:w-auto" onClick={onSend} disabled={!draft.trim()}>
-            Enviar
-          </Button>
+      {mutationHint ? (
+        <div
+          role="status"
+          className="flex shrink-0 items-start justify-between gap-2 border-b border-red-200/40 bg-red-500/8 px-3 py-2 text-xs text-red-800"
+        >
+          <p className="min-w-0 flex-1 leading-snug">{mutationHint}</p>
+          <button
+            type="button"
+            className={cn(woodyFocus.ring, "shrink-0 rounded px-1 font-medium underline underline-offset-2")}
+            onClick={() => setMutationHint(null)}
+          >
+            Fechar
+          </button>
         </div>
-      </footer>
+      ) : null}
+
+      {loadingMessages ? (
+        <div className="flex flex-1 items-center justify-center p-6">
+          <p className="text-sm text-[var(--woody-muted)]">A carregar mensagens…</p>
+        </div>
+      ) : messages.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+          <p className="text-sm font-medium text-[var(--woody-text)]">Ainda não há mensagens</p>
+          <p className="max-w-xs text-sm text-[var(--woody-muted)]">Envia uma mensagem ou uma imagem para iniciar a conversa.</p>
+        </div>
+      ) : (
+        <DmMessageList
+          messages={messages}
+          myNumericId={myNumericId}
+          onSaveEdit={onEditMessage}
+          onDelete={onDeleteMessage}
+          onMutationError={(msg) => setMutationHint(msg)}
+        />
+      )}
+
+      <DmComposer disabled={loadingMessages} onSend={onSendMessage} />
     </div>
   );
 }

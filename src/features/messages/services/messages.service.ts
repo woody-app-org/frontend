@@ -51,6 +51,30 @@ export async function sendConversationMessage(
   }
 }
 
+export async function editConversationMessage(
+  conversationId: number,
+  messageId: number,
+  body: string
+): Promise<MessageResponseDto> {
+  try {
+    const { data } = await api.patch<MessageResponseDto>(
+      `/conversations/${conversationId}/messages/${messageId}`,
+      { body }
+    );
+    return data;
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível editar a mensagem."));
+  }
+}
+
+export async function deleteConversationMessage(conversationId: number, messageId: number): Promise<void> {
+  try {
+    await api.delete(`/conversations/${conversationId}/messages/${messageId}`);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível apagar a mensagem."));
+  }
+}
+
 export async function acceptConversationRequest(conversationId: number): Promise<void> {
   try {
     await api.post(`/conversations/${conversationId}/accept`);
