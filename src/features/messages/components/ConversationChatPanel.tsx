@@ -11,10 +11,12 @@ export interface ConversationChatPanelProps {
   peer: ConversationPeerPreviewDto | null;
   messages: MessageResponseDto[];
   loadingMessages: boolean;
+  messagesLoadError: string | null;
   myNumericId: number;
   onSendMessage: (payload: { body?: string | null; attachmentUrls?: string[] | null }) => Promise<void>;
   onEditMessage: (messageId: number, body: string) => Promise<void>;
   onDeleteMessage: (messageId: number) => Promise<void>;
+  onRetryMessages: () => void;
   onBack: () => void;
 }
 
@@ -22,14 +24,17 @@ export function ConversationChatPanel({
   peer,
   messages,
   loadingMessages,
+  messagesLoadError,
   myNumericId,
   onSendMessage,
   onEditMessage,
   onDeleteMessage,
+  onRetryMessages,
   onBack,
 }: ConversationChatPanelProps) {
   const label = peer ? peer.displayName ?? peer.username : "Conversa";
   const [mutationHint, setMutationHint] = useState<string | null>(null);
+  const composerBlocked = loadingMessages || Boolean(messagesLoadError);
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--woody-bg)]">
@@ -74,10 +79,31 @@ export function ConversationChatPanel({
         </div>
       ) : null}
 
+      {messagesLoadError && !loadingMessages ? (
+        <div
+          role="alert"
+          className="flex shrink-0 flex-col gap-2 border-b border-amber-200/50 bg-amber-500/10 px-3 py-3 text-sm text-amber-950"
+        >
+          <p className="leading-snug">{messagesLoadError}</p>
+          <button
+            type="button"
+            className={cn(
+              woodyFocus.ring,
+              "self-start rounded-lg bg-[var(--woody-nav)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-95"
+            )}
+            onClick={() => onRetryMessages()}
+          >
+            Tentar novamente
+          </button>
+        </div>
+      ) : null}
+
       {loadingMessages ? (
         <div className="flex flex-1 items-center justify-center p-6">
           <p className="text-sm text-[var(--woody-muted)]">A carregar mensagens…</p>
         </div>
+      ) : messagesLoadError ? (
+        <div className="min-h-[min(40dvh,240px)] flex-1 bg-[var(--woody-bg)]/50" aria-hidden />
       ) : messages.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
           <p className="text-sm font-medium text-[var(--woody-text)]">Ainda não há mensagens</p>
@@ -93,7 +119,7 @@ export function ConversationChatPanel({
         />
       )}
 
-      <DmComposer disabled={loadingMessages} onSend={onSendMessage} />
+      <DmComposer disabled={composerBlocked} onSend={onSendMessage} />
     </div>
   );
 }

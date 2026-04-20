@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import type { MessageResponseDto } from "../types";
 import { DmMessageBubble } from "./DmMessageBubble";
 
@@ -14,7 +14,7 @@ export function DmMessageList({ messages, myNumericId, onSaveEdit, onDelete, onM
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;

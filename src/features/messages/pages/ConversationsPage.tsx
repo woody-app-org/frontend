@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -41,27 +41,43 @@ export function ConversationsPage() {
   const [loadingLists, setLoadingLists] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [listLoadError, setListLoadError] = useState<string | null>(null);
+  const [messagesLoadError, setMessagesLoadError] = useState<string | null>(null);
   const [actionBusyId, setActionBusyId] = useState<number | null>(null);
+  const listsDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const reloadLists = useCallback(async () => {
     try {
       const [mine, pending] = await Promise.all([fetchMyConversations(), fetchPendingReceived()]);
+      setListLoadError(null);
       setConversations([...mine].sort(sortConversationsByActivity));
       setPendingReceived([...pending].sort(sortConversationsByActivity));
     } catch {
-      /* mantém estado */
+      setListLoadError("Não foi possível atualizar a lista de conversas.");
     } finally {
       setLoadingLists(false);
     }
   }, []);
 
+  const scheduleReloadLists = useCallback(() => {
+    if (listsDebounceRef.current != null) {
+      clearTimeout(listsDebounceRef.current);
+    }
+    listsDebounceRef.current = setTimeout(() => {
+      listsDebounceRef.current = null;
+      void reloadLists();
+    }, 220);
+  }, [reloadLists]);
+
   const reloadMessages = useCallback(async (conversationId: number) => {
     setLoadingMessages(true);
+    setMessagesLoadError(null);
     try {
       const page = await fetchConversationMessages(conversationId, 1, 200);
       setMessages([...page.items].sort(sortMessagesChronological));
     } catch {
       setMessages([]);
+      setMessagesLoadError("Não foi possível carregar as mensagens desta conversa.");
     } finally {
       setLoadingMessages(false);
     }
@@ -70,6 +86,16 @@ export function ConversationsPage() {
   useEffect(() => {
     void reloadLists();
   }, [reloadLists]);
+
+  useEffect(
+    () => () => {
+      if (listsDebounceRef.current != null) {
+        clearTimeout(listsDebounceRef.current);
+        listsDebounceRef.current = null;
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     setSelectedId(routeConversationId);
@@ -84,6 +110,7 @@ export function ConversationsPage() {
   }, [selectedId, reloadMessages]);
 
   const mergeMessage = useCallback((next: MessageResponseDto) => {
+    if (!next || next.id < 1) return;
     setMessages((prev) => {
       const idx = prev.findIndex((m) => m.id === next.id);
       if (idx === -1) return [...prev, next].sort(sortMessagesChronological);
@@ -97,25 +124,25 @@ export function ConversationsPage() {
     () => ({
       onMessageCreated: (msg: MessageResponseDto) => {
         if (selectedId === msg.conversationId) mergeMessage(msg);
-        void reloadLists();
+        scheduleReloadLists();
       },
       onMessageUpdated: (msg: MessageResponseDto) => {
         if (selectedId === msg.conversationId) mergeMessage(msg);
-        void reloadLists();
+        scheduleReloadLists();
       },
       onMessageDeleted: (msg: MessageResponseDto) => {
         if (selectedId === msg.conversationId) mergeMessage(msg);
-        void reloadLists();
+        scheduleReloadLists();
       },
       onConversationUpdated: (snap: ConversationRealtimeDto) => {
         void reloadLists();
         if (selectedId === snap.id) void reloadMessages(snap.id);
       },
       onInboxChanged: () => {
-        void reloadLists();
+        scheduleReloadLists();
       },
     }),
-    [mergeMessage, reloadLists, selectedId]
+    [mergeMessage, reloadLists, reloadMessages, scheduleReloadLists, selectedId]
   );
 
   useDirectMessagesSignalR(isAuthenticated, selectedId, handlers);
@@ -210,6 +237,18 @@ export function ConversationsPage() {
               {sendError}
             </p>
           ) : null}
+          {listLoadError ? (
+            <div className="mt-3 flex max-w-xl flex-col gap-2 rounded-xl border border-amber-200/60 bg-amber-500/10 p-3 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+              <p className="min-w-0 flex-1 leading-snug">{listLoadError}</p>
+              <button
+                type="button"
+                className="shrink-0 rounded-lg bg-[var(--woody-nav)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-95"
+                onClick={() => void reloadLists()}
+              >
+                Atualizar lista
+              </button>
+            </div>
+          ) : null}
         </header>
 
         <div
@@ -274,10 +313,14 @@ export function ConversationsPage() {
                 peer={activePeer}
                 messages={messages}
                 loadingMessages={loadingMessages}
+                messagesLoadError={messagesLoadError}
                 myNumericId={myNumericId}
                 onSendMessage={handleSendMessage}
                 onEditMessage={handleEditMessage}
                 onDeleteMessage={handleDeleteMessage}
+                onRetryMessages={() => {
+                  if (selectedId != null) void reloadMessages(selectedId);
+                }}
                 onBack={() => navigate("/messages")}
               />
             )}

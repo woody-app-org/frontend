@@ -157,6 +157,8 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
                               alt=""
                               className="max-h-56 w-full object-cover sm:max-h-64"
                               loading="lazy"
+                              decoding="async"
+                              referrerPolicy="no-referrer"
                             />
                           </a>
                         </li>

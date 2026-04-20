@@ -67,6 +67,10 @@ export interface ConversationMessagesPageDto {
   pageSize: number;
 }
 
+/**
+ * Evento leve da inbox via SignalR (`inboxChanged`).
+ * `kind`: `"message"` | `"conversation"` — novos valores podem surgir com evoluções (ex.: leitura, arquivo).
+ */
 export interface DirectMessageInboxEventDto {
   kind: string;
   conversationId: number;
