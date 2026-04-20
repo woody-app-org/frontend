@@ -1,1 +1,3 @@
-export { MessagesPage } from "./pages/MessagesPage";
+export { ConversationsPage } from "./pages/ConversationsPage";
+/** @deprecated Preferir `ConversationsPage`. */
+export { ConversationsPage as MessagesPage } from "./pages/ConversationsPage";

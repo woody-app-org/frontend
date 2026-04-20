@@ -50,3 +50,19 @@ export async function sendConversationMessage(
     throw new Error(getApiErrorMessage(e, "Não foi possível enviar a mensagem."));
   }
 }
+
+export async function acceptConversationRequest(conversationId: number): Promise<void> {
+  try {
+    await api.post(`/conversations/${conversationId}/accept`);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível aceitar o pedido."));
+  }
+}
+
+export async function rejectConversationRequest(conversationId: number): Promise<void> {
+  try {
+    await api.post(`/conversations/${conversationId}/reject`);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível recusar o pedido."));
+  }
+}

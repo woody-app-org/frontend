@@ -16,7 +16,7 @@ import { CreatePostPage, FeedPage, PostDetailPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
 import { CommunitiesPage, CommunityDetailPage, CreateCommunityPage } from "@/features/communities";
 import { AssinaturaCanceladaPage, AssinaturaSucessoPage, PlanosPage } from "@/features/subscription/pages";
-import { MessagesPage } from "@/features/messages";
+import { ConversationsPage } from "@/features/messages";
 
 export const router = createBrowserRouter([
   {
@@ -59,7 +59,15 @@ export const router = createBrowserRouter([
         path: "messages",
         element: (
           <ProtectedRoute>
-            <MessagesPage />
+            <ConversationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "messages/:conversationId",
+        element: (
+          <ProtectedRoute>
+            <ConversationsPage />
           </ProtectedRoute>
         ),
       },

@@ -17,6 +17,8 @@ export interface ConversationResponseDto {
   updatedAt: string | null;
   respondedAt: string | null;
   otherUser: ConversationPeerPreviewDto;
+  lastMessagePreview?: string | null;
+  lastMessageAt?: string | null;
 }
 
 export interface ConversationRealtimeDto {
