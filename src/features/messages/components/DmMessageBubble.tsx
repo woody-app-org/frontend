@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import type { MessageResponseDto } from "../types";
@@ -28,6 +29,7 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
   const [editing, setEditing] = useState(false);
   const [editDraft, setEditDraft] = useState(message.body ?? "");
   const [busy, setBusy] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!editing) setEditDraft(message.body ?? "");
@@ -63,11 +65,11 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
     }
   };
 
-  const confirmDelete = async () => {
-    if (!window.confirm("Apagar esta mensagem? Isto remove o texto e os anexos para ambas as pessoas.")) return;
+  const executeDelete = async () => {
     setBusy(true);
     try {
       await onDelete(message.id);
+      setDeleteDialogOpen(false);
     } catch (e) {
       onMutationError(e instanceof Error ? e.message : "Não foi possível apagar.");
     } finally {
@@ -76,6 +78,7 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
   };
 
   return (
+    <>
     <li
       className={cn("flex w-full max-w-full gap-2", isMine ? "flex-row-reverse justify-end" : "flex-row justify-start")}
     >
@@ -173,7 +176,7 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
               <DmMessageActionsMenu
                 canEdit={canEdit}
                 onEdit={startEdit}
-                onDelete={() => void confirmDelete()}
+                onDelete={() => setDeleteDialogOpen(true)}
                 disabled={busy}
               />
             ) : null}
@@ -199,5 +202,47 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
         ) : null}
       </div>
     </li>
+
+    <Dialog open={deleteDialogOpen} onOpenChange={(open) => !busy && setDeleteDialogOpen(open)}>
+      <DialogContent
+        className={cn(
+          "max-w-[min(100vw-1.5rem,22rem)] gap-5 border-[var(--woody-divider)] bg-[var(--woody-card)] p-5 shadow-[0_20px_50px_rgba(58,45,36,0.18)] sm:p-6"
+        )}
+        onPointerDownOutside={(e) => {
+          if (busy) e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (busy) e.preventDefault();
+        }}
+      >
+        <DialogHeader className="flex-col items-stretch gap-1 text-left sm:text-left">
+          <DialogTitle className="text-base font-semibold text-[var(--woody-text)]">Apagar mensagem?</DialogTitle>
+          <DialogDescription className="text-sm leading-relaxed text-[var(--woody-muted)]">
+            Isto remove o texto e os anexos para ambas as pessoas. Não é possível anular.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-[var(--woody-divider)] bg-[var(--woody-bg)] sm:w-auto"
+            disabled={busy}
+            onClick={() => setDeleteDialogOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            className="w-full sm:w-auto"
+            disabled={busy}
+            onClick={() => void executeDelete()}
+          >
+            {busy ? "A apagar…" : "Apagar"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

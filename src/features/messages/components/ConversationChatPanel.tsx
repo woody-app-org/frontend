@@ -99,13 +99,13 @@ export function ConversationChatPanel({
       ) : null}
 
       {loadingMessages ? (
-        <div className="flex flex-1 items-center justify-center p-6">
+        <div className="flex min-h-0 flex-1 items-center justify-center p-6">
           <p className="text-sm text-[var(--woody-muted)]">A carregar mensagens…</p>
         </div>
       ) : messagesLoadError ? (
-        <div className="min-h-[min(40dvh,240px)] flex-1 bg-[var(--woody-bg)]/50" aria-hidden />
+        <div className="min-h-0 flex-1 bg-[var(--woody-bg)]/50" aria-hidden />
       ) : messages.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
           <p className="text-sm font-medium text-[var(--woody-text)]">Ainda não há mensagens</p>
           <p className="max-w-xs text-sm text-[var(--woody-muted)]">Envia uma mensagem ou uma imagem para iniciar a conversa.</p>
         </div>

@@ -228,8 +228,17 @@ export function ConversationsPage() {
 
   return (
     <FeedLayout>
-      <div className={cn(woodyLayout.pagePad, "mx-auto w-full max-w-6xl pb-28 md:pb-8")}>
-        <header className="mb-5 md:mb-6">
+      <div
+        className={cn(
+          woodyLayout.pagePad,
+          "mx-auto flex w-full max-w-6xl flex-col gap-5 pb-28 md:min-h-0 md:gap-6 md:pb-8",
+          /* Altura fixa no desktop: o scroll fica dentro do chat/lista, não na página inteira. */
+          "md:h-[calc(100dvh-7rem)] md:max-h-[calc(100dvh-7rem)]",
+          /* Mobile com chat aberto: limita altura para o histórico rolar dentro do painel. */
+          showMobileChat && "min-h-0 max-h-[calc(100dvh-7.5rem)] flex-1"
+        )}
+      >
+        <header className="shrink-0 md:mb-0">
           <h1 className={woodySection.title}>Conversas</h1>
           <p className={woodySection.subtitle}>
             Inbox com pedidos e conversas (atualiza em tempo real). Para falar com alguém, usa <strong className="font-medium text-[var(--woody-text)]">Mensagem</strong> no perfil dela ou os atalhos abaixo.
@@ -255,13 +264,14 @@ export function ConversationsPage() {
 
         <div
           className={cn(
-            "grid min-h-[min(70dvh,640px)] overflow-hidden rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)]/85 shadow-[0_1px_3px_rgba(58,45,36,0.06)]",
-            "md:grid-cols-[minmax(0,320px)_1fr]"
+            "grid min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)]/85 shadow-[0_1px_3px_rgba(58,45,36,0.06)]",
+            "min-h-[min(52dvh,420px)] md:min-h-0",
+            "md:grid-cols-[minmax(0,320px)_1fr] md:h-full md:max-h-full"
           )}
         >
           <div
             className={cn(
-              "flex max-h-[min(72dvh,720px)] min-h-0 flex-col gap-6 overflow-y-auto border-[var(--woody-divider)] p-4 md:border-r",
+              "flex h-full min-h-0 flex-col gap-6 overflow-y-auto border-[var(--woody-divider)] p-4 md:border-r",
               showMobileChat && "hidden md:flex"
             )}
           >
@@ -302,12 +312,12 @@ export function ConversationsPage() {
 
           <div
             className={cn(
-              "min-h-[min(60dvh,560px)] min-w-0 border-t border-[var(--woody-divider)] md:border-t-0 md:border-l-0",
+              "flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-t border-[var(--woody-divider)] md:border-t-0 md:border-l-0",
               !showMobileChat && "hidden md:flex"
             )}
           >
             {selectedId == null ? (
-              <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-2 p-8 text-center">
+              <div className="flex h-full min-h-[min(40dvh,280px)] flex-col items-center justify-center gap-2 p-8 text-center">
                 <p className="text-sm font-medium text-[var(--woody-text)]">Escolhe uma conversa</p>
                 <p className="max-w-xs text-sm text-[var(--woody-muted)]">
                   No telemóvel, toca num contacto na lista. No desktop, vê a lista à esquerda e o chat aqui.
