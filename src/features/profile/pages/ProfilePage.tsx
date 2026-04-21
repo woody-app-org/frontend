@@ -19,6 +19,7 @@ import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
+import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
 
 type ProfileTab = "posts" | "communities" | "about";
 
@@ -94,6 +95,9 @@ export function ProfilePage() {
   }
 
   const activeIndex = Math.max(0, TABS.findIndex((t) => t.id === tab));
+  const profileNumericId = profile && !isOwnProfile ? Number.parseInt(profile.id, 10) : NaN;
+  const canStartDmFromProfile =
+    Boolean(profile) && !isOwnProfile && isAuthenticated && Number.isFinite(profileNumericId) && profileNumericId > 0;
 
   return (
     <FeedLayout>
@@ -124,13 +128,22 @@ export function ProfilePage() {
               }
               followSlot={
                 !isOwnProfile && isAuthenticated ? (
-                  <FollowProfileButton
-                    targetUserId={profile.id}
-                    targetDisplayName={profile.name}
-                    initialIsFollowing={profile.isFollowing}
-                    initialFollowersCount={profile.followersCount}
-                    onCommit={handleFollowCommit}
-                  />
+                  <div className="flex w-full flex-col gap-2 sm:items-end">
+                    <FollowProfileButton
+                      targetUserId={profile.id}
+                      targetDisplayName={profile.name}
+                      initialIsFollowing={profile.isFollowing}
+                      initialFollowersCount={profile.followersCount}
+                      onCommit={handleFollowCommit}
+                    />
+                    {canStartDmFromProfile ? (
+                      <StartConversationButton
+                        otherUserId={profileNumericId}
+                        peerLabel={profile.name}
+                        variant="outline"
+                      />
+                    ) : null}
+                  </div>
                 ) : undefined
               }
             />

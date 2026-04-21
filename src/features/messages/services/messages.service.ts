@@ -1,9 +1,19 @@
 import { api, getApiErrorMessage } from "@/lib/api";
+import { DM_MESSAGES_MAX_PAGE_SIZE } from "../lib/dmLimits";
 import type {
   ConversationMessagesPageDto,
   ConversationResponseDto,
   MessageResponseDto,
 } from "../types";
+
+export async function startOrGetConversation(otherUserId: number): Promise<ConversationResponseDto> {
+  try {
+    const { data } = await api.post<ConversationResponseDto>("/conversations", { otherUserId });
+    return data;
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível iniciar a conversa."));
+  }
+}
 
 export async function fetchMyConversations(): Promise<ConversationResponseDto[]> {
   try {
@@ -26,12 +36,16 @@ export async function fetchPendingReceived(): Promise<ConversationResponseDto[]>
 export async function fetchConversationMessages(
   conversationId: number,
   page = 1,
-  pageSize = 100
+  pageSize = DM_MESSAGES_MAX_PAGE_SIZE
 ): Promise<ConversationMessagesPageDto> {
+  const safePage = Number.isFinite(page) && page >= 1 ? Math.floor(page) : 1;
+  const safeSize = Number.isFinite(pageSize)
+    ? Math.min(DM_MESSAGES_MAX_PAGE_SIZE, Math.max(1, Math.floor(pageSize)))
+    : DM_MESSAGES_MAX_PAGE_SIZE;
   try {
     const { data } = await api.get<ConversationMessagesPageDto>(
       `/conversations/${conversationId}/messages`,
-      { params: { page, pageSize } }
+      { params: { page: safePage, pageSize: safeSize } }
     );
     return data;
   } catch (e) {

@@ -19,8 +19,10 @@ import { cn } from "@/lib/utils";
 import { ConversationList } from "../components/ConversationList";
 import { ConversationRequestsSection } from "../components/ConversationRequestsSection";
 import { ConversationChatPanel } from "../components/ConversationChatPanel";
+import { ConversationStartHints } from "../components/ConversationStartHints";
 import { sortConversationsByActivity } from "../lib/sortConversations";
 import { sortMessagesChronological } from "../lib/sortMessages";
+import { DM_MESSAGES_MAX_PAGE_SIZE } from "../lib/dmLimits";
 
 export function ConversationsPage() {
   const navigate = useNavigate();
@@ -73,7 +75,7 @@ export function ConversationsPage() {
     setLoadingMessages(true);
     setMessagesLoadError(null);
     try {
-      const page = await fetchConversationMessages(conversationId, 1, 200);
+      const page = await fetchConversationMessages(conversationId, 1, DM_MESSAGES_MAX_PAGE_SIZE);
       setMessages([...page.items].sort(sortMessagesChronological));
     } catch {
       setMessages([]);
@@ -230,7 +232,7 @@ export function ConversationsPage() {
         <header className="mb-5 md:mb-6">
           <h1 className={woodySection.title}>Conversas</h1>
           <p className={woodySection.subtitle}>
-            Inbox com pedidos e conversas. Atualiza em tempo real; abre um chat para ver o histórico completo.
+            Inbox com pedidos e conversas (atualiza em tempo real). Para falar com alguém, usa <strong className="font-medium text-[var(--woody-text)]">Mensagem</strong> no perfil dela ou os atalhos abaixo.
           </p>
           {sendError ? (
             <p className="mt-3 max-w-xl text-sm text-red-600" role="alert">
@@ -291,6 +293,10 @@ export function ConversationsPage() {
                 loading={loadingLists}
                 emptyLabel=""
               />
+            ) : null}
+
+            {!loadingLists && acceptedOnly.length === 0 ? (
+              <ConversationStartHints enabled />
             ) : null}
           </div>
 

@@ -55,9 +55,11 @@ export function useDirectMessagesSignalR(
     const token = getStoredToken();
     if (!token) return null;
 
-    const url = `${getDirectMessagesHubUrl()}?access_token=${encodeURIComponent(token)}`;
+    /** Sem token na URL: o cliente envia Bearer no negotiate e access_token no WebSocket (comportamento do @microsoft/signalr). */
+    const url = getDirectMessagesHubUrl();
     return new signalR.HubConnectionBuilder()
       .withUrl(url, {
+        accessTokenFactory: () => getStoredToken() ?? "",
         transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling,
         skipNegotiation: false,
       })
