@@ -25,6 +25,16 @@ function resolveApiBaseUrl(): string {
 
 const baseURL = resolveApiBaseUrl();
 
+/** Origem da API sem o sufixo `/api` (Kestrel: mesma origem para REST e SignalR). */
+export function getApiOrigin(): string {
+  return baseURL.replace(/\/api\/?$/, "");
+}
+
+/** URL completa do hub SignalR (JWT via query `access_token`). */
+export function getDirectMessagesHubUrl(): string {
+  return `${getApiOrigin()}/hubs/direct-messages`;
+}
+
 export const api = axios.create({
   baseURL,
 });

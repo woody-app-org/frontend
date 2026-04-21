@@ -32,6 +32,6 @@ export function useSubscriptionCapabilities(): SubscriptionCapabilities {
       canOpenBillingPortal: Boolean(subscription?.canOpenBillingPortal),
       canAccessPremiumFeature: (featureId: string) => canAccessPremiumFeatureFn(subscription, featureId),
     }),
-    [user],
+    [subscription],
   );
 }

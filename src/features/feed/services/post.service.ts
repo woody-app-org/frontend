@@ -2,8 +2,10 @@ import type { Post, PostPublicationContext } from "@/domain/types";
 import axios from "axios";
 import { api, getApiErrorMessage, getMessageFromApiResponseData } from "@/lib/api";
 import { mapPostFromApi } from "@/lib/apiMappers";
+import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 
-const MAX_IMAGE_FILE_BYTES = 450 * 1024;
+/** @deprecated Preferir `readImageAsDataUrlIfSmall` de `@/lib/readImageAsDataUrlIfSmall`. */
+export const readImageFileAsDataUrlIfSmall = readImageAsDataUrlIfSmall;
 
 /** Alinhado ao `maxLength` do composer e validação no servidor. */
 export const POST_COMPOSER_TITLE_MAX_LENGTH = 200;
@@ -39,20 +41,6 @@ function normalizeTags(raw: string): string[] {
 }
 
 export { normalizeTags as normalizePostComposerTags };
-
-export function readImageFileAsDataUrlIfSmall(file: File): Promise<string> {
-  if (file.size > MAX_IMAGE_FILE_BYTES) {
-    return Promise.reject(
-      new Error(`A imagem deve ter no máximo ${Math.round(MAX_IMAGE_FILE_BYTES / 1024)} KB (até haver upload direto para o servidor).`)
-    );
-  }
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Não foi possível ler a imagem."));
-    reader.readAsDataURL(file);
-  });
-}
 
 /**
  * Cria post na API (`POST /posts`). Corpo em camelCase (serialização .NET).
