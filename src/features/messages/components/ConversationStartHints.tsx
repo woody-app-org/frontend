@@ -23,18 +23,18 @@ export interface ConversationStartHintsProps {
   enabled: boolean;
 }
 
+/** Só monta com `enabled` verdadeiro para evitar `setState` em efeitos só para “limpar” ao desligar. */
 export function ConversationStartHints({ enabled }: ConversationStartHintsProps) {
+  if (!enabled) return null;
+  return <ConversationStartHintsLoaded />;
+}
+
+function ConversationStartHintsLoaded() {
   const [following, setFollowing] = useState<User[]>([]);
-  const [phase, setPhase] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [phase, setPhase] = useState<"loading" | "done" | "error">("loading");
 
   useEffect(() => {
-    if (!enabled) {
-      setFollowing([]);
-      setPhase("idle");
-      return;
-    }
     let cancelled = false;
-    setPhase("loading");
     void (async () => {
       try {
         const list = await fetchMyFollowing(1, 24);
@@ -52,9 +52,7 @@ export function ConversationStartHints({ enabled }: ConversationStartHintsProps)
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
-
-  if (!enabled) return null;
+  }, []);
 
   return (
     <section className="rounded-2xl border border-dashed border-[var(--woody-divider)] bg-[var(--woody-bg)]/70 p-4">

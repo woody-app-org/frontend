@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import { getDirectMessagesHubUrl, getStoredToken } from "@/lib/api";
 import type {
@@ -48,8 +48,10 @@ export function useDirectMessagesSignalR(
   const openRef = useRef(openConversationId);
   const joinedConversationRef = useRef<number | null>(null);
 
-  handlersRef.current = handlers;
-  openRef.current = openConversationId;
+  useLayoutEffect(() => {
+    handlersRef.current = handlers;
+    openRef.current = openConversationId;
+  });
 
   const buildConnection = useCallback(() => {
     const token = getStoredToken();
