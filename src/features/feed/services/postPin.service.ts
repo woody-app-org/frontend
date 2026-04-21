@@ -40,9 +40,11 @@ export async function pinCommentOnPost(postId: string, commentId: string): Promi
     if (axios.isAxiosError(e)) {
       const fromBody = getMessageFromApiResponseData(e.response?.data);
       if (fromBody) throw new Error(fromBody);
-      if (e.response?.status === 403) throw new Error("Só a autora do post pode fixar um comentário.");
+      const status = e.response?.status;
+      if (status === 403) throw new Error("Só a autora do post pode destacar um comentário.");
+      if (status === 400) throw new Error("Este comentário não pode ser destacado (só comentários raiz visíveis).");
     }
-    throw new Error(getApiErrorMessage(e, "Não foi possível fixar o comentário."));
+    throw new Error(getApiErrorMessage(e, "Não foi possível destacar o comentário."));
   }
 }
 
@@ -53,8 +55,8 @@ export async function unpinCommentOnPost(postId: string, commentId: string): Pro
     if (axios.isAxiosError(e)) {
       const fromBody = getMessageFromApiResponseData(e.response?.data);
       if (fromBody) throw new Error(fromBody);
-      if (e.response?.status === 403) throw new Error("Só a autora do post pode desafixar o comentário.");
+      if (e.response?.status === 403) throw new Error("Só a autora do post pode remover o destaque.");
     }
-    throw new Error(getApiErrorMessage(e, "Não foi possível desafixar o comentário."));
+    throw new Error(getApiErrorMessage(e, "Não foi possível remover o destaque."));
   }
 }

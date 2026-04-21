@@ -9,6 +9,7 @@ export interface CommentThreadProps {
   post: Post;
   postId: string;
   comments: Comment[];
+  onCommentsReload?: () => Promise<void>;
   replyingToCommentId: string | null;
   onReplyingToChange: (commentId: string | null) => void;
   /** Resposta a comentário (`parentCommentId` sempre definido). */
@@ -21,6 +22,7 @@ export function CommentThread({
   post,
   postId,
   comments,
+  onCommentsReload,
   replyingToCommentId,
   onReplyingToChange,
   onReplySubmit,
@@ -59,6 +61,7 @@ export function CommentThread({
           <CommentThreadItem
             post={post}
             viewerId={viewerId}
+            onCommentsReload={onCommentsReload}
             node={node}
             depth={0}
             expandedIds={expandedIds}

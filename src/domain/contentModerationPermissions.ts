@@ -63,3 +63,30 @@ export function canReportComment(
   if (hasViewerReportedComment(viewerId, comment.id)) return false;
   return true;
 }
+
+/** Autora do post pode destacar um comentário raiz visível (regra alinhada ao backend). */
+export function canPinCommentAsPostAuthor(
+  viewerId: string | null | undefined,
+  post: Post,
+  comment: Comment
+): boolean {
+  if (!viewerId || !isPostActive(post) || !isCommentActive(comment)) return false;
+  if (comment.postId !== post.id) return false;
+  if (post.authorId !== viewerId) return false;
+  if (comment.parentCommentId != null) return false;
+  if (comment.hiddenByPostAuthorAt) return false;
+  if (comment.pinnedOnPostAt) return false;
+  return true;
+}
+
+/** Autora do post pode remover o destaque do comentário atualmente fixado. */
+export function canUnpinCommentAsPostAuthor(
+  viewerId: string | null | undefined,
+  post: Post,
+  comment: Comment
+): boolean {
+  if (!viewerId || !isPostActive(post) || !isCommentActive(comment)) return false;
+  if (comment.postId !== post.id) return false;
+  if (post.authorId !== viewerId) return false;
+  return Boolean(comment.pinnedOnPostAt);
+}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -12,13 +13,23 @@ export interface CommentItemProps {
   post: Post;
   comment: Comment;
   viewerId: string;
+  /** Recarrega comentários após ações da autora do post (ex.: destaque). */
+  onCommentsReload?: () => Promise<void>;
   /** Resposta na thread: tipografia e densidade levemente mais compactas (mobile-first). */
   nested?: boolean;
   className?: string;
 }
 
-export function CommentItem({ post, comment, viewerId, nested = false, className }: CommentItemProps) {
+export function CommentItem({
+  post,
+  comment,
+  viewerId,
+  onCommentsReload,
+  nested = false,
+  className,
+}: CommentItemProps) {
   const { author } = comment;
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const initials = author.name
     .split(" ")
     .map((n) => n[0])
@@ -31,6 +42,8 @@ export function CommentItem({ post, comment, viewerId, nested = false, className
       className={cn(
         "flex py-4 first:pt-0 last:pb-0",
         nested ? "gap-2.5 sm:gap-3" : "gap-3",
+        comment.pinnedOnPostAt &&
+          "rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-accent)]/[0.04] px-2 py-2.5 sm:px-3",
         className
       )}
     >
@@ -81,11 +94,35 @@ export function CommentItem({ post, comment, viewerId, nested = false, className
             >
               {formatCommentTimestamp(comment.createdAt)}
             </span>
+            {comment.pinnedOnPostAt ? (
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full border border-[var(--woody-accent)]/18 bg-[var(--woody-accent)]/8 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-accent)]/95",
+                  nested ? "text-[0.6rem]" : ""
+                )}
+              >
+                Em destaque
+              </span>
+            ) : null}
           </header>
           <div className="shrink-0 self-start pt-0.5">
-            <CommentActionsMenu post={post} comment={comment} viewerId={viewerId} />
+            <CommentActionsMenu
+              post={post}
+              comment={comment}
+              viewerId={viewerId}
+              onCommentsReload={onCommentsReload}
+              onActionMessage={setActionMessage}
+            />
           </div>
         </div>
+        {actionMessage ? (
+          <p
+            role="alert"
+            className="mt-1.5 text-xs text-amber-800 dark:text-amber-200/95 [overflow-wrap:anywhere]"
+          >
+            {actionMessage}
+          </p>
+        ) : null}
         {isCommentContentMaskedForViewer(comment) ? (
           <HiddenCommentPlaceholder nested={nested} />
         ) : (
