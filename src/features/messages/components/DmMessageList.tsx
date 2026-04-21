@@ -1,16 +1,17 @@
 import { useLayoutEffect, useRef } from "react";
 import type { MessageResponseDto } from "../types";
+import { isMyDirectMessage } from "../lib/isMyDirectMessage";
 import { DmMessageBubble } from "./DmMessageBubble";
 
 export interface DmMessageListProps {
   messages: MessageResponseDto[];
-  myNumericId: number;
+  currentUserId: string | undefined;
   onSaveEdit: (messageId: number, body: string) => Promise<void>;
   onDelete: (messageId: number) => Promise<void>;
   onMutationError: (message: string) => void;
 }
 
-export function DmMessageList({ messages, myNumericId, onSaveEdit, onDelete, onMutationError }: DmMessageListProps) {
+export function DmMessageList({ messages, currentUserId, onSaveEdit, onDelete, onMutationError }: DmMessageListProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -27,7 +28,7 @@ export function DmMessageList({ messages, myNumericId, onSaveEdit, onDelete, onM
           <DmMessageBubble
             key={m.id}
             message={m}
-            isMine={m.sender.id === myNumericId}
+            isMine={isMyDirectMessage(m.sender.id, currentUserId)}
             onSaveEdit={onSaveEdit}
             onDelete={onDelete}
             onMutationError={onMutationError}

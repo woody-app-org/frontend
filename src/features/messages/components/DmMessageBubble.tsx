@@ -79,9 +79,13 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
 
   return (
     <>
-    <li
-      className={cn("flex w-full max-w-full gap-2", isMine ? "flex-row-reverse justify-end" : "flex-row justify-start")}
-    >
+    <li className={cn("flex w-full max-w-full", isMine ? "justify-end" : "justify-start")}>
+      <div
+        className={cn(
+          "flex min-w-0 max-w-[min(100%,26rem)] gap-2",
+          isMine ? "flex-row-reverse" : "flex-row"
+        )}
+      >
       {!isMine ? (
         <Avatar size="sm" className="mt-0.5 ring-1 ring-[var(--woody-divider)]">
           {message.sender.profilePic ? (
@@ -93,7 +97,7 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
         </Avatar>
       ) : null}
 
-      <div className={cn("flex min-w-0 max-w-[min(100%,26rem)] flex-col gap-1", isMine ? "items-end" : "items-start")}>
+      <div className={cn("flex min-w-0 flex-1 flex-col gap-1", isMine ? "items-end" : "items-start")}>
         <div
           className={cn(
             "w-full rounded-2xl border px-3 py-2 text-sm shadow-sm transition-[box-shadow]",
@@ -200,6 +204,7 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
             ) : null}
           </div>
         ) : null}
+      </div>
       </div>
     </li>
 

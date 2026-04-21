@@ -34,7 +34,6 @@ export function ConversationsPage() {
   }, [conversationIdParam]);
 
   const { user, isAuthenticated } = useAuth();
-  const myNumericId = user ? Number.parseInt(user.id, 10) : NaN;
 
   const [conversations, setConversations] = useState<ConversationResponseDto[]>([]);
   const [pendingReceived, setPendingReceived] = useState<ConversationResponseDto[]>([]);
@@ -227,7 +226,7 @@ export function ConversationsPage() {
   const showMobileChat = Boolean(routeConversationId);
 
   return (
-    <FeedLayout>
+    <FeedLayout showRightPanel={false}>
       <div
         className={cn(
           woodyLayout.pagePad,
@@ -330,7 +329,7 @@ export function ConversationsPage() {
                 messages={messages}
                 loadingMessages={loadingMessages}
                 messagesLoadError={messagesLoadError}
-                myNumericId={myNumericId}
+                currentUserId={user?.id}
                 onSendMessage={handleSendMessage}
                 onEditMessage={handleEditMessage}
                 onDeleteMessage={handleDeleteMessage}

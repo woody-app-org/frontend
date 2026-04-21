@@ -12,7 +12,7 @@ export interface ConversationChatPanelProps {
   messages: MessageResponseDto[];
   loadingMessages: boolean;
   messagesLoadError: string | null;
-  myNumericId: number;
+  currentUserId: string | undefined;
   onSendMessage: (payload: { body?: string | null; attachmentUrls?: string[] | null }) => Promise<void>;
   onEditMessage: (messageId: number, body: string) => Promise<void>;
   onDeleteMessage: (messageId: number) => Promise<void>;
@@ -25,7 +25,7 @@ export function ConversationChatPanel({
   messages,
   loadingMessages,
   messagesLoadError,
-  myNumericId,
+  currentUserId,
   onSendMessage,
   onEditMessage,
   onDeleteMessage,
@@ -112,7 +112,7 @@ export function ConversationChatPanel({
       ) : (
         <DmMessageList
           messages={messages}
-          myNumericId={myNumericId}
+          currentUserId={currentUserId}
           onSaveEdit={onEditMessage}
           onDelete={onDeleteMessage}
           onMutationError={(msg) => setMutationHint(msg)}
