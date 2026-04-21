@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
 import {
   fetchMyFollowing,
   fetchMySuggestions,
@@ -35,7 +36,7 @@ const styles = {
   cardContent: "p-4",
   list: "space-y-0",
   item:
-    "flex items-start gap-3 rounded-md py-2 px-1 -mx-1 cursor-pointer transition-colors min-w-0",
+    "flex min-w-0 flex-1 items-start gap-3 rounded-md py-2 px-1 -mx-1 cursor-pointer transition-colors",
   itemHover: "hover:bg-[var(--woody-nav)]/8",
   itemAvatar: "size-9 shrink-0",
   itemName:
@@ -46,12 +47,15 @@ const styles = {
 
 type UserItem = { id: string; name: string; avatarUrl: string | null };
 
-function UserRow({ user, className }: { user: UserItem; className?: string }) {
+function SocialUserRow({ user, className }: { user: UserItem; className?: string }) {
+  const numericId = Number.parseInt(user.id, 10);
+  const canDm = Number.isFinite(numericId) && numericId > 0;
+
   return (
-    <li>
+    <li className={cn("flex min-w-0 items-center gap-0.5", className)}>
       <Link
         to={`/profile/${user.id}`}
-        className={cn(styles.item, styles.itemHover, className)}
+        className={cn(styles.item, styles.itemHover)}
         aria-label={`Ver perfil de ${user.name}`}
       >
         <Avatar size="default" className={styles.itemAvatar}>
@@ -62,6 +66,7 @@ function UserRow({ user, className }: { user: UserItem; className?: string }) {
         </Avatar>
         <span className={styles.itemName}>{user.name}</span>
       </Link>
+      {canDm ? <StartConversationButton otherUserId={numericId} peerLabel={user.name} variant="icon" /> : null}
     </li>
   );
 }
@@ -143,7 +148,7 @@ export function RightPanel({ className }: RightPanelProps) {
               ) : (
                 <ul className={styles.list}>
                   {suggestions.map((user) => (
-                    <UserRow key={user.id} user={user} />
+                    <SocialUserRow key={user.id} user={user} />
                   ))}
                 </ul>
               )}
@@ -175,7 +180,7 @@ export function RightPanel({ className }: RightPanelProps) {
               ) : (
                 <ul className={styles.list}>
                   {following.map((user) => (
-                    <UserRow key={user.id} user={user} />
+                    <SocialUserRow key={user.id} user={user} />
                   ))}
                 </ul>
               )}

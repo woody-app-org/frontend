@@ -190,13 +190,13 @@ function FeedLayoutShell({
             </div>
 
             <div className={styles.right}>
-              <button
-                type="button"
+              <Link
+                to="/messages"
                 className={cn(styles.iconBtn, styles.iconBtnHidden)}
                 aria-label="Mensagens"
               >
                 <MessageCircle className="size-5" />
-              </button>
+              </Link>
               <button
                 type="button"
                 className={cn(styles.iconBtn, styles.bellWrap)}

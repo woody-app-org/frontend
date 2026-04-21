@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Navigate } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, Loader2, Mail } from "lucide-react";
 import { useOnboardingDraftContext } from "../OnboardingContext";
@@ -41,7 +41,7 @@ export function OnboardingStepVerifyEmail() {
     defaultValues: { code: "" },
   });
 
-  const code = form.watch("code");
+  const code = useWatch({ control: form.control, name: "code", defaultValue: "" }) ?? "";
   const codeValid = code.replace(/\D/g, "").length === 6 && !form.formState.errors.code;
 
   useEffect(() => {
@@ -60,7 +60,9 @@ export function OnboardingStepVerifyEmail() {
   useEffect(() => {
     if (!email || initialSendDone.current) return;
     initialSendDone.current = true;
-    void runInitialSendCode();
+    queueMicrotask(() => {
+      void runInitialSendCode();
+    });
   }, [email, runInitialSendCode]);
 
   if (!draft.account) {
