@@ -110,6 +110,8 @@ export interface Comment {
   deletedAt?: string | null;
   /** Autora do post ocultou este comentário de terceiras (ISO 8601). */
   hiddenByPostAuthorAt?: string | null;
+  /** Destaque no post (autora do post); ISO da API ou formatado pelo mapper. */
+  pinnedOnPostAt?: string | null;
   /**
    * Preenchido em `enrichComment` quando há `viewerId` + contexto do post.
    * UI usa `getCommentContentForViewer` para texto seguro a exibir.
@@ -156,4 +158,6 @@ export interface Post {
   likedByCurrentUser: boolean;
   /** Preenchido ao montar dados para a UI; opcional em payloads “cru”. */
   community?: PostCommunityPreview;
+  /** Destaque no perfil da autora (ISO da API). */
+  pinnedOnProfileAt?: string | null;
 }

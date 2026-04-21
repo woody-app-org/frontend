@@ -7,6 +7,7 @@
  * - `features/communities/services/community.service.ts` → updateCommunity
  * - `features/communities/services/communityMembership.service.ts` → demais ações
  * - `domain/services/contentModerationMock.service.ts` → edição/remoção/denúncias/ocultar comentário
+ * - `features/feed/services/postPin.service.ts` → fixar publicação no perfil / comentário no post
  * - `features/auth/services/auth.service.ts` → `logoutSessionMock` (sessão)
  */
 export const BACKEND_ROUTE_HINTS = {
@@ -35,6 +36,10 @@ export const BACKEND_ROUTE_HINTS = {
       "POST /reports { targetType: 'post', postId, reasonCode, details? } — reasonCode: harassment|spam|inappropriate|community_rules|other",
     reportComment:
       "POST /reports { targetType: 'comment', commentId, postId, reasonCode, details? }",
+    pinPostOnProfile: "POST /posts/:postId/profile-pin",
+    unpinPostFromProfile: "DELETE /posts/:postId/profile-pin",
+    pinCommentOnPost: "POST /posts/:postId/comments/:commentId/pin",
+    unpinCommentOnPost: "DELETE /posts/:postId/comments/:commentId/pin",
   },
   session: {
     logout: "POST /auth/logout",
