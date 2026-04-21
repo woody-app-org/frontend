@@ -12,7 +12,7 @@ import type { Post } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
 import { PostProfileContextBar } from "./PostProfileContextBar";
-import { PostOverflowMenu } from "./PostOverflowMenu";
+import { PostOverflowMenu, type PostProfilePinMenuProps } from "./PostOverflowMenu";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
 
 // --- Helpers ---
@@ -45,6 +45,8 @@ const styles = {
   title: "font-bold text-[var(--woody-text)] text-base sm:text-[1.05rem] leading-snug",
   pill:
     "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[var(--woody-nav)]/15 text-[var(--woody-muted)] border border-[var(--woody-accent)]/10",
+  pinnedPill:
+    "inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-accent)]/90 bg-[var(--woody-accent)]/8 border border-[var(--woody-accent)]/18",
   content:
     "text-[var(--woody-text)]/90 text-[0.9375rem] leading-relaxed whitespace-pre-wrap break-words",
   contentBlock: "p-0 pt-2 pb-0",
@@ -60,6 +62,7 @@ const styles = {
 
 export interface PostCardProps {
   post: Post;
+  profilePinMenu?: PostProfilePinMenuProps;
   onPin?: (postId: string) => void;
   /** Sincroniza lista local (ex.: perfil) após edição mock. */
   onPostUpdated?: (post: Post) => void;
@@ -81,6 +84,7 @@ export interface PostCardProps {
 
 export function PostCard({
   post,
+  profilePinMenu,
   onPin,
   onPostUpdated,
   onPostDeleted,
@@ -189,7 +193,8 @@ export function PostCard({
         <PostOverflowMenu
           post={post}
           viewerId={viewerId}
-          onPin={onPin}
+          profilePinMenu={profilePinMenu}
+          onPin={profilePinMenu ? undefined : onPin}
           onPostUpdated={onPostUpdated}
           onPostDeleted={onPostDeleted}
           triggerClassName={styles.menuTrigger}
@@ -198,6 +203,11 @@ export function PostCard({
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
+          {post.pinnedOnProfileAt && postSurface === "profile" ? (
+            <span className={styles.pinnedPill} aria-label="Publicação fixada no perfil">
+              Fixado
+            </span>
+          ) : null}
           {post.tags?.map((tag) => (
             <span key={tag} className={styles.pill}>
               {tag}

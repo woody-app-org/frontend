@@ -1,6 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flag, MoreVertical, Pencil, Pin, Trash2 } from "lucide-react";
+import { Flag, MoreVertical, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,9 +25,17 @@ import { EditPostDialog } from "./EditPostDialog";
 import { DeletePostConfirmationDialog } from "./DeletePostConfirmationDialog";
 import { ReportContentModal } from "./report/ReportContentModal";
 
+export interface PostProfilePinMenuProps {
+  isPinned: boolean;
+  busy: boolean;
+  onToggle: () => void | Promise<void>;
+}
+
 export interface PostOverflowMenuProps {
   post: Post;
   viewerId: string;
+  /** Fixação no perfil (API); tem prioridade sobre <code>onPin</code> legado. */
+  profilePinMenu?: PostProfilePinMenuProps;
   onPin?: (postId: string) => void;
   triggerClassName?: string;
   /** Após exclusão bem-sucedida, navegar (ex.: `/feed` na página de detalhe). */
@@ -44,6 +52,7 @@ export interface PostOverflowMenuProps {
 export function PostOverflowMenu({
   post,
   viewerId,
+  profilePinMenu,
   onPin,
   triggerClassName,
   deleteRedirectTo,
@@ -91,7 +100,8 @@ export function PostOverflowMenu({
   };
 
   const ownerExtras = showEdit || showDelete;
-  const otherExtras = Boolean(onPin) || showReport;
+  const showProfilePin = Boolean(profilePinMenu);
+  const otherExtras = showProfilePin || Boolean(onPin) || showReport;
 
   return (
     <>
@@ -135,7 +145,23 @@ export function PostOverflowMenu({
           {ownerExtras && otherExtras ? (
             <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           ) : null}
-          {onPin ? (
+          {showProfilePin ? (
+            <DropdownMenuItem
+              className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+              disabled={profilePinMenu!.busy}
+              onClick={(e) => {
+                e.preventDefault();
+                void profilePinMenu!.onToggle();
+              }}
+            >
+              {profilePinMenu!.isPinned ? (
+                <PinOff className="mr-2 size-4" />
+              ) : (
+                <Pin className="mr-2 size-4" />
+              )}
+              {profilePinMenu!.isPinned ? "Desafixar do perfil" : "Fixar no perfil"}
+            </DropdownMenuItem>
+          ) : onPin ? (
             <DropdownMenuItem
               className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
               onClick={() => onPin(post.id)}

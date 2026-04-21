@@ -39,6 +39,7 @@ export function ProfilePage() {
   const [followListsRevision, setFollowListsRevision] = useState(0);
   const {
     profile,
+    pinnedPosts,
     posts,
     isLoading,
     error,
@@ -50,6 +51,10 @@ export function ProfilePage() {
     refetch,
     updatePostInList,
     removePostFromList,
+    toggleProfilePin,
+    pinningPostId,
+    pinActionError,
+    dismissPinActionError,
     applyFollowPatch,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
@@ -203,6 +208,7 @@ export function ProfilePage() {
             <div className="min-w-0">
               {tab === "posts" ? (
                 <ProfilePostsSection
+                  pinnedPosts={pinnedPosts}
                   posts={posts}
                   isLoading={false}
                   page={page}
@@ -210,10 +216,14 @@ export function ProfilePage() {
                   hasPreviousPage={hasPreviousPage}
                   onPreviousPage={previousPage}
                   onNextPage={nextPage}
-                  onPin={(id) => console.log("Pin", id)}
                   onPostUpdated={updatePostInList}
                   onPostDeleted={removePostFromList}
                   hideSectionHeader
+                  isOwnProfile={isOwnProfile}
+                  onToggleProfilePin={toggleProfilePin}
+                  pinningPostId={pinningPostId}
+                  pinActionError={pinActionError}
+                  onDismissPinError={dismissPinActionError}
                 />
               ) : null}
 
