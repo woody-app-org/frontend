@@ -18,6 +18,7 @@ export function PostDetailPage() {
     error,
     commentsError,
     refetch,
+    refetchComments,
     toggleLike,
     createComment,
   } = usePostDetail(postId);
@@ -76,6 +77,7 @@ export function PostDetailPage() {
               onToggleLike={() => void toggleLike()}
               onCreateComment={async (body) => createComment(body, null)}
               onReplySubmit={(body, parentId) => createComment(body, parentId)}
+              onReloadComments={() => refetchComments()}
             />
           </>
         ) : null}

@@ -1,6 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flag, MoreVertical, Pencil, Pin, Trash2 } from "lucide-react";
+import { Flag, MoreVertical, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,9 +25,22 @@ import { EditPostDialog } from "./EditPostDialog";
 import { DeletePostConfirmationDialog } from "./DeletePostConfirmationDialog";
 import { ReportContentModal } from "./report/ReportContentModal";
 
+export interface PostProfilePinMenuProps {
+  isPinned: boolean;
+  busy: boolean;
+  onToggle: () => void | Promise<void>;
+  /**
+   * Chamado em `pointerdown` no item “Destacar no perfil”, antes do menu fechar.
+   * Permite ao cartão ignorar o clique fantasma que abriria o detalhe do post (conteúdo do menu em portal).
+   */
+  onBeforeProfilePinPointerDown?: () => void;
+}
+
 export interface PostOverflowMenuProps {
   post: Post;
   viewerId: string;
+  /** Fixação no perfil (API); tem prioridade sobre <code>onPin</code> legado. */
+  profilePinMenu?: PostProfilePinMenuProps;
   onPin?: (postId: string) => void;
   triggerClassName?: string;
   /** Após exclusão bem-sucedida, navegar (ex.: `/feed` na página de detalhe). */
@@ -44,6 +57,7 @@ export interface PostOverflowMenuProps {
 export function PostOverflowMenu({
   post,
   viewerId,
+  profilePinMenu,
   onPin,
   triggerClassName,
   deleteRedirectTo,
@@ -91,7 +105,13 @@ export function PostOverflowMenu({
   };
 
   const ownerExtras = showEdit || showDelete;
-  const otherExtras = Boolean(onPin) || showReport;
+  const showProfilePin = Boolean(profilePinMenu);
+  const legacyPin = Boolean(onPin);
+  const pinRow = showProfilePin || legacyPin;
+  /** Separa dona do post (editar/excluir) do bloco seguinte (destaque / denúncia). */
+  const separatorAfterOwner = ownerExtras && (pinRow || showReport);
+  /** Separa destaque legado ou perfil da denúncia. */
+  const separatorBeforeReport = showReport && (ownerExtras || pinRow);
 
   return (
     <>
@@ -112,6 +132,7 @@ export function PostOverflowMenu({
         <DropdownMenuContent
           align="end"
           className="min-w-[11rem] border-[var(--woody-accent)]/20 bg-[var(--woody-card)]"
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           {showEdit ? (
             <DropdownMenuItem
@@ -132,17 +153,38 @@ export function PostOverflowMenu({
               Excluir
             </DropdownMenuItem>
           ) : null}
-          {ownerExtras && otherExtras ? (
+          {separatorAfterOwner ? (
             <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           ) : null}
-          {onPin ? (
+          {showProfilePin ? (
             <DropdownMenuItem
               className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
-              onClick={() => onPin(post.id)}
+              disabled={profilePinMenu!.busy}
+              onPointerDown={() => profilePinMenu!.onBeforeProfilePinPointerDown?.()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                void profilePinMenu!.onToggle();
+              }}
+            >
+              {profilePinMenu!.isPinned ? (
+                <PinOff className="mr-2 size-4" />
+              ) : (
+                <Pin className="mr-2 size-4" />
+              )}
+              {profilePinMenu!.isPinned ? "Remover destaque do perfil" : "Destacar no perfil"}
+            </DropdownMenuItem>
+          ) : legacyPin ? (
+            <DropdownMenuItem
+              className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+              onClick={() => onPin!(post.id)}
             >
               <Pin className="mr-2 size-4" />
               Fixar
             </DropdownMenuItem>
+          ) : null}
+          {separatorBeforeReport ? (
+            <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           ) : null}
           {showReport ? (
             <DropdownMenuItem

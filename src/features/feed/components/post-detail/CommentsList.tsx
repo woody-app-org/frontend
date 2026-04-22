@@ -26,6 +26,7 @@ export interface CommentsListProps {
   post: Post;
   postId: string;
   comments: Comment[];
+  onCommentsReload?: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
   className?: string;
@@ -39,6 +40,7 @@ export function CommentsList({
   post,
   postId,
   comments,
+  onCommentsReload,
   isLoading,
   error,
   className,
@@ -81,6 +83,7 @@ export function CommentsList({
       post={post}
       postId={postId}
       comments={comments}
+      onCommentsReload={onCommentsReload}
       replyingToCommentId={replyingToCommentId}
       onReplyingToChange={onReplyingToChange}
       onReplySubmit={onReplySubmit}

@@ -10,6 +10,7 @@ import { ReplyToggle } from "./ReplyToggle";
 export interface CommentThreadItemProps {
   post: Post;
   viewerId: string;
+  onCommentsReload?: () => Promise<void>;
   node: CommentThreadNode;
   depth: number;
   expandedIds: ReadonlySet<string>;
@@ -24,6 +25,7 @@ export interface CommentThreadItemProps {
 export function CommentThreadItem({
   post,
   viewerId,
+  onCommentsReload,
   node,
   depth,
   expandedIds,
@@ -57,6 +59,7 @@ export function CommentThreadItem({
         post={post}
         comment={comment}
         viewerId={viewerId}
+        onCommentsReload={onCommentsReload}
         nested={depth > 0}
         className="py-0"
       />
@@ -108,6 +111,7 @@ export function CommentThreadItem({
               key={child.comment.id}
               post={post}
               viewerId={viewerId}
+              onCommentsReload={onCommentsReload}
               node={child}
               depth={depth + 1}
               expandedIds={expandedIds}

@@ -92,6 +92,7 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
     commentsCount: Number(raw.commentsCount ?? 0),
     likedByCurrentUser: Boolean(raw.likedByCurrentUser),
     community: comm,
+    pinnedOnProfileAt: raw.pinnedOnProfileAt != null ? asString(raw.pinnedOnProfileAt) : null,
   };
 }
 
@@ -122,6 +123,7 @@ export function mapCommentFromApi(raw: ApiRecord): Comment {
     deletedAt: raw.deletedAt ?? null,
     hiddenByPostAuthorAt: raw.hiddenByPostAuthorAt ?? null,
     contentModerationMask: raw.contentModerationMask ?? null,
+    pinnedOnPostAt: raw.pinnedOnPostAt != null ? asString(raw.pinnedOnPostAt) : null,
   };
 }
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Bell, MessageCircle } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
@@ -79,6 +79,11 @@ function isInsideDialogLayer(node: EventTarget | null): boolean {
   );
 }
 
+/** DM com conversa aberta: ecrã imersivo no telemóvel (sem header global nem tab bar). */
+function isMobileDirectMessageThread(pathname: string): boolean {
+  return /^\/messages\/[^/]+$/.test(pathname);
+}
+
 function FeedLayoutShell({
   children,
   className,
@@ -90,6 +95,8 @@ function FeedLayoutShell({
   setIsSearchOpen: (v: boolean) => void;
 }) {
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const immersiveMobileDmChat = isMobileDirectMessageThread(location.pathname);
 
   // Só no desktop: trava scroll do body para o wrapper interno controlar (mobile usa scroll nativo).
   useEffect(() => {
@@ -168,9 +175,21 @@ function FeedLayoutShell({
   return (
     <CreatePostComposerProvider>
       <div className={cn(LAYOUT_ROOT, className)}>
-        <div ref={scrollWrapperRef} className={cn(SCROLL_WRAPPER)}>
-          <div className={cn(LAYOUT_CONTAINER, "flex flex-col")}>
-            <header className={styles.header}>
+        <div
+          ref={scrollWrapperRef}
+          className={cn(
+            SCROLL_WRAPPER,
+            immersiveMobileDmChat && "max-md:flex max-md:min-h-[100dvh] max-md:flex-col"
+          )}
+        >
+          <div
+            className={cn(
+              LAYOUT_CONTAINER,
+              "flex flex-col",
+              immersiveMobileDmChat && "max-md:min-h-0 max-md:flex-1"
+            )}
+          >
+            <header className={cn(styles.header, immersiveMobileDmChat && "max-md:hidden")}>
           <div className={styles.headerInner}>
             <div className={styles.logoArea}>
               <Link
@@ -215,7 +234,8 @@ function FeedLayoutShell({
               "grid w-full grid-cols-1 gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start",
               showRightPanel
                 ? "md:grid-cols-[250px_minmax(0,1fr)_minmax(0,260px)] lg:grid-cols-[250px_minmax(0,1fr)_minmax(0,230px)]"
-                : "md:grid-cols-[250px_minmax(0,1fr)]"
+                : "md:grid-cols-[250px_minmax(0,1fr)]",
+              immersiveMobileDmChat && "max-md:min-h-0 max-md:flex-1"
             )}
           >
             <FeedLayoutSidebarBridge
@@ -223,7 +243,13 @@ function FeedLayoutShell({
               isSearchOpen={isSearchOpen}
               setIsSearchOpen={setIsSearchOpen}
             />
-            <main className="min-w-0 flex flex-col pb-16 md:pb-0 pt-4 md:pt-5" aria-label="Feed principal">
+            <main
+              className={cn(
+                "min-w-0 flex flex-col pb-16 md:pb-0 pt-4 md:pt-5",
+                immersiveMobileDmChat && "max-md:flex-1 max-md:min-h-0 max-md:pb-0 max-md:pt-0"
+              )}
+              aria-label="Feed principal"
+            >
               {children}
             </main>
             {showRightPanel ? (
@@ -233,7 +259,11 @@ function FeedLayoutShell({
         </div>
       </div>
 
-      <MobileBottomNav onOpenSearch={() => setIsSearchOpen(true)} isSearchOpen={isSearchOpen} />
+      <MobileBottomNav
+        className={immersiveMobileDmChat ? "max-md:hidden" : undefined}
+        onOpenSearch={() => setIsSearchOpen(true)}
+        isSearchOpen={isSearchOpen}
+      />
 
       <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
       <CreatePostModal />
