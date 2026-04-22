@@ -93,6 +93,8 @@ export interface UseUserProfileReturn {
   pinningPostId: string | null;
   pinActionError: string | null;
   dismissPinActionError: () => void;
+  pinActionSuccess: string | null;
+  dismissPinActionSuccess: () => void;
   /** Após seguir/deixar de seguir, mantém o perfil alinhado à API sem refetch completo. */
   applyFollowPatch: (patch: { isFollowing: boolean; followersCount: number }) => void;
 }

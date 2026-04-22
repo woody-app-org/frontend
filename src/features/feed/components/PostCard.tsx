@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, Clock, Loader2 } from "lucide-react";
 import {
@@ -97,6 +98,17 @@ export function PostCard({
 }: PostCardProps) {
   const navigate = useNavigate();
   const viewerId = useViewerId();
+  const ignoreNextCardClickRef = useRef(false);
+
+  const resolvedProfilePinMenu = profilePinMenu
+    ? {
+        ...profilePinMenu,
+        onBeforeProfilePinPointerDown: () => {
+          ignoreNextCardClickRef.current = true;
+          profilePinMenu.onBeforeProfilePinPointerDown?.();
+        },
+      }
+    : undefined;
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -120,6 +132,10 @@ export function PostCard({
     post.publicationContext === "profile" && !post.community && postSurface !== "profile";
 
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (ignoreNextCardClickRef.current) {
+      ignoreNextCardClickRef.current = false;
+      return;
+    }
     const target = event.target as HTMLElement;
     if (target.closest("a,button,[data-post-ignore-open='true']")) return;
     openPost();
@@ -197,7 +213,7 @@ export function PostCard({
         <PostOverflowMenu
           post={post}
           viewerId={viewerId}
-          profilePinMenu={profilePinMenu}
+          profilePinMenu={resolvedProfilePinMenu}
           onPin={profilePinMenu ? undefined : onPin}
           onPostUpdated={onPostUpdated}
           onPostDeleted={onPostDeleted}

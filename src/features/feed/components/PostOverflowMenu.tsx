@@ -29,6 +29,11 @@ export interface PostProfilePinMenuProps {
   isPinned: boolean;
   busy: boolean;
   onToggle: () => void | Promise<void>;
+  /**
+   * Chamado em `pointerdown` no item “Destacar no perfil”, antes do menu fechar.
+   * Permite ao cartão ignorar o clique fantasma que abriria o detalhe do post (conteúdo do menu em portal).
+   */
+  onBeforeProfilePinPointerDown?: () => void;
 }
 
 export interface PostOverflowMenuProps {
@@ -127,6 +132,7 @@ export function PostOverflowMenu({
         <DropdownMenuContent
           align="end"
           className="min-w-[11rem] border-[var(--woody-accent)]/20 bg-[var(--woody-card)]"
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           {showEdit ? (
             <DropdownMenuItem
@@ -154,8 +160,10 @@ export function PostOverflowMenu({
             <DropdownMenuItem
               className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
               disabled={profilePinMenu!.busy}
+              onPointerDown={() => profilePinMenu!.onBeforeProfilePinPointerDown?.()}
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 void profilePinMenu!.onToggle();
               }}
             >

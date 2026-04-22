@@ -16,6 +16,7 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const [pinningPostId, setPinningPostId] = useState<string | null>(null);
   const [pinActionError, setPinActionError] = useState<string | null>(null);
+  const [pinActionSuccess, setPinActionSuccess] = useState<string | null>(null);
 
   const loadPosts = useCallback(
     async (targetUserId: string, targetPage: number): Promise<void> => {
@@ -83,15 +84,20 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
 
   const toggleProfilePin = useCallback(
     async (post: Post) => {
+      const wasPinned = Boolean(post.pinnedOnProfileAt);
       setPinActionError(null);
+      setPinActionSuccess(null);
       setPinningPostId(post.id);
       try {
-        if (post.pinnedOnProfileAt) {
+        if (wasPinned) {
           await unpinPostFromProfile(post.id);
         } else {
           await pinPostOnProfile(post.id);
         }
         if (userId) await loadPosts(userId, page);
+        setPinActionSuccess(
+          wasPinned ? "O destaque foi removido do teu perfil." : "Publicação destacada no perfil."
+        );
       } catch (err) {
         setPinActionError(err instanceof Error ? err.message : "Não foi possível atualizar o destaque.");
       } finally {
@@ -102,6 +108,7 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
   );
 
   const dismissPinActionError = useCallback(() => setPinActionError(null), []);
+  const dismissPinActionSuccess = useCallback(() => setPinActionSuccess(null), []);
 
   const applyFollowPatch = useCallback((patch: { isFollowing: boolean; followersCount: number }) => {
     setProfile((p) =>
@@ -133,6 +140,8 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     pinningPostId,
     pinActionError,
     dismissPinActionError,
+    pinActionSuccess,
+    dismissPinActionSuccess,
     applyFollowPatch,
   };
 }

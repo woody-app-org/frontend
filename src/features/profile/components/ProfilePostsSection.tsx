@@ -40,6 +40,8 @@ export interface ProfilePostsSectionProps {
   pinningPostId: string | null;
   pinActionError: string | null;
   onDismissPinError: () => void;
+  pinActionSuccess: string | null;
+  onDismissPinSuccess: () => void;
 }
 
 const headerStyles = {
@@ -68,6 +70,8 @@ export function ProfilePostsSection({
   pinningPostId,
   pinActionError,
   onDismissPinError,
+  pinActionSuccess,
+  onDismissPinSuccess,
 }: ProfilePostsSectionProps) {
   const viewerId = useViewerId();
 
@@ -145,6 +149,21 @@ export function ProfilePostsSection({
 
   return (
     <section className={cn("space-y-5", className)}>
+      {pinActionSuccess ? (
+        <div
+          role="status"
+          className="flex flex-col gap-2 rounded-lg border border-emerald-700/20 bg-emerald-700/8 px-3 py-2.5 text-sm text-[var(--woody-text)] sm:flex-row sm:items-center sm:justify-between"
+        >
+          <span>{pinActionSuccess}</span>
+          <button
+            type="button"
+            className="shrink-0 text-xs font-medium text-emerald-800/90 hover:underline dark:text-emerald-200/90"
+            onClick={onDismissPinSuccess}
+          >
+            Fechar
+          </button>
+        </div>
+      ) : null}
       {pinActionError ? (
         <div
           role="alert"

@@ -55,6 +55,8 @@ export function ProfilePage() {
     pinningPostId,
     pinActionError,
     dismissPinActionError,
+    pinActionSuccess,
+    dismissPinActionSuccess,
     applyFollowPatch,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
@@ -224,6 +226,8 @@ export function ProfilePage() {
                   pinningPostId={pinningPostId}
                   pinActionError={pinActionError}
                   onDismissPinError={dismissPinActionError}
+                  pinActionSuccess={pinActionSuccess}
+                  onDismissPinSuccess={dismissPinActionSuccess}
                 />
               ) : null}
 
