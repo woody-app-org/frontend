@@ -1,4 +1,4 @@
-import { Home, UsersRound, PlusSquare, Search, Bookmark } from "lucide-react";
+import { Home, UsersRound, PlusSquare, Search, MessageCircle } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
@@ -8,7 +8,7 @@ const ITEMS = [
   { id: "comunidades", path: "/communities", label: "Comunidades", icon: UsersRound },
   { id: "create", path: "/criar", label: "Criar", icon: PlusSquare },
   { id: "search", path: "/feed", label: "Busca", icon: Search },
-  { id: "salvos", path: "/salvos", label: "Salvos", icon: Bookmark },
+  { id: "mensagens", path: "/messages", label: "Mensagens", icon: MessageCircle },
 ];
 
 export interface MobileBottomNavProps {
