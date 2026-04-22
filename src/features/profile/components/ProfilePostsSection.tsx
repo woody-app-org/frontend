@@ -4,6 +4,7 @@ import { FeedSkeleton } from "@/features/feed/components/FeedSkeleton";
 import { Pagination } from "@/features/feed/components/Pagination";
 import { cn } from "@/lib/utils";
 import { woodySection } from "@/lib/woody-ui";
+import { canManageOwnPostProfilePin } from "@/domain/contentModerationPermissions";
 import type { Post } from "@/features/feed/types";
 import type { PostProfilePinMenuProps } from "@/features/feed/components/PostOverflowMenu";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
@@ -13,9 +14,9 @@ const styles = {
 } as const;
 
 const featuredStyles = {
-  wrap: "rounded-xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)]/90 shadow-[0_1px_3px_rgba(58,45,36,0.06)] p-3 sm:p-4 mb-6",
-  title: "text-sm font-semibold text-[var(--woody-text)] tracking-tight mb-3",
-  subtitle: "text-xs text-[var(--woody-muted)] mb-3",
+  wrap: "rounded-xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)]/90 shadow-[0_1px_3px_rgba(58,45,36,0.06)] p-3.5 sm:p-5 mb-6",
+  title: "text-sm font-semibold text-[var(--woody-text)] tracking-tight mb-2 sm:mb-3",
+  subtitle: "text-xs leading-relaxed text-[var(--woody-muted)] mb-3 max-w-prose",
 } as const;
 
 export interface ProfilePostsSectionProps {
@@ -77,7 +78,7 @@ export function ProfilePostsSection({
       : "Publicações no perfil e em comunidades que podes ver.");
 
   const profilePinMenuFor = (post: Post): PostProfilePinMenuProps | undefined => {
-    if (!isOwnProfile || post.author.id !== viewerId) return undefined;
+    if (!canManageOwnPostProfilePin(viewerId, post, { viewingOwnProfile: isOwnProfile })) return undefined;
     return {
       isPinned: Boolean(post.pinnedOnProfileAt),
       busy: pinningPostId === post.id,
@@ -107,6 +108,7 @@ export function ProfilePostsSection({
               <PostCard
                 post={post}
                 postSurface="profile"
+                profilePinHighlight
                 profilePinMenu={profilePinMenuFor(post)}
                 onPostUpdated={onPostUpdated}
                 onPostDeleted={onPostDeleted}

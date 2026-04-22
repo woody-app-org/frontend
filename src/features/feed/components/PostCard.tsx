@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { woodyMotion, woodySurface } from "@/lib/woody-ui";
+import { woodyMotion, woodyPinPill, woodySurface } from "@/lib/woody-ui";
 import type { Post } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
@@ -41,12 +41,10 @@ const styles = {
   menuTrigger:
     "shrink-0 touch-manipulation text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-2 min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 sm:p-1.5",
   titleRow:
-    "flex flex-wrap items-center gap-2 gap-y-1 mt-2",
+    "mt-2 flex flex-wrap content-start items-start gap-x-2 gap-y-1.5 sm:items-center",
   title: "font-bold text-[var(--woody-text)] text-base sm:text-[1.05rem] leading-snug",
   pill:
     "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[var(--woody-nav)]/15 text-[var(--woody-muted)] border border-[var(--woody-accent)]/10",
-  pinnedPill:
-    "inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-accent)]/90 bg-[var(--woody-accent)]/8 border border-[var(--woody-accent)]/18",
   content:
     "text-[var(--woody-text)]/90 text-[0.9375rem] leading-relaxed whitespace-pre-wrap break-words",
   contentBlock: "p-0 pt-2 pb-0",
@@ -62,6 +60,8 @@ const styles = {
 
 export interface PostCardProps {
   post: Post;
+  /** Realça suavemente cartões na secção “Posts em destaque” do perfil. */
+  profilePinHighlight?: boolean;
   profilePinMenu?: PostProfilePinMenuProps;
   onPin?: (postId: string) => void;
   /** Sincroniza lista local (ex.: perfil) após edição mock. */
@@ -84,6 +84,7 @@ export interface PostCardProps {
 
 export function PostCard({
   post,
+  profilePinHighlight = false,
   profilePinMenu,
   onPin,
   onPostUpdated,
@@ -136,6 +137,9 @@ export function PostCard({
         styles.card,
         "cursor-pointer",
         postListingContext === "community" && "px-4 pb-4 pt-3 sm:px-6 sm:pb-5 sm:pt-4",
+        profilePinHighlight &&
+          postSurface === "profile" &&
+          "ring-1 ring-[var(--woody-accent)]/22 border-[var(--woody-accent)]/22",
         className
       )}
       role="button"
@@ -204,8 +208,8 @@ export function PostCard({
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
           {post.pinnedOnProfileAt && postSurface === "profile" ? (
-            <span className={styles.pinnedPill} aria-label="Publicação fixada no perfil">
-              Fixado
+            <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
+              Em destaque
             </span>
           ) : null}
           {post.tags?.map((tag) => (

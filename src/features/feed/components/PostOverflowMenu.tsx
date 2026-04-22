@@ -101,7 +101,12 @@ export function PostOverflowMenu({
 
   const ownerExtras = showEdit || showDelete;
   const showProfilePin = Boolean(profilePinMenu);
-  const otherExtras = showProfilePin || Boolean(onPin) || showReport;
+  const legacyPin = Boolean(onPin);
+  const pinRow = showProfilePin || legacyPin;
+  /** Separa dona do post (editar/excluir) do bloco seguinte (destaque / denúncia). */
+  const separatorAfterOwner = ownerExtras && (pinRow || showReport);
+  /** Separa destaque legado ou perfil da denúncia. */
+  const separatorBeforeReport = showReport && (ownerExtras || pinRow);
 
   return (
     <>
@@ -142,7 +147,7 @@ export function PostOverflowMenu({
               Excluir
             </DropdownMenuItem>
           ) : null}
-          {ownerExtras && otherExtras ? (
+          {separatorAfterOwner ? (
             <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           ) : null}
           {showProfilePin ? (
@@ -159,16 +164,19 @@ export function PostOverflowMenu({
               ) : (
                 <Pin className="mr-2 size-4" />
               )}
-              {profilePinMenu!.isPinned ? "Desafixar do perfil" : "Fixar no perfil"}
+              {profilePinMenu!.isPinned ? "Remover destaque do perfil" : "Destacar no perfil"}
             </DropdownMenuItem>
-          ) : onPin ? (
+          ) : legacyPin ? (
             <DropdownMenuItem
               className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
-              onClick={() => onPin(post.id)}
+              onClick={() => onPin!(post.id)}
             >
               <Pin className="mr-2 size-4" />
               Fixar
             </DropdownMenuItem>
+          ) : null}
+          {separatorBeforeReport ? (
+            <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           ) : null}
           {showReport ? (
             <DropdownMenuItem

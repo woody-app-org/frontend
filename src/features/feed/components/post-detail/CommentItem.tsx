@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { woodyPinPill } from "@/lib/woody-ui";
 import type { Comment, Post } from "@/domain/types";
 import { isCommentContentMaskedForViewer } from "@/domain/lib/contentModerationDisplay";
 import { formatCommentTimestamp } from "./formatCommentTimestamp";
@@ -63,8 +64,8 @@ export function CommentItem({
         </Avatar>
       </Link>
       <div className="min-w-0 flex-1">
-        <div className="flex gap-2">
-          <header className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <div className="flex gap-2 sm:gap-2.5">
+          <header className="flex min-w-0 flex-1 flex-wrap content-start items-start gap-x-2 gap-y-1 sm:items-baseline">
             <span className="inline-flex min-w-0 max-w-full items-center gap-1">
               <Link
                 to={`/profile/${author.id}`}
@@ -95,17 +96,12 @@ export function CommentItem({
               {formatCommentTimestamp(comment.createdAt)}
             </span>
             {comment.pinnedOnPostAt ? (
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full border border-[var(--woody-accent)]/18 bg-[var(--woody-accent)]/8 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-accent)]/95",
-                  nested ? "text-[0.6rem]" : ""
-                )}
-              >
+              <span className={cn(woodyPinPill, nested && "text-[0.58rem] sm:text-[0.62rem]")} aria-label="Comentário em destaque no topo">
                 Em destaque
               </span>
             ) : null}
           </header>
-          <div className="shrink-0 self-start pt-0.5">
+          <div className="shrink-0 self-start pt-0.5 sm:pt-0">
             <CommentActionsMenu
               post={post}
               comment={comment}

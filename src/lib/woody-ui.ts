@@ -57,6 +57,13 @@ export const woodyLayout = {
   stackGapTight: "flex flex-col gap-8 md:gap-10",
 } as const;
 
+/** Indicador discreto para conteúdo fixado / em destaque (posts no perfil, comentários no post). */
+export const woodyPinPill = cn(
+  "inline-flex max-w-full shrink-0 items-center rounded-full border border-[var(--woody-accent)]/18",
+  "bg-[var(--woody-accent)]/8 px-2 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wide",
+  "text-[var(--woody-accent)]/95 sm:text-[0.65rem]"
+);
+
 /** Diferenciação visual: perfil pessoal vs ações de comunidade (moderadora). */
 export const woodyContext = {
   personalBadge: cn(
