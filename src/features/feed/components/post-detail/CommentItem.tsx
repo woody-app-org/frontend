@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Pin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Comment, Post } from "@/domain/types";
@@ -12,13 +14,23 @@ export interface CommentItemProps {
   post: Post;
   comment: Comment;
   viewerId: string;
+  /** Recarrega comentários após ações da autora do post (ex.: destaque). */
+  onCommentsReload?: () => Promise<void>;
   /** Resposta na thread: tipografia e densidade levemente mais compactas (mobile-first). */
   nested?: boolean;
   className?: string;
 }
 
-export function CommentItem({ post, comment, viewerId, nested = false, className }: CommentItemProps) {
+export function CommentItem({
+  post,
+  comment,
+  viewerId,
+  onCommentsReload,
+  nested = false,
+  className,
+}: CommentItemProps) {
   const { author } = comment;
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const initials = author.name
     .split(" ")
     .map((n) => n[0])
@@ -50,8 +62,8 @@ export function CommentItem({ post, comment, viewerId, nested = false, className
         </Avatar>
       </Link>
       <div className="min-w-0 flex-1">
-        <div className="flex gap-2">
-          <header className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <div className="flex gap-2 sm:gap-2.5">
+          <header className="flex min-w-0 flex-1 flex-wrap content-start items-start gap-x-2 gap-y-1 sm:items-baseline">
             <span className="inline-flex min-w-0 max-w-full items-center gap-1">
               <Link
                 to={`/profile/${author.id}`}
@@ -81,11 +93,37 @@ export function CommentItem({ post, comment, viewerId, nested = false, className
             >
               {formatCommentTimestamp(comment.createdAt)}
             </span>
+            {comment.pinnedOnPostAt ? (
+              <span
+                className="inline-flex shrink-0 items-center rounded-md bg-[var(--woody-accent)]/8 p-0.5 text-[var(--woody-accent)]/85"
+                title="Comentário fixado no topo"
+                aria-label="Comentário fixado no topo"
+              >
+                <Pin
+                  className={cn("stroke-[1.75]", nested ? "size-3 sm:size-3.5" : "size-3.5 sm:size-4")}
+                  aria-hidden
+                />
+              </span>
+            ) : null}
           </header>
-          <div className="shrink-0 self-start pt-0.5">
-            <CommentActionsMenu post={post} comment={comment} viewerId={viewerId} />
+          <div className="shrink-0 self-start pt-0.5 sm:pt-0">
+            <CommentActionsMenu
+              post={post}
+              comment={comment}
+              viewerId={viewerId}
+              onCommentsReload={onCommentsReload}
+              onActionMessage={setActionMessage}
+            />
           </div>
         </div>
+        {actionMessage ? (
+          <p
+            role="alert"
+            className="mt-1.5 text-xs text-amber-800 dark:text-amber-200/95 [overflow-wrap:anywhere]"
+          >
+            {actionMessage}
+          </p>
+        ) : null}
         {isCommentContentMaskedForViewer(comment) ? (
           <HiddenCommentPlaceholder nested={nested} />
         ) : (

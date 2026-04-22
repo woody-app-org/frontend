@@ -1,11 +1,22 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import type { ConversationPeerPreviewDto, MessageResponseDto } from "../types";
 import { DmComposer } from "./DmComposer";
 import { DmMessageList } from "./DmMessageList";
+
+function peerInitials(peer: ConversationPeerPreviewDto | null): string {
+  const base = peer?.displayName?.trim() || peer?.username?.trim() || "?";
+  return base
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 export interface ConversationChatPanelProps {
   peer: ConversationPeerPreviewDto | null;
@@ -38,19 +49,54 @@ export function ConversationChatPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--woody-bg)]">
-      <header className="flex shrink-0 items-center gap-2 border-b border-[var(--woody-divider)] px-2 py-3 md:px-4">
+      <header
+        className={cn(
+          "flex shrink-0 items-center gap-2 border-b border-[var(--woody-divider)] px-2 py-3 md:px-4",
+          "max-md:border-[var(--woody-divider)]/80 max-md:bg-[var(--woody-bg)]/95 max-md:backdrop-blur-sm max-md:pt-[max(0.5rem,env(safe-area-inset-top))]"
+        )}
+      >
         <button
           type="button"
           onClick={onBack}
           className={cn(
             woodyFocus.ring,
-            "inline-flex size-10 items-center justify-center rounded-full text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 md:hidden"
+            "inline-flex size-10 shrink-0 items-center justify-center rounded-full text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 md:hidden"
           )}
-          aria-label="Voltar à lista"
+          aria-label="Sair da conversa"
         >
-          <ChevronLeft className="size-5" />
+          <ChevronLeft className="size-5" strokeWidth={2} />
         </button>
-        <div className="min-w-0 flex-1">
+        {peer ? (
+          <Link
+            to={`/profile/${peer.id}`}
+            aria-label={`Perfil de ${label}`}
+            className={cn(
+              woodyFocus.ring,
+              "flex min-w-0 flex-1 items-center gap-2.5 rounded-xl py-1 pr-1 -my-0.5 md:hidden",
+              "hover:bg-[var(--woody-nav)]/8 transition-colors"
+            )}
+          >
+            <Avatar className="size-9 shrink-0 ring-1 ring-[var(--woody-divider)]/60">
+              <AvatarImage src={peer.profilePic ?? undefined} alt="" />
+              <AvatarFallback className="bg-[var(--woody-nav)]/12 text-xs font-semibold text-[var(--woody-text)]">
+                {peerInitials(peer)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate text-left text-base font-semibold leading-tight text-[var(--woody-text)]">
+              {label}
+            </span>
+          </Link>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-2.5 py-1 md:hidden">
+            <Avatar className="size-9 shrink-0 ring-1 ring-[var(--woody-divider)]/60">
+              <AvatarFallback className="bg-[var(--woody-nav)]/12 text-xs font-semibold text-[var(--woody-text)]">
+                {peerInitials(null)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate text-base font-semibold text-[var(--woody-text)]">{label}</span>
+          </div>
+        )}
+        <div className="hidden min-w-0 flex-1 md:block">
           <p className="truncate font-semibold text-[var(--woody-text)]">{label}</p>
           {peer ? (
             <Link

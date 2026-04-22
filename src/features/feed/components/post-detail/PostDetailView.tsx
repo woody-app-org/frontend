@@ -22,6 +22,8 @@ export interface PostDetailViewProps {
   /** Comentário raiz (`parentCommentId` null). Respostas usam `onReplySubmit` na lista. */
   onCreateComment: (body: string) => Promise<boolean>;
   onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
+  /** Atualiza comentários após ações da autora (ex.: destaque). */
+  onReloadComments?: () => Promise<void>;
 }
 
 export function PostDetailView({
@@ -37,6 +39,7 @@ export function PostDetailView({
   onToggleLike,
   onCreateComment,
   onReplySubmit,
+  onReloadComments,
 }: PostDetailViewProps) {
   const commentsRef = useRef<HTMLElement>(null);
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
@@ -91,6 +94,7 @@ export function PostDetailView({
             post={post}
             postId={post.id}
             comments={comments}
+            onCommentsReload={onReloadComments}
             isLoading={isCommentsLoading}
             error={commentsError}
             className="mt-1 border-t border-[var(--woody-accent)]/10 pt-5"

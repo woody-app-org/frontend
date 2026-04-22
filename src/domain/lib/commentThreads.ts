@@ -10,12 +10,19 @@ export interface CommentParentRef {
   postId: string;
   parentCommentId: string | null;
   createdAt: string;
+  /** Quando presente, comentários fixos pela autora do post vêm primeiro (alinhado à API). */
+  pinnedOnPostAt?: string | null;
 }
 
 export function getRootCommentsByPostId<T extends CommentParentRef>(postId: string, comments: readonly T[]): T[] {
   return comments
     .filter((c) => c.postId === postId && c.parentCommentId == null)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    .sort((a, b) => {
+      const ap = a.pinnedOnPostAt ? 1 : 0;
+      const bp = b.pinnedOnPostAt ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+      return a.createdAt.localeCompare(b.createdAt);
+    });
 }
 
 export function getRepliesByCommentId<T extends CommentParentRef>(parentId: string, comments: readonly T[]): T[] {
@@ -44,7 +51,12 @@ export function buildCommentThreadTree(postId: string, comments: readonly Commen
   }
 
   for (const [, list] of childMap) {
-    list.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    list.sort((a, b) => {
+      const ap = a.pinnedOnPostAt ? 1 : 0;
+      const bp = b.pinnedOnPostAt ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+      return a.createdAt.localeCompare(b.createdAt);
+    });
   }
 
   function nodeFor(comment: Comment): CommentThreadNode {

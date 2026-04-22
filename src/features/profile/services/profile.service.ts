@@ -99,14 +99,28 @@ export async function getProfilePosts(
     const { data } = await api.get(`/users/${encodeURIComponent(userId)}/posts`, {
       params: { page, pageSize },
     });
-    const items = (data.items ?? []).map((p: unknown) => mapPostFromApi(p as Record<string, unknown>, viewerId));
+    const raw = data as Record<string, unknown>;
+    const pinned = Array.isArray(raw.pinned)
+      ? (raw.pinned as unknown[]).map((p) => mapPostFromApi(p as Record<string, unknown>, viewerId))
+      : [];
+    const items = Array.isArray(raw.items)
+      ? (raw.items as unknown[]).map((p) => mapPostFromApi(p as Record<string, unknown>, viewerId))
+      : [];
+    const unpinnedTotalCount =
+      typeof raw.unpinnedTotalCount === "number"
+        ? raw.unpinnedTotalCount
+        : typeof raw.unpinnedTotalCount === "string"
+          ? Number.parseInt(raw.unpinnedTotalCount, 10)
+          : items.length;
     return {
+      pinned,
       items,
-      page: data.page ?? page,
-      pageSize: data.pageSize ?? pageSize,
-      totalCount: data.totalCount ?? items.length,
-      hasNextPage: Boolean(data.hasNextPage),
-      hasPreviousPage: Boolean(data.hasPreviousPage),
+      page: typeof raw.page === "number" ? raw.page : Number(raw.page ?? page),
+      pageSize: typeof raw.pageSize === "number" ? raw.pageSize : Number(raw.pageSize ?? pageSize),
+      totalCount: typeof raw.totalCount === "number" ? raw.totalCount : Number(raw.totalCount ?? pinned.length + items.length),
+      unpinnedTotalCount: Number.isFinite(unpinnedTotalCount) ? unpinnedTotalCount : items.length,
+      hasNextPage: Boolean(raw.hasNextPage),
+      hasPreviousPage: Boolean(raw.hasPreviousPage),
     };
   } catch (e) {
     throw new Error(getApiErrorMessage(e, "Falha ao carregar posts do perfil."));

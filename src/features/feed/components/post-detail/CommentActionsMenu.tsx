@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { EyeOff, Flag, MoreVertical, Trash2 } from "lucide-react";
+import { EyeOff, Flag, MoreVertical, Pin, PinOff, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,9 @@ import type { Comment, Post } from "@/domain/types";
 import {
   canDeleteOwnComment,
   canHideCommentOnOwnedPost,
+  canPinCommentAsPostAuthor,
   canReportComment,
+  canUnpinCommentAsPostAuthor,
 } from "@/domain/contentModerationPermissions";
 import {
   getContentReportsVersion,
@@ -22,6 +24,7 @@ import {
   deleteCommentMock,
   hideCommentMock,
 } from "@/domain/services/contentModerationMock.service";
+import { pinCommentOnPost, unpinCommentOnPost } from "@/features/feed/services/postPin.service";
 import {
   DeleteCommentConfirmationDialog,
   HideCommentConfirmationDialog,
@@ -32,9 +35,19 @@ export interface CommentActionsMenuProps {
   post: Post;
   comment: Comment;
   viewerId: string;
+  /** Após destacar/remover destaque, sincroniza com a API. */
+  onCommentsReload?: () => Promise<void>;
+  /** Mensagens breves (erros de rede/API) junto ao comentário. */
+  onActionMessage?: (message: string | null) => void;
 }
 
-export function CommentActionsMenu({ post, comment, viewerId }: CommentActionsMenuProps) {
+export function CommentActionsMenu({
+  post,
+  comment,
+  viewerId,
+  onCommentsReload,
+  onActionMessage,
+}: CommentActionsMenuProps) {
   const reportRev = useSyncExternalStore(
     subscribeContentReports,
     getContentReportsVersion,
@@ -49,11 +62,15 @@ export function CommentActionsMenu({ post, comment, viewerId }: CommentActionsMe
   const [hideBusy, setHideBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [hideError, setHideError] = useState<string | null>(null);
+  const [pinBusy, setPinBusy] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const showDelete = canDeleteOwnComment(viewerId, post, comment);
   const showHide = canHideCommentOnOwnedPost(viewerId, post, comment);
   const showReport = canReportComment(viewerId, post, comment);
-  const hasDropdownTrigger = showDelete || showHide || showReport;
+  const showPin = Boolean(onCommentsReload) && canPinCommentAsPostAuthor(viewerId, post, comment);
+  const showUnpin = Boolean(onCommentsReload) && canUnpinCommentAsPostAuthor(viewerId, post, comment);
+  const hasDropdownTrigger = showDelete || showHide || showReport || showPin || showUnpin;
 
   useEffect(() => {
     if (deleteOpen) setDeleteError(null);
@@ -62,6 +79,10 @@ export function CommentActionsMenu({ post, comment, viewerId }: CommentActionsMe
   useEffect(() => {
     if (hideOpen) setHideError(null);
   }, [hideOpen]);
+
+  useEffect(() => {
+    if (menuOpen) onActionMessage?.(null);
+  }, [menuOpen, onActionMessage]);
 
   if (!hasDropdownTrigger && !deleteOpen && !hideOpen && !reportOpen) {
     return null;
@@ -97,10 +118,32 @@ export function CommentActionsMenu({ post, comment, viewerId }: CommentActionsMe
     }
   };
 
+  const runPinToggle = async () => {
+    if (!onCommentsReload) return;
+    setMenuOpen(false);
+    setPinBusy(true);
+    onActionMessage?.(null);
+    try {
+      if (comment.pinnedOnPostAt) {
+        await unpinCommentOnPost(post.id, comment.id);
+      } else {
+        await pinCommentOnPost(post.id, comment.id);
+      }
+      await onCommentsReload();
+    } catch (e) {
+      onActionMessage?.(e instanceof Error ? e.message : "Não foi possível atualizar o destaque.");
+    } finally {
+      setPinBusy(false);
+    }
+  };
+
+  const moderationBlock = showDelete || showHide;
+  const pinBlock = showPin || showUnpin;
+
   return (
     <>
       {hasDropdownTrigger ? (
-        <DropdownMenu>
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
@@ -135,7 +178,29 @@ export function CommentActionsMenu({ post, comment, viewerId }: CommentActionsMe
                 Ocultar para outras
               </DropdownMenuItem>
             ) : null}
-            {(showDelete || showHide) && showReport ? (
+            {moderationBlock && pinBlock ? (
+              <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
+            ) : null}
+            {showUnpin ? (
+              <DropdownMenuItem
+                className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+                disabled={pinBusy}
+                onClick={() => void runPinToggle()}
+              >
+                <PinOff className="mr-2 size-4" />
+                Remover destaque
+              </DropdownMenuItem>
+            ) : showPin ? (
+              <DropdownMenuItem
+                className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+                disabled={pinBusy}
+                onClick={() => void runPinToggle()}
+              >
+                <Pin className="mr-2 size-4" />
+                Destacar no topo
+              </DropdownMenuItem>
+            ) : null}
+            {(moderationBlock || pinBlock) && showReport ? (
               <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
             ) : null}
             {showReport ? (

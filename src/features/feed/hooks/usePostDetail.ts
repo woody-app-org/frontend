@@ -19,6 +19,8 @@ interface UsePostDetailReturn {
   error: string | null;
   commentsError: string | null;
   refetch: () => Promise<void>;
+  /** Recarrega só a lista de comentários (ex.: após destacar). */
+  refetchComments: () => Promise<void>;
   toggleLike: () => Promise<void>;
   /** `parentCommentId` opcional para resposta (composer raiz envia `null`). */
   createComment: (body: string, parentCommentId?: string | null) => Promise<boolean>;
@@ -38,6 +40,22 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   const [isCreatingComment, setIsCreatingComment] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [commentsError, setCommentsError] = useState<string | null>(null);
+
+  /** Recarrega comentários sem skeleton (evita flash após destacar). */
+  const refetchComments = useCallback(async () => {
+    if (!postId) {
+      setComments([]);
+      return;
+    }
+    setCommentsError(null);
+    try {
+      const commentsData = await postCommentsMockApi.listByPostId(postId, viewerId);
+      setComments(commentsData);
+    } catch {
+      setCommentsError("Não foi possível carregar os comentários.");
+      setComments([]);
+    }
+  }, [postId, viewerId]);
 
   const refetch = useCallback(async () => {
     if (!postId) {
@@ -66,7 +84,8 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
         setIsLoading(false);
       });
 
-    const commentsTask = postCommentsMockApi.listByPostId(postId, viewerId)
+    const commentsTask = postCommentsMockApi
+      .listByPostId(postId, viewerId)
       .then((commentsData) => {
         setComments(commentsData);
       })
@@ -82,7 +101,7 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   }, [postId, viewerId]);
 
   useEffect(() => {
-    refetch();
+    void refetch();
   }, [refetch]);
 
   const toggleLike = useCallback(async () => {
@@ -172,6 +191,7 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
     error,
     commentsError,
     refetch,
+    refetchComments,
     toggleLike,
     createComment,
   };

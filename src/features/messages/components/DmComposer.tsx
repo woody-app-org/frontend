@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, Loader2, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
@@ -57,7 +57,7 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
   };
 
   return (
-    <div className="shrink-0 border-t border-[var(--woody-divider)] bg-[var(--woody-header)]/40 p-3 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none">
+    <div className="shrink-0 border-t border-[var(--woody-divider)] bg-[var(--woody-header)]/40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm md:bg-transparent md:pb-3 md:backdrop-blur-none">
       {sendError ? <p className="mb-2 text-xs text-red-600">{sendError}</p> : null}
 
       {urls.length > 0 ? (
@@ -92,7 +92,7 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
           className="sr-only"
           onChange={(e) => void addFiles(e.target.files)}
         />
-        <div className="flex flex-1 gap-2">
+        <div className="flex min-w-0 flex-1 gap-2 max-md:items-end">
           <Button
             type="button"
             variant="outline"
@@ -114,7 +114,7 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
             maxLength={DM_MESSAGE_BODY_MAX_LENGTH}
             rows={2}
             disabled={blocked}
-            className="min-h-[44px] flex-1 resize-none md:min-h-0"
+            className="min-h-[44px] max-md:max-h-32 flex-1 resize-none md:min-h-0"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -122,17 +122,32 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
               }
             }}
           />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-11 shrink-0 border-[var(--woody-divider)] bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 hover:text-white md:hidden"
+            onClick={() => void submit()}
+            disabled={!canSend || blocked}
+            aria-label={busy ? "A enviar…" : "Enviar mensagem"}
+          >
+            {busy ? (
+              <Loader2 className="size-5 animate-spin" aria-hidden />
+            ) : (
+              <Send className="size-5" aria-hidden />
+            )}
+          </Button>
         </div>
         <Button
           type="button"
-          className="min-h-11 w-full shrink-0 md:w-auto"
+          className="hidden min-h-11 shrink-0 md:inline-flex md:w-auto"
           onClick={() => void submit()}
           disabled={!canSend || blocked}
         >
           {busy ? "A enviar…" : "Enviar"}
         </Button>
       </div>
-      <p className="mt-1.5 text-[0.65rem] text-[var(--woody-muted)]">
+      <p className="mt-1.5 hidden text-[0.65rem] text-[var(--woody-muted)] md:block">
         Enter envia · Shift+Enter nova linha · até {DM_MESSAGE_MAX_IMAGE_ATTACHMENTS} imagens
       </p>
     </div>

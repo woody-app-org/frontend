@@ -58,12 +58,15 @@ export interface ProfileUpdatePayload {
   interests?: InterestTag[];
 }
 
-/** Resposta paginada de posts do perfil */
+/** Resposta de posts do perfil: destaques fixos + lista paginada (sem fixos). */
 export interface ProfilePostsResponse {
+  pinned: Post[];
   items: Post[];
   page: number;
   pageSize: number;
   totalCount: number;
+  /** Total de publicações não fixas (paginação de <code>items</code>). */
+  unpinnedTotalCount: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 }
@@ -71,6 +74,8 @@ export interface ProfilePostsResponse {
 /** Retorno do hook useUserProfile – preparado para troca por API */
 export interface UseUserProfileReturn {
   profile: UserProfile | null;
+  /** Publicações fixadas no perfil (até o limite da API). */
+  pinnedPosts: Post[];
   posts: Post[];
   isLoading: boolean;
   error: Error | null;
@@ -83,6 +88,13 @@ export interface UseUserProfileReturn {
   /** Atualiza um post na lista local (edição mock). */
   updatePostInList: (post: Post) => void;
   removePostFromList: (postId: string) => void;
+  /** Alterna fixação no perfil (só para a própria autora no próprio perfil). */
+  toggleProfilePin: (post: Post) => Promise<void>;
+  pinningPostId: string | null;
+  pinActionError: string | null;
+  dismissPinActionError: () => void;
+  pinActionSuccess: string | null;
+  dismissPinActionSuccess: () => void;
   /** Após seguir/deixar de seguir, mantém o perfil alinhado à API sem refetch completo. */
   applyFollowPatch: (patch: { isFollowing: boolean; followersCount: number }) => void;
 }

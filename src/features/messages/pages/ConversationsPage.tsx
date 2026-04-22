@@ -230,18 +230,31 @@ export function ConversationsPage() {
       <div
         className={cn(
           woodyLayout.pagePad,
-          "mx-auto flex w-full max-w-6xl flex-col gap-5 pb-28 md:min-h-0 md:gap-6 md:pb-8",
+          "mx-auto flex w-full max-w-6xl flex-col gap-2 max-md:pt-2 md:min-h-0 md:gap-6 md:pb-8",
+          /* Lista mobile: espaço para a tab bar. Chat mobile: ecrã cheio (tab bar oculta no layout). */
+          showMobileChat
+            ? "max-md:gap-0 max-md:pb-[max(0.35rem,env(safe-area-inset-bottom))] max-md:pt-0 max-md:min-h-[100dvh] max-md:max-h-[100dvh]"
+            : "pb-28 max-md:pb-28",
           /* Altura fixa no desktop: o scroll fica dentro do chat/lista, não na página inteira. */
           "md:h-[calc(100dvh-7rem)] md:max-h-[calc(100dvh-7rem)]",
-          /* Mobile com chat aberto: limita altura para o histórico rolar dentro do painel. */
-          showMobileChat && "min-h-0 max-h-[calc(100dvh-7.5rem)] flex-1"
+          /* Mobile com chat: ocupa o viewport; desktop mantém o fluxo em coluna com altura definida. */
+          showMobileChat && "min-h-0 flex-1 md:min-h-0"
         )}
       >
-        <header className="shrink-0 md:mb-0">
-          <h1 className={woodySection.title}>Conversas</h1>
-          <p className={woodySection.subtitle}>
-            Inbox com pedidos e conversas (atualiza em tempo real). Para falar com alguém, usa <strong className="font-medium text-[var(--woody-text)]">Mensagem</strong> no perfil dela ou os atalhos abaixo.
-          </p>
+        <header
+          className={cn(
+            "shrink-0 md:mb-0",
+            showMobileChat && !sendError && !listLoadError && "max-md:hidden"
+          )}
+        >
+          <div className="hidden md:block">
+            <h1 className={woodySection.title}>Conversas</h1>
+            <p className={woodySection.subtitle}>
+              Inbox com pedidos e conversas (atualiza em tempo real). Para falar com alguém, usa{" "}
+              <strong className="font-medium text-[var(--woody-text)]">Mensagem</strong> no perfil dela ou os atalhos
+              abaixo.
+            </p>
+          </div>
           {sendError ? (
             <p className="mt-3 max-w-xl text-sm text-red-600" role="alert">
               {sendError}
@@ -264,8 +277,10 @@ export function ConversationsPage() {
         <div
           className={cn(
             "grid min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)]/85 shadow-[0_1px_3px_rgba(58,45,36,0.06)]",
-            "min-h-[min(52dvh,420px)] md:min-h-0",
-            "md:grid-cols-[minmax(0,320px)_1fr] md:h-full md:max-h-full"
+            "md:min-h-0 md:grid-cols-[minmax(0,320px)_1fr] md:h-full md:max-h-full",
+            showMobileChat
+              ? "max-md:max-h-full max-md:min-h-0 max-md:rounded-none max-md:border-0 max-md:shadow-none max-md:bg-[var(--woody-bg)]"
+              : "max-md:min-h-[calc(100dvh-10.25rem)] max-md:rounded-xl"
           )}
         >
           <div
