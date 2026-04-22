@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Pin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { woodyPinPill } from "@/lib/woody-ui";
 import type { Comment, Post } from "@/domain/types";
 import { isCommentContentMaskedForViewer } from "@/domain/lib/contentModerationDisplay";
 import { formatCommentTimestamp } from "./formatCommentTimestamp";
@@ -43,8 +43,6 @@ export function CommentItem({
       className={cn(
         "flex py-4 first:pt-0 last:pb-0",
         nested ? "gap-2.5 sm:gap-3" : "gap-3",
-        comment.pinnedOnPostAt &&
-          "rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-accent)]/[0.04] px-2 py-2.5 sm:px-3",
         className
       )}
     >
@@ -96,8 +94,15 @@ export function CommentItem({
               {formatCommentTimestamp(comment.createdAt)}
             </span>
             {comment.pinnedOnPostAt ? (
-              <span className={cn(woodyPinPill, nested && "text-[0.58rem] sm:text-[0.62rem]")} aria-label="Comentário em destaque no topo">
-                Em destaque
+              <span
+                className="inline-flex shrink-0 items-center rounded-md bg-[var(--woody-accent)]/8 p-0.5 text-[var(--woody-accent)]/85"
+                title="Comentário fixado no topo"
+                aria-label="Comentário fixado no topo"
+              >
+                <Pin
+                  className={cn("stroke-[1.75]", nested ? "size-3 sm:size-3.5" : "size-3.5 sm:size-4")}
+                  aria-hidden
+                />
               </span>
             ) : null}
           </header>
