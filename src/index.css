@@ -210,3 +210,21 @@
 .feed-scroll-area::-webkit-scrollbar {
   display: none;
 }
+
+@keyframes woodyIntroPathDraw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes woodyIntroFillIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
