@@ -177,7 +177,7 @@ export function ProfilePage() {
             <div
               className={cn(
                 "relative mb-6 grid grid-cols-3 gap-1 p-1 rounded-xl border border-[var(--woody-accent)]/16 bg-[var(--woody-card)]/98",
-                "shadow-[0_1px_3px_rgba(58,45,36,0.05)]"
+                "shadow-[0_1px_3px_rgba(10,10,10,0.05)]"
               )}
               role="tablist"
               aria-label="Seções do perfil"

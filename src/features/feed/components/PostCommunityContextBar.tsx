@@ -12,8 +12,8 @@ export interface PostCommunityContextBarProps {
 }
 
 const rowClassFeed = cn(
-  "flex w-full min-w-0 items-center gap-2.5 rounded-t-2xl -mx-4 -mt-3 mb-1 border-b border-[var(--woody-accent)]/12",
-  "bg-[var(--woody-nav)]/[0.06] px-3 py-2.5 sm:px-4 transition-[background-color] duration-200"
+  "flex w-full min-w-0 items-center gap-3 rounded-t-2xl -mx-6 -mt-5 mb-2.5 border-b border-black/[0.06]",
+  "bg-black/[0.03] px-4 py-3.5 sm:px-5 transition-[background-color] duration-200"
 );
 
 /** Na página da comunidade o contexto já é óbvio — faixa mais discreta, sem bleed negativo. */
@@ -23,11 +23,11 @@ const rowClassCommunity = cn(
 );
 
 const nameClass =
-  "min-w-0 flex-1 text-left text-sm font-semibold leading-tight text-[var(--woody-text)] truncate group-hover:text-[var(--woody-nav)] transition-colors";
+  "min-w-0 flex-1 text-left text-[0.9375rem] font-semibold leading-tight text-[var(--woody-text)] truncate group-hover:text-[var(--woody-nav)] transition-colors";
 
 const categoryClass = cn(
-  "shrink-0 rounded-full bg-[var(--woody-card)] px-2 py-0.5 text-[0.6875rem] font-semibold",
-  "text-[var(--woody-text)] ring-1 ring-[var(--woody-accent)]/15"
+  "shrink-0 rounded-full px-2.5 py-[0.1875rem] text-[0.6875rem] font-semibold tracking-wide",
+  "bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] ring-1 ring-[rgba(139,195,74,0.32)]"
 );
 
 function CommunityAvatar({ preview }: { preview: PostCommunityPreview }) {

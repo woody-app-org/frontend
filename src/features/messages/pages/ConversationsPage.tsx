@@ -276,7 +276,7 @@ export function ConversationsPage() {
 
         <div
           className={cn(
-            "grid min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)]/85 shadow-[0_1px_3px_rgba(58,45,36,0.06)]",
+            "grid min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)]/85 shadow-[0_1px_3px_rgba(10,10,10,0.06)]",
             "md:min-h-0 md:grid-cols-[minmax(0,320px)_1fr] md:h-full md:max-h-full",
             showMobileChat
               ? "max-md:max-h-full max-md:min-h-0 max-md:rounded-none max-md:border-0 max-md:shadow-none max-md:bg-[var(--woody-bg)]"

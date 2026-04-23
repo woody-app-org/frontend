@@ -211,7 +211,7 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
     <Dialog open={deleteDialogOpen} onOpenChange={(open) => !busy && setDeleteDialogOpen(open)}>
       <DialogContent
         className={cn(
-          "max-w-[min(100vw-1.5rem,22rem)] gap-5 border-[var(--woody-divider)] bg-[var(--woody-card)] p-5 shadow-[0_20px_50px_rgba(58,45,36,0.18)] sm:p-6"
+          "max-w-[min(100vw-1.5rem,22rem)] gap-5 border-[var(--woody-divider)] bg-[var(--woody-card)] p-5 shadow-[0_20px_50px_rgba(10,10,10,0.18)] sm:p-6"
         )}
         onPointerDownOutside={(e) => {
           if (busy) e.preventDefault();

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { woodyMotion, woodyPinPill, woodySurface } from "@/lib/woody-ui";
+import { woodyMotion, woodyPinPill } from "@/lib/woody-ui";
 import type { Post } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
@@ -27,32 +27,32 @@ function formatCount(count: number): string {
 
 const styles = {
   card: cn(
-    woodySurface.card,
     woodyMotion.postCardHover,
-    "flex flex-col gap-0 px-4 pt-3 pb-3 sm:px-4 overflow-hidden"
+    "relative flex flex-col gap-0 overflow-hidden rounded-2xl border border-black/[0.06] border-l-[3px] border-l-[var(--woody-nav)] bg-[var(--woody-card)]",
+    "px-6 pt-5 pb-5 shadow-[0_2px_14px_rgba(10,10,10,0.045),0_8px_28px_rgba(10,10,10,0.03)]"
   ),
   header:
-    "flex flex-row items-start justify-between gap-3 p-0",
+    "relative z-[1] flex flex-row items-start justify-between gap-3 p-0",
   headerLeft: "flex min-w-0 flex-1 items-start gap-3",
-  avatar: "size-9 shrink-0",
+  avatar: "size-9 shrink-0 md:size-10",
   headerMeta: "min-w-0 flex-1",
-  authorName: "font-semibold text-[var(--woody-text)] text-[0.95rem] leading-tight truncate",
-  authorPronouns: "text-[var(--woody-muted)] text-xs",
-  timestamp: "flex items-center gap-1 text-[var(--woody-muted)] text-xs mt-0.5",
+  authorName: "font-semibold text-[var(--woody-text)] text-[0.98rem] leading-tight truncate md:text-[1.02rem]",
+  authorPronouns: "text-[var(--woody-muted)] text-[0.75rem]",
+  timestamp: "flex items-center gap-1 text-[var(--woody-muted)] text-[0.75rem] mt-0.5",
   menuTrigger:
     "shrink-0 touch-manipulation text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-2 min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 sm:p-1.5",
   titleRow:
-    "mt-2 flex flex-wrap content-start items-start gap-x-2 gap-y-1.5 sm:items-center",
-  title: "font-bold text-[var(--woody-text)] text-base sm:text-[1.05rem] leading-snug",
+    "relative z-[1] mt-3.5 flex flex-wrap content-start items-start gap-x-2 gap-y-2 sm:items-center",
+  title: "font-bold text-[var(--woody-text)] text-[1.125rem] leading-[1.25] tracking-[-0.02em] md:text-[1.1875rem]",
   pill:
-    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-[var(--woody-nav)]/15 text-[var(--woody-muted)] border border-[var(--woody-accent)]/10",
+    "inline-flex items-center rounded-full px-2.5 py-[0.1875rem] text-[0.75rem] font-semibold tracking-[0.01em] bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] ring-1 ring-[rgba(139,195,74,0.28)]",
   content:
-    "text-[var(--woody-text)]/90 text-[0.9375rem] leading-relaxed whitespace-pre-wrap break-words",
-  contentBlock: "p-0 pt-2 pb-0",
-  imageWrap: "mt-3 w-full overflow-hidden rounded-xl bg-[var(--woody-nav)]/5",
-  image: "w-full object-cover max-h-72 rounded-xl",
+    "text-[var(--woody-text)]/92 text-[0.9375rem] leading-[1.65] whitespace-pre-wrap break-words",
+  contentBlock: "relative z-[1] p-0 pt-1 pb-0",
+  imageWrap: "mt-4 w-full overflow-hidden rounded-lg bg-black/[0.025] ring-1 ring-black/[0.05]",
+  image: "w-full object-cover max-h-[min(22rem,56vw)] rounded-lg md:max-h-[20rem]",
   footer:
-    "flex items-center gap-5 mt-3 pt-0.5 text-[var(--woody-muted)]",
+    "relative z-[1] flex items-center gap-7 mt-5 pt-0.5 text-[var(--woody-muted)]",
   footerItem:
     "flex items-center gap-1.5 text-xs transition-colors rounded-md py-1 px-1.5 -mx-1.5 hover:text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/5 [&_svg]:size-3.5",
 };
@@ -152,7 +152,7 @@ export function PostCard({
       className={cn(
         styles.card,
         "cursor-pointer",
-        postListingContext === "community" && "px-4 pb-4 pt-3 sm:px-6 sm:pb-5 sm:pt-4",
+        postListingContext === "community" && "px-6 pb-5 pt-4 sm:px-7 sm:pb-6 sm:pt-5",
         profilePinHighlight &&
           postSurface === "profile" &&
           "ring-1 ring-[var(--woody-accent)]/22 border-[var(--woody-accent)]/22",
@@ -172,7 +172,7 @@ export function PostCard({
           variant={postListingContext}
         />
       ) : null}
-      <CardHeader className={cn(styles.header, hasContextBar && "pt-2 sm:pt-3")}>
+      <CardHeader className={cn(styles.header, hasContextBar && "pt-1 sm:pt-2")}>
         <div className={styles.headerLeft}>
           <Link
             to={`/profile/${post.author.id}`}
