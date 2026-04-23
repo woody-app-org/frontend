@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
+import { LogIn } from "lucide-react";
 import { AuthInputField } from "./AuthInputField";
 import { loginSchema } from "../lib/validation";
 import type { LoginFormData } from "../lib/validation";
@@ -10,14 +11,14 @@ const styles = {
   formTitle: "text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center md:text-left",
   form: "space-y-4",
   link:
-    "text-sm text-[var(--auth-text-on-beige)] md:text-white/85 hover:underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 md:focus-visible:ring-white/50 rounded",
+    "text-sm text-[var(--auth-text-on-beige)] hover:underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 rounded",
   submitBtn:
-    "w-full rounded-xl h-11 md:h-11 bg-[var(--auth-panel-maroon)] md:bg-[var(--auth-button)] text-white hover:opacity-95 active:scale-[0.99] md:hover:bg-[var(--auth-button-hover)] focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 transition-[transform,opacity,colors] duration-200 disabled:opacity-50 disabled:pointer-events-none font-medium touch-manipulation",
+    "w-full rounded-xl h-12 md:h-12 bg-[var(--woody-ink)] text-[var(--auth-button)] hover:opacity-95 active:scale-[0.99] hover:bg-black focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 transition-[transform,opacity,colors,box-shadow] duration-200 disabled:opacity-50 disabled:pointer-events-none font-semibold touch-manipulation shadow-[0_0_0_1px_rgba(139,195,74,0.3),0_0_18px_rgba(139,195,74,0.35)]",
   switchMobile:
     "mt-6 pt-6 border-t border-[var(--woody-accent)]/20 md:border-0 md:pt-0 md:mt-0 block md:hidden text-center",
   switchMobileText: "text-sm text-[var(--auth-text-on-beige)] md:text-white",
   switchMobileLink:
-    "text-sm font-medium text-[var(--auth-panel-maroon)] md:text-white underline underline-offset-2 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 rounded mt-1 inline-block transition-opacity duration-200",
+    "text-sm font-medium text-[var(--auth-text-on-maroon)] underline underline-offset-2 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 rounded mt-1 inline-block transition-opacity duration-200",
 } as const;
 
 export interface LoginFormProps {
@@ -97,7 +98,14 @@ export function LoginForm({
           disabled={isSubmitting}
           aria-busy={isSubmitting}
         >
-          {isSubmitting ? "Aguarde..." : "Entrar"}
+          {isSubmitting ? (
+            "Aguarde..."
+          ) : (
+            <span className="inline-flex items-center gap-2">
+              <LogIn className="size-4" aria-hidden />
+              Entrar
+            </span>
+          )}
         </button>
 
         <div className={styles.switchMobile}>

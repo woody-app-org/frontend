@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { UserPlus } from "lucide-react";
 import { AuthLayout } from "../components/AuthLayout";
 import { AuthCard } from "../components/AuthCard";
 import { AuthPromoPanel } from "../components/AuthPromoPanel";
@@ -48,9 +49,12 @@ export function LoginPage() {
                 <p className="text-sm text-[var(--auth-text-on-beige)]">Primeira vez por aqui?</p>
                 <Button
                   asChild
-                  className="rounded-xl h-10 px-5 bg-[var(--auth-button)] text-white hover:bg-[var(--auth-button-hover)] focus-visible:ring-2 focus-visible:ring-[var(--auth-ornament)]/50 transition-[transform,colors] duration-200 active:scale-[0.99] w-fit"
+                  className="rounded-xl h-10 px-5 border border-black/20 bg-white text-[var(--woody-ink)] hover:bg-black/[0.03] focus-visible:ring-2 focus-visible:ring-[var(--auth-ornament)]/50 transition-[transform,colors,background-color] duration-200 active:scale-[0.99] w-fit font-semibold"
                 >
-                  <Link to="/auth/onboarding/1">Criar conta</Link>
+                  <Link to="/auth/onboarding/1" className="inline-flex items-center gap-2">
+                    <UserPlus className="size-4 text-[var(--auth-button-hover)]" aria-hidden />
+                    Criar conta
+                  </Link>
                 </Button>
               </>
             }

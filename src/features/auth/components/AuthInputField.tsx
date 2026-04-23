@@ -24,12 +24,12 @@ const styles = {
   hintOnMaroon:
     "text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--auth-text-on-maroon)]/80 mb-2 leading-relaxed",
   inputMaroon:
-    "h-11 rounded-xl bg-white md:bg-[var(--auth-panel-beige)] text-[var(--auth-text-on-beige)] border border-[var(--woody-accent)]/15 md:border-[var(--auth-panel-beige)] placeholder:text-[var(--auth-text-on-beige)]/60 md:placeholder:text-[var(--auth-text-on-beige)]/70 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/40 md:focus-visible:ring-[var(--auth-ornament)]/50 transition-[border-color,box-shadow] duration-200",
+    "h-11 rounded-xl bg-white text-[var(--auth-text-on-beige)] border border-black/15 placeholder:text-[var(--auth-text-on-beige)]/55 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/40 transition-[border-color,box-shadow] duration-200",
   inputMaroonValid:
     "border-[var(--auth-button)]/40 md:border-[var(--auth-button)]/35 shadow-[0_0_0_1px_rgba(95,133,123,0.12)]",
   inputBeige:
     "h-11 rounded-xl bg-white/90 text-[var(--auth-text-on-beige)] border-white/50 placeholder:text-[var(--auth-text-on-beige)]/60 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 transition-[border-color,box-shadow] duration-200",
-  error: "text-sm mt-1.5 text-red-600 md:text-red-200",
+  error: "text-sm mt-1.5 text-red-600",
 } as const;
 
 export const AuthInputField = forwardRef<HTMLInputElement, AuthInputFieldProps>(

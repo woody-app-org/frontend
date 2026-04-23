@@ -12,7 +12,7 @@ export interface PostCommunityContextBarProps {
 }
 
 const rowClassFeed = cn(
-  "flex w-full min-w-0 items-center gap-3 rounded-t-2xl -mx-6 -mt-5 mb-2.5 border-b border-black/[0.06]",
+  "flex min-w-0 w-[calc(100%+3rem)] items-center gap-3 rounded-t-2xl -mt-5 mb-2.5 mx-[-1.5rem] border-b border-black/[0.06]",
   "bg-black/[0.03] px-4 py-3.5 sm:px-5 transition-[background-color] duration-200"
 );
 
@@ -23,7 +23,7 @@ const rowClassCommunity = cn(
 );
 
 const nameClass =
-  "min-w-0 flex-1 text-left text-[0.9375rem] font-semibold leading-tight text-[var(--woody-text)] truncate group-hover:text-[var(--woody-nav)] transition-colors";
+  "min-w-0 truncate text-left text-[0.9375rem] font-semibold leading-tight text-[var(--woody-text)] group-hover:text-[var(--woody-nav)] transition-colors";
 
 const categoryClass = cn(
   "shrink-0 rounded-full px-2.5 py-[0.1875rem] text-[0.6875rem] font-semibold tracking-wide",
@@ -56,7 +56,7 @@ export function PostCommunityContextBar({ preview, variant, className }: PostCom
   const inner = (
     <>
       <CommunityAvatar preview={preview} />
-      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <span className={nameClass}>{preview.name}</span>
         <span className={categoryClass}>{categoryLabel}</span>
       </div>
