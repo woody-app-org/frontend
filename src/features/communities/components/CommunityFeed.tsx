@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { woodySection } from "@/lib/woody-ui";
-import type { Community, Post } from "@/domain/types";
+import type { Community, CommunityPremiumCapabilities, Post } from "@/domain/types";
 import { PostCard } from "@/features/feed/components/PostCard";
 import { Pagination } from "@/features/feed/components/Pagination";
 import { CommunitiesEmptyState } from "./CommunitiesEmptyState";
@@ -22,6 +22,9 @@ export interface CommunityFeedProps {
   onPreviousPage?: () => void;
   /** Sem lista de posts por política de acesso (ex. comunidade privada). */
   feedAccessRestricted?: boolean;
+  premiumCapabilities?: CommunityPremiumCapabilities;
+  onBoostPost?: (postId: string) => void | Promise<void>;
+  boostingPostId?: string | null;
 }
 
 export function CommunityFeed({
@@ -36,6 +39,9 @@ export function CommunityFeed({
   onNextPage,
   onPreviousPage,
   feedAccessRestricted = false,
+  premiumCapabilities,
+  onBoostPost,
+  boostingPostId = null,
 }: CommunityFeedProps) {
   const showPagination =
     totalPostCount != null &&
@@ -82,6 +88,19 @@ export function CommunityFeed({
                   post={post}
                   postListingContext="community"
                   onPin={(id) => console.log("Pin", id)}
+                  communityBoost={
+                    premiumCapabilities?.isStaffForPremiumTools
+                      ? {
+                          communityId: community.id,
+                          canBoost: Boolean(premiumCapabilities.canBoostCommunityPosts),
+                          staffNeedsPremium:
+                            Boolean(premiumCapabilities.isStaffForPremiumTools) &&
+                            !premiumCapabilities.communityPremiumActive,
+                          isBoosting: boostingPostId === post.id,
+                          onBoost: onBoostPost ? () => onBoostPost(post.id) : undefined,
+                        }
+                      : undefined
+                  }
                 />
               </li>
             ))}

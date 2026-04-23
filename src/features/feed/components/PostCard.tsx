@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Clock, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -81,6 +81,14 @@ export interface PostCardProps {
    * @default "feed"
    */
   postSurface?: "feed" | "community" | "profile";
+  /** Ferramentas de staff na página da comunidade (impulsionar — gating premium no servidor). */
+  communityBoost?: {
+    communityId: string;
+    canBoost: boolean;
+    staffNeedsPremium: boolean;
+    isBoosting?: boolean;
+    onBoost?: () => void | Promise<void>;
+  };
 }
 
 export function PostCard({
@@ -95,6 +103,7 @@ export function PostCard({
   className,
   postListingContext = "feed",
   postSurface = "feed",
+  communityBoost,
 }: PostCardProps) {
   const navigate = useNavigate();
   const viewerId = useViewerId();
@@ -301,6 +310,44 @@ export function PostCard({
             <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
             {formatCount(post.commentsCount)}
           </button>
+          {communityBoost ? (
+            <button
+              type="button"
+              data-post-ignore-open="true"
+              disabled={communityBoost.isBoosting || !communityBoost.canBoost}
+              title={
+                communityBoost.staffNeedsPremium
+                  ? "Disponível com o plano premium desta comunidade."
+                  : communityBoost.canBoost
+                    ? "Impulsionar publicação nesta comunidade."
+                    : undefined
+              }
+              className={cn(
+                styles.footerItem,
+                communityBoost.staffNeedsPremium && "text-[var(--woody-muted)]",
+                communityBoost.canBoost && "text-[var(--woody-nav)]"
+              )}
+              aria-label={
+                communityBoost.staffNeedsPremium
+                  ? "Impulsionar — requer plano premium da comunidade"
+                  : "Impulsionar publicação na comunidade"
+              }
+              onClick={(event) => {
+                event.stopPropagation();
+                if (communityBoost.canBoost && communityBoost.onBoost) void communityBoost.onBoost();
+              }}
+            >
+              {communityBoost.isBoosting ? (
+                <Loader2 className="size-[1em] animate-spin" strokeWidth={2} />
+              ) : communityBoost.staffNeedsPremium ? (
+                <Lock className="size-[1em] stroke-current" strokeWidth={1.75} />
+              ) : (
+                <TrendingUp className="size-[1em] stroke-current" strokeWidth={1.75} />
+              )}
+              <span className="hidden min-[380px]:inline">Impulsionar</span>
+              <span className="min-[380px]:hidden">Boost</span>
+            </button>
+          ) : null}
         </div>
       </CardContent>
     </Card>

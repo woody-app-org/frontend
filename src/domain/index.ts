@@ -4,6 +4,7 @@ export type {
   Community,
   CommunityBillingPlan,
   CommunityBillingState,
+  CommunityPremiumCapabilities,
   CommunityCategory,
   CommunityMemberListItem,
   CommunityMemberRole,

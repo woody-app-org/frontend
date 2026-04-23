@@ -1,18 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
-import type { Community, CommunityMemberListItem, JoinRequest, Post } from "@/domain/types";
+import type {
+  Community,
+  CommunityMemberListItem,
+  CommunityPremiumCapabilities,
+  JoinRequest,
+  Post,
+} from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { woodyLayout } from "@/lib/woody-ui";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
 import {
+  boostCommunityPost,
   fetchAllCommunityMembers,
   fetchCommunityBySlug,
   fetchCommunityJoinRequestRows,
   fetchCommunityMembersPage,
   fetchMyCommunityMembership,
   fetchCommunityPosts,
+  startCommunityPremiumUpgrade,
   CommunityPostsForbiddenError,
   type JoinRequestWithUser,
 } from "../services/community.service";
@@ -32,6 +40,8 @@ import { CommunityMembersPreview } from "../components/CommunityMembersPreview";
 import { CommunityNotFound } from "../components/CommunityNotFound";
 import { CommunityEditDialog } from "../components/community-settings/CommunityEditDialog";
 import { CommunityMembersManagerDialog } from "../components/members-manager/CommunityMembersManagerDialog";
+import { CommunityGrowthDialog } from "../components/CommunityGrowthDialog";
+import { CommunityPremiumSidebarCard } from "../components/CommunityPremiumSidebarCard";
 
 const COMMUNITY_FEED_PAGE_SIZE = 10;
 
@@ -49,6 +59,7 @@ interface CommunityDetailLoadedProps {
   setJoinPending: (v: boolean) => void;
   /** Feed de posts não carregado (ex. 403 em comunidade privada sem acesso). */
   postsFeedAccessDenied: boolean;
+  premiumCapabilities?: CommunityPremiumCapabilities;
 }
 
 function CommunityDetailLoaded({
@@ -64,11 +75,15 @@ function CommunityDetailLoaded({
   joinPending,
   setJoinPending,
   postsFeedAccessDenied,
+  premiumCapabilities,
 }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
   const { setPageComposerCommunity } = useCreatePostComposer();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
+  const [growthDialogOpen, setGrowthDialogOpen] = useState(false);
+  const [upgradeBusy, setUpgradeBusy] = useState(false);
+  const [boostBusyPostId, setBoostBusyPostId] = useState<string | null>(null);
   const [ctaBusy, setCtaBusy] = useState(false);
   const [accessNotice, setAccessNotice] = useState<string | null>(null);
   const [feedPage, setFeedPage] = useState(1);
@@ -77,6 +92,34 @@ function CommunityDetailLoaded({
   const isAdminRole = viewerMembershipRole === "admin";
   const isMember = viewerIsMember;
   const canMod = isOwner || isAdminRole;
+  const showGrowthEntry = Boolean(premiumCapabilities?.isStaffForPremiumTools);
+
+  const handleBoostPost = useCallback(
+    async (postId: string) => {
+      if (!premiumCapabilities?.canBoostCommunityPosts) return;
+      setBoostBusyPostId(postId);
+      setAccessNotice(null);
+      try {
+        await boostCommunityPost(community.id, postId);
+      } catch {
+        setAccessNotice("Não foi possível impulsionar esta publicação.");
+      } finally {
+        setBoostBusyPostId(null);
+      }
+    },
+    [community.id, premiumCapabilities?.canBoostCommunityPosts]
+  );
+
+  const handleSidebarUpgrade = useCallback(async () => {
+    setUpgradeBusy(true);
+    setAccessNotice(null);
+    try {
+      await startCommunityPremiumUpgrade(community.id);
+    } catch {
+      setUpgradeBusy(false);
+      setAccessNotice("Não foi possível iniciar o checkout do plano premium.");
+    }
+  }, [community.id]);
 
   useEffect(() => {
     if (isMember) setPageComposerCommunity(community);
@@ -154,6 +197,14 @@ function CommunityDetailLoaded({
         woodyLayout.pagePadWide
       )}
     >
+      <CommunityGrowthDialog
+        open={growthDialogOpen}
+        onOpenChange={setGrowthDialogOpen}
+        communityId={community.id}
+        communityName={community.name}
+        capabilities={premiumCapabilities}
+      />
+
       <CommunityHero
         community={community}
         viewerId={viewerId}
@@ -188,6 +239,8 @@ function CommunityDetailLoaded({
         onManageCommunity={canEditCommunity ? () => setSettingsOpen(true) : undefined}
         canManageMembers={canManageMembers}
         onManageMembers={canManageMembers ? () => setMembersOpen(true) : undefined}
+        showGrowthEntry={showGrowthEntry}
+        onOpenGrowth={showGrowthEntry ? () => setGrowthDialogOpen(true) : undefined}
       />
 
       {canEditCommunity ? (
@@ -235,6 +288,9 @@ function CommunityDetailLoaded({
             onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
             feedAccessRestricted={postsFeedAccessDenied}
             className="min-w-0"
+            premiumCapabilities={premiumCapabilities}
+            onBoostPost={handleBoostPost}
+            boostingPostId={boostBusyPostId}
           />
         </div>
 
@@ -245,6 +301,12 @@ function CommunityDetailLoaded({
           )}
         >
           <CommunityAboutCard community={community} memberCount={memberCount} />
+          <CommunityPremiumSidebarCard
+            capabilities={premiumCapabilities}
+            onOpenGrowth={() => setGrowthDialogOpen(true)}
+            onUpgrade={handleSidebarUpgrade}
+            upgradeBusy={upgradeBusy}
+          />
           <CommunityTopicsCard tags={community.tags} />
           <CommunityRulesQuickCard community={community} />
           <CommunityMembersPreview
@@ -276,6 +338,9 @@ function CommunityDetailPageContent() {
   const [joinRows, setJoinRows] = useState<JoinRequestWithUser[]>([]);
   const [joinPending, setJoinPending] = useState(false);
   const [postsFeedAccessDenied, setPostsFeedAccessDenied] = useState(false);
+  const [premiumCapabilities, setPremiumCapabilities] = useState<CommunityPremiumCapabilities | undefined>(
+    undefined
+  );
 
   const bump = useCallback(() => setRevision((n) => n + 1), []);
 
@@ -304,6 +369,7 @@ function CommunityDetailPageContent() {
           setViewerIsMember(false);
           setJoinRows([]);
           setPostsFeedAccessDenied(false);
+          setPremiumCapabilities(undefined);
           setLoadState("ok");
           return;
         }
@@ -341,6 +407,7 @@ function CommunityDetailPageContent() {
         setViewerIsMember(myMembership.isMember);
         setJoinRows(jrows);
         if (myMembership.isMember) setJoinPending(false);
+        setPremiumCapabilities(myMembership.premiumCapabilities);
         setLoadState("ok");
       } catch {
         if (!cancelled) {
@@ -422,6 +489,7 @@ function CommunityDetailPageContent() {
       joinPending={joinPending}
       setJoinPending={setJoinPending}
       postsFeedAccessDenied={postsFeedAccessDenied}
+      premiumCapabilities={premiumCapabilities}
     />
   );
 }

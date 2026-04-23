@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronLeft, Globe, Lock, Settings2, UserCog, Users } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronLeft, Globe, Lock, Settings2, UserCog, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,6 +29,9 @@ export interface CommunityHeroProps {
   onManageCommunity?: () => void;
   canManageMembers?: boolean;
   onManageMembers?: () => void;
+  /** Owner/admin: entrada para analytics/crescimento (gating no diálogo). */
+  showGrowthEntry?: boolean;
+  onOpenGrowth?: () => void;
   className?: string;
 }
 
@@ -150,6 +153,8 @@ export function CommunityHero({
   onManageCommunity,
   canManageMembers = false,
   onManageMembers,
+  showGrowthEntry = false,
+  onOpenGrowth,
   className,
 }: CommunityHeroProps) {
   void _viewerId;
@@ -174,7 +179,10 @@ export function CommunityHero({
   const ctaClass =
     cta.variant === "leave" ? styles.ctaLeave : cta.variant === "muted" ? styles.ctaMuted : styles.ctaJoin;
 
-  const showAdminMenu = (canManage && onManageCommunity) || (canManageMembers && onManageMembers);
+  const showAdminMenu =
+    (canManage && onManageCommunity) ||
+    (canManageMembers && onManageMembers) ||
+    (showGrowthEntry && onOpenGrowth);
   const description = community.description.trim();
 
   return (
@@ -289,6 +297,15 @@ export function CommunityHero({
                     >
                       <UserCog className="size-4 opacity-80" aria-hidden />
                       Moderar membros
+                    </DropdownMenuItem>
+                  ) : null}
+                  {showGrowthEntry && onOpenGrowth ? (
+                    <DropdownMenuItem
+                      onClick={() => onOpenGrowth()}
+                      className="cursor-pointer text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+                    >
+                      <BarChart3 className="size-4 opacity-80" aria-hidden />
+                      Analytics e crescimento
                     </DropdownMenuItem>
                   ) : null}
                 </DropdownMenuContent>

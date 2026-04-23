@@ -2,12 +2,14 @@ import type {
   Community,
   CommunityMemberListItem,
   CommunityMemberRole,
+  CommunityPremiumCapabilities,
   JoinRequest,
   Post,
   User,
 } from "@/domain/types";
 import axios, { isAxiosError } from "axios";
 import { api, getApiErrorMessage } from "@/lib/api";
+import { createCommunityPremiumCheckout } from "@/features/subscription/services/billingCheckout.service";
 import { mapCommunityFromApi, mapPostFromApi, mapUserFromApi } from "@/lib/apiMappers";
 import type { CommunityUpdatePayload, CommunityUpdateResult, CreateCommunityPayload } from "../types";
 
@@ -248,17 +250,60 @@ export async function fetchAllCommunityMembers(communityId: string): Promise<Com
   return all;
 }
 
-export async function fetchMyCommunityMembership(
-  communityId: string
-): Promise<{ isMember: boolean; role: CommunityMemberRole | null }> {
+function mapPremiumCapabilities(raw: unknown): CommunityPremiumCapabilities | undefined {
+  if (raw == null || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  return {
+    isStaffForPremiumTools: Boolean(o.isStaffForPremiumTools),
+    communityPremiumActive: Boolean(o.communityPremiumActive),
+    canAccessCommunityAnalytics: Boolean(o.canAccessCommunityAnalytics),
+    canBoostCommunityPosts: Boolean(o.canBoostCommunityPosts),
+  };
+}
+
+export async function fetchMyCommunityMembership(communityId: string): Promise<{
+  isMember: boolean;
+  role: CommunityMemberRole | null;
+  premiumCapabilities?: CommunityPremiumCapabilities;
+}> {
   try {
     const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/members/me`);
     const role = mapMemberRole((data?.role as string) ?? "member");
-    if (!data?.isMember) return { isMember: false, role: null };
-    return { isMember: true, role };
+    if (!data?.isMember) return { isMember: false, role: null, premiumCapabilities: undefined };
+    return {
+      isMember: true,
+      role,
+      premiumCapabilities: mapPremiumCapabilities((data as { premiumCapabilities?: unknown }).premiumCapabilities),
+    };
   } catch {
-    return { isMember: false, role: null };
+    return { isMember: false, role: null, premiumCapabilities: undefined };
   }
+}
+
+export interface CommunityPremiumAnalyticsPayload {
+  communityId: string;
+  memberCount: number;
+  totalPosts: number;
+  headline: string;
+  note: string;
+}
+
+export async function fetchCommunityPremiumAnalytics(
+  communityId: string
+): Promise<CommunityPremiumAnalyticsPayload> {
+  const { data } = await api.get<CommunityPremiumAnalyticsPayload>(
+    `/communities/${encodeURIComponent(communityId)}/premium/analytics`
+  );
+  return data;
+}
+
+export async function boostCommunityPost(communityId: string, postId: string): Promise<void> {
+  await api.post(`/communities/${encodeURIComponent(communityId)}/posts/${encodeURIComponent(postId)}/boost`);
+}
+
+export async function startCommunityPremiumUpgrade(communityId: string): Promise<void> {
+  const { url } = await createCommunityPremiumCheckout(Number(communityId));
+  window.location.assign(url);
 }
 
 export async function fetchCommunityMembers(communityId: string): Promise<CommunityMemberListItem[]> {

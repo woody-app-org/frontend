@@ -20,6 +20,14 @@ export interface CommunityBillingState {
   providerSubscriptionId?: string | null;
 }
 
+/** Capacidades premium da comunidade para a utilizadora atual (API `members/me`). */
+export interface CommunityPremiumCapabilities {
+  isStaffForPremiumTools: boolean;
+  communityPremiumActive: boolean;
+  canAccessCommunityAnalytics: boolean;
+  canBoostCommunityPosts: boolean;
+}
+
 /** Papéis dentro da comunidade (criadora = owner). */
 export type CommunityMemberRole = "owner" | "admin" | "member";
 
