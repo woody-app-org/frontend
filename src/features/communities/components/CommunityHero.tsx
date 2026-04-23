@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BarChart3, ChevronDown, ChevronLeft, Globe, Lock, Settings2, UserCog, Users } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronLeft, Globe, LayoutDashboard, Lock, Settings2, UserCog, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,10 +29,10 @@ export interface CommunityHeroProps {
   onManageCommunity?: () => void;
   canManageMembers?: boolean;
   onManageMembers?: () => void;
-  /** Owner/admin: entrada para analytics/crescimento (gating no diálogo). */
+  /** Owner/admin: resumo, upgrade e ajuda (gating no diálogo). */
   showGrowthEntry?: boolean;
   onOpenGrowth?: () => void;
-  /** Staff + premium: atalho directo para o painel de métricas. */
+  /** Staff + espaço premium: painel completo de analytics. */
   adminDashboardHref?: string;
   className?: string;
 }
@@ -309,7 +309,7 @@ export function CommunityHero({
                       className="cursor-pointer text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
                     >
                       <BarChart3 className="size-4 opacity-80" aria-hidden />
-                      Analytics e crescimento
+                      Resumo e upgrade do espaço
                     </DropdownMenuItem>
                   ) : null}
                   {adminDashboardHref ? (
@@ -318,8 +318,8 @@ export function CommunityHero({
                         to={adminDashboardHref}
                         className="cursor-pointer text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
                       >
-                        <BarChart3 className="size-4 opacity-80" aria-hidden />
-                        Painel de métricas
+                        <LayoutDashboard className="size-4 opacity-80" aria-hidden />
+                        Painel completo de analytics
                       </Link>
                     </DropdownMenuItem>
                   ) : null}

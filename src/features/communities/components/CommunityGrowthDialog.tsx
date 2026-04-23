@@ -88,8 +88,8 @@ export function CommunityGrowthDialog({
             Crescimento · {communityName}
           </DialogTitle>
           <DialogDescription className="text-left text-[var(--woody-muted)]">
-            Analytics e ferramentas de destaque dependem do plano premium do espaço e do teu papel de
-            administração.
+            Três eixos separados: o teu Woody Pro (conta), o plano premium deste espaço (comunidade) e o teu papel
+            (owner/admin). Aqui só entram o plano do espaço e o papel — analytics e impulsionamento exigem ambos.
           </DialogDescription>
         </DialogHeader>
 
@@ -102,7 +102,8 @@ export function CommunityGrowthDialog({
               <div className="min-w-0 space-y-1">
                 <p className="text-sm font-semibold text-[var(--woody-text)]">Plano premium da comunidade</p>
                 <p className="text-sm leading-relaxed text-[var(--woody-muted)]">
-                  Ativa o Woody Premium deste espaço para ver resumo de métricas e impulsionar publicações.
+                  Ativa o premium deste espaço (checkout Stripe da comunidade) para ver resumo de métricas e
+                  impulsionar publicações — independentemente do Woody Pro da tua conta.
                 </p>
               </div>
             </div>
@@ -113,7 +114,7 @@ export function CommunityGrowthDialog({
               onClick={() => void handleUpgrade()}
             >
               <Sparkles className="size-4" aria-hidden />
-              {checkoutBusy ? "A redirecionar…" : "Subscrever premium da comunidade"}
+              {checkoutBusy ? "A redirecionar…" : "Subscrever premium do espaço"}
             </Button>
             {error ? (
               <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">

@@ -8,7 +8,10 @@ export type CommunityVisibility = "public" | "private";
 /** Plano de comunidade no catálogo / efetivo após regras de período (API `billing.*`). */
 export type CommunityBillingPlan = "free" | "premium";
 
-/** Estado de cobrança da comunidade (separado do papel na membership). */
+/**
+ * Estado de cobrança **desta comunidade** (Stripe / `billing.*` na API).
+ * Independente do papel da utilizadora na membership e do plano Woody Pro pessoal.
+ */
 export interface CommunityBillingState {
   billingPlan: CommunityBillingPlan;
   effectivePlan: CommunityBillingPlan;
@@ -20,11 +23,19 @@ export interface CommunityBillingState {
   providerSubscriptionId?: string | null;
 }
 
-/** Capacidades premium da comunidade para a utilizadora atual (API `members/me`). */
+/**
+ * Capacidades premium **ao nível do espaço** para a utilizadora actual (API `members/me` ou payload da comunidade).
+ * `isStaffForPremiumTools` = papel; `communityPremiumActive` = plano do espaço; `can*` = ambos.
+ * Não reflecte assinatura Woody Pro da utilizadora.
+ */
 export interface CommunityPremiumCapabilities {
+  /** Owner ou admin com filiação activa nesta comunidade. */
   isStaffForPremiumTools: boolean;
+  /** Benefícios premium do espaço activos (subscrição da comunidade). */
   communityPremiumActive: boolean;
+  /** Staff + espaço premium (painel / métricas). */
   canAccessCommunityAnalytics: boolean;
+  /** Staff + espaço premium (impulsionamento). */
   canBoostCommunityPosts: boolean;
 }
 

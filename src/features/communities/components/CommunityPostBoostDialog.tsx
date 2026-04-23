@@ -87,6 +87,7 @@ export function CommunityPostBoostDialog({
           <DialogTitle className="text-[var(--woody-text)]">Impulsionar publicação</DialogTitle>
           <DialogDescription className="text-left text-[var(--woody-muted)]">
             Destaca este post no feed global e na página da comunidade, dentro das regras de visibilidade existentes.
+            Usa o plano premium do espaço (e o teu papel de administração), não o Woody Pro da tua conta.
           </DialogDescription>
         </DialogHeader>
 

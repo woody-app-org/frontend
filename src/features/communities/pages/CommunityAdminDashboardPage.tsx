@@ -176,6 +176,20 @@ export function CommunityAdminDashboardPage() {
               Painel da comunidade
             </h1>
             <p className="mt-1 text-sm text-[var(--woody-muted)]">Métricas agregadas do espaço (últimos dias seleccionados).</p>
+            <ul className="mt-3 list-inside list-disc space-y-1 text-xs leading-relaxed text-[var(--woody-muted)]">
+              <li>
+                <span className="font-medium text-[var(--woody-text)]/85">Papel</span>: precisas de owner/admin para ver
+                este painel.
+              </li>
+              <li>
+                <span className="font-medium text-[var(--woody-text)]/85">Plano do espaço</span>: métricas e boosts
+                dependem do premium da comunidade (Stripe).
+              </li>
+              <li>
+                <span className="font-medium text-[var(--woody-text)]/85">Woody Pro</span>: plano pessoal da conta —
+                separado destas métricas.
+              </li>
+            </ul>
           </div>
           <div className="flex flex-wrap gap-2">
             {PERIOD_OPTIONS.map((opt) => (
@@ -260,7 +274,7 @@ export function CommunityAdminDashboardPage() {
             <section className="rounded-2xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)] p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-[var(--woody-text)]">Atividade diária (posts + comentários)</h2>
               <p className="mt-1 text-xs text-[var(--woody-muted)]">Barras relativas ao pico do período seleccionado.</p>
-              <div className="mt-4 flex h-36 items-end gap-px overflow-x-auto pb-1 sm:gap-0.5">
+              <div className="mt-4 flex h-36 touch-pan-x items-end gap-px overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sm:gap-0.5">
                 {chartSeries.map((d) => (
                   <div
                     key={d.dayUtc}

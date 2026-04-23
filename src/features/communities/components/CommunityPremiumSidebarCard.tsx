@@ -46,7 +46,7 @@ export function CommunityPremiumSidebarCard({
             Crescimento da comunidade
           </h2>
           <p className="mt-1.5 text-xs leading-relaxed text-[var(--woody-muted)]">
-            Analytics e impulsionar posts — disponíveis com o plano premium do espaço.
+            Analytics e impulsionar posts — ligados ao plano premium deste espaço (não ao Woody Pro da conta).
           </p>
         </div>
         <BarChart3 className="size-5 shrink-0 text-[var(--woody-nav)]/85" aria-hidden />
@@ -63,7 +63,7 @@ export function CommunityPremiumSidebarCard({
             >
               <span className="flex items-center gap-2 text-sm font-medium">
                 <BarChart3 className="size-4 opacity-80" aria-hidden />
-                Ver analytics
+                Resumo e métricas rápidas
               </span>
               <ChevronRight className="size-4 opacity-60" aria-hidden />
             </Button>
@@ -73,7 +73,7 @@ export function CommunityPremiumSidebarCard({
                 variant="ghost"
                 className={cn(woodyFocus.ring, "h-10 w-full text-sm font-medium text-[var(--woody-nav)]")}
               >
-                <Link to={`/communities/${encodeURIComponent(communitySlug)}/admin`}>Abrir painel de métricas</Link>
+                <Link to={`/communities/${encodeURIComponent(communitySlug)}/admin`}>Painel completo de analytics</Link>
               </Button>
             ) : null}
           </>
@@ -82,7 +82,8 @@ export function CommunityPremiumSidebarCard({
             <div className="flex items-start gap-2">
               <Lock className="mt-0.5 size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
               <p className="text-xs leading-relaxed text-[var(--woody-muted)]">
-                Plano premium inativo — subscreve para desbloquear analytics e impulsionar publicações.
+                Premium do espaço inactivo — subscreve (Stripe da comunidade) para desbloquear analytics e
+                impulsionar publicações.
               </p>
             </div>
             <Button
@@ -96,7 +97,7 @@ export function CommunityPremiumSidebarCard({
               onClick={() => void onUpgrade()}
             >
               <Sparkles className="size-3.5" aria-hidden />
-              {upgradeBusy ? "A abrir…" : "Ativar premium"}
+              {upgradeBusy ? "A abrir…" : "Premium do espaço (checkout)"}
             </Button>
           </div>
         )}

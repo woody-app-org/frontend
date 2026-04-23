@@ -1,3 +1,7 @@
+/**
+ * Regras de UI alinhadas ao backend para o **espaço** (plano da comunidade + papel staff).
+ * Não inclui Woody Pro da utilizadora — isso vive noutros tipos / endpoints de utilizadora.
+ */
 import type { CommunityBillingPlan, CommunityBillingState, CommunityMemberRole, PostCommunityPreview } from "./types";
 
 /** Normaliza valores da API para o union usado no cliente. */
