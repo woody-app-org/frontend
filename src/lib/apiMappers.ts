@@ -123,6 +123,11 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
     likedByCurrentUser: Boolean(raw.likedByCurrentUser),
     community: comm,
     pinnedOnProfileAt: raw.pinnedOnProfileAt != null ? asString(raw.pinnedOnProfileAt) : null,
+    communityBoostActive: Boolean(raw.communityBoostActive),
+    communityBoostEndsAt:
+      raw.communityBoostEndsAt != null && String(raw.communityBoostEndsAt).length > 0
+        ? asString(raw.communityBoostEndsAt)
+        : null,
   };
 }
 

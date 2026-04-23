@@ -232,6 +232,15 @@ export function PostCard({
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
+          {post.communityBoostActive && post.publicationContext === "community" ? (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
+              title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
+            >
+              <TrendingUp className="size-3" aria-hidden />
+              Impulsionado
+            </span>
+          ) : null}
           {post.pinnedOnProfileAt && postSurface === "profile" ? (
             <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
               Em destaque

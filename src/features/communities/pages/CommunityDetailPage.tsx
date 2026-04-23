@@ -13,7 +13,6 @@ import { woodyLayout } from "@/lib/woody-ui";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
 import {
-  boostCommunityPost,
   fetchAllCommunityMembers,
   fetchCommunityBySlug,
   fetchCommunityJoinRequestRows,
@@ -41,6 +40,7 @@ import { CommunityNotFound } from "../components/CommunityNotFound";
 import { CommunityEditDialog } from "../components/community-settings/CommunityEditDialog";
 import { CommunityMembersManagerDialog } from "../components/members-manager/CommunityMembersManagerDialog";
 import { CommunityGrowthDialog } from "../components/CommunityGrowthDialog";
+import { CommunityPostBoostDialog } from "../components/CommunityPostBoostDialog";
 import { CommunityPremiumSidebarCard } from "../components/CommunityPremiumSidebarCard";
 
 const COMMUNITY_FEED_PAGE_SIZE = 10;
@@ -83,7 +83,7 @@ function CommunityDetailLoaded({
   const [membersOpen, setMembersOpen] = useState(false);
   const [growthDialogOpen, setGrowthDialogOpen] = useState(false);
   const [upgradeBusy, setUpgradeBusy] = useState(false);
-  const [boostBusyPostId, setBoostBusyPostId] = useState<string | null>(null);
+  const [boostPostId, setBoostPostId] = useState<string | null>(null);
   const [ctaBusy, setCtaBusy] = useState(false);
   const [accessNotice, setAccessNotice] = useState<string | null>(null);
   const [feedPage, setFeedPage] = useState(1);
@@ -94,21 +94,7 @@ function CommunityDetailLoaded({
   const canMod = isOwner || isAdminRole;
   const showGrowthEntry = Boolean(premiumCapabilities?.isStaffForPremiumTools);
 
-  const handleBoostPost = useCallback(
-    async (postId: string) => {
-      if (!premiumCapabilities?.canBoostCommunityPosts) return;
-      setBoostBusyPostId(postId);
-      setAccessNotice(null);
-      try {
-        await boostCommunityPost(community.id, postId);
-      } catch {
-        setAccessNotice("Não foi possível impulsionar esta publicação.");
-      } finally {
-        setBoostBusyPostId(null);
-      }
-    },
-    [community.id, premiumCapabilities?.canBoostCommunityPosts]
-  );
+  const boostTargetPost = useMemo(() => posts.find((p) => p.id === boostPostId) ?? null, [posts, boostPostId]);
 
   const handleSidebarUpgrade = useCallback(async () => {
     setUpgradeBusy(true);
@@ -206,6 +192,16 @@ function CommunityDetailLoaded({
         capabilities={premiumCapabilities}
       />
 
+      <CommunityPostBoostDialog
+        open={boostPostId != null}
+        onOpenChange={(o) => {
+          if (!o) setBoostPostId(null);
+        }}
+        communityId={community.id}
+        post={boostTargetPost}
+        onApplied={onDataChanged}
+      />
+
       <CommunityHero
         community={community}
         viewerId={viewerId}
@@ -295,8 +291,8 @@ function CommunityDetailLoaded({
             feedAccessRestricted={postsFeedAccessDenied}
             className="min-w-0"
             premiumCapabilities={premiumCapabilities}
-            onBoostPost={handleBoostPost}
-            boostingPostId={boostBusyPostId}
+            onBoostPost={premiumCapabilities?.canBoostCommunityPosts ? (id) => setBoostPostId(id) : undefined}
+            boostingPostId={null}
           />
         </div>
 

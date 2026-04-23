@@ -7,8 +7,10 @@ import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 import {
   fetchCommunityBySlug,
+  fetchCommunityPostBoosts,
   fetchCommunityPremiumAnalytics,
   fetchMyCommunityMembership,
+  type CommunityPostBoostListItem,
   type CommunityPremiumDashboardPayload,
 } from "../services/community.service";
 import { isAxiosError } from "axios";
@@ -42,6 +44,7 @@ export function CommunityAdminDashboardPage() {
   const [dashboard, setDashboard] = useState<CommunityPremiumDashboardPayload | null>(null);
   const [dashError, setDashError] = useState<string | null>(null);
   const [dashLoading, setDashLoading] = useState(false);
+  const [activeBoosts, setActiveBoosts] = useState<CommunityPostBoostListItem[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -86,6 +89,11 @@ export function CommunityAdminDashboardPage() {
     try {
       const data = await fetchCommunityPremiumAnalytics(communityId, periodDays);
       setDashboard(data);
+      try {
+        setActiveBoosts(await fetchCommunityPostBoosts(communityId));
+      } catch {
+        setActiveBoosts([]);
+      }
     } catch (e) {
       if (isAxiosError(e) && e.response?.status === 403) {
         setDashError("Sem permissão ou premium inativo.");
@@ -93,6 +101,7 @@ export function CommunityAdminDashboardPage() {
         setDashError(e instanceof Error ? e.message : "Não foi possível carregar métricas.");
       }
       setDashboard(null);
+      setActiveBoosts([]);
     } finally {
       setDashLoading(false);
     }
@@ -319,6 +328,35 @@ export function CommunityAdminDashboardPage() {
                 <p className="mt-4 text-xs leading-relaxed text-[var(--woody-muted)]">{dashboard.engagement.definition}</p>
               </section>
             </div>
+
+            <section className="rounded-2xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)] p-5 shadow-sm">
+              <h2 className="text-sm font-semibold text-[var(--woody-text)]">Impulsionamentos activos</h2>
+              <p className="mt-1 text-xs text-[var(--woody-muted)]">
+                Posts com destaque extra no feed e na página da comunidade (respeitando visibilidade).
+              </p>
+              <ul className="mt-4 space-y-2">
+                {activeBoosts.length === 0 ? (
+                  <li className="text-sm text-[var(--woody-muted)]">Nenhum impulsionamento activo.</li>
+                ) : (
+                  activeBoosts.map((b) => (
+                    <li
+                      key={b.id}
+                      className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg border border-[var(--woody-accent)]/10 bg-[var(--woody-bg)] px-3 py-2 text-sm"
+                    >
+                      <Link
+                        to={`/posts/${encodeURIComponent(b.postId)}`}
+                        className={cn(woodyFocus.ring, "font-medium text-[var(--woody-text)] hover:underline")}
+                      >
+                        {b.postTitle?.trim() || `Post #${b.postId}`}
+                      </Link>
+                      <span className="text-xs text-[var(--woody-muted)]">
+                        até {new Date(b.endsAtUtc).toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" })}
+                      </span>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </section>
 
             <p className="text-center text-xs text-[var(--woody-muted)]">
               Total histórico de posts: {formatInt(dashboard.totalPosts)}

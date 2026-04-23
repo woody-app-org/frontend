@@ -338,8 +338,50 @@ export async function fetchCommunityPremiumAnalytics(
   return data;
 }
 
-export async function boostCommunityPost(communityId: string, postId: string): Promise<void> {
-  await api.post(`/communities/${encodeURIComponent(communityId)}/posts/${encodeURIComponent(postId)}/boost`);
+export interface CommunityPostBoostResponse {
+  id: string;
+  postId: string;
+  communityId: string;
+  startedAtUtc: string;
+  endsAtUtc: string;
+  active: boolean;
+}
+
+export interface CommunityPostBoostListItem {
+  id: string;
+  postId: string;
+  postTitle: string | null;
+  startedAtUtc: string;
+  endsAtUtc: string;
+  active: boolean;
+}
+
+export async function boostCommunityPost(
+  communityId: string,
+  postId: string,
+  durationDays?: number
+): Promise<CommunityPostBoostResponse> {
+  const { data, status } = await api.post<CommunityPostBoostResponse>(
+    `/communities/${encodeURIComponent(communityId)}/posts/${encodeURIComponent(postId)}/boost`,
+    durationDays != null ? { durationDays } : {}
+  );
+  if (status !== 201 && status !== 200) {
+    throw new Error("Resposta inesperada do servidor.");
+  }
+  return data;
+}
+
+export async function unboostCommunityPost(communityId: string, postId: string): Promise<void> {
+  await api.delete(
+    `/communities/${encodeURIComponent(communityId)}/posts/${encodeURIComponent(postId)}/boost`
+  );
+}
+
+export async function fetchCommunityPostBoosts(communityId: string): Promise<CommunityPostBoostListItem[]> {
+  const { data } = await api.get<CommunityPostBoostListItem[]>(
+    `/communities/${encodeURIComponent(communityId)}/post-boosts`
+  );
+  return Array.isArray(data) ? data : [];
 }
 
 export async function startCommunityPremiumUpgrade(communityId: string): Promise<void> {

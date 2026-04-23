@@ -187,4 +187,8 @@ export interface Post {
   community?: PostCommunityPreview;
   /** Destaque no perfil da autora (ISO da API). */
   pinnedOnProfileAt?: string | null;
+  /** Impulsionamento premium da comunidade (API `communityBoostActive`). */
+  communityBoostActive?: boolean;
+  /** Fim do impulsionamento em ISO UTC quando activo. */
+  communityBoostEndsAt?: string | null;
 }
