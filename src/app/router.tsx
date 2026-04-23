@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider } from "@/features/auth/context/AuthContext";
 import { AuthEntryPage } from "@/features/auth/pages/AuthEntryPage";
+import { IntroPage } from "@/features/auth/pages/IntroPage";
 import { LoginPage } from "@/features/auth/pages/LoginPage";
 import { OnboardingProvider } from "@/features/auth/onboarding/OnboardingContext";
 import { OnboardingFlow } from "@/features/auth/onboarding/OnboardingFlow";
@@ -11,12 +12,12 @@ import { OnboardingStepInterests } from "@/features/auth/onboarding/steps/Onboar
 import { OnboardingStepCommunities } from "@/features/auth/onboarding/steps/OnboardingStepCommunities";
 import { OnboardingStepComplete } from "@/features/auth/onboarding/steps/OnboardingStepComplete";
 import { ProtectedRoute } from "@/app/ProtectedRoute";
-import { RootRedirect } from "@/app/RootRedirect";
 import { CreatePostPage, FeedPage, PostDetailPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
 import { CommunitiesPage, CommunityDetailPage, CreateCommunityPage } from "@/features/communities";
 import { AssinaturaCanceladaPage, AssinaturaSucessoPage, PlanosPage } from "@/features/subscription/pages";
 import { ConversationsPage } from "@/features/messages";
+import { LandingPage } from "@/features/landing";
 
 export const router = createBrowserRouter([
   {
@@ -26,7 +27,8 @@ export const router = createBrowserRouter([
       </AuthProvider>
     ),
     children: [
-      { index: true, element: <RootRedirect /> },
+      { index: true, element: <IntroPage /> },
+      { path: "landing", element: <LandingPage /> },
       { path: "auth", element: <AuthEntryPage /> },
       { path: "auth/login", element: <LoginPage /> },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },
