@@ -64,12 +64,14 @@ export function getCommunityBySlug(slug: string): Community | undefined {
 }
 
 export function postCommunityPreviewFromCommunity(c: Community): PostCommunityPreview {
+  const plan = c.billing?.effectivePlan ?? c.billing?.billingPlan;
   return {
     id: c.id,
     slug: c.slug,
     name: c.name,
     avatarUrl: c.avatarUrl,
     category: c.category,
+    communityPlan: plan === "premium" ? "premium" : "free",
   };
 }
 

@@ -5,6 +5,21 @@ export type CommunityCategory = "bemestar" | "carreira" | "cultura" | "seguranca
 /** Quem pode ver entradas públicas vs aprovação para participar. */
 export type CommunityVisibility = "public" | "private";
 
+/** Plano de comunidade no catálogo / efetivo após regras de período (API `billing.*`). */
+export type CommunityBillingPlan = "free" | "premium";
+
+/** Estado de cobrança da comunidade (separado do papel na membership). */
+export interface CommunityBillingState {
+  billingPlan: CommunityBillingPlan;
+  effectivePlan: CommunityBillingPlan;
+  status: string;
+  planCode?: string | null;
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd: boolean;
+  providerCustomerId?: string | null;
+  providerSubscriptionId?: string | null;
+}
+
 /** Papéis dentro da comunidade (criadora = owner). */
 export type CommunityMemberRole = "owner" | "admin" | "member";
 
@@ -45,6 +60,8 @@ export interface Community {
   visibility: CommunityVisibility;
   /** Valor denormalizado para UI; em produção pode vir calculado da API. */
   memberCount: number;
+  /** Plano/assinatura da comunidade quando a API expande `billing`. */
+  billing?: CommunityBillingState;
 }
 
 export interface Membership {
@@ -80,6 +97,8 @@ export interface PostCommunityPreview {
   name: string;
   avatarUrl: string | null;
   category: CommunityCategory;
+  /** Plano efetivo da comunidade (`free` | `premium`) para gates no feed. */
+  communityPlan?: CommunityBillingPlan;
 }
 
 /** Onde o post foi publicado (alinhado à API: `publicationContext`). */

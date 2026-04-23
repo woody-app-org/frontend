@@ -1,4 +1,13 @@
-import type { Comment, Community, CommunityCategory, Post, PostPublicationContext, User } from "@/domain/types";
+import type {
+  Comment,
+  Community,
+  CommunityBillingPlan,
+  CommunityBillingState,
+  CommunityCategory,
+  Post,
+  PostPublicationContext,
+  User,
+} from "@/domain/types";
 import type { SocialLink, UserProfile } from "@/features/profile/types";
 import { mapSubscription } from "@/features/auth/services/auth.service";
 import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
@@ -16,6 +25,26 @@ type ApiRecord = Record<string, any>;
 
 function asString(v: unknown): string {
   return v == null ? "" : String(v);
+}
+
+function mapCommunityBillingPlan(v: unknown): CommunityBillingPlan {
+  return v === "premium" ? "premium" : "free";
+}
+
+function mapCommunityBillingFromApi(raw: ApiRecord): CommunityBillingState | undefined {
+  const b = raw.billing;
+  if (b == null || typeof b !== "object") return undefined;
+  const rec = b as ApiRecord;
+  return {
+    billingPlan: mapCommunityBillingPlan(rec.billingPlan),
+    effectivePlan: mapCommunityBillingPlan(rec.effectivePlan),
+    status: asString(rec.status ?? "active"),
+    planCode: rec.planCode ?? null,
+    currentPeriodEnd: rec.currentPeriodEnd != null ? asString(rec.currentPeriodEnd) : null,
+    cancelAtPeriodEnd: Boolean(rec.cancelAtPeriodEnd),
+    providerCustomerId: rec.providerCustomerId != null ? asString(rec.providerCustomerId) : null,
+    providerSubscriptionId: rec.providerSubscriptionId != null ? asString(rec.providerSubscriptionId) : null,
+  };
 }
 
 export function mapUserFromApi(raw: ApiRecord): User {
@@ -50,6 +79,7 @@ export function mapCommunityFromApi(raw: ApiRecord): Community {
     ownerUserId: asString(raw.ownerUserId),
     visibility: raw.visibility === "private" ? "private" : "public",
     memberCount: Number(raw.memberCount ?? 0),
+    billing: mapCommunityBillingFromApi(raw),
   };
 }
 
@@ -108,6 +138,7 @@ function mapCommunityPreviewFromApi(raw: ApiRecord): NonNullable<Post["community
     name: asString(raw.name),
     avatarUrl: raw.avatarUrl ?? null,
     category: safeCategory,
+    communityPlan: mapCommunityBillingPlan(raw.communityPlan ?? "free"),
   };
 }
 
