@@ -57,14 +57,14 @@ export function StartConversationButton({
       <Button
         type="button"
         variant="ghost"
-        size="icon"
+        size="icon-sm"
         disabled={busy}
         title={error ?? ariaBusy}
         aria-label={ariaBusy}
-        className={cn(woodyFocus.ring, "size-9 shrink-0 text-[var(--woody-nav)] hover:bg-[var(--woody-nav)]/10", className)}
+        className={cn(woodyFocus.ring, "shrink-0 text-[var(--woody-nav)] hover:bg-[var(--woody-nav)]/10", className)}
         onClick={() => void open()}
       >
-        <MessageCircle className="size-4" />
+        <MessageCircle className="size-3.5" strokeWidth={2} />
       </Button>
     );
   }

@@ -1,57 +1,54 @@
-import { cn } from "@/lib/utils";
-import { woodyFocus } from "@/lib/woody-ui";
-import type { FeedFilter } from "../types";
-
-const TABS: { id: FeedFilter; label: string }[] = [
-  { id: "trending", label: "Em Alta" },
-  { id: "forYou", label: "Para você" },
-  { id: "following", label: "Seguindo" },
-];
-
-export interface FeedTabsProps {
-  activeFilter: FeedFilter;
-  onFilterChange: (filter: FeedFilter) => void;
-  className?: string;
-}
-
-export function FeedTabs({ activeFilter, onFilterChange, className }: FeedTabsProps) {
-  const activeTabIndex = Math.max(
-    0,
-    TABS.findIndex((tab) => tab.id === activeFilter)
-  );
-
-  return (
-    <div
-      className={cn(
-        "relative grid grid-cols-3 gap-1.5 p-1.5 rounded-xl border border-[var(--woody-accent)]/16 bg-[var(--woody-card)]/98 shadow-[0_1px_3px_rgba(58,45,36,0.06)]",
-        className
-      )}
-      role="tablist"
-      aria-label="Filtros do feed"
-    >
-      <span
-        aria-hidden
-        className="absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/3)] rounded-lg bg-[var(--woody-nav)] shadow-[0_6px_16px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out"
-        style={{ transform: `translateX(${activeTabIndex * 100}%)` }}
-      />
-      {TABS.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => onFilterChange(tab.id)}
-          role="tab"
-          aria-selected={activeFilter === tab.id}
-          className={cn(
-            "relative z-10 min-w-0 py-2.5 px-2 sm:px-3 rounded-lg text-sm transition-colors duration-200",
-            woodyFocus.ring,
-            activeFilter === tab.id
-              ? "text-white font-semibold"
-              : "bg-transparent text-[var(--woody-text)]/85 font-medium hover:text-[var(--woody-text)]"
-          )}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
-}
+import { cn } from "@/lib/utils";
+import { woodyFocus } from "@/lib/woody-ui";
+import type { FeedFilter } from "../types";
+
+const TABS: { id: FeedFilter; label: string }[] = [
+  { id: "trending", label: "Em destaque" },
+  { id: "forYou", label: "Para você" },
+  { id: "following", label: "Seguindo" },
+];
+
+export interface FeedTabsProps {
+  activeFilter: FeedFilter;
+  onFilterChange: (filter: FeedFilter) => void;
+  className?: string;
+}
+
+/**
+ * Tabs do feed — barra com peso editorial; ativa: fundo preto, cantos superiores arredondados, barra verde inferior grossa.
+ */
+export function FeedTabs({ activeFilter, onFilterChange, className }: FeedTabsProps) {
+  return (
+    <div
+      className={cn(
+        "flex w-full min-w-0 items-end gap-0 border-b-2 border-black/[0.08] bg-[#ebebed]",
+        className
+      )}
+      role="tablist"
+      aria-label="Filtros do feed"
+    >
+      {TABS.map((tab) => {
+        const selected = activeFilter === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => onFilterChange(tab.id)}
+            role="tab"
+            aria-selected={selected}
+            className={cn(
+              "relative min-w-0 flex-1 px-2 py-3 text-center text-[0.8125rem] transition-[color,background,box-shadow] duration-200 sm:px-5 sm:py-3.5 sm:text-[0.9375rem]",
+              "rounded-t-[0.875rem] md:rounded-t-xl",
+              woodyFocus.ring,
+              selected
+                ? "z-[1] mb-[-2px] bg-[var(--woody-ink)] font-semibold text-white shadow-[inset_0_-5px_0_0_var(--woody-nav)]"
+                : "mb-0 font-medium text-[var(--woody-text)]/50 hover:text-[var(--woody-text)]/88"
+            )}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}

@@ -7,17 +7,17 @@ import { cn } from "@/lib/utils";
 
 export const woodySurface = {
   card: cn(
-    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
-    "shadow-[0_1px_3px_rgba(58,45,36,0.06)]"
+    "rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)]",
+    "shadow-[0_1px_3px_rgba(10,10,10,0.05)]"
   ),
   /** Heróis / destaques com elevação um pouco maior */
   cardHero: cn(
-    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
-    "shadow-[0_2px_10px_rgba(58,45,36,0.07)]"
+    "rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)]",
+    "shadow-[0_2px_10px_rgba(10,10,10,0.06)]"
   ),
   emptyDashed: cn(
-    "rounded-2xl border border-dashed border-[var(--woody-accent)]/26",
-    "bg-[var(--woody-card)]/95 shadow-[0_1px_3px_rgba(58,45,36,0.04)]"
+    "rounded-2xl border border-dashed border-[var(--woody-divider)]",
+    "bg-[var(--woody-card)]/95 shadow-[0_1px_3px_rgba(10,10,10,0.04)]"
   ),
 } as const;
 
@@ -25,16 +25,16 @@ export const woodyMotion = {
   /** Cartões clicáveis (ex. CommunityCard). */
   cardHover: cn(
     "transition-[box-shadow,border-color] duration-200 ease-out",
-    "hover:border-[var(--woody-accent)]/22 hover:shadow-[0_6px_22px_rgba(58,45,36,0.07)]"
+    "hover:border-[var(--woody-divider)] hover:shadow-[0_6px_22px_rgba(10,10,10,0.06)]"
   ),
   /** Variação mais suave para listas densas (ex. PostCard). */
-  postCardHover: "transition-shadow duration-200 ease-out hover:shadow-[0_4px_14px_rgba(58,45,36,0.06)]",
+  postCardHover: "transition-shadow duration-200 ease-out hover:shadow-[0_4px_14px_rgba(10,10,10,0.05)]",
 } as const;
 
 export const woodyFocus = {
   ring: cn(
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/40",
-    "focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-bg)]"
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/45",
+    "focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-main-surface)]"
   ),
   ringSidebar: cn(
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/35",
@@ -59,20 +59,20 @@ export const woodyLayout = {
 
 /** Indicador discreto para conteúdo fixado / em destaque (posts no perfil, comentários no post). */
 export const woodyPinPill = cn(
-  "inline-flex max-w-full shrink-0 items-center rounded-full border border-[var(--woody-accent)]/18",
-  "bg-[var(--woody-accent)]/8 px-2 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wide",
-  "text-[var(--woody-accent)]/95 sm:text-[0.65rem]"
+  "inline-flex max-w-full shrink-0 items-center rounded-full border border-[var(--woody-lime)]/35",
+  "bg-[var(--woody-tag-bg)] px-2 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wide",
+  "text-[var(--woody-tag-text)] sm:text-[0.65rem]"
 );
 
 /** Diferenciação visual: perfil pessoal vs ações de comunidade (moderadora). */
 export const woodyContext = {
   personalBadge: cn(
-    "inline-flex w-fit max-w-full items-center gap-1.5 rounded-full border border-[var(--woody-accent)]/25",
-    "bg-[var(--woody-accent)]/8 px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-text)]"
+    "inline-flex w-fit max-w-full items-center gap-1.5 rounded-full border border-[var(--woody-divider)]",
+    "bg-[var(--woody-tag-bg)] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-text)]"
   ),
   adminBadge: cn(
-    "inline-flex w-fit max-w-full items-center gap-1.5 rounded-full border border-[var(--woody-nav)]/28",
-    "bg-[var(--woody-nav)]/10 px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)]"
+    "inline-flex w-fit max-w-full items-center gap-1.5 rounded-full border border-[var(--woody-lime)]/45",
+    "bg-[var(--woody-tag-bg)] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-tag-text)]"
   ),
 } as const;
 

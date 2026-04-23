@@ -23,25 +23,37 @@ const avatarImgClass = "size-8 rounded-full object-cover md:size-8";
 export interface UserAccountMenuProps {
   /** Estilo do botão no header (tema claro). */
   className?: string;
+  /** `inverse`: header escuro (mobile) — ícone e anéis em claro. */
+  variant?: "surface" | "inverse";
 }
 
 /**
  * Avatar no header com menu: perfil e sair (mock + redirect para `/auth`).
  */
-export function UserAccountMenu({ className }: UserAccountMenuProps) {
+export function UserAccountMenu({ className, variant = "surface" }: UserAccountMenuProps) {
   const navigate = useNavigate();
   const { user, logoutAsync } = useAuth();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);
 
+  const guestIconClass =
+    variant === "inverse"
+      ? "flex size-8 items-center justify-center rounded-full bg-white/15 text-white"
+      : "flex size-8 items-center justify-center rounded-full bg-[var(--woody-nav)]/12 text-[var(--woody-nav)]";
+
+  const triggerTone =
+    variant === "inverse"
+      ? cn(triggerClass, "text-white ring-white/20 hover:bg-white/10")
+      : triggerClass;
+
   if (!user) {
     return (
       <Link
         to="/auth/login"
-        className={cn(triggerClass, className)}
+        className={cn(triggerTone, variant === "inverse" ? woodyFocus.ringSidebar : woodyFocus.ring, className)}
         aria-label="Entrar"
       >
-        <span className="flex size-8 items-center justify-center rounded-full bg-[var(--woody-nav)]/12 text-[var(--woody-nav)]">
+        <span className={guestIconClass}>
           <User className="size-[1.35rem]" aria-hidden />
         </span>
       </Link>
@@ -55,14 +67,27 @@ export function UserAccountMenu({ className }: UserAccountMenuProps) {
           <Button
             type="button"
             variant="ghost"
-            className={cn(triggerClass, "p-0 text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10", woodyFocus.ring, className)}
+            className={cn(
+              triggerTone,
+              "p-0",
+              variant === "inverse" ? "" : "text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10",
+              variant === "inverse" ? woodyFocus.ringSidebar : woodyFocus.ring,
+              className
+            )}
             aria-label="Menu da conta"
             aria-haspopup="menu"
           >
             {user.avatarUrl ? (
               <img src={user.avatarUrl} alt="" className={avatarImgClass} />
             ) : (
-              <span className="flex size-8 items-center justify-center rounded-full bg-[var(--woody-nav)]/12 text-[var(--woody-nav)]">
+              <span
+                className={cn(
+                  "flex size-8 items-center justify-center rounded-full",
+                  variant === "inverse"
+                    ? "bg-white/15 text-white"
+                    : "bg-[var(--woody-nav)]/12 text-[var(--woody-nav)]"
+                )}
+              >
                 <User className="size-[1.35rem]" aria-hidden />
               </span>
             )}

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Bell, MessageCircle } from "lucide-react";
+import { Bell, MessageCircle, Search } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -9,7 +9,7 @@ import { SearchModal } from "@/features/search/components/SearchModal";
 import { UserAccountMenu } from "./UserAccountMenu";
 import { CreatePostComposerProvider, useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { CreatePostModal } from "./CreatePostModal";
-import logoWordmark from "@/assets/logo-black.svg";
+import logoLight from "@/assets/logo.svg";
 
 export interface FeedLayoutProps {
   children: React.ReactNode;
@@ -22,38 +22,37 @@ export interface FeedLayoutProps {
   showRightPanel?: boolean;
 }
 
-// --- Estilos do header (evitar classes gigantes no JSX) ---
-
-/** Container principal: max-width e gutter (src/index.css). Em desktop não limita altura para o scroll wrapper definir. */
-const LAYOUT_CONTAINER =
-  "w-full max-w-[var(--layout-max-width)] mx-auto px-[var(--layout-gutter)]";
+/** Desktop: área principal + painel direito (largura máx. alinhada ao protótipo). */
+const MAIN_GRID =
+  "w-full max-w-[var(--layout-max-width)] mx-auto px-[var(--layout-gutter)] grid grid-cols-1 gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start";
 
 /**
  * Mobile: fluxo natural + scroll no documento (body).
- * Desktop (md+): altura fixa ao viewport + scroll só no wrapper interno (scrollbar na lateral).
+ * Desktop (md+): sidebar fixa à esquerda; scroll só na coluna direita.
  */
 const LAYOUT_ROOT =
-  "min-h-screen w-full flex flex-col bg-[var(--woody-bg)] md:h-screen md:min-h-0 md:overflow-hidden";
+  "min-h-screen w-full flex flex-col bg-[var(--woody-bg)] md:h-screen md:min-h-0 md:overflow-hidden md:flex-row";
 
-/** Em mobile não usa overflow interno — evita “armadilha” sem altura definida + body bloqueado. */
+const SCROLL_COLUMN =
+  "flex min-w-0 flex-1 flex-col min-h-0 md:min-h-0 md:bg-[var(--woody-main-surface)]";
+
 const SCROLL_WRAPPER =
-  "w-full flex flex-col md:flex-1 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden";
+  "w-full flex flex-col flex-1 min-h-0 md:flex-1 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden";
 
 const styles = {
-  header:
-    "sticky top-0 z-50 w-full bg-[var(--woody-header)] text-[var(--woody-text)] border-b border-[var(--woody-divider)] shadow-[0_1px_0_rgba(58,45,36,0.04)] shrink-0",
-  headerInner:
-    "flex items-center justify-between h-14 md:h-16 gap-3 md:gap-4",
-  logoArea:
-    "flex items-center justify-center shrink-0 h-full min-h-14 md:min-h-16 md:w-[260px] md:bg-[var(--woody-header-logo)] md:border-r md:border-[var(--woody-divider)]",
-  logo:
-    "flex max-w-full shrink-0 items-center justify-center px-3 md:w-full md:px-4 outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-header-logo)]",
-  right: "flex items-center gap-1 md:gap-2 shrink-0 md:w-[320px] md:justify-end",
+  mobileHeader:
+    "md:hidden sticky top-0 z-50 w-full shrink-0 bg-[var(--woody-sidebar)] text-white border-b border-white/10",
+  mobileHeaderInner: "flex items-center justify-between h-14 gap-3 px-[var(--layout-gutter)]",
+  mobileLogo: "flex items-center shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-sidebar)]",
+  mobileRight: "flex items-center gap-0.5 shrink-0",
+  desktopToolbar:
+    "hidden md:flex sticky top-0 z-40 w-full shrink-0 items-center justify-end gap-1 border-b border-black/[0.06] bg-[var(--woody-main-surface)] px-6 py-3",
   iconBtn:
-    "size-10 flex items-center justify-center rounded-full text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 transition-colors shrink-0",
-  iconBtnHidden: "hidden md:flex",
+    "size-10 flex items-center justify-center rounded-full text-[var(--woody-text)] hover:bg-black/5 transition-colors shrink-0",
+  iconBtnOnDark:
+    "size-10 flex items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors shrink-0",
   bellWrap: "relative",
-  badge: "absolute top-1.5 right-1.5 size-1.5 rounded-full bg-amber-400",
+  badge: "absolute top-1.5 right-1.5 size-1.5 rounded-full bg-[var(--woody-nav)]",
 } as const;
 
 const SCROLL_KEYS = [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp"] as const;
@@ -71,7 +70,6 @@ function isEditableElement(el: EventTarget | null): boolean {
   return tag === "input" || tag === "textarea" || tag === "select" || editable || role === "textbox";
 }
 
-/** Modal/dialog em portal (fora de <main>): não interceptar wheel nem rolar o feed por baixo. */
 function isInsideDialogLayer(node: EventTarget | null): boolean {
   if (!node || !(node instanceof Element)) return false;
   return Boolean(
@@ -79,7 +77,6 @@ function isInsideDialogLayer(node: EventTarget | null): boolean {
   );
 }
 
-/** DM com conversa aberta: ecrã imersivo no telemóvel (sem header global nem tab bar). */
 function isMobileDirectMessageThread(pathname: string): boolean {
   return /^\/messages\/[^/]+$/.test(pathname);
 }
@@ -98,7 +95,6 @@ function FeedLayoutShell({
   const location = useLocation();
   const immersiveMobileDmChat = isMobileDirectMessageThread(location.pathname);
 
-  // Só no desktop: trava scroll do body para o wrapper interno controlar (mobile usa scroll nativo).
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     const applyBodyOverflow = () => {
@@ -116,7 +112,6 @@ function FeedLayoutShell({
     };
   }, []);
 
-  // Redireciona wheel para o scroll wrapper (apenas desktop — touch não usa wheel).
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     const handleWheel = (e: WheelEvent) => {
@@ -126,6 +121,8 @@ function FeedLayoutShell({
       if (!wrapper) return;
       const main = wrapper.querySelector("main");
       if (main?.contains(e.target as Node)) return;
+      const rightPanel = wrapper.querySelector("[data-feed-right-panel]");
+      if (rightPanel?.contains(e.target as Node)) return;
       e.preventDefault();
       wrapper.scrollBy({ top: e.deltaY, behavior: "auto" });
     };
@@ -134,7 +131,6 @@ function FeedLayoutShell({
     return () => window.removeEventListener("wheel", handleWheel, { capture: true });
   }, []);
 
-  // Teclas de navegação rolam o wrapper (apenas desktop).
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -175,104 +171,115 @@ function FeedLayoutShell({
   return (
     <CreatePostComposerProvider>
       <div className={cn(LAYOUT_ROOT, className)}>
+        <FeedLayoutSidebarBridge
+          className="hidden md:flex h-full min-h-0 w-[var(--feed-sidebar-width)] shrink-0 flex-col self-stretch"
+          isSearchOpen={isSearchOpen}
+          setIsSearchOpen={setIsSearchOpen}
+        />
+
         <div
-          ref={scrollWrapperRef}
           className={cn(
-            SCROLL_WRAPPER,
+            SCROLL_COLUMN,
             immersiveMobileDmChat && "max-md:flex max-md:min-h-[100dvh] max-md:flex-col"
           )}
         >
-          <div
-            className={cn(
-              LAYOUT_CONTAINER,
-              "flex flex-col",
-              immersiveMobileDmChat && "max-md:min-h-0 max-md:flex-1"
-            )}
-          >
-            <header className={cn(styles.header, immersiveMobileDmChat && "max-md:hidden")}>
-          <div className={styles.headerInner}>
-            <div className={styles.logoArea}>
-              <Link
-                to="/"
-                className={styles.logo}
-                aria-label="Woody - Início"
-              >
+          <header className={cn(styles.mobileHeader, immersiveMobileDmChat && "max-md:hidden")}>
+            <div className={styles.mobileHeaderInner}>
+              <Link to="/" className={styles.mobileLogo} aria-label="Woody - Início">
                 <img
-                  src={logoWordmark}
+                  src={logoLight}
                   alt=""
                   width={399}
                   height={83}
                   decoding="async"
-                  className="h-7 w-auto max-w-[min(220px,calc(100vw-10rem))] object-contain object-center md:max-w-[min(220px,100%)] md:h-8 select-none"
+                  className="h-7 w-auto max-w-[min(200px,calc(100vw-9rem))] object-contain object-left select-none"
                 />
               </Link>
+              <div className={styles.mobileRight}>
+                <button
+                  type="button"
+                  className={styles.iconBtnOnDark}
+                  aria-label="Abrir busca"
+                  onClick={() => setIsSearchOpen(true)}
+                >
+                  <Search className="size-5" />
+                </button>
+                <Link to="/messages" className={styles.iconBtnOnDark} aria-label="Mensagens">
+                  <MessageCircle className="size-5" />
+                </Link>
+                <button type="button" className={cn(styles.iconBtnOnDark, styles.bellWrap)} aria-label="Notificações">
+                  <Bell className="size-5" />
+                  <span className={styles.badge} aria-hidden />
+                </button>
+                <UserAccountMenu variant="inverse" />
+              </div>
             </div>
+          </header>
 
-            <div className={styles.right}>
-              <Link
-                to="/messages"
-                className={cn(styles.iconBtn, styles.iconBtnHidden)}
-                aria-label="Mensagens"
-              >
-                <MessageCircle className="size-5" />
-              </Link>
+          <div
+            ref={scrollWrapperRef}
+            className={cn(
+              SCROLL_WRAPPER,
+              immersiveMobileDmChat && "max-md:flex max-md:min-h-0 max-md:flex-1"
+            )}
+          >
+            <div className={styles.desktopToolbar}>
               <button
                 type="button"
-                className={cn(styles.iconBtn, styles.bellWrap)}
-                aria-label="Notificações"
+                className={styles.iconBtn}
+                aria-label="Abrir busca"
+                onClick={() => setIsSearchOpen(true)}
               >
+                <Search className="size-5" />
+              </button>
+              <Link to="/messages" className={styles.iconBtn} aria-label="Mensagens">
+                <MessageCircle className="size-5" />
+              </Link>
+              <button type="button" className={cn(styles.iconBtn, styles.bellWrap)} aria-label="Notificações">
                 <Bell className="size-5" />
                 <span className={styles.badge} aria-hidden />
               </button>
               <UserAccountMenu />
             </div>
-          </div>
-          </header>
 
-          <div
-            className={cn(
-              "grid w-full grid-cols-1 gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start",
-              showRightPanel
-                ? "md:grid-cols-[250px_minmax(0,1fr)_minmax(0,260px)] lg:grid-cols-[250px_minmax(0,1fr)_minmax(0,230px)]"
-                : "md:grid-cols-[250px_minmax(0,1fr)]",
-              immersiveMobileDmChat && "max-md:min-h-0 max-md:flex-1"
-            )}
-          >
-            <FeedLayoutSidebarBridge
-              className="md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:self-start"
-              isSearchOpen={isSearchOpen}
-              setIsSearchOpen={setIsSearchOpen}
-            />
-            <main
+            <div
               className={cn(
-                "min-w-0 flex flex-col pb-16 md:pb-0 pt-4 md:pt-5",
-                immersiveMobileDmChat && "max-md:flex-1 max-md:min-h-0 max-md:pb-0 max-md:pt-0"
+                MAIN_GRID,
+                showRightPanel
+                  ? "md:grid-cols-[minmax(0,1fr)_minmax(var(--feed-right-min),var(--feed-right-max))]"
+                  : "md:grid-cols-1",
+                immersiveMobileDmChat && "max-md:min-h-0 max-md:flex-1"
               )}
-              aria-label="Feed principal"
             >
-              {children}
-            </main>
-            {showRightPanel ? (
-              <RightPanel className="md:sticky md:top-16 md:max-h-[calc(100vh-4rem)] md:overflow-y-auto md:self-start" />
-            ) : null}
+              <main
+                className={cn(
+                  "min-w-0 flex w-full flex-col pb-16 pt-4 md:mx-auto md:max-w-[var(--feed-main-max)] md:justify-self-center md:pb-10 md:pt-6",
+                  immersiveMobileDmChat && "max-md:flex-1 max-md:min-h-0 max-md:pb-0 max-md:pt-0"
+                )}
+                aria-label="Feed principal"
+              >
+                {children}
+              </main>
+              {showRightPanel ? (
+                <RightPanel className="hidden md:flex md:sticky md:top-[4.75rem] md:max-h-[calc(100dvh-4.75rem)] md:min-h-0 md:overflow-y-auto md:overscroll-y-contain md:self-start md:pt-6 md:justify-self-stretch" />
+              ) : null}
+            </div>
           </div>
+
+          <MobileBottomNav
+            className={immersiveMobileDmChat ? "max-md:hidden" : undefined}
+            onOpenSearch={() => setIsSearchOpen(true)}
+            isSearchOpen={isSearchOpen}
+          />
+
+          <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
+          <CreatePostModal />
         </div>
-      </div>
-
-      <MobileBottomNav
-        className={immersiveMobileDmChat ? "max-md:hidden" : undefined}
-        onOpenSearch={() => setIsSearchOpen(true)}
-        isSearchOpen={isSearchOpen}
-      />
-
-      <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
-      <CreatePostModal />
       </div>
     </CreatePostComposerProvider>
   );
 }
 
-/** Sidebar dentro do provider para aceder a `openCreatePostModal`. */
 function FeedLayoutSidebarBridge({
   className,
   isSearchOpen,

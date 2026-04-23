@@ -148,7 +148,7 @@ export function CreateCommunityPage() {
             <form
               onSubmit={handleSubmit}
               className={cn(
-                "space-y-8 rounded-2xl border border-[var(--woody-accent)]/16 bg-[var(--woody-card)]/95 p-4 sm:p-6 shadow-[0_1px_3px_rgba(58,45,36,0.05)]"
+                "space-y-8 rounded-2xl border border-[var(--woody-accent)]/16 bg-[var(--woody-card)]/95 p-4 sm:p-6 shadow-[0_1px_3px_rgba(10,10,10,0.05)]"
               )}
             >
               <CommunityBasicInfoSection

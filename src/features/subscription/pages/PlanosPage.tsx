@@ -98,7 +98,7 @@ export function PlanosPage() {
           <section
             className={cn(
               woodySurface.cardHero,
-              "flex flex-col rounded-2xl border border-[var(--woody-accent)]/14 p-5 sm:p-6 shadow-[0_1px_3px_rgba(58,45,36,0.05)]"
+              "flex flex-col rounded-2xl border border-[var(--woody-accent)]/14 p-5 sm:p-6 shadow-[0_1px_3px_rgba(10,10,10,0.05)]"
             )}
           >
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -121,7 +121,7 @@ export function PlanosPage() {
           <section
             className={cn(
               woodySurface.cardHero,
-              "relative flex flex-col overflow-hidden rounded-2xl border border-[var(--woody-nav)]/22 p-5 sm:p-6 shadow-[0_8px_28px_rgba(58,45,36,0.08)]"
+              "relative flex flex-col overflow-hidden rounded-2xl border border-[var(--woody-nav)]/22 p-5 sm:p-6 shadow-[0_8px_28px_rgba(10,10,10,0.08)]"
             )}
           >
             <div
@@ -162,7 +162,7 @@ export function PlanosPage() {
           <section
             className={cn(
               woodySurface.cardHero,
-              "relative flex flex-col overflow-hidden rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)]/98 p-5 sm:p-6 shadow-[0_8px_28px_rgba(58,45,36,0.06)]"
+              "relative flex flex-col overflow-hidden rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)]/98 p-5 sm:p-6 shadow-[0_8px_28px_rgba(10,10,10,0.06)]"
             )}
           >
             <div className="mb-3 flex flex-wrap gap-2">

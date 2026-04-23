@@ -14,7 +14,7 @@ const styles = {
 } as const;
 
 const featuredStyles = {
-  wrap: "rounded-xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)]/90 shadow-[0_1px_3px_rgba(58,45,36,0.06)] p-3.5 sm:p-5 mb-6",
+  wrap: "rounded-xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)]/90 shadow-[0_1px_3px_rgba(10,10,10,0.06)] p-3.5 sm:p-5 mb-6",
   title: "text-sm font-semibold text-[var(--woody-text)] tracking-tight mb-2 sm:mb-3",
   subtitle: "text-xs leading-relaxed text-[var(--woody-muted)] mb-3 max-w-prose",
 } as const;

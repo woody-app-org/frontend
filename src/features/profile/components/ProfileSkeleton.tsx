@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const styles = {
-  card: "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(58,45,36,0.06)]",
+  card: "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(10,10,10,0.06)]",
   skeleton: "bg-[var(--woody-nav)]/10",
 };
 
