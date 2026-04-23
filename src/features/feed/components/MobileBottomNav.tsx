@@ -24,7 +24,7 @@ export function MobileBottomNav({ className, onOpenSearch, isSearchOpen }: Mobil
   return (
     <nav
       className={cn(
-        "md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around py-2 px-1.5 bg-[var(--woody-header)]/95 backdrop-blur-md border-t border-[var(--woody-divider)] shadow-[0_-4px_20px_rgba(58,45,36,0.05)] safe-area-pb",
+        "md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around py-2 px-1.5 bg-[var(--woody-sidebar)]/98 backdrop-blur-md border-t border-white/10 text-white shadow-[0_-4px_24px_rgba(0,0,0,0.35)] safe-area-pb",
         className
       )}
     >
@@ -54,8 +54,8 @@ export function MobileBottomNav({ className, onOpenSearch, isSearchOpen }: Mobil
               "flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 min-w-[52px] max-w-[72px] rounded-xl transition-colors duration-200",
               woodyFocus.ring,
               isActive
-                ? "text-[var(--woody-nav)] bg-[var(--woody-nav)]/12 font-semibold"
-                : "text-[var(--woody-text)] font-medium hover:bg-[var(--woody-nav)]/6"
+                ? "text-[var(--woody-nav)] bg-white/10 font-semibold"
+                : "text-white/85 font-medium hover:bg-white/6"
             )}
           >
             <Icon

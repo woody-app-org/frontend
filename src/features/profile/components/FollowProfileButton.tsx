@@ -5,7 +5,7 @@ import { woodyFocus } from "@/lib/woody-ui";
 import { useProfileFollow } from "../hooks/useProfileFollow";
 
 const followPrimaryClass =
-  "rounded-lg bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 text-sm font-medium shrink-0 transition-transform active:scale-[0.98]";
+  "rounded-lg bg-[var(--woody-nav)] text-[var(--woody-ink)] hover:bg-[#9ccc5c] text-sm font-medium shrink-0 transition-transform active:scale-[0.98]";
 
 const followingOutlineClass =
   "rounded-lg border border-[var(--woody-nav)]/35 bg-[var(--woody-nav)]/6 text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/12 text-sm font-medium shrink-0 transition-transform active:scale-[0.98]";

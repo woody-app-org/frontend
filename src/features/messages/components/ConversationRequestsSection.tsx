@@ -59,7 +59,7 @@ export function ConversationRequestsSection({
             <li
               key={c.id}
               className={cn(
-                "rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-bg)]/80 p-3 shadow-[0_1px_2px_rgba(58,45,36,0.04)]",
+                "rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-bg)]/80 p-3 shadow-[0_1px_2px_rgba(10,10,10,0.04)]",
                 selectedId === c.id && "ring-1 ring-[var(--woody-nav)]/25"
               )}
             >

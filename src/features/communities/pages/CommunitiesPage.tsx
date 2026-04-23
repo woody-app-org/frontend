@@ -202,7 +202,7 @@ export function CommunitiesPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--woody-accent)]/16 bg-[var(--woody-card)]/95 p-3 sm:p-4 shadow-[0_1px_3px_rgba(58,45,36,0.05)]">
+          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--woody-accent)]/16 bg-[var(--woody-card)]/95 p-3 sm:p-4 shadow-[0_1px_3px_rgba(10,10,10,0.05)]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--woody-muted)] pointer-events-none" />
               <input

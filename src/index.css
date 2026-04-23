@@ -6,6 +6,7 @@
 
 @theme inline {
     --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-serif: "Lora", ui-serif, Georgia, "Times New Roman", serif;
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -49,32 +50,42 @@
 :root {
     --radius: 0.625rem;
     /* Layout: container principal (ajuste aqui para mudar respiro/largura) */
-    --layout-max-width: 1280px;
+    --layout-max-width: 1360px;
     --layout-gutter: 1rem;
     --layout-gap-columns: 0;
-    /* Woody — base areia #EADDCB; contraste com castanho quente em botões / texto */
-    --woody-sand: #EADDCB;
-    --woody-ink: #3a2d24;
-    /* Sombras / overlays (alinhar com --woody-ink) */
-    --woody-ink-rgb: 58, 45, 36;
-    --woody-brand: #3a2d24;
-    --woody-header: #EADDCB;
-    --woody-header-logo: #EADDCB;
-    --woody-nav: #3a2d24;
-    --woody-sidebar: #EADDCB;
-    --woody-sidebar-active: #27221f;
-    --woody-sidebar-text: #231a15;
-    --woody-sidebar-text-inactive: rgba(58, 45, 36, 0.78);
-    --woody-bg: #EADDCB;
-    --woody-card: #fffaf5;
-    --woody-accent: #3a2d24;
-    --woody-text: #231a15;
-    --woody-muted: #6b5e54;
-    --woody-section-active: #3a2d24;
-    --woody-section-hover: rgba(58, 45, 36, 0.07);
-    --woody-item-active: #3a2d24;
-    --woody-item-hover: rgba(58, 45, 36, 0.09);
-    --woody-divider: rgba(58, 45, 36, 0.14);
+    /* Feed desktop — 3 colunas (~22–24% laterais, miolo editorial) */
+    --feed-sidebar-width: 296px;
+    --feed-right-min: 260px;
+    --feed-right-max: 288px;
+    --feed-column-gap: 2rem;
+    --feed-main-max: 688px;
+    /* Woody — tema referência: preto + branco + verde #8bc34a */
+    --woody-sand: #f4f4f5;
+    --woody-ink: #0a0a0a;
+    --woody-ink-rgb: 10, 10, 10;
+    --woody-brand: #0a0a0a;
+    --woody-lime: #8bc34a;
+    --woody-lime-rgb: 139, 195, 74;
+    --woody-header: #ffffff;
+    --woody-header-logo: #0a0a0a;
+    --woody-nav: #8bc34a;
+    --woody-sidebar: #0a0a0a;
+    --woody-sidebar-active: transparent;
+    --woody-sidebar-text: #ffffff;
+    --woody-sidebar-text-inactive: rgba(255, 255, 255, 0.78);
+    --woody-bg: #ffffff;
+    --woody-main-surface: #ebebed;
+    --woody-card: #ffffff;
+    --woody-accent: #0a0a0a;
+    --woody-text: #0a0a0a;
+    --woody-muted: #52525b;
+    --woody-section-active: #0a0a0a;
+    --woody-section-hover: rgba(139, 195, 74, 0.12);
+    --woody-item-active: #8bc34a;
+    --woody-item-hover: rgba(255, 255, 255, 0.06);
+    --woody-divider: rgba(10, 10, 10, 0.1);
+    --woody-tag-bg: rgba(139, 195, 74, 0.22);
+    --woody-tag-text: #2d5016;
     /* Auth (login/cadastro) - paleta do protótipo */
     --auth-bg: #2D4F4F;
     --auth-panel-beige: #EDE5DB;
@@ -84,24 +95,24 @@
     --auth-ornament: #B0C4B1;
     --auth-text-on-maroon: #ffffff;
     --auth-text-on-beige: #5C3A3B;
-    --background: #EADDCB;
-    --foreground: #231a15;
-    --card: #fffaf5;
-    --card-foreground: #231a15;
-    --popover: #fffaf5;
-    --popover-foreground: #231a15;
-    --primary: #3a2d24;
-    --primary-foreground: #fffaf5;
-    --secondary: #efe4d8;
-    --secondary-foreground: #231a15;
-    --muted: #efe4d8;
-    --muted-foreground: #6b5e54;
-    --accent: rgba(58, 45, 36, 0.1);
-    --accent-foreground: #231a15;
+    --background: #ffffff;
+    --foreground: #0a0a0a;
+    --card: #ffffff;
+    --card-foreground: #0a0a0a;
+    --popover: #ffffff;
+    --popover-foreground: #0a0a0a;
+    --primary: #8bc34a;
+    --primary-foreground: #0a0a0a;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #0a0a0a;
+    --muted: #f4f4f5;
+    --muted-foreground: #52525b;
+    --accent: rgba(139, 195, 74, 0.15);
+    --accent-foreground: #0a0a0a;
     --destructive: oklch(0.577 0.245 27.325);
-    --border: rgba(58, 45, 36, 0.16);
-    --input: rgba(58, 45, 36, 0.16);
-    --ring: rgba(58, 45, 36, 0.4);
+    --border: rgba(10, 10, 10, 0.1);
+    --input: rgba(10, 10, 10, 0.12);
+    --ring: rgba(139, 195, 74, 0.45);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
@@ -127,14 +138,14 @@
 @media (min-width: 768px) {
   :root {
     --layout-gutter: 1.5rem;
-    --layout-gap-columns: 1.5rem;
+    --layout-gap-columns: var(--feed-column-gap);
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --layout-gutter: 2rem;
-    --layout-gap-columns: 2rem;
+    --layout-gutter: 1.75rem;
+    --layout-gap-columns: var(--feed-column-gap);
   }
 }
 
