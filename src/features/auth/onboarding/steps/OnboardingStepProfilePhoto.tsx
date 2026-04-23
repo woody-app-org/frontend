@@ -122,7 +122,7 @@ export function OnboardingStepProfilePhoto() {
           "relative rounded-2xl border-2 border-dashed transition-[border-color,background-color,transform] duration-300 ease-out",
           dragOver
             ? "border-[var(--auth-button)] bg-[var(--auth-button)]/12 scale-[1.01] shadow-md"
-            : "border-white/22 bg-[var(--auth-panel-beige)]/[0.05]",
+            : "border-black/20 bg-[var(--auth-panel-beige)]",
           "p-6 sm:p-9 flex flex-col items-center justify-center text-center min-h-[220px] sm:min-h-[240px]"
         )}
       >
@@ -136,12 +136,12 @@ export function OnboardingStepProfilePhoto() {
             <img
               src={preview}
               alt="Pré-visualização da foto de perfil"
-              className="mx-auto size-40 sm:size-44 rounded-full object-cover border-4 border-white/25 shadow-lg ring-1 ring-black/10"
+              className="mx-auto size-40 sm:size-44 rounded-full object-cover border-4 border-black/10 shadow-lg ring-1 ring-black/10"
             />
             <button
               type="button"
               onClick={clearPhoto}
-              className="absolute -right-0.5 -top-0.5 flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full bg-[var(--auth-panel-maroon)] border-2 border-white/35 text-white shadow-md hover:bg-black/35 active:scale-95 transition-[colors,transform] duration-200"
+              className="absolute -right-0.5 -top-0.5 flex size-10 min-h-10 min-w-10 items-center justify-center rounded-full bg-[var(--woody-ink)] border-2 border-black/10 text-white shadow-md hover:bg-black/80 active:scale-95 transition-[colors,transform] duration-200"
               aria-label="Remover foto"
             >
               <X className="size-4" />
@@ -149,7 +149,7 @@ export function OnboardingStepProfilePhoto() {
           </div>
         ) : (
           <>
-            <div className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/12 ring-1 ring-white/10">
+            <div className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-[var(--auth-button)]/12 ring-1 ring-[var(--auth-button)]/25">
               <ImagePlus className="size-7 text-[var(--auth-text-on-maroon)]/85" aria-hidden />
             </div>
             <p className="text-sm font-medium text-[var(--auth-text-on-maroon)] px-2">
@@ -169,7 +169,7 @@ export function OnboardingStepProfilePhoto() {
       </div>
 
       {error && (
-        <p className="mt-3 text-sm text-red-200 bg-red-900/30 rounded-lg px-3 py-2" role="alert">
+        <p className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
           {error}
         </p>
       )}

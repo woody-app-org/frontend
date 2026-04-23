@@ -26,7 +26,7 @@ export function OnboardingStepHeader({
     <header className={cn("mb-6 sm:mb-7 md:mb-8 space-y-3 sm:space-y-3.5", className)}>
       {Icon ? (
         <div
-          className="flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/12 text-[var(--auth-text-on-maroon)] shadow-sm ring-1 ring-white/10 transition-transform duration-300 motion-safe:hover:scale-[1.02]"
+          className="flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-button)]/14 text-[var(--auth-text-on-maroon)] shadow-sm ring-1 ring-[var(--auth-button)]/25 transition-transform duration-300 motion-safe:hover:scale-[1.02]"
           aria-hidden
         >
           <Icon className="size-6 opacity-95" />

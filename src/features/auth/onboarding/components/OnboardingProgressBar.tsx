@@ -12,21 +12,21 @@ export function OnboardingProgressBar({ currentStep, className }: OnboardingProg
 
   return (
     <div className={cn("w-full shrink-0", className)}>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-[11px] sm:text-xs text-[var(--auth-text-on-maroon)]/85">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-[11px] sm:text-xs text-[var(--auth-text-on-beige)]/85">
         <span className="font-medium tracking-wide">
           <span className="tabular-nums">Etapa {currentStep}</span>
-          <span className="text-[var(--auth-text-on-maroon)]/55"> / {ONBOARDING_TOTAL_STEPS}</span>
+          <span className="text-[var(--auth-text-on-beige)]/55"> / {ONBOARDING_TOTAL_STEPS}</span>
           {label ? (
-            <span className="hidden sm:inline text-[var(--auth-text-on-maroon)]/65 font-normal">
+            <span className="hidden sm:inline text-[var(--auth-text-on-beige)]/65 font-normal">
               {" "}
               · {label}
             </span>
           ) : null}
         </span>
-        <span className="tabular-nums text-[var(--auth-text-on-maroon)]/70">{Math.round(pct)}%</span>
+        <span className="tabular-nums text-[var(--auth-text-on-beige)]/70">{Math.round(pct)}%</span>
       </div>
       <div
-        className="mt-2 h-1.5 sm:h-2 rounded-full bg-[var(--auth-panel-beige)]/22 overflow-hidden ring-1 ring-white/5"
+        className="mt-2 h-1.5 sm:h-2 rounded-full bg-black/10 overflow-hidden"
         role="progressbar"
         aria-valuenow={currentStep}
         aria-valuemin={1}
@@ -35,7 +35,7 @@ export function OnboardingProgressBar({ currentStep, className }: OnboardingProg
         aria-label="Progresso do cadastro"
       >
         <div
-          className="h-full rounded-full bg-[var(--auth-button)] transition-[width] duration-500 ease-out shadow-sm"
+          className="h-full rounded-full bg-[var(--auth-button)] transition-[width] duration-500 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>

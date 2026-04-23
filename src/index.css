@@ -86,15 +86,15 @@
     --woody-divider: rgba(10, 10, 10, 0.1);
     --woody-tag-bg: rgba(139, 195, 74, 0.22);
     --woody-tag-text: #2d5016;
-    /* Auth (login/cadastro) - paleta do protótipo */
-    --auth-bg: #2D4F4F;
-    --auth-panel-beige: #EDE5DB;
-    --auth-panel-maroon: #6D3A4B;
-    --auth-button: #5F857B;
-    --auth-button-hover: #4f7269;
-    --auth-ornament: #B0C4B1;
-    --auth-text-on-maroon: #ffffff;
-    --auth-text-on-beige: #5C3A3B;
+    /* Auth (login/cadastro/onboarding) — alinhado ao tema Woody global */
+    --auth-bg: #f6f6f7;
+    --auth-panel-beige: #ffffff;
+    --auth-panel-maroon: #ffffff;
+    --auth-button: #8bc34a;
+    --auth-button-hover: #79ac3d;
+    --auth-ornament: #8bc34a;
+    --auth-text-on-maroon: #0a0a0a;
+    --auth-text-on-beige: #0a0a0a;
     --background: #ffffff;
     --foreground: #0a0a0a;
     --card: #ffffff;

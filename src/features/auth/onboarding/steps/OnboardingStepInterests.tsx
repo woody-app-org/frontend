@@ -118,7 +118,7 @@ export function OnboardingStepInterests() {
                       "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border transition-all duration-200 ease-out",
                       isOn
                         ? "border-[var(--auth-button)] bg-[var(--auth-button)] text-white scale-100 opacity-100"
-                        : "border-white/22 opacity-55 scale-95"
+                        : "border-black/20 opacity-55 scale-95"
                     )}
                     aria-hidden
                   >

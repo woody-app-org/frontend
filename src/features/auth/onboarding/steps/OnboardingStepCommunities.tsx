@@ -59,7 +59,7 @@ export function OnboardingStepCommunities() {
 
   return (
     <div>
-      <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[var(--auth-panel-beige)]/10 px-3 py-1 text-[11px] sm:text-xs font-medium text-[var(--auth-text-on-maroon)]/88 ring-1 ring-white/10">
+      <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[var(--auth-button)]/12 px-3 py-1 text-[11px] sm:text-xs font-medium text-[var(--auth-text-on-maroon)]/88 ring-1 ring-[var(--auth-button)]/25">
         <Sparkles className="size-3.5 shrink-0" aria-hidden />
         Sugestões pensadas para você
       </div>
@@ -73,17 +73,17 @@ export function OnboardingStepCommunities() {
 
       {loadState.status === "loading" ? (
         <p
-          className="rounded-2xl border border-white/12 bg-[var(--auth-panel-beige)]/[0.05] px-5 py-10 text-center text-sm text-[var(--auth-text-on-maroon)]/80"
+          className="rounded-2xl border border-black/12 bg-[var(--auth-panel-beige)] px-5 py-10 text-center text-sm text-[var(--auth-text-on-maroon)]/80"
           role="status"
         >
           A carregar comunidades…
         </p>
       ) : loadState.status === "error" ? (
         <div
-          className="flex flex-col items-center gap-3 rounded-2xl border border-white/12 bg-[var(--auth-panel-beige)]/[0.05] px-5 py-10 text-center"
+          className="flex flex-col items-center gap-3 rounded-2xl border border-black/12 bg-[var(--auth-panel-beige)] px-5 py-10 text-center"
           role="alert"
         >
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/10 text-[var(--auth-text-on-maroon)]/75">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-button)]/12 text-[var(--auth-text-on-maroon)]/75">
             <Compass className="size-6" aria-hidden />
           </div>
           <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]/90">Não foi possível carregar as comunidades</p>
@@ -94,10 +94,10 @@ export function OnboardingStepCommunities() {
         </div>
       ) : communities.length === 0 ? (
         <div
-          className="flex flex-col items-center gap-3 rounded-2xl border border-white/12 bg-[var(--auth-panel-beige)]/[0.05] px-5 py-10 text-center"
+          className="flex flex-col items-center gap-3 rounded-2xl border border-black/12 bg-[var(--auth-panel-beige)] px-5 py-10 text-center"
           role="status"
         >
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-panel-beige)]/10 text-[var(--auth-text-on-maroon)]/75">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--auth-button)]/12 text-[var(--auth-text-on-maroon)]/75">
             <Compass className="size-6" aria-hidden />
           </div>
           <p className="text-sm font-medium text-[var(--auth-text-on-maroon)]/90">Nenhuma comunidade na base ainda</p>

@@ -35,12 +35,12 @@ export function OnboardingCommunityToggleCard({
   return (
     <div
       className={cn(
-        "flex flex-col rounded-2xl border border-white/14 bg-[var(--auth-panel-beige)]/[0.06] overflow-hidden transition-[box-shadow,border-color,transform] duration-200 ease-out",
+        "flex flex-col rounded-2xl border border-black/12 bg-[var(--auth-panel-beige)] overflow-hidden transition-[box-shadow,border-color,transform] duration-200 ease-out",
         joined && "ring-2 ring-[var(--auth-button)]/50 border-[var(--auth-button)]/38 shadow-md",
-        !disabled && "hover:border-white/26 motion-safe:hover:-translate-y-px"
+        !disabled && "hover:border-black/25 motion-safe:hover:-translate-y-px"
       )}
     >
-      <div className="relative h-[4.75rem] sm:h-[5.25rem] shrink-0">
+      <div className="relative h-[5.25rem] sm:h-[5.75rem] shrink-0">
         {community.coverUrl ? (
           <img src={community.coverUrl} alt="" className="size-full object-cover" loading="lazy" />
         ) : (
@@ -49,21 +49,21 @@ export function OnboardingCommunityToggleCard({
             aria-hidden
           />
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--auth-panel-maroon)]/95 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
       </div>
 
-      <div className="flex flex-1 flex-col p-3.5 sm:p-4 -mt-8 relative">
+      <div className="relative -mt-5 flex flex-1 flex-col p-3.5 pt-4 sm:-mt-4 sm:p-4 sm:pt-4">
         <div className="flex gap-3">
           <div className="shrink-0">
             {community.avatarUrl ? (
               <img
                 src={community.avatarUrl}
                 alt=""
-                className="size-12 rounded-xl border-2 border-[var(--auth-panel-maroon)] object-cover shadow-md"
+                className="size-12 rounded-xl border-2 border-white object-cover shadow-md"
                 loading="lazy"
               />
             ) : (
-              <span className="flex size-12 items-center justify-center rounded-xl border-2 border-[var(--auth-panel-maroon)] bg-[var(--auth-panel-beige)]/20 text-xs font-bold text-[var(--auth-text-on-maroon)]">
+              <span className="flex size-12 items-center justify-center rounded-xl border-2 border-white bg-[var(--auth-panel-beige)]/75 text-xs font-bold text-[var(--auth-text-on-maroon)]">
                 {initials}
               </span>
             )}
@@ -76,7 +76,7 @@ export function OnboardingCommunityToggleCard({
               {community.description}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--auth-text-on-maroon)]/65">
-              <span className="rounded-full bg-white/10 px-2 py-0.5 font-medium">{categoryLabel}</span>
+              <span className="rounded-full bg-black/6 px-2 py-0.5 font-medium">{categoryLabel}</span>
               <span className="inline-flex items-center gap-1">
                 <Users className="size-3 opacity-80" aria-hidden />
                 {formatMemberCount(community.memberCount)} membros

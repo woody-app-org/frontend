@@ -96,7 +96,7 @@ export function OnboardingStepVerifyEmail() {
     <div className="relative">
       {isAdvancing ? (
         <div
-          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-[var(--auth-panel-maroon)]/92 text-center px-4 py-10 backdrop-blur-[2px] animate-in fade-in duration-300"
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-white/95 border border-black/10 text-center px-4 py-10 backdrop-blur-[2px] animate-in fade-in duration-300"
           role="status"
           aria-live="polite"
           aria-busy="true"
@@ -129,7 +129,7 @@ export function OnboardingStepVerifyEmail() {
       <form onSubmit={onSubmit} className="space-y-6">
         {verifyError && (
           <p
-            className="text-sm text-red-200 bg-red-900/35 rounded-xl px-3 py-2.5 border border-red-400/20"
+            className="text-sm text-red-700 bg-red-50 rounded-xl px-3 py-2.5 border border-red-200"
             role="alert"
           >
             {verifyError}
@@ -137,7 +137,7 @@ export function OnboardingStepVerifyEmail() {
         )}
         {sendError && (
           <p
-            className="text-sm text-red-200 bg-red-900/35 rounded-xl px-3 py-2.5 border border-red-400/20"
+            className="text-sm text-red-700 bg-red-50 rounded-xl px-3 py-2.5 border border-red-200"
             role="alert"
           >
             {sendError}
@@ -165,7 +165,7 @@ export function OnboardingStepVerifyEmail() {
             )}
           />
           {form.formState.errors.code && (
-            <p className="mt-2 text-sm text-red-200" role="alert">
+            <p className="mt-2 text-sm text-red-600" role="alert">
               {form.formState.errors.code.message}
             </p>
           )}
