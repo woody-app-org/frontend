@@ -40,7 +40,7 @@ export function IntroPage() {
         <div className={`flex flex-col items-center transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"}`}>
           <svg
             viewBox="0 0 399 83"
-            className="w-[min(74vw,430px)]"
+            className="w-[min(92vw,560px)] md:w-[min(82vw,640px)] lg:w-[min(72vw,720px)]"
             role="img"
             aria-label="Logo da Woody sendo desenhado"
           >
