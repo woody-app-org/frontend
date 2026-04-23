@@ -17,6 +17,7 @@ import { ProfilePage } from "@/features/profile";
 import { CommunitiesPage, CommunityDetailPage, CreateCommunityPage } from "@/features/communities";
 import { AssinaturaCanceladaPage, AssinaturaSucessoPage, PlanosPage } from "@/features/subscription/pages";
 import { ConversationsPage } from "@/features/messages";
+import { LandingPage } from "@/features/landing";
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <IntroPage /> },
+      { path: "landing", element: <LandingPage /> },
       { path: "auth", element: <AuthEntryPage /> },
       { path: "auth/login", element: <LoginPage /> },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },

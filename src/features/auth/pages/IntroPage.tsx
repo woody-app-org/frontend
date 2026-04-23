@@ -5,8 +5,8 @@ import { useAuth } from "../context/AuthContext";
 const INTRO_DURATION_MS = 2200;
 
 /**
- * Primeira impressão da aplicação no `/`.
- * Se a sessão já existir, o fluxo segue direto para o feed.
+ * Primeira impressão da aplicação no `/`: animação do logo e, em seguida, landing institucional.
+ * Com sessão ativa, o fluxo ignora a intro e segue direto para o feed.
  */
 export function IntroPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -17,7 +17,7 @@ export function IntroPage() {
     if (isLoading || isAuthenticated) return;
     setIsVisible(true);
     const t = window.setTimeout(() => {
-      navigate("/auth", { replace: true });
+      navigate("/landing", { replace: true });
     }, INTRO_DURATION_MS);
     return () => window.clearTimeout(t);
   }, [isAuthenticated, isLoading, navigate]);
