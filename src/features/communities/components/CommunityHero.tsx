@@ -32,6 +32,8 @@ export interface CommunityHeroProps {
   /** Owner/admin: entrada para analytics/crescimento (gating no diálogo). */
   showGrowthEntry?: boolean;
   onOpenGrowth?: () => void;
+  /** Staff + premium: atalho directo para o painel de métricas. */
+  adminDashboardHref?: string;
   className?: string;
 }
 
@@ -155,6 +157,7 @@ export function CommunityHero({
   onManageMembers,
   showGrowthEntry = false,
   onOpenGrowth,
+  adminDashboardHref,
   className,
 }: CommunityHeroProps) {
   void _viewerId;
@@ -182,7 +185,8 @@ export function CommunityHero({
   const showAdminMenu =
     (canManage && onManageCommunity) ||
     (canManageMembers && onManageMembers) ||
-    (showGrowthEntry && onOpenGrowth);
+    (showGrowthEntry && onOpenGrowth) ||
+    Boolean(adminDashboardHref);
   const description = community.description.trim();
 
   return (
@@ -306,6 +310,17 @@ export function CommunityHero({
                     >
                       <BarChart3 className="size-4 opacity-80" aria-hidden />
                       Analytics e crescimento
+                    </DropdownMenuItem>
+                  ) : null}
+                  {adminDashboardHref ? (
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to={adminDashboardHref}
+                        className="cursor-pointer text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+                      >
+                        <BarChart3 className="size-4 opacity-80" aria-hidden />
+                        Painel de métricas
+                      </Link>
                     </DropdownMenuItem>
                   ) : null}
                 </DropdownMenuContent>

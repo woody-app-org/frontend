@@ -201,6 +201,7 @@ function CommunityDetailLoaded({
         open={growthDialogOpen}
         onOpenChange={setGrowthDialogOpen}
         communityId={community.id}
+        communitySlug={community.slug}
         communityName={community.name}
         capabilities={premiumCapabilities}
       />
@@ -241,6 +242,11 @@ function CommunityDetailLoaded({
         onManageMembers={canManageMembers ? () => setMembersOpen(true) : undefined}
         showGrowthEntry={showGrowthEntry}
         onOpenGrowth={showGrowthEntry ? () => setGrowthDialogOpen(true) : undefined}
+        adminDashboardHref={
+          premiumCapabilities?.canAccessCommunityAnalytics
+            ? `/communities/${encodeURIComponent(community.slug)}/admin`
+            : undefined
+        }
       />
 
       {canEditCommunity ? (
@@ -303,6 +309,7 @@ function CommunityDetailLoaded({
           <CommunityAboutCard community={community} memberCount={memberCount} />
           <CommunityPremiumSidebarCard
             capabilities={premiumCapabilities}
+            communitySlug={community.slug}
             onOpenGrowth={() => setGrowthDialogOpen(true)}
             onUpgrade={handleSidebarUpgrade}
             upgradeBusy={upgradeBusy}

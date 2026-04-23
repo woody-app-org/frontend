@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { BarChart3, Lock, Sparkles } from "lucide-react";
 import {
   Dialog,
@@ -21,6 +22,7 @@ export interface CommunityGrowthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   communityId: string;
+  communitySlug: string;
   communityName: string;
   capabilities: CommunityPremiumCapabilities | undefined;
 }
@@ -29,6 +31,7 @@ export function CommunityGrowthDialog({
   open,
   onOpenChange,
   communityId,
+  communitySlug,
   communityName,
   capabilities,
 }: CommunityGrowthDialogProps) {
@@ -123,19 +126,57 @@ export function CommunityGrowthDialog({
             {loading ? (
               <p className="text-sm text-[var(--woody-muted)]">A carregar resumo…</p>
             ) : error ? (
-              <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
-                {error}
-              </p>
+              <div className="space-y-3">
+                <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
+                  {error}
+                </p>
+                <Button
+                  asChild
+                  variant="outline"
+                  className={cn(woodyFocus.ring, "w-full border-[var(--woody-accent)]/22")}
+                >
+                  <Link
+                    to={`/communities/${encodeURIComponent(communitySlug)}/admin`}
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Abrir painel completo
+                  </Link>
+                </Button>
+              </div>
             ) : analytics ? (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-bg)] p-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[var(--woody-muted)]">Membros</p>
-                  <p className="mt-1 text-2xl font-bold text-[var(--woody-text)]">{analytics.memberCount}</p>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-bg)] p-3">
+                    <p className="text-xs font-medium uppercase tracking-wide text-[var(--woody-muted)]">Membros</p>
+                    <p className="mt-1 text-2xl font-bold text-[var(--woody-text)]">{analytics.memberCount}</p>
+                  </div>
+                  <div className="rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-bg)] p-3">
+                    <p className="text-xs font-medium uppercase tracking-wide text-[var(--woody-muted)]">Posts (total)</p>
+                    <p className="mt-1 text-2xl font-bold text-[var(--woody-text)]">{analytics.totalPosts}</p>
+                  </div>
                 </div>
-                <div className="rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-bg)] p-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[var(--woody-muted)]">Posts</p>
-                  <p className="mt-1 text-2xl font-bold text-[var(--woody-text)]">{analytics.totalPosts}</p>
-                </div>
+                {analytics.current ? (
+                  <p className="text-xs leading-relaxed text-[var(--woody-muted)]">
+                    Últimos {analytics.periodDays ?? 30} dias:{" "}
+                    <span className="font-medium text-[var(--woody-text)]/90">
+                      +{analytics.current.newMembersJoined} entradas
+                    </span>
+                    ,{" "}
+                    <span className="font-medium text-[var(--woody-text)]/90">
+                      {analytics.current.memberLeavesRecorded} saídas (agregado)
+                    </span>
+                    , {analytics.current.postsPublished} posts, {analytics.current.commentsPosted} comentários.
+                  </p>
+                ) : null}
+                <Button
+                  asChild
+                  variant="outline"
+                  className={cn(woodyFocus.ring, "w-full border-[var(--woody-accent)]/22")}
+                >
+                  <Link to={`/communities/${encodeURIComponent(communitySlug)}/admin`} onClick={() => onOpenChange(false)}>
+                    Abrir painel completo
+                  </Link>
+                </Button>
               </div>
             ) : null}
             {analytics?.note ? (

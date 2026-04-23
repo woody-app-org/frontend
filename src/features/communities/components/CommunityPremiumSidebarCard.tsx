@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { BarChart3, ChevronRight, Lock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CommunityPremiumCapabilities } from "@/domain/types";
@@ -6,6 +7,7 @@ import { woodyFocus, woodySurface } from "@/lib/woody-ui";
 
 export interface CommunityPremiumSidebarCardProps {
   capabilities: CommunityPremiumCapabilities | undefined;
+  communitySlug: string;
   onOpenGrowth: () => void;
   onUpgrade: () => void | Promise<void>;
   upgradeBusy?: boolean;
@@ -16,6 +18,7 @@ export interface CommunityPremiumSidebarCardProps {
  */
 export function CommunityPremiumSidebarCard({
   capabilities,
+  communitySlug,
   onOpenGrowth,
   onUpgrade,
   upgradeBusy = false,
@@ -24,6 +27,7 @@ export function CommunityPremiumSidebarCard({
   if (!staff) return null;
 
   const premium = capabilities?.communityPremiumActive ?? false;
+  const canDashboard = Boolean(capabilities?.canAccessCommunityAnalytics);
 
   return (
     <section
@@ -50,18 +54,29 @@ export function CommunityPremiumSidebarCard({
 
       <div className="mt-4 flex flex-col gap-2">
         {premium ? (
-          <Button
-            type="button"
-            variant="outline"
-            className={cn(woodyFocus.ring, "h-11 w-full justify-between border-[var(--woody-accent)]/22")}
-            onClick={() => onOpenGrowth()}
-          >
-            <span className="flex items-center gap-2 text-sm font-medium">
-              <BarChart3 className="size-4 opacity-80" aria-hidden />
-              Ver analytics
-            </span>
-            <ChevronRight className="size-4 opacity-60" aria-hidden />
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              className={cn(woodyFocus.ring, "h-11 w-full justify-between border-[var(--woody-accent)]/22")}
+              onClick={() => onOpenGrowth()}
+            >
+              <span className="flex items-center gap-2 text-sm font-medium">
+                <BarChart3 className="size-4 opacity-80" aria-hidden />
+                Ver analytics
+              </span>
+              <ChevronRight className="size-4 opacity-60" aria-hidden />
+            </Button>
+            {canDashboard ? (
+              <Button
+                asChild
+                variant="ghost"
+                className={cn(woodyFocus.ring, "h-10 w-full text-sm font-medium text-[var(--woody-nav)]")}
+              >
+                <Link to={`/communities/${encodeURIComponent(communitySlug)}/admin`}>Abrir painel de métricas</Link>
+              </Button>
+            ) : null}
+          </>
         ) : (
           <div className="rounded-xl border border-dashed border-[var(--woody-accent)]/25 bg-[var(--woody-bg)]/80 p-3">
             <div className="flex items-start gap-2">

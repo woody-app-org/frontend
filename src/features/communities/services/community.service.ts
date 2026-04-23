@@ -280,19 +280,60 @@ export async function fetchMyCommunityMembership(communityId: string): Promise<{
   }
 }
 
-export interface CommunityPremiumAnalyticsPayload {
-  communityId: string;
-  memberCount: number;
-  totalPosts: number;
-  headline: string;
-  note: string;
+export interface CommunityAnalyticsPeriodBucket {
+  newMembersJoined: number;
+  memberLeavesRecorded: number;
+  pageViews: number;
+  postsPublished: number;
+  commentsPosted: number;
+  likesOnPosts: number;
 }
 
+export interface CommunityPremiumDashboardPayload {
+  communityId: string;
+  slug?: string | null;
+  periodDays: number;
+  periodStartUtc: string;
+  periodEndUtc: string;
+  previousPeriodStartUtc: string;
+  previousPeriodEndUtc: string;
+  memberCount: number;
+  totalPosts: number;
+  headline?: string;
+  note?: string | null;
+  current: CommunityAnalyticsPeriodBucket;
+  previous: CommunityAnalyticsPeriodBucket;
+  engagement: { averageInteractionsPerPost: number; definition: string };
+  topPosts: Array<{
+    postId: string;
+    title: string;
+    createdAtUtc: string;
+    likesCount: number;
+    commentsCount: number;
+    score: number;
+    authorUsername: string;
+  }>;
+  topTags: Array<{ tag: string; count: number }>;
+  dailyActivity: Array<{
+    dayUtc: string;
+    posts: number;
+    comments: number;
+    pageViews: number;
+    memberLeaves: number;
+    newMembers: number;
+  }>;
+}
+
+/** @deprecated Usar `CommunityPremiumDashboardPayload`. */
+export type CommunityPremiumAnalyticsPayload = CommunityPremiumDashboardPayload;
+
 export async function fetchCommunityPremiumAnalytics(
-  communityId: string
-): Promise<CommunityPremiumAnalyticsPayload> {
-  const { data } = await api.get<CommunityPremiumAnalyticsPayload>(
-    `/communities/${encodeURIComponent(communityId)}/premium/analytics`
+  communityId: string,
+  days: number = 30
+): Promise<CommunityPremiumDashboardPayload> {
+  const { data } = await api.get<CommunityPremiumDashboardPayload>(
+    `/communities/${encodeURIComponent(communityId)}/premium/analytics`,
+    { params: { days } }
   );
   return data;
 }
