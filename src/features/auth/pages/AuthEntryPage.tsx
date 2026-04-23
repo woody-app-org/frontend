@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { LockKeyhole, LogIn, UserPlus } from "lucide-react";
 import { AuthLayout } from "../components/AuthLayout";
 import { AuthCard } from "../components/AuthCard";
 import { AuthPromoPanel } from "../components/AuthPromoPanel";
@@ -6,14 +7,16 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const styles = {
-  panelTitle: "text-xl md:text-2xl font-bold text-[var(--auth-text-on-beige)] md:text-[var(--auth-text-on-maroon)] text-center md:text-left",
+  panelTitle: "text-3xl font-bold text-[var(--auth-text-on-maroon)] text-center md:text-left tracking-tight",
   panelLead:
-    "text-sm text-[var(--auth-text-on-beige)]/90 md:text-[var(--auth-text-on-maroon)]/90 text-center md:text-left mt-2 max-w-sm mx-auto md:mx-0",
+    "text-xl text-[var(--auth-text-on-maroon)]/80 text-center md:text-left mt-3 max-w-md mx-auto md:mx-0 leading-relaxed",
   ctaStack: "mt-8 flex flex-col gap-3 w-full max-w-sm mx-auto md:mx-0",
   primaryCta:
-    "w-full rounded-xl h-12 bg-[var(--auth-panel-maroon)] md:bg-[var(--auth-button)] text-white hover:opacity-95 active:scale-[0.99] md:hover:bg-[var(--auth-button-hover)] focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 transition-[transform,opacity,colors] duration-200 font-medium text-base shadow-sm",
+    "w-full rounded-xl h-12 bg-[var(--woody-ink)] text-[var(--auth-button)] hover:opacity-95 active:scale-[0.99] hover:bg-black focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 transition-[transform,opacity,colors,box-shadow] duration-200 font-semibold text-base shadow-[0_0_0_1px_rgba(139,195,74,0.3),0_0_18px_rgba(139,195,74,0.35)]",
   secondaryCta:
-    "w-full rounded-xl h-12 border-2 border-[var(--auth-panel-maroon)] md:border-white/55 bg-transparent text-[var(--auth-panel-maroon)] md:text-white hover:bg-[var(--auth-panel-maroon)]/8 md:hover:bg-white/10 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 transition-[transform,colors,background-color] duration-200 font-medium text-base",
+    "w-full rounded-xl h-12 border-2 border-black/40 bg-transparent text-[var(--auth-text-on-maroon)] hover:bg-black/[0.03] active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 transition-[transform,colors,background-color] duration-200 font-semibold text-base",
+  legal:
+    "mt-6 flex items-start gap-2 text-xs text-[var(--auth-text-on-maroon)]/65 leading-relaxed max-w-sm mx-auto md:mx-0",
 } as const;
 
 /**
@@ -38,12 +41,20 @@ export function AuthEntryPage() {
             </p>
             <div className={styles.ctaStack}>
               <Button asChild className={cn(styles.primaryCta)}>
-                <Link to="/auth/onboarding/1">Criar conta</Link>
+                <Link to="/auth/onboarding/1" className="inline-flex items-center justify-center gap-2">
+                  <UserPlus className="size-4" aria-hidden />
+                  Criar conta
+                </Link>
               </Button>
               <Link to="/auth/login" className={cn(styles.secondaryCta, "inline-flex items-center justify-center")}>
+                <LogIn className="mr-2 size-4" aria-hidden />
                 Entrar
               </Link>
             </div>
+            <p className={styles.legal}>
+              <LockKeyhole className="mt-0.5 size-3.5 shrink-0 text-[var(--auth-button-hover)]" aria-hidden />
+              Ao continuar, você concorda com os nossos Termos de Uso e Política de Privacidade.
+            </p>
           </div>
         }
       />

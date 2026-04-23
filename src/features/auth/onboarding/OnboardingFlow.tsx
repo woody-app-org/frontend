@@ -40,8 +40,8 @@ export function OnboardingFlow() {
             type="button"
             onClick={goBack}
             className={cn(
-              "inline-flex items-center gap-2 min-h-10 text-sm font-medium text-[var(--auth-text-on-beige)] md:text-white/90",
-              "rounded-xl px-2.5 py-2 -ml-1 hover:bg-black/5 md:hover:bg-white/10 active:scale-[0.99] transition-[colors,transform] duration-200 ease-out",
+              "inline-flex items-center gap-2 min-h-10 text-sm font-medium text-[var(--auth-text-on-beige)]",
+              "rounded-xl px-2.5 py-2 -ml-1 hover:bg-black/5 active:scale-[0.99] transition-[colors,transform] duration-200 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50"
             )}
           >
@@ -55,12 +55,18 @@ export function OnboardingFlow() {
         <div
           key={pathname}
           className={cn(
-            "rounded-2xl md:rounded-3xl bg-[var(--auth-panel-maroon)] text-[var(--auth-text-on-maroon)]",
-            "p-4 sm:p-6 md:p-8 shadow-none md:shadow-lg md:ring-1 md:ring-black/5 overflow-x-hidden",
+            "relative rounded-2xl md:rounded-3xl bg-white text-[var(--auth-text-on-maroon)] border border-black/10",
+            "p-4 sm:p-6 md:p-8 shadow-none md:shadow-xl md:shadow-black/10 overflow-x-hidden",
             "animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out"
           )}
         >
+          <div
+            className="pointer-events-none absolute left-4 sm:left-6 md:left-7 top-5 bottom-5 hidden sm:block w-1 rounded-full bg-[var(--auth-button)]/95"
+            aria-hidden
+          />
+          <div className="sm:pl-5 md:pl-6">
           <Outlet />
+          </div>
         </div>
       </div>
     </AuthLayout>

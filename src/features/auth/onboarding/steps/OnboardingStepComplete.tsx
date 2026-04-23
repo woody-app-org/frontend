@@ -54,7 +54,7 @@ export function OnboardingStepComplete() {
 
   return (
     <div className="text-center sm:text-left">
-      <div className="mx-auto mb-4 flex size-[3.75rem] items-center justify-center rounded-3xl bg-gradient-to-br from-[var(--auth-button)]/35 to-[var(--auth-panel-beige)]/12 text-[var(--auth-text-on-maroon)] ring-1 ring-white/10 sm:mx-0 motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:duration-500">
+      <div className="mx-auto mb-4 flex size-[3.75rem] items-center justify-center rounded-3xl bg-gradient-to-br from-[var(--auth-button)]/35 to-[var(--auth-panel-beige)] text-[var(--auth-text-on-maroon)] ring-1 ring-black/10 sm:mx-0 motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:duration-500">
         <Heart className="size-8 fill-[var(--auth-button)]/25" aria-hidden />
       </div>
 
@@ -66,7 +66,7 @@ export function OnboardingStepComplete() {
       />
 
       <div className="my-5 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--auth-panel-beige)]/12 px-3 py-1.5 text-xs font-medium text-[var(--auth-text-on-maroon)]/90 ring-1 ring-white/10">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--auth-panel-beige)] px-3 py-1.5 text-xs font-medium text-[var(--auth-text-on-maroon)]/90 ring-1 ring-black/10">
           <Sparkles className="size-3.5" aria-hidden />
           Conta quase pronta
         </span>
@@ -80,14 +80,14 @@ export function OnboardingStepComplete() {
 
       {errorMessage && (
         <p
-          className="mb-4 text-sm text-red-200 bg-red-900/35 rounded-xl px-3 py-2.5 border border-red-400/20 text-left"
+          className="mb-4 text-sm text-red-700 bg-red-50 rounded-xl px-3 py-2.5 border border-red-200 text-left"
           role="alert"
         >
           {errorMessage}
         </p>
       )}
 
-      <div className="rounded-2xl border border-white/10 bg-[var(--auth-panel-beige)]/[0.06] px-4 py-5 sm:px-6 text-sm text-[var(--auth-text-on-maroon)]/84 leading-relaxed shadow-sm">
+      <div className="rounded-2xl border border-black/10 bg-[var(--auth-panel-beige)] px-4 py-5 sm:px-6 text-sm text-[var(--auth-text-on-maroon)]/84 leading-relaxed shadow-sm">
         Ao entrar, você verá o feed e poderá ajustar perfil, notificações e privacidade. As comunidades que
         escolheu são associadas à sua conta neste momento (entradas diretas nas públicas e pedidos nas privadas).
       </div>
