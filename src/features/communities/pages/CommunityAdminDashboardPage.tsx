@@ -158,7 +158,7 @@ export function CommunityAdminDashboardPage() {
 
   return (
     <FeedLayout>
-      <div className={cn("mx-auto flex w-full max-w-5xl flex-col gap-8 pb-20 md:pb-12", woodyLayout.pagePadWide)}>
+      <div className={cn("mx-auto flex w-full max-w-6xl flex-col gap-8 pb-20 md:pb-12", woodyLayout.pagePadWide)}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Link

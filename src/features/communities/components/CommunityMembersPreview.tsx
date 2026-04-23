@@ -144,7 +144,7 @@ export function CommunityMembersPreview({
       ) : null}
 
       <Dialog open={allMembersOpen} onOpenChange={setAllMembersOpen}>
-        <DialogContent className={cn(woodyDialogScroll, "max-w-[560px]")}>
+        <DialogContent className={cn(woodyDialogScroll, "max-w-[min(40rem,calc(100vw-1.5rem))]")}>
           <DialogHeader className="pr-8 text-left">
             <DialogTitle>Membros da comunidade</DialogTitle>
             <DialogDescription>

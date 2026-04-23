@@ -60,7 +60,7 @@ export function PlanosPage() {
     <FeedLayout>
       <div
         className={cn(
-          "mx-auto w-full max-w-5xl pb-24 md:pb-10",
+          "mx-auto w-full max-w-6xl pb-24 md:pb-10",
           woodyLayout.pagePadWide,
           woodyLayout.stackGapTight
         )}

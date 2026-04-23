@@ -16,7 +16,7 @@ export function CreatePostPage() {
     <FeedLayout>
       <div
         className={cn(
-          "flex flex-col flex-1 max-w-3xl mx-auto w-full",
+          "flex flex-col flex-1 max-w-4xl mx-auto w-full",
           woodyLayout.pagePad,
           woodyLayout.stackGap
         )}

@@ -20,6 +20,11 @@ export interface FeedLayoutProps {
    * para não sobrepor conteúdo.
    */
   showRightPanel?: boolean;
+  /**
+   * Desktop: usa toda a largura da área de scroll (até `--layout-max-width`), em vez de `--feed-main-max`.
+   * Útil para ecrãs densos como mensagens, com `showRightPanel={false}`.
+   */
+  wideMain?: boolean;
 }
 
 /** Desktop: área principal + painel direito (largura máx. alinhada ao protótipo). */
@@ -85,12 +90,14 @@ function FeedLayoutShell({
   children,
   className,
   showRightPanel,
+  wideMain = false,
   isSearchOpen,
   setIsSearchOpen,
 }: FeedLayoutProps & {
   isSearchOpen: boolean;
   setIsSearchOpen: (v: boolean) => void;
 }) {
+  const stretchMainGrid = wideMain && !showRightPanel;
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const immersiveMobileDmChat = isMobileDirectMessageThread(location.pathname);
@@ -248,12 +255,17 @@ function FeedLayoutShell({
                 showRightPanel
                   ? "md:grid-cols-[minmax(0,1fr)_minmax(var(--feed-right-min),var(--feed-right-max))]"
                   : "md:grid-cols-1",
+                /* Miolo largo: ocupar altura útil da coluna de scroll + esticar <main> (items-start cortava altura ao conteúdo). */
+                stretchMainGrid && "md:flex-1 md:min-h-0 md:items-stretch",
                 immersiveMobileDmChat && "max-md:min-h-0 max-md:flex-1"
               )}
             >
               <main
                 className={cn(
-                  "min-w-0 flex w-full flex-col pb-16 pt-4 md:mx-auto md:max-w-[var(--feed-main-max)] md:justify-self-center md:pb-10 md:pt-6",
+                  "min-w-0 flex w-full flex-col pb-16 pt-4 md:pb-10 md:pt-6",
+                  wideMain && !showRightPanel
+                    ? "md:mx-0 md:h-full md:min-h-0 md:max-w-none md:justify-self-stretch"
+                    : "md:mx-auto md:max-w-[var(--feed-main-max)] md:justify-self-center",
                   immersiveMobileDmChat && "max-md:flex-1 max-md:min-h-0 max-md:pb-0 max-md:pt-0"
                 )}
                 aria-label="Feed principal"
@@ -302,13 +314,19 @@ function FeedLayoutSidebarBridge({
   );
 }
 
-export function FeedLayout({ children, className, showRightPanel = true }: FeedLayoutProps) {
+export function FeedLayout({
+  children,
+  className,
+  showRightPanel = true,
+  wideMain = false,
+}: FeedLayoutProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <FeedLayoutShell
       className={className}
       showRightPanel={showRightPanel}
+      wideMain={wideMain}
       isSearchOpen={isSearchOpen}
       setIsSearchOpen={setIsSearchOpen}
     >

@@ -87,7 +87,7 @@ export function CreateCommunityPage() {
 
   return (
     <FeedLayout>
-      <div className={cn("mx-auto w-full max-w-2xl pb-20 md:pb-8", woodyLayout.pagePadWide, woodyLayout.stackGapTight)}>
+      <div className={cn("mx-auto w-full max-w-3xl pb-20 md:pb-8", woodyLayout.pagePadWide, woodyLayout.stackGapTight)}>
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/communities"

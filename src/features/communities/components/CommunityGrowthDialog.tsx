@@ -79,7 +79,7 @@ export function CommunityGrowthDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "max-h-[90vh] overflow-y-auto border-[var(--woody-accent)]/18 bg-[var(--woody-card)] sm:max-w-md"
+          "max-h-[90vh] overflow-y-auto border-[var(--woody-accent)]/18 bg-[var(--woody-card)] sm:max-w-lg"
         )}
       >
         <DialogHeader>

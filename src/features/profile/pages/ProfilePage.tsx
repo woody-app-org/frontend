@@ -110,7 +110,7 @@ export function ProfilePage() {
     <FeedLayout>
       <div
         className={cn(
-          "flex flex-col flex-1 w-full max-w-3xl mx-auto pb-16 md:pb-6",
+          "flex flex-col flex-1 w-full max-w-4xl mx-auto pb-16 md:pb-6",
           woodyLayout.pagePad
         )}
       >

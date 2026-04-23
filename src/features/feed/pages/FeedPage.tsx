@@ -186,10 +186,10 @@ function FeedPageContent() {
               aria-hidden
             />
             <div className="min-w-0 flex-1">
-              <h1 className="text-balance text-[1.75rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-[var(--woody-text)] sm:text-[2rem] md:text-[2.25rem] md:leading-[1.06] lg:max-w-[22rem] lg:text-[2.375rem] xl:max-w-[24rem]">
+              <h1 className="text-balance text-[1.75rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-[var(--woody-text)] sm:text-[2rem] md:text-[2.25rem] md:leading-[1.06] lg:max-w-[30rem] lg:text-[2.375rem] xl:max-w-[34rem]">
                 Faça valer a pena: conecte-se!
               </h1>
-              <p className="mt-4 max-w-[26rem] text-[0.9375rem] font-normal leading-relaxed text-[var(--woody-muted)] md:mt-5 md:text-base md:leading-relaxed">
+              <p className="mt-4 max-w-[32rem] text-[0.9375rem] font-normal leading-relaxed text-[var(--woody-muted)] md:mt-5 md:text-base md:leading-relaxed">
                 Encontre pessoas, ideias e comunidades com mais afinidade com o teu momento.
               </p>
             </div>

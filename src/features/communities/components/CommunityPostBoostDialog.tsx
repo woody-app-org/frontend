@@ -82,7 +82,7 @@ export function CommunityPostBoostDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md border-[var(--woody-accent)]/18 bg-[var(--woody-card)]">
+      <DialogContent className="max-w-lg border-[var(--woody-accent)]/18 bg-[var(--woody-card)]">
         <DialogHeader>
           <DialogTitle className="text-[var(--woody-text)]">Impulsionar publicação</DialogTitle>
           <DialogDescription className="text-left text-[var(--woody-muted)]">

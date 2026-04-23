@@ -429,7 +429,7 @@ function CommunityDetailPageContent() {
     return (
       <div
         className={cn(
-          "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
+          "mx-auto flex max-w-7xl justify-center py-10 md:py-14 pb-20 md:pb-10",
           woodyLayout.pagePadWide
         )}
       >
@@ -442,7 +442,7 @@ function CommunityDetailPageContent() {
     return (
       <div
         className={cn(
-          "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
+          "mx-auto flex max-w-7xl justify-center py-16 text-sm text-[var(--woody-muted)]",
           woodyLayout.pagePadWide
         )}
       >
@@ -455,7 +455,7 @@ function CommunityDetailPageContent() {
     return (
       <div
         className={cn(
-          "mx-auto flex max-w-6xl justify-center py-16 text-sm text-[var(--woody-muted)]",
+          "mx-auto flex max-w-7xl justify-center py-16 text-sm text-[var(--woody-muted)]",
           woodyLayout.pagePadWide
         )}
       >
@@ -468,7 +468,7 @@ function CommunityDetailPageContent() {
     return (
       <div
         className={cn(
-          "mx-auto flex max-w-6xl justify-center py-10 md:py-14 pb-20 md:pb-10",
+          "mx-auto flex max-w-7xl justify-center py-10 md:py-14 pb-20 md:pb-10",
           woodyLayout.pagePadWide
         )}
       >

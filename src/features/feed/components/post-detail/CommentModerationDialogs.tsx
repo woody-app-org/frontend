@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 
 const shellClass = cn(
-  "border-[var(--woody-accent)]/15 sm:max-w-md",
+  "border-[var(--woody-accent)]/15 sm:max-w-lg",
   "gap-0 p-0 overflow-hidden"
 );
 
