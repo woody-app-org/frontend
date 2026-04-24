@@ -50,15 +50,16 @@
 :root {
     --radius: 0.625rem;
     /* Layout: container principal (ajuste aqui para mudar respiro/largura) */
-    --layout-max-width: 1360px;
+    --layout-max-width: 1520px;
     --layout-gutter: 1rem;
     --layout-gap-columns: 0;
     /* Feed desktop — 3 colunas (~22–24% laterais, miolo editorial) */
     --feed-sidebar-width: 296px;
     --feed-right-min: 260px;
-    --feed-right-max: 288px;
+    --feed-right-max: 300px;
     --feed-column-gap: 2rem;
-    --feed-main-max: 688px;
+    /* Miolo do feed (posts, hubs); evitar linhas demasiado longas em ecrãs enormes */
+    --feed-main-max: min(52rem, 100%);
     /* Woody — tema referência: preto + branco + verde #8bc34a */
     --woody-sand: #f4f4f5;
     --woody-ink: #0a0a0a;

@@ -27,7 +27,7 @@ export function LogoutConfirmationDialog({
     <Dialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
       <DialogContent
         className={cn(
-          "border-[var(--woody-accent)]/15 sm:max-w-md",
+          "border-[var(--woody-accent)]/15 sm:max-w-lg",
           "gap-0 p-0 overflow-hidden"
         )}
       >

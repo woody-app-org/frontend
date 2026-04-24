@@ -106,7 +106,7 @@ export function ReportContentModal({ open, onOpenChange, target, viewerId }: Rep
       <DialogContent
         className={cn(
           woodyDialogScroll,
-          "max-h-[min(92vh,720px)] flex flex-col gap-0 border-[var(--woody-accent)]/15 p-0 sm:max-w-lg"
+          "max-h-[min(92vh,720px)] flex flex-col gap-0 border-[var(--woody-accent)]/15 p-0 sm:max-w-2xl"
         )}
       >
         {step === "success" ? (

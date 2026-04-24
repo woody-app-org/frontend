@@ -62,7 +62,7 @@ export function EditPostDialog({ open, onOpenChange, post, viewerId, onSaved }: 
       <DialogContent
         className={cn(
           woodyDialogScroll,
-          "max-h-[min(92vh,760px)] flex flex-col gap-0 border-[var(--woody-accent)]/15 p-0 sm:max-w-lg"
+          "max-h-[min(92vh,760px)] flex flex-col gap-0 border-[var(--woody-accent)]/15 p-0 sm:max-w-2xl"
         )}
       >
         <DialogHeader className="shrink-0 border-b border-[var(--woody-accent)]/10 px-4 py-4 sm:px-5">

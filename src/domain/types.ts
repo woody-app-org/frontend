@@ -5,6 +5,40 @@ export type CommunityCategory = "bemestar" | "carreira" | "cultura" | "seguranca
 /** Quem pode ver entradas públicas vs aprovação para participar. */
 export type CommunityVisibility = "public" | "private";
 
+/** Plano de comunidade no catálogo / efetivo após regras de período (API `billing.*`). */
+export type CommunityBillingPlan = "free" | "premium";
+
+/**
+ * Estado de cobrança **desta comunidade** (Stripe / `billing.*` na API).
+ * Independente do papel da utilizadora na membership e do plano Woody Pro pessoal.
+ */
+export interface CommunityBillingState {
+  billingPlan: CommunityBillingPlan;
+  effectivePlan: CommunityBillingPlan;
+  status: string;
+  planCode?: string | null;
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd: boolean;
+  providerCustomerId?: string | null;
+  providerSubscriptionId?: string | null;
+}
+
+/**
+ * Capacidades premium **ao nível do espaço** para a utilizadora actual (API `members/me` ou payload da comunidade).
+ * `isStaffForPremiumTools` = papel; `communityPremiumActive` = plano do espaço; `can*` = ambos.
+ * Não reflecte assinatura Woody Pro da utilizadora.
+ */
+export interface CommunityPremiumCapabilities {
+  /** Owner ou admin com filiação activa nesta comunidade. */
+  isStaffForPremiumTools: boolean;
+  /** Benefícios premium do espaço activos (subscrição da comunidade). */
+  communityPremiumActive: boolean;
+  /** Staff + espaço premium (painel / métricas). */
+  canAccessCommunityAnalytics: boolean;
+  /** Staff + espaço premium (impulsionamento). */
+  canBoostCommunityPosts: boolean;
+}
+
 /** Papéis dentro da comunidade (criadora = owner). */
 export type CommunityMemberRole = "owner" | "admin" | "member";
 
@@ -45,6 +79,8 @@ export interface Community {
   visibility: CommunityVisibility;
   /** Valor denormalizado para UI; em produção pode vir calculado da API. */
   memberCount: number;
+  /** Plano/assinatura da comunidade quando a API expande `billing`. */
+  billing?: CommunityBillingState;
 }
 
 export interface Membership {
@@ -80,6 +116,8 @@ export interface PostCommunityPreview {
   name: string;
   avatarUrl: string | null;
   category: CommunityCategory;
+  /** Plano efetivo da comunidade (`free` | `premium`) para gates no feed. */
+  communityPlan?: CommunityBillingPlan;
 }
 
 /** Onde o post foi publicado (alinhado à API: `publicationContext`). */
@@ -160,4 +198,8 @@ export interface Post {
   community?: PostCommunityPreview;
   /** Destaque no perfil da autora (ISO da API). */
   pinnedOnProfileAt?: string | null;
+  /** Impulsionamento premium da comunidade (API `communityBoostActive`). */
+  communityBoostActive?: boolean;
+  /** Fim do impulsionamento em ISO UTC quando activo. */
+  communityBoostEndsAt?: string | null;
 }

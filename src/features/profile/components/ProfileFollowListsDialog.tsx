@@ -65,7 +65,7 @@ export function ProfileFollowListsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
-          "flex max-h-[min(92dvh,820px)] w-[calc(100vw-1rem)] max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-md"
+          "flex max-h-[min(92dvh,820px)] w-[calc(100vw-1rem)] max-w-xl flex-col gap-0 overflow-hidden p-0 sm:max-w-xl"
         )}
       >
         <DialogHeader className="shrink-0 space-y-3 border-b border-[var(--woody-accent)]/12 p-4 pb-3 sm:p-5 sm:pb-4">

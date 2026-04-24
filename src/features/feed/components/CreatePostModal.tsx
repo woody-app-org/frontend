@@ -19,7 +19,7 @@ export function CreatePostModal() {
       <DialogContent
         className={cn(
           "flex min-h-0 max-h-[min(90dvh,880px)] flex-col gap-0 overflow-hidden p-0",
-          "w-[calc(100vw-1rem)] max-w-[min(100vw-1rem,640px)] sm:max-w-[640px]"
+          "w-[calc(100vw-1rem)] max-w-[min(100vw-1rem,52rem)] sm:max-w-[52rem]"
         )}
         aria-label="Nova publicação"
       >

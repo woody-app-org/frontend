@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Clock, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -81,6 +81,14 @@ export interface PostCardProps {
    * @default "feed"
    */
   postSurface?: "feed" | "community" | "profile";
+  /** Ferramentas de staff na página da comunidade (impulsionar — gating premium no servidor). */
+  communityBoost?: {
+    communityId: string;
+    canBoost: boolean;
+    staffNeedsPremium: boolean;
+    isBoosting?: boolean;
+    onBoost?: () => void | Promise<void>;
+  };
 }
 
 export function PostCard({
@@ -95,6 +103,7 @@ export function PostCard({
   className,
   postListingContext = "feed",
   postSurface = "feed",
+  communityBoost,
 }: PostCardProps) {
   const navigate = useNavigate();
   const viewerId = useViewerId();
@@ -223,6 +232,15 @@ export function PostCard({
       <CardContent className={styles.contentBlock}>
         <div className={styles.titleRow}>
           {post.title && <h3 className={styles.title}>{post.title}</h3>}
+          {post.communityBoostActive && post.publicationContext === "community" ? (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
+              title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
+            >
+              <TrendingUp className="size-3" aria-hidden />
+              Impulsionado
+            </span>
+          ) : null}
           {post.pinnedOnProfileAt && postSurface === "profile" ? (
             <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
               Em destaque
@@ -301,6 +319,44 @@ export function PostCard({
             <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
             {formatCount(post.commentsCount)}
           </button>
+          {communityBoost ? (
+            <button
+              type="button"
+              data-post-ignore-open="true"
+              disabled={communityBoost.isBoosting || !communityBoost.canBoost}
+              title={
+                communityBoost.staffNeedsPremium
+                  ? "Disponível com o plano premium desta comunidade."
+                  : communityBoost.canBoost
+                    ? "Impulsionar publicação nesta comunidade."
+                    : undefined
+              }
+              className={cn(
+                styles.footerItem,
+                communityBoost.staffNeedsPremium && "text-[var(--woody-muted)]",
+                communityBoost.canBoost && "text-[var(--woody-nav)]"
+              )}
+              aria-label={
+                communityBoost.staffNeedsPremium
+                  ? "Impulsionar — requer plano premium da comunidade"
+                  : "Impulsionar publicação na comunidade"
+              }
+              onClick={(event) => {
+                event.stopPropagation();
+                if (communityBoost.canBoost && communityBoost.onBoost) void communityBoost.onBoost();
+              }}
+            >
+              {communityBoost.isBoosting ? (
+                <Loader2 className="size-[1em] animate-spin" strokeWidth={2} />
+              ) : communityBoost.staffNeedsPremium ? (
+                <Lock className="size-[1em] stroke-current" strokeWidth={1.75} />
+              ) : (
+                <TrendingUp className="size-[1em] stroke-current" strokeWidth={1.75} />
+              )}
+              <span className="hidden min-[380px]:inline">Impulsionar</span>
+              <span className="min-[380px]:hidden">Boost</span>
+            </button>
+          ) : null}
         </div>
       </CardContent>
     </Card>

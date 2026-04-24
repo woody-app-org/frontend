@@ -2,6 +2,9 @@ export type {
   Comment,
   CommentContentModerationMask,
   Community,
+  CommunityBillingPlan,
+  CommunityBillingState,
+  CommunityPremiumCapabilities,
   CommunityCategory,
   CommunityMemberListItem,
   CommunityMemberRole,
@@ -45,6 +48,13 @@ export {
   isCommentContentMaskedForViewer,
   isPostRemoved,
 } from "./lib/contentModerationDisplay";
+export {
+  canAccessCommunityAnalytics,
+  canAccessCommunityPremiumFeatures,
+  canBoostCommunityPost,
+  canBoostCommunityPostFromPreview,
+  normalizeCommunityBillingPlan,
+} from "./communityBillingGates";
 export {
   compareActiveMembershipsByHierarchy,
   communityMemberRoleRank,

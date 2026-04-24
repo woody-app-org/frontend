@@ -48,7 +48,7 @@ export function ConversationChatPanel({
   const composerBlocked = loadingMessages || Boolean(messagesLoadError);
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-[var(--woody-bg)]">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col bg-[var(--woody-bg)]">
       <header
         className={cn(
           "flex shrink-0 items-center gap-2 border-b border-[var(--woody-divider)] px-2 py-3 md:px-4",

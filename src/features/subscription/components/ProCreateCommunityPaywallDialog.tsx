@@ -25,7 +25,7 @@ export function ProCreateCommunityPaywallDialog({ open, onOpenChange }: ProCreat
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md border-[var(--woody-accent)]/20">
+      <DialogContent className="max-w-lg border-[var(--woody-accent)]/20">
         <DialogHeader className="flex-col items-start gap-1">
           <DialogTitle className="flex flex-wrap items-center gap-2 text-xl text-left">
             <Sparkles className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />

@@ -43,7 +43,7 @@ function DialogContent({ className, ...props }: React.ComponentProps<typeof Dial
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-1rem)] max-w-[720px] -translate-x-1/2 -translate-y-1/2",
+          "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-1rem)] max-w-[min(56rem,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2",
           "rounded-2xl border border-black/10 bg-[var(--woody-card)] text-[var(--woody-text)] shadow-[0_30px_70px_rgba(0,0,0,0.35)]",
           "p-4 sm:p-6",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
