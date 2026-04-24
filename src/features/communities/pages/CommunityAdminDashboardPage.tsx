@@ -32,6 +32,23 @@ function formatDelta(current: number, previous: number): string {
   return `${sign}${pct}% vs período anterior`;
 }
 
+function formatChartDayLabel(dayUtc: string): string {
+  const dayPart = dayUtc.length >= 10 ? dayUtc.slice(0, 10) : dayUtc;
+  const [ys, ms, ds] = dayPart.split("-");
+  const y = Number(ys, 10);
+  const m = Number(ms, 10);
+  const d = Number(ds, 10);
+  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return dayUtc;
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return new Intl.DateTimeFormat("pt-PT", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 export function CommunityAdminDashboardPage() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
   const slug = communitySlug ?? "";
@@ -115,9 +132,12 @@ export function CommunityAdminDashboardPage() {
   const chartSeries = useMemo(() => {
     if (!dashboard?.dailyActivity?.length) return [];
     const rows = dashboard.dailyActivity;
+    /* Pico para escala: posts+comentários (eixo do gráfico) + visitas/membros só para não ficar tudo “chato” no mesmo patamar. */
     const maxVal = Math.max(
       1,
-      ...rows.map((d) => Math.max(d.posts + d.comments, d.pageViews / 8, d.newMembers * 4, d.memberLeaves * 4))
+      ...rows.map((d) =>
+        Math.max(d.posts + d.comments, d.pageViews / 12, d.newMembers * 3, d.memberLeaves * 3)
+      )
     );
     return rows.map((d) => ({
       ...d,
@@ -274,16 +294,52 @@ export function CommunityAdminDashboardPage() {
             <section className="rounded-2xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)] p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-[var(--woody-text)]">Atividade diária (posts + comentários)</h2>
               <p className="mt-1 text-xs text-[var(--woody-muted)]">Barras relativas ao pico do período seleccionado.</p>
-              <div className="mt-4 flex h-36 touch-pan-x items-end gap-px overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sm:gap-0.5">
+              {/* items-stretch: cada coluna herda h-36; senão height % nas barras resolve contra altura "auto" e some. */}
+              <div className="mt-4 flex h-36 touch-pan-x items-stretch gap-px overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sm:gap-0.5">
                 {chartSeries.map((d) => (
                   <div
                     key={d.dayUtc}
-                    className="group flex min-w-[5px] flex-1 flex-col items-center justify-end"
-                    title={`${d.dayUtc}: ${d.posts} posts, ${d.comments} comentários`}
+                    className="group relative flex min-h-0 min-w-[5px] flex-1 flex-col"
                   >
                     <div
-                      className="w-full max-w-[14px] rounded-t-sm bg-[var(--woody-nav)]/75 transition group-hover:bg-[var(--woody-nav)]"
-                      style={{ height: `${Math.max(4, d.activityHeight)}%` }}
+                      className={cn(
+                        "pointer-events-none absolute left-1/2 top-0 z-20 w-max max-w-[min(12.5rem,calc(100vw-2rem))] -translate-x-1/2",
+                        "rounded-lg border border-[var(--woody-accent)]/18 bg-[var(--woody-bg)] px-2.5 py-2",
+                        "shadow-md shadow-black/[0.06] ring-1 ring-black/[0.03]",
+                        "opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100"
+                      )}
+                      role="tooltip"
+                    >
+                      <p className="whitespace-nowrap text-[0.6875rem] font-semibold capitalize tracking-tight text-[var(--woody-text)]">
+                        {formatChartDayLabel(d.dayUtc)}
+                      </p>
+                      <dl className="mt-1.5 space-y-1 text-[0.625rem] leading-tight text-[var(--woody-muted)]">
+                        <div className="flex justify-between gap-4">
+                          <dt>Posts</dt>
+                          <dd className="tabular-nums font-medium text-[var(--woody-text)]">{formatInt(d.posts)}</dd>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <dt>Comentários</dt>
+                          <dd className="tabular-nums font-medium text-[var(--woody-text)]">{formatInt(d.comments)}</dd>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <dt>Visitas</dt>
+                          <dd className="tabular-nums font-medium text-[var(--woody-text)]">{formatInt(d.pageViews)}</dd>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <dt>Novos membros</dt>
+                          <dd className="tabular-nums font-medium text-[var(--woody-text)]">{formatInt(d.newMembers)}</dd>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <dt>Saídas</dt>
+                          <dd className="tabular-nums font-medium text-[var(--woody-text)]">{formatInt(d.memberLeaves)}</dd>
+                        </div>
+                      </dl>
+                    </div>
+                    <div className="min-h-0 flex-1" aria-hidden />
+                    <div
+                      className="mx-auto w-full max-w-[14px] shrink-0 rounded-t-sm bg-[var(--woody-nav)]/75 transition group-hover:bg-[var(--woody-nav)]"
+                      style={{ height: `${Math.max(6, d.activityHeight)}%` }}
                     />
                   </div>
                 ))}
