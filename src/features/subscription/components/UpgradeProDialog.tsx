@@ -35,7 +35,7 @@ export function UpgradeProDialog({ children }: UpgradeProDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-md border-[var(--woody-accent)]/20">
+      <DialogContent className="max-w-lg border-[var(--woody-accent)]/20">
         <DialogHeader className="flex-col items-start gap-1">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="size-5 text-[var(--woody-nav)]" aria-hidden />

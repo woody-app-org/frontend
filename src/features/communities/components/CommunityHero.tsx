@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronLeft, Globe, Lock, Settings2, UserCog, Users } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronLeft, Globe, LayoutDashboard, Lock, Settings2, UserCog, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,6 +29,11 @@ export interface CommunityHeroProps {
   onManageCommunity?: () => void;
   canManageMembers?: boolean;
   onManageMembers?: () => void;
+  /** Owner/admin: resumo, upgrade e ajuda (gating no diálogo). */
+  showGrowthEntry?: boolean;
+  onOpenGrowth?: () => void;
+  /** Staff + espaço premium: painel completo de analytics. */
+  adminDashboardHref?: string;
   className?: string;
 }
 
@@ -150,6 +155,9 @@ export function CommunityHero({
   onManageCommunity,
   canManageMembers = false,
   onManageMembers,
+  showGrowthEntry = false,
+  onOpenGrowth,
+  adminDashboardHref,
   className,
 }: CommunityHeroProps) {
   void _viewerId;
@@ -174,7 +182,11 @@ export function CommunityHero({
   const ctaClass =
     cta.variant === "leave" ? styles.ctaLeave : cta.variant === "muted" ? styles.ctaMuted : styles.ctaJoin;
 
-  const showAdminMenu = (canManage && onManageCommunity) || (canManageMembers && onManageMembers);
+  const showAdminMenu =
+    (canManage && onManageCommunity) ||
+    (canManageMembers && onManageMembers) ||
+    (showGrowthEntry && onOpenGrowth) ||
+    Boolean(adminDashboardHref);
   const description = community.description.trim();
 
   return (
@@ -289,6 +301,26 @@ export function CommunityHero({
                     >
                       <UserCog className="size-4 opacity-80" aria-hidden />
                       Moderar membros
+                    </DropdownMenuItem>
+                  ) : null}
+                  {showGrowthEntry && onOpenGrowth ? (
+                    <DropdownMenuItem
+                      onClick={() => onOpenGrowth()}
+                      className="cursor-pointer text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+                    >
+                      <BarChart3 className="size-4 opacity-80" aria-hidden />
+                      Resumo e upgrade do espaço
+                    </DropdownMenuItem>
+                  ) : null}
+                  {adminDashboardHref ? (
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to={adminDashboardHref}
+                        className="cursor-pointer text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
+                      >
+                        <LayoutDashboard className="size-4 opacity-80" aria-hidden />
+                        Painel completo de analytics
+                      </Link>
                     </DropdownMenuItem>
                   ) : null}
                 </DropdownMenuContent>

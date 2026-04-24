@@ -14,7 +14,12 @@ import { OnboardingStepComplete } from "@/features/auth/onboarding/steps/Onboard
 import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { CreatePostPage, FeedPage, PostDetailPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
-import { CommunitiesPage, CommunityDetailPage, CreateCommunityPage } from "@/features/communities";
+import {
+  CommunitiesPage,
+  CommunityDetailPage,
+  CreateCommunityPage,
+} from "@/features/communities";
+import { CommunityAdminDashboardPage } from "@/features/communities/pages/CommunityAdminDashboardPage";
 import { AssinaturaCanceladaPage, AssinaturaSucessoPage, PlanosPage } from "@/features/subscription/pages";
 import { ConversationsPage } from "@/features/messages";
 import { LandingPage } from "@/features/landing";
@@ -111,6 +116,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <CommunitiesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "communities/:communitySlug/admin",
+        element: (
+          <ProtectedRoute>
+            <CommunityAdminDashboardPage />
           </ProtectedRoute>
         ),
       },

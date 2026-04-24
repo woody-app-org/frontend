@@ -46,7 +46,7 @@ export const woodySection = {
   headerRow: "mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-end sm:justify-between sm:gap-4",
   eyebrow: "mb-1 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[var(--woody-nav)]/85",
   title: "text-lg font-bold tracking-tight text-[var(--woody-text)] sm:text-xl",
-  subtitle: "mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--woody-muted)]",
+  subtitle: "mt-1.5 max-w-3xl text-sm leading-relaxed text-[var(--woody-muted)]",
 } as const;
 
 export const woodyLayout = {

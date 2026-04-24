@@ -226,17 +226,17 @@ export function ConversationsPage() {
   const showMobileChat = Boolean(routeConversationId);
 
   return (
-    <FeedLayout showRightPanel={false}>
+    <FeedLayout showRightPanel={false} wideMain>
       <div
         className={cn(
           woodyLayout.pagePad,
-          "mx-auto flex w-full max-w-6xl flex-col gap-2 max-md:pt-2 md:min-h-0 md:gap-6 md:pb-8",
+          "mx-auto flex w-full max-w-none flex-col gap-2 max-md:pt-2 md:min-h-0 md:h-full md:flex-1 md:gap-6 md:pb-8",
           /* Lista mobile: espaço para a tab bar. Chat mobile: ecrã cheio (tab bar oculta no layout). */
           showMobileChat
             ? "max-md:gap-0 max-md:pb-[max(0.35rem,env(safe-area-inset-bottom))] max-md:pt-0 max-md:min-h-[100dvh] max-md:max-h-[100dvh]"
             : "pb-28 max-md:pb-28",
-          /* Altura fixa no desktop: o scroll fica dentro do chat/lista, não na página inteira. */
-          "md:h-[calc(100dvh-7rem)] md:max-h-[calc(100dvh-7rem)]",
+          /* Desktop: altura vem do <main> (FeedLayout wideMain + stretch); scroll só dentro do cartão. */
+          "md:max-h-full",
           /* Mobile com chat: ocupa o viewport; desktop mantém o fluxo em coluna com altura definida. */
           showMobileChat && "min-h-0 flex-1 md:min-h-0"
         )}
@@ -247,14 +247,7 @@ export function ConversationsPage() {
             showMobileChat && !sendError && !listLoadError && "max-md:hidden"
           )}
         >
-          <div className="hidden md:block">
-            <h1 className={woodySection.title}>Conversas</h1>
-            <p className={woodySection.subtitle}>
-              Inbox com pedidos e conversas (atualiza em tempo real). Para falar com alguém, usa{" "}
-              <strong className="font-medium text-[var(--woody-text)]">Mensagem</strong> no perfil dela ou os atalhos
-              abaixo.
-            </p>
-          </div>
+          <h1 className={cn(woodySection.title, "hidden md:block")}>Conversas</h1>
           {sendError ? (
             <p className="mt-3 max-w-xl text-sm text-red-600" role="alert">
               {sendError}
@@ -277,7 +270,10 @@ export function ConversationsPage() {
         <div
           className={cn(
             "grid min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)]/85 shadow-[0_1px_3px_rgba(10,10,10,0.06)]",
-            "md:min-h-0 md:grid-cols-[minmax(0,320px)_1fr] md:h-full md:max-h-full",
+            /* h-0 + flex-1: filho da coluna flex com altura definida no pai. */
+            "md:min-h-0 md:h-0 md:flex-1",
+            /* Uma linha 1fr: sem isto, grid-auto-rows:auto usa max-content e o cartão encolhe com poucas mensagens. */
+            "md:grid-rows-[minmax(0,1fr)] md:grid-cols-[minmax(280px,0.35fr)_minmax(0,1fr)]",
             showMobileChat
               ? "max-md:max-h-full max-md:min-h-0 max-md:rounded-none max-md:border-0 max-md:shadow-none max-md:bg-[var(--woody-bg)]"
               : "max-md:min-h-[calc(100dvh-10.25rem)] max-md:rounded-xl"
@@ -333,7 +329,7 @@ export function ConversationsPage() {
             {selectedId == null ? (
               <div className="flex h-full min-h-[min(40dvh,280px)] flex-col items-center justify-center gap-2 p-8 text-center">
                 <p className="text-sm font-medium text-[var(--woody-text)]">Escolhe uma conversa</p>
-                <p className="max-w-xs text-sm text-[var(--woody-muted)]">
+                <p className="max-w-md text-sm text-[var(--woody-muted)]">
                   No telemóvel, toca num contacto na lista. No desktop, vê a lista à esquerda e o chat aqui.
                 </p>
               </div>

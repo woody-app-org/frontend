@@ -99,7 +99,7 @@ export function CommunityMembersManagerDialog({
         className={cn(
           woodyDialogScroll,
           "top-[4%] translate-y-0 sm:top-1/2 sm:-translate-y-1/2",
-          "max-w-[min(100vw-1rem,40rem)] border-[var(--woody-accent)]/15 sm:max-w-2xl"
+          "max-w-[min(100vw-1rem,44rem)] border-[var(--woody-accent)]/15 sm:max-w-3xl"
         )}
       >
         <DialogHeader className="space-y-2 pr-6 text-left">

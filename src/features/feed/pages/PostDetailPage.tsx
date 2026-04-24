@@ -27,7 +27,7 @@ export function PostDetailPage() {
 
   return (
     <FeedLayout showRightPanel={false}>
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 pb-20 md:pb-8">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 pb-20 md:pb-8">
         {isLoading ? (
           <div className="rounded-2xl border border-[var(--woody-accent)]/12 bg-[var(--woody-card)] p-6 text-sm text-[var(--woody-muted)]">
             Carregando publicação...

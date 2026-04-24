@@ -2,12 +2,14 @@ import type {
   Community,
   CommunityMemberListItem,
   CommunityMemberRole,
+  CommunityPremiumCapabilities,
   JoinRequest,
   Post,
   User,
 } from "@/domain/types";
 import axios, { isAxiosError } from "axios";
 import { api, getApiErrorMessage } from "@/lib/api";
+import { createCommunityPremiumCheckout } from "@/features/subscription/services/billingCheckout.service";
 import { mapCommunityFromApi, mapPostFromApi, mapUserFromApi } from "@/lib/apiMappers";
 import type { CommunityUpdatePayload, CommunityUpdateResult, CreateCommunityPayload } from "../types";
 
@@ -248,17 +250,143 @@ export async function fetchAllCommunityMembers(communityId: string): Promise<Com
   return all;
 }
 
-export async function fetchMyCommunityMembership(
-  communityId: string
-): Promise<{ isMember: boolean; role: CommunityMemberRole | null }> {
+function mapPremiumCapabilities(raw: unknown): CommunityPremiumCapabilities | undefined {
+  if (raw == null || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  return {
+    isStaffForPremiumTools: Boolean(o.isStaffForPremiumTools),
+    communityPremiumActive: Boolean(o.communityPremiumActive),
+    canAccessCommunityAnalytics: Boolean(o.canAccessCommunityAnalytics),
+    canBoostCommunityPosts: Boolean(o.canBoostCommunityPosts),
+  };
+}
+
+export async function fetchMyCommunityMembership(communityId: string): Promise<{
+  isMember: boolean;
+  role: CommunityMemberRole | null;
+  premiumCapabilities?: CommunityPremiumCapabilities;
+}> {
   try {
     const { data } = await api.get(`/communities/${encodeURIComponent(communityId)}/members/me`);
     const role = mapMemberRole((data?.role as string) ?? "member");
-    if (!data?.isMember) return { isMember: false, role: null };
-    return { isMember: true, role };
+    if (!data?.isMember) return { isMember: false, role: null, premiumCapabilities: undefined };
+    return {
+      isMember: true,
+      role,
+      premiumCapabilities: mapPremiumCapabilities((data as { premiumCapabilities?: unknown }).premiumCapabilities),
+    };
   } catch {
-    return { isMember: false, role: null };
+    return { isMember: false, role: null, premiumCapabilities: undefined };
   }
+}
+
+export interface CommunityAnalyticsPeriodBucket {
+  newMembersJoined: number;
+  memberLeavesRecorded: number;
+  pageViews: number;
+  postsPublished: number;
+  commentsPosted: number;
+  likesOnPosts: number;
+}
+
+export interface CommunityPremiumDashboardPayload {
+  communityId: string;
+  slug?: string | null;
+  periodDays: number;
+  periodStartUtc: string;
+  periodEndUtc: string;
+  previousPeriodStartUtc: string;
+  previousPeriodEndUtc: string;
+  memberCount: number;
+  totalPosts: number;
+  headline?: string;
+  note?: string | null;
+  current: CommunityAnalyticsPeriodBucket;
+  previous: CommunityAnalyticsPeriodBucket;
+  engagement: { averageInteractionsPerPost: number; definition: string };
+  topPosts: Array<{
+    postId: string;
+    title: string;
+    createdAtUtc: string;
+    likesCount: number;
+    commentsCount: number;
+    score: number;
+    authorUsername: string;
+  }>;
+  topTags: Array<{ tag: string; count: number }>;
+  dailyActivity: Array<{
+    dayUtc: string;
+    posts: number;
+    comments: number;
+    pageViews: number;
+    memberLeaves: number;
+    newMembers: number;
+  }>;
+}
+
+/** @deprecated Usar `CommunityPremiumDashboardPayload`. */
+export type CommunityPremiumAnalyticsPayload = CommunityPremiumDashboardPayload;
+
+export async function fetchCommunityPremiumAnalytics(
+  communityId: string,
+  days: number = 30
+): Promise<CommunityPremiumDashboardPayload> {
+  const { data } = await api.get<CommunityPremiumDashboardPayload>(
+    `/communities/${encodeURIComponent(communityId)}/premium/analytics`,
+    { params: { days } }
+  );
+  return data;
+}
+
+export interface CommunityPostBoostResponse {
+  id: string;
+  postId: string;
+  communityId: string;
+  startedAtUtc: string;
+  endsAtUtc: string;
+  active: boolean;
+}
+
+export interface CommunityPostBoostListItem {
+  id: string;
+  postId: string;
+  postTitle: string | null;
+  startedAtUtc: string;
+  endsAtUtc: string;
+  active: boolean;
+}
+
+export async function boostCommunityPost(
+  communityId: string,
+  postId: string,
+  durationDays?: number
+): Promise<CommunityPostBoostResponse> {
+  const { data, status } = await api.post<CommunityPostBoostResponse>(
+    `/communities/${encodeURIComponent(communityId)}/posts/${encodeURIComponent(postId)}/boost`,
+    durationDays != null ? { durationDays } : {}
+  );
+  if (status !== 201 && status !== 200) {
+    throw new Error("Resposta inesperada do servidor.");
+  }
+  return data;
+}
+
+export async function unboostCommunityPost(communityId: string, postId: string): Promise<void> {
+  await api.delete(
+    `/communities/${encodeURIComponent(communityId)}/posts/${encodeURIComponent(postId)}/boost`
+  );
+}
+
+export async function fetchCommunityPostBoosts(communityId: string): Promise<CommunityPostBoostListItem[]> {
+  const { data } = await api.get<CommunityPostBoostListItem[]>(
+    `/communities/${encodeURIComponent(communityId)}/post-boosts`
+  );
+  return Array.isArray(data) ? data : [];
+}
+
+export async function startCommunityPremiumUpgrade(communityId: string): Promise<void> {
+  const { url } = await createCommunityPremiumCheckout(Number(communityId));
+  window.location.assign(url);
 }
 
 export async function fetchCommunityMembers(communityId: string): Promise<CommunityMemberListItem[]> {

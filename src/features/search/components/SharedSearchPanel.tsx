@@ -83,7 +83,7 @@ export function SharedSearchPanel({
       <SearchModeSegment
         value={mode}
         onChange={onModeChange}
-        className="w-full max-w-[480px] self-start shrink-0"
+        className="w-full max-w-[36rem] self-start shrink-0"
       />
 
       <div

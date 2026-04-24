@@ -100,7 +100,7 @@ export function CommunitiesPage() {
     <FeedLayout>
       <div
         className={cn(
-          "mx-auto w-full max-w-6xl pb-20 md:pb-8",
+          "mx-auto w-full max-w-7xl pb-20 md:pb-8",
           woodyLayout.pagePadWide,
           woodyLayout.stackGapTight
         )}
@@ -119,7 +119,7 @@ export function CommunitiesPage() {
             className="pointer-events-none absolute -bottom-24 left-1/3 size-48 rounded-full bg-[var(--woody-accent)]/15 blur-2xl"
             aria-hidden
           />
-          <div className="relative flex flex-col gap-4 md:max-w-3xl">
+          <div className="relative flex flex-col gap-4 md:max-w-4xl">
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--woody-nav)]/12 px-3 py-1 text-xs font-semibold text-[var(--woody-text)] ring-1 ring-[var(--woody-accent)]/15">
               <Sparkles className="size-3.5 text-[var(--woody-nav)]" aria-hidden />
               Comunidades Woody

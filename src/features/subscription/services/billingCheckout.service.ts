@@ -21,3 +21,18 @@ export async function createSubscriptionCheckout(
     throw new Error(getApiErrorMessage(e, "Não foi possível iniciar o checkout."));
   }
 }
+
+/**
+ * Checkout Stripe para plano premium da comunidade. O servidor valida permissão (owner/admin) e resolve o preço.
+ */
+export async function createCommunityPremiumCheckout(communityId: number): Promise<CreateSubscriptionCheckoutResponse> {
+  try {
+    const { data } = await api.post<CreateSubscriptionCheckoutResponse>("Billing/checkout/community-premium", {
+      communityId,
+    });
+    if (!data?.url) throw new Error("Resposta do servidor sem URL de checkout.");
+    return data;
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível iniciar o checkout da comunidade."));
+  }
+}
