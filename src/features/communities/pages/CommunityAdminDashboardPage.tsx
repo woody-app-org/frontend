@@ -35,9 +35,9 @@ function formatDelta(current: number, previous: number): string {
 function formatChartDayLabel(dayUtc: string): string {
   const dayPart = dayUtc.length >= 10 ? dayUtc.slice(0, 10) : dayUtc;
   const [ys, ms, ds] = dayPart.split("-");
-  const y = Number(ys, 10);
-  const m = Number(ms, 10);
-  const d = Number(ds, 10);
+  const y = parseInt(ys ?? "", 10);
+  const m = parseInt(ms ?? "", 10);
+  const d = parseInt(ds ?? "", 10);
   if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return dayUtc;
   const date = new Date(Date.UTC(y, m - 1, d));
   return new Intl.DateTimeFormat("pt-PT", {
