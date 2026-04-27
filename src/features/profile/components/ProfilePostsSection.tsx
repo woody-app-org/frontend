@@ -10,11 +10,11 @@ import type { PostProfilePinMenuProps } from "@/features/feed/components/PostOve
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 
 const styles = {
-  list: "space-y-5 list-none p-0 m-0",
+  list: "space-y-4 list-none p-0 m-0",
 } as const;
 
 const featuredStyles = {
-  wrap: "rounded-xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)]/90 shadow-[0_1px_3px_rgba(10,10,10,0.06)] p-3.5 sm:p-5 mb-6",
+  wrap: "mb-5 rounded-2xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)]/86 p-3.5 shadow-[0_1px_8px_rgba(10,10,10,0.045)] sm:p-5",
   title: "text-sm font-semibold text-[var(--woody-text)] tracking-tight mb-2 sm:mb-3",
   subtitle: "text-xs leading-relaxed text-[var(--woody-muted)] mb-3 max-w-prose",
 } as const;
@@ -148,7 +148,7 @@ export function ProfilePostsSection({
   const showListBlock = posts.length > 0 || hasNextPage || hasPreviousPage;
 
   return (
-    <section className={cn("space-y-5", className)}>
+    <section className={cn("space-y-4", className)}>
       {pinActionSuccess ? (
         <div
           role="status"
@@ -183,7 +183,7 @@ export function ProfilePostsSection({
       {featuredBlock}
 
       {showListBlock ? (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {!hideSectionHeader ? (
             <div className={headerStyles.wrap}>
               <h2 className={headerStyles.title}>{sectionTitle}</h2>

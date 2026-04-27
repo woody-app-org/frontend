@@ -162,6 +162,8 @@ export function PostCard({
         styles.card,
         "cursor-pointer",
         postListingContext === "community" && "px-6 pb-5 pt-4 sm:px-7 sm:pb-6 sm:pt-5",
+        postSurface === "profile" &&
+          "border-l border-l-black/[0.06] px-4 py-4 shadow-[0_1px_8px_rgba(10,10,10,0.045)] sm:px-5",
         profilePinHighlight &&
           postSurface === "profile" &&
           "ring-1 ring-[var(--woody-accent)]/22 border-[var(--woody-accent)]/22",
