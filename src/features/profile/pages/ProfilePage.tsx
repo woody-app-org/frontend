@@ -243,7 +243,8 @@ export function ProfilePage() {
             <div
               className={cn(
                 "mb-4 overflow-x-auto border-b border-[var(--woody-divider)]/90 bg-transparent",
-                "[-webkit-overflow-scrolling:touch]"
+                "[-webkit-overflow-scrolling:touch]",
+                "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               )}
               role="tablist"
               aria-label="Seções do perfil"
