@@ -138,6 +138,17 @@ export async function fetchReceivedProfileSignals(page = 1, pageSize = 20): Prom
   }
 }
 
+/** Sinais em estado enviado (ainda não lidos). Fonte de verdade no backend. */
+export async function fetchProfileSignalsUnreadCount(): Promise<number> {
+  try {
+    const { data } = await api.get("/profile-signals/received/unread-count");
+    const raw = asRecord(data);
+    return Math.max(0, Math.floor(Number(raw.unreadCount ?? 0)));
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível atualizar os sinais."));
+  }
+}
+
 export async function archiveProfileSignal(signalId: number): Promise<ProfileSignal> {
   try {
     const { data } = await api.patch(`/profile-signals/${signalId}/archive`);

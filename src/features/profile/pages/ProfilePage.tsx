@@ -1,5 +1,5 @@
-import { useCallback, useState, type ReactNode } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Activity, Bookmark } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { FeedErrorState } from "@/features/feed/components/FeedErrorState";
@@ -23,6 +23,7 @@ import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
 import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
 import { ProfileSignalButton } from "../components/ProfileSignalButton";
 import { ProfileSignalsTab } from "../components/ProfileSignalsTab";
+import { useProfileSignalsUnreadCount } from "../hooks/useProfileSignalsUnreadCount";
 
 type ProfileTab = "posts" | "about" | "communities" | "saved" | "activity" | "signals";
 
@@ -62,6 +63,7 @@ function ProfileEmptyTab({
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user: authUser, patchUser, isAuthenticated } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [editOpen, setEditOpen] = useState(false);
@@ -90,6 +92,31 @@ export function ProfilePage() {
     applyFollowPatch,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
+
+  const { unreadCount: unreadSignalsCount } = useProfileSignalsUnreadCount(
+    Boolean(isOwnProfile && authUser?.id)
+  );
+
+  useEffect(() => {
+    if (!isOwnProfile) return;
+    const q = searchParams.get("tab");
+    if (q === "signals") {
+      setTab("signals");
+    }
+  }, [isOwnProfile, searchParams]);
+
+  const selectTab = useCallback(
+    (id: ProfileTab) => {
+      setTab(id);
+      if (!isOwnProfile) return;
+      if (id === "signals") {
+        setSearchParams({ tab: "signals" }, { replace: true });
+      } else {
+        setSearchParams({}, { replace: true });
+      }
+    },
+    [isOwnProfile, setSearchParams]
+  );
 
   const bumpFollowLists = useCallback(() => {
     setFollowListsRevision((n) => n + 1);
@@ -226,7 +253,7 @@ export function ProfilePage() {
                     type="button"
                     role="tab"
                     aria-selected={activeTab === t.id}
-                    onClick={() => setTab(t.id)}
+                    onClick={() => selectTab(t.id)}
                     className={cn(
                       woodyFocus.ring,
                       "relative min-h-11 rounded-none px-0 pb-3 pt-2 text-sm font-semibold transition-colors duration-200",
@@ -235,7 +262,16 @@ export function ProfilePage() {
                         : "text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
                     )}
                   >
-                    {t.label}
+                    <span className="inline-flex items-center gap-1.5">
+                      {t.label}
+                      {t.id === "signals" && unreadSignalsCount > 0 ? (
+                        <span
+                          className="inline-block size-2 shrink-0 rounded-full bg-[var(--woody-nav)]"
+                          title={`${unreadSignalsCount} por ler`}
+                          aria-hidden
+                        />
+                      ) : null}
+                    </span>
                     <span
                       aria-hidden
                       className={cn(

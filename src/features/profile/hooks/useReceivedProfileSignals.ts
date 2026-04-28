@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { dispatchProfileSignalsChanged } from "@/lib/profileSignalsEvents";
 import {
   archiveProfileSignal,
   fetchReceivedProfileSignals,
@@ -18,6 +19,7 @@ export function useReceivedProfileSignals() {
     try {
       const page = await fetchReceivedProfileSignals(1, 30);
       setSignals(page.items);
+      dispatchProfileSignalsChanged();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Não foi possível carregar os sinais.");
     } finally {
@@ -38,6 +40,7 @@ export function useReceivedProfileSignals() {
     try {
       const next = await markProfileSignalRead(signalId);
       setSignals((prev) => prev.map((signal) => (signal.id === signalId ? next : signal)));
+      dispatchProfileSignalsChanged();
       return next;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Não foi possível marcar o sinal como lido.");
@@ -53,6 +56,7 @@ export function useReceivedProfileSignals() {
     try {
       await archiveProfileSignal(signalId);
       setSignals((prev) => prev.filter((signal) => signal.id !== signalId));
+      dispatchProfileSignalsChanged();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Não foi possível arquivar o sinal.");
     } finally {

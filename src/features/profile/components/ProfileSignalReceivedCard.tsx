@@ -99,11 +99,12 @@ export function ProfileSignalReceivedCard({
             variant="outline"
             size="sm"
             disabled={busy}
+            title="Abrir conversa com a remetente (respeita pedidos de DM se aplicável)"
             className={cn(woodyFocus.ring, "touch-manipulation rounded-lg")}
             onClick={() => onReply(signal)}
           >
             <MessageCircle className="size-4" aria-hidden />
-            Conversar
+            Responder
           </Button>
           <Button
             type="button"
