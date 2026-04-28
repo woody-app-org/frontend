@@ -1,3 +1,4 @@
+import { UserRoundCheck, UsersRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 
@@ -26,7 +27,7 @@ export function ProfileFollowStats({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-[var(--woody-muted)]",
+        "flex flex-wrap items-center gap-3 text-sm text-[var(--woody-muted)]",
         className
       )}
       aria-label="Seguidores e contas seguidas"
@@ -37,28 +38,35 @@ export function ProfileFollowStats({
         title="Ver lista de seguidores"
         className={cn(
           woodyFocus.ring,
-          "touch-manipulation min-h-11 rounded-md px-1.5 py-1.5 text-left font-medium text-[var(--woody-text)]/90 underline-offset-2 hover:underline sm:min-h-0 sm:px-1 sm:py-0.5"
+          "group inline-flex touch-manipulation items-center gap-2 rounded-xl border border-transparent px-1.5 py-1.5 text-left transition-colors hover:border-[var(--woody-accent)]/14 hover:bg-[var(--woody-nav)]/7"
         )}
       >
-        <span className="tabular-nums text-[var(--woody-text)]">{fmt(followersCount)}</span>
-        <span className="ml-1 font-normal text-[var(--woody-muted)]">
-          {followersCount === 1 ? "seguidor" : "seguidores"}
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--woody-tag-bg)] text-[var(--woody-nav)] ring-1 ring-[var(--woody-accent)]/16">
+          <UsersRound className="size-4" aria-hidden />
+        </span>
+        <span className="flex flex-col leading-tight">
+          <span className="tabular-nums font-bold text-[var(--woody-text)]">{fmt(followersCount)}</span>
+          <span className="text-xs font-medium text-[var(--woody-muted)]">
+            {followersCount === 1 ? "seguidor" : "seguidores"}
+          </span>
         </span>
       </button>
-      <span className="select-none text-[var(--woody-accent)]/35" aria-hidden>
-        ·
-      </span>
       <button
         type="button"
         onClick={onOpenFollowing}
         title="Ver lista de contas a seguir"
         className={cn(
           woodyFocus.ring,
-          "touch-manipulation min-h-11 rounded-md px-1.5 py-1.5 text-left font-medium text-[var(--woody-text)]/90 underline-offset-2 hover:underline sm:min-h-0 sm:px-1 sm:py-0.5"
+          "group inline-flex touch-manipulation items-center gap-2 rounded-xl border border-transparent px-1.5 py-1.5 text-left transition-colors hover:border-[var(--woody-accent)]/14 hover:bg-[var(--woody-nav)]/7"
         )}
       >
-        <span className="tabular-nums text-[var(--woody-text)]">{fmt(followingCount)}</span>
-        <span className="ml-1 font-normal text-[var(--woody-muted)]">a seguir</span>
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--woody-tag-bg)] text-[var(--woody-nav)] ring-1 ring-[var(--woody-accent)]/16">
+          <UserRoundCheck className="size-4" aria-hidden />
+        </span>
+        <span className="flex flex-col leading-tight">
+          <span className="tabular-nums font-bold text-[var(--woody-text)]">{fmt(followingCount)}</span>
+          <span className="text-xs font-medium text-[var(--woody-muted)]">a seguir</span>
+        </span>
       </button>
     </div>
   );

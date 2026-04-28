@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const styles = {
-  card: "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(10,10,10,0.06)]",
+  card: "overflow-hidden rounded-[1.35rem] border border-[var(--woody-divider)] bg-[var(--woody-card)] shadow-[0_10px_34px_rgba(10,10,10,0.08),0_1px_3px_rgba(10,10,10,0.05)]",
   skeleton: "bg-[var(--woody-nav)]/10",
 };
 
@@ -11,10 +11,10 @@ export function ProfileSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn("space-y-4 md:space-y-6", className)}>
       <Card className={styles.card}>
-        <Skeleton className={cn("h-40 md:h-56 w-full rounded-t-2xl rounded-b-none", styles.skeleton)} />
-        <CardContent className="p-4 md:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <Skeleton className={cn("size-20 md:size-24 rounded-full -mt-12 shrink-0 border-4 border-[var(--woody-card)]", styles.skeleton)} />
+        <Skeleton className={cn("h-44 w-full rounded-t-[1.35rem] rounded-b-none sm:h-52 md:h-[15rem]", styles.skeleton)} />
+        <CardContent className="px-5 pb-6 pt-0 sm:px-7 sm:pb-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <Skeleton className={cn("-mt-12 size-24 shrink-0 rounded-full border-[5px] border-[var(--woody-card)] sm:-mt-16 sm:size-28", styles.skeleton)} />
             <div className="flex-1 min-w-0 space-y-2">
               <Skeleton className={cn("h-6 w-48", styles.skeleton)} />
               <Skeleton className={cn("h-4 w-32", styles.skeleton)} />
@@ -24,7 +24,10 @@ export function ProfileSkeleton({ className }: { className?: string }) {
                 ))}
               </div>
             </div>
-            <Skeleton className={cn("h-9 w-24 rounded-md shrink-0", styles.skeleton)} />
+            <div className="flex gap-2 pt-4 sm:pt-5">
+              <Skeleton className={cn("h-10 w-28 shrink-0 rounded-xl", styles.skeleton)} />
+              <Skeleton className={cn("size-10 shrink-0 rounded-xl", styles.skeleton)} />
+            </div>
           </div>
           <div className="mt-4 space-y-2">
             <Skeleton className={cn("h-4 w-full", styles.skeleton)} />

@@ -1,7 +1,13 @@
-import { Pencil } from "lucide-react";
+import { AtSign, BookOpen, BriefcaseBusiness, Heart, Luggage, MapPin, MoreHorizontal, Pencil, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import type { ReactNode } from "react";
@@ -10,29 +16,32 @@ import { ProBadge } from "@/features/subscription/components/ProBadge";
 
 const styles = {
   card:
-    "rounded-2xl border border-[var(--woody-accent)]/18 bg-[var(--woody-card)] shadow-[0_1px_3px_rgba(10,10,10,0.06)] overflow-hidden",
-  bannerWrap: "w-full min-h-[10rem] sm:min-h-[12rem] md:min-h-[14rem] overflow-hidden",
-  banner: "w-full h-40 sm:h-48 md:h-56 min-h-[10rem] sm:min-h-[12rem] md:min-h-[14rem] object-cover bg-[var(--woody-nav)]/10",
-  content: "px-4 md:px-6 pt-2 pb-4 md:pb-6",
-  avatarRow: "flex -mt-14 sm:-mt-16 md:-mt-20",
-  avatarWrap: "shrink-0",
+    "overflow-hidden rounded-[1.35rem] border border-[var(--woody-divider)] bg-[var(--woody-card)] shadow-[0_10px_34px_rgba(10,10,10,0.08),0_1px_3px_rgba(10,10,10,0.05)]",
+  bannerWrap: "w-full overflow-hidden rounded-t-[1.35rem] bg-[var(--woody-nav)]/10",
+  banner: "h-44 min-h-44 w-full object-cover sm:h-52 md:h-[15rem]",
+  content: "px-5 pb-6 pt-0 sm:px-7 sm:pb-7",
+  topRow: "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
+  avatarWrap: "-mt-12 shrink-0 sm:-mt-16",
   avatar:
-    "size-20 sm:size-[5.5rem] md:size-24 rounded-full border-4 border-[var(--woody-card)] shadow-md ring-2 ring-[var(--woody-accent)]/10",
+    "size-24 rounded-full border-[5px] border-[var(--woody-card)] shadow-[0_8px_24px_rgba(10,10,10,0.16)] ring-1 ring-black/[0.04] sm:size-28",
   infoRow:
-    "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-4 sm:gap-4",
-  actionsCol: "flex w-full flex-col items-stretch gap-2 sm:w-auto sm:shrink-0 sm:items-end sm:pt-1",
-  meta: "flex-1 min-w-0 flex flex-col gap-0.5",
+    "mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start",
+  actionsCol: "flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end",
+  meta: "min-w-0 flex-1",
   nameBlock: "min-w-0",
-  name: "font-bold text-[var(--woody-text)] text-lg md:text-xl truncate",
-  pronouns: "text-[var(--woody-muted)] text-sm",
-  role: "text-[var(--woody-muted)] text-sm",
-  location: "text-[var(--woody-muted)] text-sm",
-  tags: "flex flex-wrap gap-2 mt-2",
+  name: "truncate text-2xl font-bold tracking-[-0.03em] text-[var(--woody-text)] sm:text-[1.7rem]",
+  pronouns: "text-sm font-medium text-[var(--woody-muted)]",
+  details: "mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[var(--woody-muted)]",
+  detailItem: "inline-flex min-w-0 items-center gap-1.5",
+  detailIcon: "size-3.5 shrink-0 text-[var(--woody-muted)]/85",
+  tags: "mt-4 flex flex-wrap gap-2",
   tag:
-    "inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium bg-[var(--woody-nav)]/10 text-[var(--woody-text)] border border-[var(--woody-accent)]/15",
+    "inline-flex items-center gap-1.5 rounded-full border border-[var(--woody-accent)]/18 bg-[var(--woody-tag-bg)] px-3 py-1 text-xs font-semibold leading-none text-[var(--woody-tag-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
   editBtn:
-    "rounded-lg border border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/8 text-sm font-medium shrink-0 transition-transform active:scale-[0.98]",
-  bio: "text-[var(--woody-text)]/90 text-sm leading-relaxed mt-4 whitespace-pre-wrap break-words",
+    "rounded-xl border border-[var(--woody-accent)]/22 bg-[var(--woody-card)] text-[var(--woody-text)] shadow-[0_1px_2px_rgba(10,10,10,0.04)] hover:bg-[var(--woody-nav)]/8 text-sm font-semibold shrink-0 transition-transform active:scale-[0.98]",
+  menuBtn:
+    "size-10 rounded-xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)] p-0 text-[var(--woody-text)] shadow-[0_1px_2px_rgba(10,10,10,0.04)] hover:bg-[var(--woody-nav)]/8",
+  bio: "mt-5 max-w-3xl whitespace-pre-wrap break-words text-[0.95rem] leading-7 text-[var(--woody-text)]/92",
 };
 
 function getInitials(name: string): string {
@@ -42,6 +51,19 @@ function getInitials(name: string): string {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+function InterestIcon({ label }: { label: string }) {
+  const normalized = label.toLocaleLowerCase("pt-PT");
+  const Icon = normalized.includes("leitur") || normalized.includes("livro")
+    ? BookOpen
+    : normalized.includes("viagem") || normalized.includes("travel")
+      ? Luggage
+      : normalized.includes("bem") || normalized.includes("saúde") || normalized.includes("saude")
+        ? Heart
+        : Sparkles;
+
+  return <Icon className="size-3.5 shrink-0" aria-hidden />;
 }
 
 export interface ProfileHeaderProps {
@@ -77,15 +99,50 @@ export function ProfileHeader({
         )}
       </div>
       <CardContent className={styles.content}>
-        <div className={styles.avatarRow}>
+        <div className={styles.topRow}>
           <div className={styles.avatarWrap}>
             <Avatar className={styles.avatar}>
               <AvatarImage src={profile.avatarUrl ?? undefined} alt={profile.name} />
-              <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-lg">
+              <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xl font-bold text-[var(--woody-text)]">
                 {getInitials(profile.name)}
               </AvatarFallback>
             </Avatar>
           </div>
+          {isOwnProfile && onEditProfile ? (
+            <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>
+              <Button
+                type="button"
+                className={cn(styles.editBtn, woodyFocus.ring, "touch-manipulation min-h-10")}
+                variant="outline"
+                size="sm"
+                onClick={onEditProfile}
+              >
+                <Pencil className="size-4 text-[var(--woody-nav)]" />
+                Editar perfil
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className={cn(styles.menuBtn, woodyFocus.ring)}
+                    aria-label="Mais ações do perfil"
+                  >
+                    <MoreHorizontal className="size-4" aria-hidden />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[11rem] border-[var(--woody-accent)]/20 bg-[var(--woody-card)]">
+                  <DropdownMenuItem onSelect={onEditProfile} className="cursor-pointer">
+                    <Pencil className="size-4 text-[var(--woody-nav)]" aria-hidden />
+                    Editar perfil
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : !isOwnProfile && followSlot ? (
+            <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>{followSlot}</div>
+          ) : null}
         </div>
         <div className={styles.infoRow}>
           <div className={styles.meta}>
@@ -100,16 +157,32 @@ export function ProfileHeader({
                   </>
                 )}
               </div>
-              {profile.role && <p className={styles.role}>{profile.role}</p>}
-              {profile.location && <p className={styles.location}>{profile.location}</p>}
-              {profile.username ? (
-                <p className="text-sm text-[var(--woody-muted)] mt-0.5">@{profile.username}</p>
-              ) : null}
-              {followStats ? <div className="mt-2">{followStats}</div> : null}
+              <div className={styles.details} aria-label="Informações do perfil">
+                {profile.role ? (
+                  <span className={styles.detailItem}>
+                    <BriefcaseBusiness className={styles.detailIcon} aria-hidden />
+                    <span className="truncate">{profile.role}</span>
+                  </span>
+                ) : null}
+                {profile.location ? (
+                  <span className={styles.detailItem}>
+                    <MapPin className={styles.detailIcon} aria-hidden />
+                    <span className="truncate">{profile.location}</span>
+                  </span>
+                ) : null}
+                {profile.username ? (
+                  <span className={styles.detailItem}>
+                    <AtSign className={styles.detailIcon} aria-hidden />
+                    <span className="truncate">@{profile.username}</span>
+                  </span>
+                ) : null}
+              </div>
+              {followStats ? <div className="mt-4">{followStats}</div> : null}
               {profile.interests.length > 0 && (
                 <div className={styles.tags}>
                   {profile.interests.slice(0, 5).map((tag) => (
                     <span key={tag.id} className={styles.tag}>
+                      <InterestIcon label={tag.label} />
                       {tag.label}
                     </span>
                   ))}
@@ -117,22 +190,6 @@ export function ProfileHeader({
               )}
             </div>
           </div>
-          {isOwnProfile && onEditProfile ? (
-            <div className={styles.actionsCol}>
-              <Button
-                type="button"
-                className={cn(styles.editBtn, woodyFocus.ring, "touch-manipulation min-h-10 w-full sm:min-h-9 sm:w-auto")}
-                variant="outline"
-                size="sm"
-                onClick={onEditProfile}
-              >
-                <Pencil className="size-4" />
-                Ajustar meu perfil
-              </Button>
-            </div>
-          ) : !isOwnProfile && followSlot ? (
-            <div className={styles.actionsCol}>{followSlot}</div>
-          ) : null}
         </div>
         {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
       </CardContent>

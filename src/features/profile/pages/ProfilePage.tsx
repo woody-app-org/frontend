@@ -1,5 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Activity, Bookmark } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { FeedErrorState } from "@/features/feed/components/FeedErrorState";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -21,13 +22,35 @@ import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
 import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
 
-type ProfileTab = "posts" | "communities" | "about";
+type ProfileTab = "posts" | "about" | "communities" | "saved" | "activity";
 
 const TABS: { id: ProfileTab; label: string }[] = [
-  { id: "posts", label: "Posts" },
-  { id: "communities", label: "Comunidades" },
+  { id: "posts", label: "Publicações" },
   { id: "about", label: "Sobre" },
+  { id: "communities", label: "Comunidades" },
+  { id: "saved", label: "Salvos" },
+  { id: "activity", label: "Atividades" },
 ];
+
+function ProfileEmptyTab({
+  icon,
+  title,
+  description,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-[var(--woody-divider)] bg-[var(--woody-card)]/82 px-5 py-10 text-center shadow-[0_1px_3px_rgba(10,10,10,0.04)]">
+      <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-2xl bg-[var(--woody-tag-bg)] text-[var(--woody-nav)]">
+        {icon}
+      </div>
+      <h2 className="text-sm font-semibold text-[var(--woody-text)]">{title}</h2>
+      <p className="mx-auto mt-1.5 max-w-md text-sm leading-relaxed text-[var(--woody-muted)]">{description}</p>
+    </div>
+  );
+}
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -101,7 +124,6 @@ export function ProfilePage() {
     return null;
   }
 
-  const activeIndex = Math.max(0, TABS.findIndex((t) => t.id === tab));
   const profileNumericId = profile && !isOwnProfile ? Number.parseInt(profile.id, 10) : NaN;
   const canStartDmFromProfile =
     Boolean(profile) && !isOwnProfile && isAuthenticated && Number.isFinite(profileNumericId) && profileNumericId > 0;
@@ -122,7 +144,7 @@ export function ProfilePage() {
           <>
             <ProfileHeader
               profile={profile}
-              className="mb-5 md:mb-6"
+              className="mb-6"
               isOwnProfile={isOwnProfile}
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
               followStats={
@@ -176,35 +198,39 @@ export function ProfilePage() {
 
             <div
               className={cn(
-                "relative mb-6 grid grid-cols-3 gap-1 p-1 rounded-xl border border-[var(--woody-accent)]/16 bg-[var(--woody-card)]/98",
-                "shadow-[0_1px_3px_rgba(10,10,10,0.05)]"
+                "mb-4 overflow-x-auto border-b border-[var(--woody-divider)]/90 bg-transparent",
+                "[-webkit-overflow-scrolling:touch]"
               )}
               role="tablist"
               aria-label="Seções do perfil"
             >
-              <span
-                aria-hidden
-                className="absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/3)] rounded-lg bg-[var(--woody-nav)] shadow-[0_6px_16px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out"
-                style={{ transform: `translateX(${activeIndex * 100}%)` }}
-              />
-              {TABS.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={tab === t.id}
-                  onClick={() => setTab(t.id)}
-                  className={cn(
-                    woodyFocus.ring,
-                    "relative z-10 min-w-0 py-2.5 px-1 sm:px-3 rounded-lg text-sm transition-colors duration-200",
-                    tab === t.id
-                      ? "text-white font-semibold"
-                      : "bg-transparent text-[var(--woody-text)]/85 font-medium hover:text-[var(--woody-text)]"
-                  )}
-                >
-                  {t.label}
-                </button>
-              ))}
+              <div className="flex min-w-max items-end gap-8 px-1 sm:gap-10">
+                {TABS.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === t.id}
+                    onClick={() => setTab(t.id)}
+                    className={cn(
+                      woodyFocus.ring,
+                      "relative min-h-11 rounded-none px-0 pb-3 pt-2 text-sm font-semibold transition-colors duration-200",
+                      tab === t.id
+                        ? "text-[var(--woody-text)]"
+                        : "text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
+                    )}
+                  >
+                    {t.label}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-[var(--woody-nav)] transition-opacity duration-200",
+                        tab === t.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="min-w-0">
@@ -241,6 +267,26 @@ export function ProfilePage() {
               ) : null}
 
               {tab === "about" ? <ProfileOverviewTab profile={profile} /> : null}
+
+              {tab === "saved" ? (
+                <ProfileEmptyTab
+                  icon={<Bookmark className="size-5" aria-hidden />}
+                  title={isOwnProfile ? "Salvos em construção" : "Salvos privados"}
+                  description={
+                    isOwnProfile
+                      ? "A estrutura visual já está preparada para reunir publicações guardadas quando esta área estiver conectada."
+                      : "As publicações salvas não são públicas neste perfil."
+                  }
+                />
+              ) : null}
+
+              {tab === "activity" ? (
+                <ProfileEmptyTab
+                  icon={<Activity className="size-5" aria-hidden />}
+                  title="Atividades recentes"
+                  description="Quando a atividade do perfil estiver disponível, comentários, participações e movimentos relevantes aparecerão aqui."
+                />
+              ) : null}
             </div>
           </>
         )}

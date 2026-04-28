@@ -232,10 +232,10 @@ export function RightPanel({ className }: RightPanelProps) {
             <Heart className="size-3.5 text-[var(--woody-nav)] stroke-[2]" aria-hidden />
           </div>
           <p className="relative z-[1] mt-1.5 text-[0.8125rem] font-semibold leading-snug">
-            Conexões verdadeiras começam aqui.
+            Descubra pessoas, conversas e comunidades com propósito.
           </p>
           <p className="relative z-[1] mt-0.5 text-[10px] leading-snug text-white/70">
-            Participa, partilha e descobre novas perspectivas.
+            Participe, compartilhe e crie conexões reais.
           </p>
           <Link
             to="/planos"
