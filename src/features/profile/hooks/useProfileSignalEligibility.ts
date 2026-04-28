@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchProfileSignalStatus } from "../services/profile-signals.service";
+import { fetchProfileSignalStatus, type ProfileSignalStatus } from "../services/profile-signals.service";
 
 /**
  * Estado de elegibilidade para enviar sinais à destinatária (fonte: GET /profile-signals/status).

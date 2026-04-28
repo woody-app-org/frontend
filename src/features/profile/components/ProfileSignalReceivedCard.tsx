@@ -82,13 +82,13 @@ export function ProfileSignalReceivedCard({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 sm:justify-end">
+        <div className="flex flex-col gap-2 border-t border-[var(--woody-divider)]/80 pt-4 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-2">
           <Button
             type="button"
             variant="outline"
             size="sm"
             disabled={busy}
-            className={cn(woodyFocus.ring, "touch-manipulation rounded-lg")}
+            className={cn(woodyFocus.ring, "min-h-11 touch-manipulation rounded-xl sm:min-h-10")}
             onClick={() => onViewProfile(signal)}
           >
             <UserRound className="size-4" aria-hidden />
@@ -100,7 +100,7 @@ export function ProfileSignalReceivedCard({
             size="sm"
             disabled={busy}
             title="Abrir conversa com a remetente (respeita pedidos de DM se aplicável)"
-            className={cn(woodyFocus.ring, "touch-manipulation rounded-lg")}
+            className={cn(woodyFocus.ring, "min-h-11 touch-manipulation rounded-xl sm:min-h-10")}
             onClick={() => onReply(signal)}
           >
             <MessageCircle className="size-4" aria-hidden />
@@ -113,7 +113,7 @@ export function ProfileSignalReceivedCard({
             disabled={busy}
             className={cn(
               woodyFocus.ring,
-              "touch-manipulation rounded-lg text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
+              "min-h-11 touch-manipulation rounded-xl text-[var(--woody-muted)] hover:text-[var(--woody-text)] sm:min-h-10"
             )}
             onClick={() => onArchive(signal)}
           >

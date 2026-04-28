@@ -193,7 +193,7 @@ export function ProfilePage() {
               }
               followSlot={
                 !isOwnProfile && isAuthenticated ? (
-                  <div className="flex w-full flex-col gap-2 sm:items-end">
+                  <div className="flex w-full max-w-full flex-col gap-2 sm:max-w-xl sm:ml-auto">
                     <FollowProfileButton
                       targetUserId={profile.id}
                       targetDisplayName={profile.name}
@@ -202,17 +202,19 @@ export function ProfilePage() {
                       onCommit={handleFollowCommit}
                     />
                     {canStartDmFromProfile ? (
-                      <ProfileSignalButton
-                        recipientUserId={profileNumericId}
-                        recipientName={profile.name}
-                      />
-                    ) : null}
-                    {canStartDmFromProfile ? (
-                      <StartConversationButton
-                        otherUserId={profileNumericId}
-                        peerLabel={profile.name}
-                        variant="outline"
-                      />
+                      <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-2 sm:justify-items-stretch">
+                        <ProfileSignalButton
+                          recipientUserId={profileNumericId}
+                          recipientName={profile.name}
+                          className="min-w-0"
+                        />
+                        <StartConversationButton
+                          otherUserId={profileNumericId}
+                          peerLabel={profile.name}
+                          variant="outline"
+                          className="min-w-0"
+                        />
+                      </div>
                     ) : null}
                   </div>
                 ) : undefined
