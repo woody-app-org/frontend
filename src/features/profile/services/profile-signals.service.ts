@@ -146,3 +146,21 @@ export async function archiveProfileSignal(signalId: number): Promise<ProfileSig
     throw new Error(getApiErrorMessage(e, "Não foi possível arquivar o sinal."));
   }
 }
+
+export async function markProfileSignalRead(signalId: number): Promise<ProfileSignal> {
+  try {
+    const { data } = await api.patch(`/profile-signals/${signalId}/read`);
+    return mapProfileSignal(data);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível marcar o sinal como lido."));
+  }
+}
+
+export async function dismissProfileSignal(signalId: number): Promise<ProfileSignal> {
+  try {
+    const { data } = await api.patch(`/profile-signals/${signalId}/dismiss`);
+    return mapProfileSignal(data);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível ignorar o sinal."));
+  }
+}
