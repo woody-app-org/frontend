@@ -145,7 +145,7 @@ export function ProfileSignalsTab() {
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold text-[var(--woody-text)]">{signal.sender.name}</h3>
                         <span className="rounded-full bg-[var(--woody-tag-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--woody-tag-text)]">
-                          {signal.label}
+                          {signal.label} {signal.emoji}
                         </span>
                       </div>
                       <p className="mt-1 text-sm text-[var(--woody-muted)]">

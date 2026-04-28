@@ -33,7 +33,8 @@ export interface ProfileSignal {
   id: number;
   type: ProfileSignalType;
   label: string;
-  status: "active" | "archived" | string;
+  emoji: string;
+  status: "sent" | "read" | "archived" | "dismissed" | string;
   createdAt: string;
   archivedAt: string | null;
   sender: User;
@@ -73,6 +74,7 @@ function mapProfileSignal(data: unknown): ProfileSignal {
     id: Number(raw.id ?? 0),
     type: mapSignalType(raw.type),
     label: String(raw.label ?? ""),
+    emoji: String(raw.emoji ?? ""),
     status: String(raw.status ?? "active"),
     createdAt: String(raw.createdAt ?? ""),
     archivedAt: raw.archivedAt == null ? null : String(raw.archivedAt),

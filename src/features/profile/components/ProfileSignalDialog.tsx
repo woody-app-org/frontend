@@ -48,7 +48,7 @@ export function ProfileSignalDialog({
     setSuccess(null);
     try {
       const signal = await sendProfileSignal(recipientUserId, selected);
-      setSuccess(`${signal.label} enviado em privado.`);
+      setSuccess(`${signal.label} ${signal.emoji}`.trim() + " enviado em privado.");
       onSent?.(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Não foi possível enviar o sinal.");
