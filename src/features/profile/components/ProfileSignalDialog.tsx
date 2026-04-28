@@ -13,16 +13,18 @@ import { cn } from "@/lib/utils";
 import { woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import {
   PROFILE_SIGNAL_OPTIONS,
-  sendProfileSignal,
+  type ProfileSignal,
   type ProfileSignalType,
 } from "../services/profile-signals.service";
+import { useSendProfileSignal } from "../hooks/useSendProfileSignal";
+import { ProfileSignalOptionCard } from "./ProfileSignalOptionCard";
 
 export interface ProfileSignalDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   recipientUserId: number;
   recipientName: string;
-  onSent?: (nextAllowedAt?: string | null) => void;
+  onSent?: (signal: ProfileSignal) => void;
 }
 
 export function ProfileSignalDialog({
@@ -33,9 +35,7 @@ export function ProfileSignalDialog({
   onSent,
 }: ProfileSignalDialogProps) {
   const [selected, setSelected] = useState<ProfileSignalType>("te_notei");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { busy, error, sentSignal, send: sendSignal, reset } = useSendProfileSignal(recipientUserId);
 
   const selectedOption = useMemo(
     () => PROFILE_SIGNAL_OPTIONS.find((option) => option.type === selected) ?? PROFILE_SIGNAL_OPTIONS[0],
@@ -43,22 +43,23 @@ export function ProfileSignalDialog({
   );
 
   const send = async () => {
-    setBusy(true);
-    setError(null);
-    setSuccess(null);
     try {
-      const signal = await sendProfileSignal(recipientUserId, selected);
-      setSuccess(`${signal.label} ${signal.emoji}`.trim() + " enviado em privado.");
-      onSent?.(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Não foi possível enviar o sinal.");
-    } finally {
-      setBusy(false);
+      const signal = await sendSignal(selected);
+      onSent?.(signal);
+    } catch {
+      // O hook já normaliza e expõe a mensagem de erro para a UI.
     }
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      reset();
+    }
+    onOpenChange(nextOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
           "bottom-0 top-auto max-h-[min(88dvh,760px)] max-w-xl translate-y-0 rounded-b-none p-0 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-2xl",
@@ -70,7 +71,7 @@ export function ProfileSignalDialog({
             <div className="min-w-0">
               <DialogTitle className="text-left text-lg">Enviar sinal</DialogTitle>
               <DialogDescription className="mt-1 text-left">
-                Escolhe uma reação leve para enviar em privado para {recipientName}.
+                Escolhe um gesto leve. Ela recebe isso em privado.
               </DialogDescription>
             </div>
             <DialogClose asChild>
@@ -99,35 +100,26 @@ export function ProfileSignalDialog({
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {PROFILE_SIGNAL_OPTIONS.map((option) => {
-              const active = option.type === selected;
-              return (
-                <button
-                  key={option.type}
-                  type="button"
-                  aria-pressed={active}
-                  className={cn(
-                    woodyFocus.ring,
-                    "touch-manipulation rounded-2xl border px-3 py-3 text-left transition-colors",
-                    active
-                      ? "border-[var(--woody-nav)] bg-[var(--woody-nav)]/10"
-                      : "border-[var(--woody-divider)] bg-[var(--woody-card)] hover:bg-[var(--woody-nav)]/6"
-                  )}
-                  onClick={() => {
-                    setSelected(option.type);
-                    setError(null);
-                    setSuccess(null);
-                  }}
-                >
-                  <span className="block text-sm font-semibold text-[var(--woody-text)]">{option.label}</span>
-                  <span className="mt-1 block text-xs text-[var(--woody-muted)]">{option.hint}</span>
-                </button>
-              );
-            })}
+            {PROFILE_SIGNAL_OPTIONS.map((option) => (
+              <ProfileSignalOptionCard
+                key={option.type}
+                option={option}
+                active={option.type === selected}
+                disabled={busy || Boolean(sentSignal)}
+                onSelect={(next) => {
+                  reset();
+                  setSelected(next.type);
+                }}
+              />
+            ))}
           </div>
 
           {error ? <p className="text-sm text-red-600" role="alert">{error}</p> : null}
-          {success ? <p className="text-sm text-[var(--woody-nav)]" role="status">{success}</p> : null}
+          {sentSignal ? (
+            <p className="rounded-xl bg-[var(--woody-nav)]/10 px-3 py-2 text-sm font-medium text-[var(--woody-nav)]" role="status">
+              {`${sentSignal.label} ${sentSignal.emoji}`.trim()} enviado em privado.
+            </p>
+          ) : null}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <DialogClose asChild>
@@ -137,7 +129,7 @@ export function ProfileSignalDialog({
             </DialogClose>
             <Button
               type="button"
-              disabled={busy || Boolean(success)}
+              disabled={busy || Boolean(sentSignal)}
               className={cn(
                 woodyFocus.ring,
                 "min-h-10 rounded-xl bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90"
