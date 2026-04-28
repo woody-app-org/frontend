@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import {
   sendProfileSignal,
+  getProfileSignalSendErrorMessage,
   type ProfileSignal,
   type ProfileSignalType,
 } from "../services/profile-signals.service";
@@ -26,7 +27,7 @@ export function useSendProfileSignal(recipientUserId: number) {
         setSentSignal(signal);
         return signal;
       } catch (e) {
-        const message = e instanceof Error ? e.message : "Não foi possível enviar o sinal.";
+        const message = getProfileSignalSendErrorMessage(e);
         setError(message);
         throw e;
       } finally {

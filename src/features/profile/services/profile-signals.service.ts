@@ -1,5 +1,6 @@
+import axios from "axios";
 import type { User } from "@/domain/types";
-import { api, getApiErrorMessage } from "@/lib/api";
+import { api, getApiErrorMessage, getMessageFromApiResponseData } from "@/lib/api";
 import { mapUserFromApi } from "@/lib/apiMappers";
 
 export type ProfileSignalType =
@@ -44,11 +45,23 @@ export interface ProfileSignal {
   recipient: User;
 }
 
+export type ProfileSignalRestrictionCode =
+  | "cooldown"
+  | "blocked"
+  | "receiver_unavailable"
+  | "social_mismatch"
+  | string;
+
 export interface ProfileSignalStatus {
   recipientUserId: number;
   canSend: boolean;
   lastSentAt: string | null;
   nextAllowedAt: string | null;
+  /** Motivo quando não é possível enviar (inclui cooldown por tipo). */
+  restrictionCode: ProfileSignalRestrictionCode | null;
+  /** Falso se bloqueio ou preferência da destinatária impedem (independente do tipo). */
+  senderEligible: boolean;
+  eligibilityRestrictionCode: ProfileSignalRestrictionCode | null;
 }
 
 export interface ProfileSignalsPage {
@@ -106,11 +119,21 @@ export async function fetchProfileSignalStatus(recipientUserId: number): Promise
   try {
     const { data } = await api.get("/profile-signals/status", { params: { receiverUserId: recipientUserId } });
     const raw = asRecord(data);
+    const restriction =
+      raw.restrictionCode == null || raw.restrictionCode === undefined ? null : String(raw.restrictionCode);
+    const eligibilityRestriction =
+      raw.eligibilityRestrictionCode == null || raw.eligibilityRestrictionCode === undefined
+        ? null
+        : String(raw.eligibilityRestrictionCode);
+    const senderEligible = raw.senderEligible !== undefined ? Boolean(raw.senderEligible) : true;
     return {
       recipientUserId: Number(raw.recipientUserId ?? raw.receiverUserId ?? recipientUserId),
       canSend: Boolean(raw.canSend),
       lastSentAt: raw.lastSentAt == null ? null : String(raw.lastSentAt),
       nextAllowedAt: raw.nextAllowedAt == null ? null : String(raw.nextAllowedAt),
+      restrictionCode: restriction,
+      senderEligible,
+      eligibilityRestrictionCode: eligibilityRestriction,
     };
   } catch (e) {
     throw new Error(getApiErrorMessage(e, "Não foi possível verificar este sinal."));
@@ -125,8 +148,17 @@ export async function sendProfileSignal(
     const { data } = await api.post("/profile-signals", { receiverUserId: recipientUserId, type });
     return mapProfileSignal(data);
   } catch (e) {
-    throw new Error(getApiErrorMessage(e, "Não foi possível enviar o sinal."));
+    throw new Error(getProfileSignalSendErrorMessage(e));
   }
+}
+
+/** Mensagem amigável para erros de envio (usa corpo da API quando existir). */
+export function getProfileSignalSendErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const fromBody = getMessageFromApiResponseData(err.response?.data);
+    if (fromBody) return fromBody;
+  }
+  return getApiErrorMessage(err, "Não foi possível enviar o sinal.");
 }
 
 export async function fetchReceivedProfileSignals(page = 1, pageSize = 20): Promise<ProfileSignalsPage> {
