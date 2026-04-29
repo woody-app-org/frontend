@@ -1,5 +1,5 @@
-import { useCallback, useState, type ReactNode } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Activity, Bookmark } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { FeedErrorState } from "@/features/feed/components/FeedErrorState";
@@ -21,15 +21,23 @@ import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
 import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
+import { ProfileSignalButton } from "../components/ProfileSignalButton";
+import { ProfileSignalsTab } from "../components/ProfileSignalsTab";
+import { useProfileSignalsUnreadCount } from "../hooks/useProfileSignalsUnreadCount";
 
-type ProfileTab = "posts" | "about" | "communities" | "saved" | "activity";
+type ProfileTab = "posts" | "about" | "communities" | "saved" | "activity" | "signals";
 
-const TABS: { id: ProfileTab; label: string }[] = [
+const BASE_TABS: { id: ProfileTab; label: string }[] = [
   { id: "posts", label: "Publicações" },
   { id: "about", label: "Sobre" },
   { id: "communities", label: "Comunidades" },
   { id: "saved", label: "Salvos" },
   { id: "activity", label: "Atividades" },
+];
+
+const OWN_PROFILE_TABS: { id: ProfileTab; label: string }[] = [
+  ...BASE_TABS,
+  { id: "signals", label: "Sinais" },
 ];
 
 function ProfileEmptyTab({
@@ -55,6 +63,7 @@ function ProfileEmptyTab({
 export function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user: authUser, patchUser, isAuthenticated } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [editOpen, setEditOpen] = useState(false);
@@ -83,6 +92,31 @@ export function ProfilePage() {
     applyFollowPatch,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
+
+  const { unreadCount: unreadSignalsCount } = useProfileSignalsUnreadCount(
+    Boolean(isOwnProfile && authUser?.id)
+  );
+
+  useEffect(() => {
+    if (!isOwnProfile) return;
+    const q = searchParams.get("tab");
+    if (q === "signals") {
+      setTab("signals");
+    }
+  }, [isOwnProfile, searchParams]);
+
+  const selectTab = useCallback(
+    (id: ProfileTab) => {
+      setTab(id);
+      if (!isOwnProfile) return;
+      if (id === "signals") {
+        setSearchParams({ tab: "signals" }, { replace: true });
+      } else {
+        setSearchParams({}, { replace: true });
+      }
+    },
+    [isOwnProfile, setSearchParams]
+  );
 
   const bumpFollowLists = useCallback(() => {
     setFollowListsRevision((n) => n + 1);
@@ -127,6 +161,8 @@ export function ProfilePage() {
   const profileNumericId = profile && !isOwnProfile ? Number.parseInt(profile.id, 10) : NaN;
   const canStartDmFromProfile =
     Boolean(profile) && !isOwnProfile && isAuthenticated && Number.isFinite(profileNumericId) && profileNumericId > 0;
+  const visibleTabs = isOwnProfile ? OWN_PROFILE_TABS : BASE_TABS;
+  const activeTab = !isOwnProfile && tab === "signals" ? "posts" : tab;
 
   return (
     <FeedLayout>
@@ -157,7 +193,7 @@ export function ProfilePage() {
               }
               followSlot={
                 !isOwnProfile && isAuthenticated ? (
-                  <div className="flex w-full flex-col gap-2 sm:items-end">
+                  <div className="flex w-full max-w-full flex-col gap-2 sm:max-w-xl sm:ml-auto">
                     <FollowProfileButton
                       targetUserId={profile.id}
                       targetDisplayName={profile.name}
@@ -166,11 +202,19 @@ export function ProfilePage() {
                       onCommit={handleFollowCommit}
                     />
                     {canStartDmFromProfile ? (
-                      <StartConversationButton
-                        otherUserId={profileNumericId}
-                        peerLabel={profile.name}
-                        variant="outline"
-                      />
+                      <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-2 sm:justify-items-stretch">
+                        <ProfileSignalButton
+                          recipientUserId={profileNumericId}
+                          recipientName={profile.name}
+                          className="min-w-0"
+                        />
+                        <StartConversationButton
+                          otherUserId={profileNumericId}
+                          peerLabel={profile.name}
+                          variant="outline"
+                          className="min-w-0"
+                        />
+                      </div>
                     ) : null}
                   </div>
                 ) : undefined
@@ -199,33 +243,43 @@ export function ProfilePage() {
             <div
               className={cn(
                 "mb-4 overflow-x-auto border-b border-[var(--woody-divider)]/90 bg-transparent",
-                "[-webkit-overflow-scrolling:touch]"
+                "[-webkit-overflow-scrolling:touch]",
+                "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               )}
               role="tablist"
               aria-label="Seções do perfil"
             >
               <div className="flex min-w-max items-end gap-8 px-1 sm:gap-10">
-                {TABS.map((t) => (
+                {visibleTabs.map((t) => (
                   <button
                     key={t.id}
                     type="button"
                     role="tab"
-                    aria-selected={tab === t.id}
-                    onClick={() => setTab(t.id)}
+                    aria-selected={activeTab === t.id}
+                    onClick={() => selectTab(t.id)}
                     className={cn(
                       woodyFocus.ring,
                       "relative min-h-11 rounded-none px-0 pb-3 pt-2 text-sm font-semibold transition-colors duration-200",
-                      tab === t.id
+                      activeTab === t.id
                         ? "text-[var(--woody-text)]"
                         : "text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
                     )}
                   >
-                    {t.label}
+                    <span className="inline-flex items-center gap-1.5">
+                      {t.label}
+                      {t.id === "signals" && unreadSignalsCount > 0 ? (
+                        <span
+                          className="inline-block size-2 shrink-0 rounded-full bg-[var(--woody-nav)]"
+                          title={`${unreadSignalsCount} por ler`}
+                          aria-hidden
+                        />
+                      ) : null}
+                    </span>
                     <span
                       aria-hidden
                       className={cn(
                         "absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full bg-[var(--woody-nav)] transition-opacity duration-200",
-                        tab === t.id ? "opacity-100" : "opacity-0"
+                        activeTab === t.id ? "opacity-100" : "opacity-0"
                       )}
                     />
                   </button>
@@ -234,7 +288,7 @@ export function ProfilePage() {
             </div>
 
             <div className="min-w-0">
-              {tab === "posts" ? (
+              {activeTab === "posts" ? (
                 <ProfilePostsSection
                   pinnedPosts={pinnedPosts}
                   posts={posts}
@@ -257,7 +311,7 @@ export function ProfilePage() {
                 />
               ) : null}
 
-              {tab === "communities" ? (
+              {activeTab === "communities" ? (
                 <ProfileCommunitiesSection
                   userId={profile.id}
                   isOwnProfile={isOwnProfile}
@@ -266,9 +320,9 @@ export function ProfilePage() {
                 />
               ) : null}
 
-              {tab === "about" ? <ProfileOverviewTab profile={profile} /> : null}
+              {activeTab === "about" ? <ProfileOverviewTab profile={profile} /> : null}
 
-              {tab === "saved" ? (
+              {activeTab === "saved" ? (
                 <ProfileEmptyTab
                   icon={<Bookmark className="size-5" aria-hidden />}
                   title={isOwnProfile ? "Salvos em construção" : "Salvos privados"}
@@ -280,13 +334,15 @@ export function ProfilePage() {
                 />
               ) : null}
 
-              {tab === "activity" ? (
+              {activeTab === "activity" ? (
                 <ProfileEmptyTab
                   icon={<Activity className="size-5" aria-hidden />}
                   title="Atividades recentes"
                   description="Quando a atividade do perfil estiver disponível, comentários, participações e movimentos relevantes aparecerão aqui."
                 />
               ) : null}
+
+              {activeTab === "signals" && isOwnProfile ? <ProfileSignalsTab /> : null}
             </div>
           </>
         )}

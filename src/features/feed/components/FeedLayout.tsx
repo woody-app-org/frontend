@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Bell, MessageCircle, Search } from "lucide-react";
+import { MessageCircle, Search } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { PrivateNotificationsBell } from "./PrivateNotificationsBell";
 import { cn } from "@/lib/utils";
 import { SearchModal } from "@/features/search/components/SearchModal";
 import { UserAccountMenu } from "./UserAccountMenu";
@@ -56,8 +57,6 @@ const styles = {
     "size-10 flex items-center justify-center rounded-full text-[var(--woody-text)] hover:bg-black/5 transition-colors shrink-0",
   iconBtnOnDark:
     "size-10 flex items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors shrink-0",
-  bellWrap: "relative",
-  badge: "absolute top-1.5 right-1.5 size-1.5 rounded-full bg-[var(--woody-nav)]",
 } as const;
 
 const SCROLL_KEYS = [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp"] as const;
@@ -214,10 +213,7 @@ function FeedLayoutShell({
                 <Link to="/messages" className={styles.iconBtnOnDark} aria-label="Mensagens">
                   <MessageCircle className="size-5" />
                 </Link>
-                <button type="button" className={cn(styles.iconBtnOnDark, styles.bellWrap)} aria-label="Notificações">
-                  <Bell className="size-5" />
-                  <span className={styles.badge} aria-hidden />
-                </button>
+                <PrivateNotificationsBell variant="mobileHeader" />
                 <UserAccountMenu variant="inverse" />
               </div>
             </div>
@@ -242,10 +238,7 @@ function FeedLayoutShell({
               <Link to="/messages" className={styles.iconBtn} aria-label="Mensagens">
                 <MessageCircle className="size-5" />
               </Link>
-              <button type="button" className={cn(styles.iconBtn, styles.bellWrap)} aria-label="Notificações">
-                <Bell className="size-5" />
-                <span className={styles.badge} aria-hidden />
-              </button>
+              <PrivateNotificationsBell variant="toolbar" />
               <UserAccountMenu />
             </div>
 
