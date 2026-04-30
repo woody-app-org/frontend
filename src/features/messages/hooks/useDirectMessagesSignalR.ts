@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import { getDirectMessagesHubUrl, getStoredToken } from "@/lib/api";
+import { requestNotificationsSyncFromRealtime } from "@/features/notifications/lib/notificationsRealtimeBus";
 import type {
   ConversationRealtimeDto,
   DirectMessageInboxEventDto,
@@ -89,6 +90,9 @@ export function useDirectMessagesSignalR(
       handlersRef.current.onConversationUpdated?.(snap)
     );
     connection.on("inboxChanged", (evt: DirectMessageInboxEventDto) => handlersRef.current.onInboxChanged?.(evt));
+    connection.on("notificationsChanged", () => {
+      requestNotificationsSyncFromRealtime();
+    });
 
     let cancelled = false;
 

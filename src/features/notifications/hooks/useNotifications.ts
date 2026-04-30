@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { NOTIFICATIONS_SYNC_EVENT } from "../lib/notificationsRealtimeBus";
 import {
   fetchNotificationsPage,
   markAllNotificationsRead,
@@ -51,6 +52,13 @@ export function useNotifications({ enabled, isOpen, pageSize = 40 }: UseNotifica
     }
     if (!isOpen) return;
     void refetch();
+  }, [enabled, isOpen, refetch]);
+
+  useEffect(() => {
+    if (!enabled || !isOpen) return;
+    const onSync = () => void refetch();
+    window.addEventListener(NOTIFICATIONS_SYNC_EVENT, onSync);
+    return () => window.removeEventListener(NOTIFICATIONS_SYNC_EVENT, onSync);
   }, [enabled, isOpen, refetch]);
 
   const filteredItems = useMemo(() => {

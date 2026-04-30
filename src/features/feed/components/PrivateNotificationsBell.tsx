@@ -1,8 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useProfileSignalsUnreadCount } from "@/features/profile/hooks/useProfileSignalsUnreadCount";
 import { useNotificationsUnreadCount } from "@/features/notifications/hooks/useNotificationsUnreadCount";
+import { useNotificationsInboxSignalR } from "@/features/notifications/hooks/useNotificationsInboxSignalR";
 import { NotificationsPanel } from "@/features/notifications/components/NotificationsPanel";
 import { NotificationBell } from "@/features/notifications/components/NotificationBell";
 import { NotificationsPopoverContent } from "@/features/notifications/components/NotificationsPopover";
@@ -20,8 +22,12 @@ export interface PrivateNotificationsBellProps {
  * Desktop: popover junto ao ícone. Mobile: modal em cartão (área confortável para toque).
  */
 export function PrivateNotificationsBell({ variant }: PrivateNotificationsBellProps) {
+  const { pathname } = useLocation();
   const { isAuthenticated, user } = useAuth();
   const enabled = Boolean(isAuthenticated && user?.id);
+  const isMessagesRoute = useMemo(() => /^\/messages(\/|$)/.test(pathname), [pathname]);
+  /** Em /messages o `useDirectMessagesSignalR` já está no mesmo hub e grupo inbox. */
+  useNotificationsInboxSignalR(enabled && !isMessagesRoute);
   const { unreadCount: signalsUnreadCount } = useProfileSignalsUnreadCount(enabled);
   const { unreadCount: notifUnread, refresh: refreshNotifUnread } = useNotificationsUnreadCount(enabled);
   const isMobile = useMatchMedia("(max-width: 767px)");
