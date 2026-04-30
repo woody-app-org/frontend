@@ -5,8 +5,11 @@ import { VideoPostPlayer } from "./VideoPostPlayer";
 const imgFeed =
   "w-full max-h-[min(22rem,56vw)] rounded-lg object-cover md:max-h-[20rem]";
 const imgDetail = "max-h-[460px] w-full object-cover";
+const imgMessage = cn(
+  "w-full max-w-[min(100%,min(18rem,85vw))] max-h-36 rounded-lg object-cover sm:max-h-40"
+);
 
-export type PostMediaRenderVariant = "feed" | "detail";
+export type PostMediaRenderVariant = "feed" | "detail" | "message";
 
 export interface PostMediaItemProps {
   item: PostMediaAttachment;
@@ -26,13 +29,19 @@ export function PostMediaItem({ item, variant, className }: PostMediaItemProps) 
       />
     );
   }
+  const imgClass =
+    variant === "detail" ? imgDetail : variant === "message" ? imgMessage : imgFeed;
   return (
     <img
       src={item.url}
       alt=""
       className={cn(
-        variant === "detail" ? imgDetail : imgFeed,
-        item.mediaType === "sticker" ? "max-h-48 bg-transparent object-contain" : undefined,
+        imgClass,
+        item.mediaType === "sticker"
+          ? variant === "message"
+            ? "max-h-28 bg-transparent object-contain"
+            : "max-h-48 bg-transparent object-contain"
+          : undefined,
         className
       )}
       loading="lazy"

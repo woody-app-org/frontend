@@ -45,6 +45,7 @@ export interface MessageAttachmentResponseDto {
   /** `image` | `video` | `gif` | `sticker` — omissão trata-se como imagem (legado). */
   mediaType?: string;
   contentType: string | null;
+  thumbnailUrl?: string | null;
   durationSeconds?: number | null;
   displayOrder: number;
   createdAt: string;
