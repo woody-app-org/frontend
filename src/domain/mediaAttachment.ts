@@ -9,5 +9,7 @@ export interface PostMediaAttachment {
   url: string;
   mediaType: WoodyMediaType;
   mimeType?: string | null;
+  thumbnailUrl?: string | null;
   durationSeconds?: number | null;
+  durationMs?: number | null;
 }

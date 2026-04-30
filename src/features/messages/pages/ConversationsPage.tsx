@@ -337,6 +337,7 @@ export function ConversationsPage() {
             ) : (
               <ConversationChatPanel
                 key={selectedId}
+                conversationId={selectedId}
                 peer={activePeer}
                 messages={messages}
                 loadingMessages={loadingMessages}

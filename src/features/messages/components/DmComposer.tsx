@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
+import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { DM_MESSAGE_BODY_MAX_LENGTH, DM_MESSAGE_MAX_IMAGE_ATTACHMENTS } from "../lib/dmLimits";
@@ -12,6 +13,7 @@ import { DM_MESSAGE_BODY_MAX_LENGTH, DM_MESSAGE_MAX_IMAGE_ATTACHMENTS } from "..
 export type OutgoingDmAttachment = { url: string; mediaType: string; durationSeconds?: number };
 
 export interface DmComposerProps {
+  conversationId: number;
   disabled?: boolean;
   onSend: (payload: {
     body?: string | null;
@@ -28,23 +30,7 @@ type Staged = {
   durationSeconds?: number;
 };
 
-function readVideoDurationSeconds(objectUrl: string): Promise<number | undefined> {
-  return new Promise((resolve) => {
-    const v = document.createElement("video");
-    v.preload = "metadata";
-    v.muted = true;
-    const finish = (sec?: number) => {
-      v.removeAttribute("src");
-      v.load();
-      resolve(sec);
-    };
-    v.onloadedmetadata = () => finish(Number.isFinite(v.duration) ? Math.round(v.duration) : undefined);
-    v.onerror = () => finish(undefined);
-    v.src = objectUrl;
-  });
-}
-
-export function DmComposer({ disabled, onSend }: DmComposerProps) {
+export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const stickerRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState("");
@@ -56,6 +42,8 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
   const canSend = Boolean(draft.trim() || staged.length > 0);
   const blocked = disabled || busy;
 
+  const uploadCtx = { scope: "message" as const, conversationId: String(conversationId) };
+
   const addFiles = async (files: FileList | null) => {
     if (!files?.length) return;
     const next = [...staged];
@@ -66,9 +54,11 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
         if (file.type.startsWith("video/")) {
           if (file.type !== "video/mp4" && file.type !== "video/webm") continue;
           const blobUrl = URL.createObjectURL(file);
-          const uploaded = await uploadVideoMedia(file);
           const dur = await readVideoDurationSeconds(blobUrl);
           URL.revokeObjectURL(blobUrl);
+          const uploaded = await uploadVideoMedia(file, uploadCtx, {
+            ...(dur != null && dur > 0 ? { durationSeconds: dur } : {}),
+          });
           next.push({
             key,
             previewUrl: uploaded.url,
@@ -81,7 +71,7 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
             const dataUrl = await readImageAsDataUrlIfSmall(file);
             next.push({ key, previewUrl: dataUrl, sendUrl: dataUrl, mediaType: "image" });
           } else {
-            const uploaded = await uploadImageMedia(file);
+            const uploaded = await uploadImageMedia(file, uploadCtx);
             const mt = mediaTypeFromUpload(uploaded);
             next.push({
               key,
@@ -107,7 +97,7 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
       const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       try {
         if (file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif")) {
-          const uploaded = await uploadImageMedia(file);
+          const uploaded = await uploadImageMedia(file, uploadCtx);
           next.push({
             key,
             previewUrl: uploaded.url,
@@ -115,7 +105,7 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
             mediaType: "gif",
           });
         } else if (file.type === "image/webp" || file.type === "image/png") {
-          const uploaded = await uploadImageMedia(file);
+          const uploaded = await uploadImageMedia(file, uploadCtx);
           next.push({
             key,
             previewUrl: uploaded.url,

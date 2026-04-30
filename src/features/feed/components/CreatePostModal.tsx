@@ -29,7 +29,7 @@ export function CreatePostModal() {
               <DialogTitle className="text-[var(--woody-text)]">Nova publicação</DialogTitle>
               <p className="mt-1 text-sm text-[var(--woody-muted)]">
                 Escolhe se publicas no teu perfil ou numa comunidade; depois preenche o texto e, se quiseres, tags ou
-                imagem.
+                imagem ou vídeo.
               </p>
             </div>
             <DialogClose asChild>

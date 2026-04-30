@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { ImagePlus, Loader2, UserRound, Users, X } from "lucide-react";
+import { ImagePlus, Loader2, UserRound, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,27 +17,22 @@ import {
 } from "../services/post.service";
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
+import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
+import {
+  POST_COMPOSER_IMAGE_MAX_BYTES,
+  POST_COMPOSER_VIDEO_MAX_BYTES,
+  POST_COMPOSER_VIDEO_MAX_DURATION_SEC,
+  formatFileSize,
+} from "@/domain/postMediaLimits";
+import { MediaPicker } from "@/components/media/MediaPicker";
+import { MediaPreviewGrid, type MediaPreviewItem } from "@/components/media/MediaPreviewGrid";
 
 const selectClass = cn(
   postComposerFieldStyles.input,
   "w-full appearance-none bg-[var(--woody-bg)] pr-9 cursor-pointer"
 );
 
-function readVideoDurationSeconds(objectUrl: string): Promise<number | undefined> {
-  return new Promise((resolve) => {
-    const v = document.createElement("video");
-    v.preload = "metadata";
-    v.muted = true;
-    const finish = (sec?: number) => {
-      v.removeAttribute("src");
-      v.load();
-      resolve(sec);
-    };
-    v.onloadedmetadata = () => finish(Number.isFinite(v.duration) ? Math.round(v.duration) : undefined);
-    v.onerror = () => finish(undefined);
-    v.src = objectUrl;
-  });
-}
+const VIDEO_MIME_OK = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 
 function targetOptionClass(selected: boolean) {
   return cn(
@@ -162,29 +157,82 @@ export function PostComposerForm({
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
 
-  const onPickFile = useCallback(() => fileInputRef.current?.click(), []);
-
   const onFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
+    const input = e.target;
+    const f = input.files?.[0];
     if (!f) return;
-    if (f.type.startsWith("video/")) {
-      if (f.type !== "video/mp4" && f.type !== "video/webm") {
-        setFormError("Vídeo: usa MP4 ou WebM.");
+
+    const resetInput = () => {
+      input.value = "";
+    };
+
+    void (async () => {
+      if (f.type.startsWith("video/")) {
+        if (!VIDEO_MIME_OK.has(f.type)) {
+          setFormError("Vídeo: escolhe MP4, WebM ou MOV.");
+          resetInput();
+          return;
+        }
+        if (f.size > POST_COMPOSER_VIDEO_MAX_BYTES) {
+          setFormError(`Vídeo demasiado grande (máx. ${formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)}).`);
+          resetInput();
+          return;
+        }
+        const blobUrl = URL.createObjectURL(f);
+        const dur = await readVideoDurationSeconds(blobUrl);
+        URL.revokeObjectURL(blobUrl);
+        if (dur != null && dur > POST_COMPOSER_VIDEO_MAX_DURATION_SEC) {
+          setFormError(
+            `Vídeo demasiado longo (máx. ${POST_COMPOSER_VIDEO_MAX_DURATION_SEC} s). O teu ficheiro tem ~${dur} s.`
+          );
+          resetInput();
+          return;
+        }
+        setFormError(null);
+        setMediaFile(f);
+        setImageUrlInput("");
+        resetInput();
+        return;
+      }
+      if (!f.type.startsWith("image/")) {
+        setFormError("Escolhe uma imagem ou um vídeo.");
+        resetInput();
+        return;
+      }
+      if (f.size > POST_COMPOSER_IMAGE_MAX_BYTES) {
+        setFormError(`Imagem demasiado grande (máx. ${formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)}).`);
+        resetInput();
         return;
       }
       setFormError(null);
       setMediaFile(f);
       setImageUrlInput("");
-      return;
-    }
-    if (!f.type.startsWith("image/")) {
-      setFormError("Escolhe uma imagem ou um vídeo.");
-      return;
-    }
-    setFormError(null);
-    setMediaFile(f);
-    setImageUrlInput("");
+      resetInput();
+    })();
   }, []);
+
+  const previewItems = useMemo((): MediaPreviewItem[] => {
+    if (mediaFile && mediaPreviewUrl) {
+      return [
+        {
+          id: "local",
+          previewUrl: mediaPreviewUrl,
+          kind: mediaFile.type.startsWith("video/") ? "video" : "image",
+        },
+      ];
+    }
+    const url = imageUrlInput.trim();
+    if (url) return [{ id: "url", previewUrl: url, kind: "image" }];
+    return [];
+  }, [mediaFile, mediaPreviewUrl, imageUrlInput]);
+
+  const removePreview = useCallback(
+    (id: string) => {
+      if (id === "local") clearMedia();
+      else setImageUrlInput("");
+    },
+    [clearMedia]
+  );
 
   const handleSubmit = async () => {
     setFormError(null);
@@ -213,28 +261,38 @@ export function PostComposerForm({
         | Array<{ url: string; mediaType: "image" | "video" | "gif" | "sticker"; durationSeconds?: number }>
         | undefined;
 
+      const cid = forcedCommunity?.id ?? communityId;
+      const uploadCtx =
+        context === "community"
+          ? ({ scope: "post" as const, publicationContext: "community" as const, communityId: cid } as const)
+          : ({ scope: "post" as const, publicationContext: "profile" as const } as const);
+
       if (urlTrim) {
         imageUrl = urlTrim;
       } else if (mediaFile) {
         if (mediaFile.type.startsWith("video/")) {
-          const uploaded = await uploadVideoMedia(mediaFile);
           let durationSeconds: number | undefined;
           if (mediaPreviewUrl) {
             const dur = await readVideoDurationSeconds(mediaPreviewUrl);
             if (dur != null && dur > 0) durationSeconds = dur;
           }
+          const uploaded = await uploadVideoMedia(mediaFile, uploadCtx, { durationSeconds });
+          const sec =
+            uploaded.durationSeconds != null && Number.isFinite(uploaded.durationSeconds)
+              ? uploaded.durationSeconds
+              : durationSeconds;
           mediaAttachments = [
             {
               url: uploaded.url,
               mediaType: "video",
-              ...(durationSeconds != null ? { durationSeconds } : {}),
+              ...(sec != null && sec > 0 ? { durationSeconds: Math.round(sec) } : {}),
             },
           ];
         } else if (mediaFile.size <= 450 * 1024 && mediaFile.type !== "image/gif") {
           const dataUrl = await readImageAsDataUrlIfSmall(mediaFile);
           mediaAttachments = [{ url: dataUrl, mediaType: "image" }];
         } else {
-          const uploaded = await uploadImageMedia(mediaFile);
+          const uploaded = await uploadImageMedia(mediaFile, uploadCtx);
           const mt = mediaTypeFromUpload(uploaded);
           mediaAttachments = [
             {
@@ -290,9 +348,6 @@ export function PostComposerForm({
 
   const submitDisabled =
     submitting || communityBlocking || !title.trim() || !content.trim();
-
-  const previewSrc = mediaPreviewUrl ?? (imageUrlInput.trim() ? imageUrlInput.trim() : null);
-  const previewIsVideo = Boolean(mediaFile?.type.startsWith("video/"));
 
   const contentPlaceholder =
     publishTarget === "profile" && !forcedCommunity
@@ -486,27 +541,22 @@ export function PostComposerForm({
       <div className="space-y-2">
         <span className="text-sm font-medium text-[var(--woody-text)]">Mídia (opcional)</span>
         <div className="flex flex-wrap items-center gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/mp4,video/webm"
-            className="hidden"
-            aria-hidden
+          <MediaPicker
+            fileInputRef={fileInputRef}
+            accept="image/*,video/mp4,video/webm,video/quicktime"
             onChange={onFileChange}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="rounded-xl border-[var(--woody-accent)]/25"
-            onClick={onPickFile}
-            disabled={fieldsDisabled || !!imageUrlInput.trim()}
+            disabled={fieldsDisabled}
+            buttonDisabled={!!imageUrlInput.trim()}
           >
             <ImagePlus className="size-4" aria-hidden />
             Imagem ou vídeo
-          </Button>
+          </MediaPicker>
           <span className="text-xs text-[var(--woody-muted)]">ou cole um URL (imagem) abaixo</span>
         </div>
+        <p className="text-[0.7rem] leading-snug text-[var(--woody-muted)]">
+          Imagem até {formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} · vídeo MP4/WebM/MOV até{" "}
+          {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} e {POST_COMPOSER_VIDEO_MAX_DURATION_SEC} s
+        </p>
         <Input
           placeholder="https://… (URL público da imagem)"
           value={imageUrlInput}
@@ -517,26 +567,11 @@ export function PostComposerForm({
           disabled={fieldsDisabled || !!mediaFile}
           className={postComposerFieldStyles.input}
         />
-        {previewSrc && (
-          <div className="relative mt-2 overflow-hidden rounded-xl border border-[var(--woody-accent)]/15 bg-[var(--woody-nav)]/5">
-            {previewIsVideo ? (
-              <video src={previewSrc} className="max-h-56 w-full object-contain" controls muted playsInline />
-            ) : (
-              <img src={previewSrc} alt="Pré-visualização" className="max-h-56 w-full object-contain" />
-            )}
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              className="absolute right-2 top-2 size-9 rounded-full shadow-md"
-              onClick={clearMedia}
-              disabled={fieldsDisabled}
-              aria-label="Remover mídia"
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
-        )}
+        <MediaPreviewGrid
+          items={previewItems}
+          onRemove={removePreview}
+          disabled={fieldsDisabled}
+        />
       </div>
 
       {formError && (

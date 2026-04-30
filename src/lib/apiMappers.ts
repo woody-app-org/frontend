@@ -110,11 +110,22 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
       if (!isWoodyMediaType(mt)) continue;
       const u = String(o.url ?? "");
       if (!u) continue;
+      let durationSeconds: number | null = null;
+      if (o.durationSeconds != null) {
+        const n = Number(o.durationSeconds);
+        if (Number.isFinite(n)) durationSeconds = Math.round(n);
+      } else if (o.durationMs != null) {
+        const ms = Number(o.durationMs);
+        if (Number.isFinite(ms)) durationSeconds = Math.round(ms / 1000);
+      }
       list.push({
         url: u,
         mediaType: mt,
         mimeType: o.mimeType != null ? String(o.mimeType) : null,
-        durationSeconds: o.durationSeconds != null ? Number(o.durationSeconds) : null,
+        thumbnailUrl: o.thumbnailUrl != null ? String(o.thumbnailUrl) : null,
+        durationSeconds,
+        durationMs:
+          o.durationMs != null && Number.isFinite(Number(o.durationMs)) ? Number(o.durationMs) : null,
       });
     }
     if (list.length > 0) mediaAttachments = list;

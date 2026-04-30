@@ -31,7 +31,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
       ) : null}
       <p className={cn("whitespace-pre-wrap text-[0.98rem] leading-relaxed text-[var(--woody-text)]/90")}>{post.content}</p>
       {post.mediaAttachments && post.mediaAttachments.length > 0 ? (
-        <PostMediaGallery items={post.mediaAttachments} className="mt-0" />
+        <PostMediaGallery items={post.mediaAttachments} className="mt-0" variant="detail" />
       ) : legacy.length === 1 ? (
         <div className="overflow-hidden rounded-2xl border border-[var(--woody-accent)]/12 bg-[var(--woody-nav)]/5">
           <img src={legacy[0]} alt="" className="max-h-[460px] w-full object-cover" />

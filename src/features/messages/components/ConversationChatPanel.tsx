@@ -19,6 +19,7 @@ function peerInitials(peer: ConversationPeerPreviewDto | null): string {
 }
 
 export interface ConversationChatPanelProps {
+  conversationId: number;
   peer: ConversationPeerPreviewDto | null;
   messages: MessageResponseDto[];
   loadingMessages: boolean;
@@ -36,6 +37,7 @@ export interface ConversationChatPanelProps {
 }
 
 export function ConversationChatPanel({
+  conversationId,
   peer,
   messages,
   loadingMessages,
@@ -169,7 +171,7 @@ export function ConversationChatPanel({
         />
       )}
 
-      <DmComposer disabled={composerBlocked} onSend={onSendMessage} />
+      <DmComposer conversationId={conversationId} disabled={composerBlocked} onSend={onSendMessage} />
     </div>
   );
 }
