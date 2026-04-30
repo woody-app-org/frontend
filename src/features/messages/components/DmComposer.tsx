@@ -43,6 +43,9 @@ type StagedRow = {
   thumbnailUrl?: string | null;
   provider?: string | null;
   externalId?: string | null;
+  storageKey?: string;
+  contentType?: string;
+  sizeBytes?: number;
 };
 
 function previewKind(mt: string): MessageMediaPreviewItem["kind"] {
@@ -173,6 +176,9 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
               sendUrl: uploaded.url,
               mediaType: "video",
               status: "ready" as const,
+              storageKey: uploaded.storageKey,
+              contentType: uploaded.contentType,
+              sizeBytes: uploaded.sizeBytes,
               ...(sec != null && sec > 0 ? { durationSeconds: Math.round(sec) } : {}),
               blobToRevoke: null,
             };
@@ -262,6 +268,9 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
             sendUrl: uploaded.url,
             mediaType,
             status: "ready" as const,
+            storageKey: uploaded.storageKey,
+            contentType: uploaded.contentType,
+            sizeBytes: uploaded.sizeBytes,
             blobToRevoke: null,
           };
         })
@@ -330,6 +339,9 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
                 sendUrl: uploaded.url,
                 mediaType: "gif",
                 status: "ready" as const,
+                storageKey: uploaded.storageKey,
+                contentType: uploaded.contentType,
+                sizeBytes: uploaded.sizeBytes,
                 blobToRevoke: null,
               };
             })
@@ -380,6 +392,9 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
                 sendUrl: uploaded.url,
                 mediaType: "sticker",
                 status: "ready" as const,
+                storageKey: uploaded.storageKey,
+                contentType: uploaded.contentType,
+                sizeBytes: uploaded.sizeBytes,
                 blobToRevoke: null,
               };
             })
@@ -413,6 +428,9 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
               ...(s.thumbnailUrl ? { thumbnailUrl: s.thumbnailUrl } : {}),
               ...(s.provider ? { provider: s.provider } : {}),
               ...(s.externalId ? { externalId: s.externalId } : {}),
+              ...(s.storageKey ? { storageKey: s.storageKey } : {}),
+              ...(s.contentType ? { mimeType: s.contentType } : {}),
+              ...(s.sizeBytes != null ? { fileSize: s.sizeBytes } : {}),
             }))
         : null;
     setBusy(true);

@@ -49,6 +49,8 @@ export interface MessageAttachmentResponseDto {
   durationSeconds?: number | null;
   provider?: string | null;
   externalId?: string | null;
+  /** Chave de armazenamento Woody quando existir. */
+  storageKey?: string | null;
   displayOrder: number;
   createdAt: string;
 }
@@ -76,6 +78,9 @@ export interface OutgoingMessageAttachment {
   thumbnailUrl?: string | null;
   provider?: string | null;
   externalId?: string | null;
+  storageKey?: string;
+  mimeType?: string;
+  fileSize?: number;
 }
 
 export interface MessageResponseDto {

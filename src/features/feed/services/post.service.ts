@@ -24,8 +24,19 @@ export interface CreatePostPayload {
   imageUrl?: string | null;
   imageUrls?: string[];
   /** Anexos tipados (prioridade sobre <code>imageUrl</code> / <code>imageUrls</code>). */
-  mediaAttachments?: Array<{ url: string; mediaType: "image" | "video" | "gif" | "sticker"; durationSeconds?: number }>;
+  mediaAttachments?: CreatePostMediaAttachmentPayload[];
 }
+
+/** Corpo JSON de <code>mediaAttachments</code> em <code>POST /posts</code> (camelCase). */
+export type CreatePostMediaAttachmentPayload = {
+  url: string;
+  mediaType: "image" | "video" | "gif" | "sticker";
+  durationSeconds?: number;
+  /** Devolvido pelo upload Woody; opcional mas recomendado para CDN/migração. */
+  storageKey?: string;
+  mimeType?: string;
+  fileSize?: number;
+};
 
 function normalizeTags(raw: string): string[] {
   const seen = new Set<string>();

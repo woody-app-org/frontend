@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -15,7 +15,9 @@ export function IntroPage() {
 
   useEffect(() => {
     if (isLoading || isAuthenticated) return;
-    setIsVisible(true);
+    startTransition(() => {
+      setIsVisible(true);
+    });
     const t = window.setTimeout(() => {
       navigate("/landing", { replace: true });
     }, INTRO_DURATION_MS);

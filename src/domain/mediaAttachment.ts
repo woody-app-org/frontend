@@ -8,6 +8,8 @@ export function isWoodyMediaType(v: string): v is WoodyMediaType {
 export interface PostMediaAttachment {
   url: string;
   mediaType: WoodyMediaType;
+  /** Chave interna Woody (ex.: posts/…/….png) quando a API a devolve. */
+  storageKey?: string | null;
   mimeType?: string | null;
   thumbnailUrl?: string | null;
   durationSeconds?: number | null;

@@ -32,7 +32,7 @@ export function PostMediaGallery({ items, className, variant = "feed" }: PostMed
     >
       {items.map((m, idx) => (
         <div
-          key={`${m.url}-${idx}`}
+          key={`${m.storageKey ?? m.url}-${idx}`}
           role="listitem"
           className={cn(
             wrap,

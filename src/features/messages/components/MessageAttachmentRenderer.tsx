@@ -15,6 +15,7 @@ function toBubbleItem(a: MessageAttachmentResponseDto): PostMediaAttachment {
     mimeType: a.contentType,
     thumbnailUrl: a.thumbnailUrl ?? null,
     durationSeconds: a.durationSeconds ?? null,
+    storageKey: a.storageKey ?? null,
   };
 }
 
@@ -32,7 +33,7 @@ export function MessageAttachmentRenderer({ attachments, className }: MessageAtt
   if (!attachments?.length) return null;
   return (
     <ul className={cn("list-none space-y-2 p-0", className)}>
-      {attachments.map((a) => {
+      {attachments.map((a, idx) => {
         const item = toBubbleItem(a);
         const wrapLink = item.mediaType === "image";
         const inner =
@@ -42,7 +43,7 @@ export function MessageAttachmentRenderer({ attachments, className }: MessageAtt
             <PostMediaItem item={item} variant="message" />
           );
         return (
-          <li key={a.id}>
+          <li key={`att-${a.id}-${idx}-${item.storageKey ?? item.url}`}>
             {wrapLink ? (
               <a
                 href={a.url}

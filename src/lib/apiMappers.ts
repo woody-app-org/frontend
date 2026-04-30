@@ -121,6 +121,7 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
       list.push({
         url: u,
         mediaType: mt,
+        storageKey: o.storageKey != null ? String(o.storageKey) : null,
         mimeType: o.mimeType != null ? String(o.mimeType) : null,
         thumbnailUrl: o.thumbnailUrl != null ? String(o.thumbnailUrl) : null,
         durationSeconds,

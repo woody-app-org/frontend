@@ -14,6 +14,7 @@ import {
   POST_COMPOSER_TITLE_MAX_LENGTH,
   createPost,
   normalizePostComposerTags,
+  type CreatePostMediaAttachmentPayload,
 } from "../services/post.service";
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
@@ -257,9 +258,7 @@ export function PostComposerForm({
       const urlTrim = imageUrlInput.trim();
       let imageUrl: string | undefined;
       let imageUrls: string[] | undefined;
-      let mediaAttachments:
-        | Array<{ url: string; mediaType: "image" | "video" | "gif" | "sticker"; durationSeconds?: number }>
-        | undefined;
+      let mediaAttachments: CreatePostMediaAttachmentPayload[] | undefined;
 
       const cid = forcedCommunity?.id ?? communityId;
       const uploadCtx =
@@ -285,6 +284,9 @@ export function PostComposerForm({
             {
               url: uploaded.url,
               mediaType: "video",
+              storageKey: uploaded.storageKey,
+              mimeType: uploaded.contentType,
+              fileSize: uploaded.sizeBytes,
               ...(sec != null && sec > 0 ? { durationSeconds: Math.round(sec) } : {}),
             },
           ];
@@ -298,6 +300,9 @@ export function PostComposerForm({
             {
               url: uploaded.url,
               mediaType: mt === "gif" ? "gif" : "image",
+              storageKey: uploaded.storageKey,
+              mimeType: uploaded.contentType,
+              fileSize: uploaded.sizeBytes,
             },
           ];
         }

@@ -35,12 +35,15 @@ export function MediaPreviewGrid({ items, onRemove, disabled, className }: Media
               controls
               muted
               playsInline
+              preload="metadata"
             />
           ) : (
             <img
               src={it.previewUrl}
               alt="Pré-visualização"
               className="max-h-[min(18rem,70vw)] w-full object-contain sm:max-h-64"
+              loading="lazy"
+              decoding="async"
             />
           )}
           <Button

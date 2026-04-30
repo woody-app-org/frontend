@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
 import { NOTIFICATIONS_SYNC_EVENT } from "../lib/notificationsRealtimeBus";
 import { fetchNotificationsUnreadCount } from "../services/notifications.service";
 
@@ -9,19 +9,27 @@ export function useNotificationsUnreadCount(enabled: boolean) {
 
   const refresh = useCallback(async () => {
     if (!enabled) {
-      setUnreadCount(0);
+      startTransition(() => {
+        setUnreadCount(0);
+      });
       return;
     }
     try {
       const n = await fetchNotificationsUnreadCount();
-      setUnreadCount(n);
+      startTransition(() => {
+        setUnreadCount(n);
+      });
     } catch {
-      setUnreadCount(0);
+      startTransition(() => {
+        setUnreadCount(0);
+      });
     }
   }, [enabled]);
 
   useEffect(() => {
-    void refresh();
+    startTransition(() => {
+      void refresh();
+    });
   }, [refresh]);
 
   useEffect(() => {

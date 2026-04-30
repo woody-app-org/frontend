@@ -19,6 +19,11 @@ export interface VideoPostPlayerProps {
   ariaLabel?: string;
 }
 
+function preloadForVariant(variant: VideoPostPlayerVariant): "none" | "metadata" {
+  /** No feed evita descarregar faixas de vídeo até o utilizador interagir; detalhe/DM podem mostrar metadados/duração. */
+  return variant === "feed" ? "none" : "metadata";
+}
+
 export function VideoPostPlayer({ src, poster, variant, className, ariaLabel }: VideoPostPlayerProps) {
   const label =
     ariaLabel ??
@@ -31,8 +36,9 @@ export function VideoPostPlayer({ src, poster, variant, className, ariaLabel }: 
       poster={poster}
       className={cn(sizeClass, className)}
       controls
+      controlsList="nodownload"
       playsInline
-      preload="metadata"
+      preload={preloadForVariant(variant)}
       aria-label={label}
     />
   );

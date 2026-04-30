@@ -36,9 +36,15 @@ export function MessageMediaPreview({ items, onRemove, disabled, className }: Me
             )}
           >
             {s.kind === "video" ? (
-              <video src={s.previewUrl} className="size-full object-cover" muted playsInline />
+              <video
+                src={s.previewUrl}
+                className="size-full object-cover"
+                muted
+                playsInline
+                preload="none"
+              />
             ) : (
-              <img src={s.previewUrl} alt="" className="size-full object-cover" />
+              <img src={s.previewUrl} alt="" className="size-full object-cover" loading="lazy" decoding="async" />
             )}
             {s.status === "uploading" ? (
               <div
