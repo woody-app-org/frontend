@@ -24,7 +24,11 @@ export interface ConversationChatPanelProps {
   loadingMessages: boolean;
   messagesLoadError: string | null;
   currentUserId: string | undefined;
-  onSendMessage: (payload: { body?: string | null; attachmentUrls?: string[] | null }) => Promise<void>;
+  onSendMessage: (payload: {
+    body?: string | null;
+    attachmentUrls?: string[] | null;
+    attachments?: Array<{ url: string; mediaType: string; durationSeconds?: number }> | null;
+  }) => Promise<void>;
   onEditMessage: (messageId: number, body: string) => Promise<void>;
   onDeleteMessage: (messageId: number) => Promise<void>;
   onRetryMessages: () => void;
@@ -153,7 +157,7 @@ export function ConversationChatPanel({
       ) : messages.length === 0 ? (
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
           <p className="text-sm font-medium text-[var(--woody-text)]">Ainda não há mensagens</p>
-          <p className="max-w-xs text-sm text-[var(--woody-muted)]">Envia uma mensagem ou uma imagem para iniciar a conversa.</p>
+          <p className="max-w-xs text-sm text-[var(--woody-muted)]">Envia uma mensagem ou anexa imagem, vídeo ou GIF para iniciar a conversa.</p>
         </div>
       ) : (
         <DmMessageList

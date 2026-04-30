@@ -1,3 +1,5 @@
+import type { PostMediaAttachment } from "./mediaAttachment";
+
 /** Domínio compartilhado (comunidades, posts, usuárias) — preparado para troca por API. */
 
 export type CommunityCategory = "bemestar" | "carreira" | "cultura" | "seguranca" | "outro";
@@ -180,6 +182,8 @@ export interface Post {
   imageUrl: string | null;
   /** Galeria quando a API devolve várias URLs (ex.: `post_images`). */
   imageUrls?: string[];
+  /** Anexos tipados (imagem, vídeo, GIF, sticker) quando a API devolve `mediaAttachments`. */
+  mediaAttachments?: PostMediaAttachment[];
   /** Tags opcionais no nível do post (além do contexto da comunidade). */
   tags?: string[];
   createdAt: string;

@@ -148,28 +148,44 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
                   ) : null}
                   {message.attachments?.length ? (
                     <ul className={cn("list-none space-y-2 p-0", message.body ? "mt-2" : "")}>
-                      {message.attachments.map((a) => (
-                        <li key={a.id}>
-                          <a
-                            href={a.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={cn(
-                              woodyFocus.ring,
-                              "block overflow-hidden rounded-xl ring-1 ring-[var(--woody-divider)]/80"
-                            )}
-                          >
-                            <img
+                      {message.attachments.map((a) => {
+                        const mt = a.mediaType ?? "image";
+                        return (
+                          <li key={a.id}>
+                          {mt === "video" ? (
+                            <video
                               src={a.url}
-                              alt=""
-                              className="max-h-56 w-full object-cover sm:max-h-64"
-                              loading="lazy"
-                              decoding="async"
-                              referrerPolicy="no-referrer"
+                              className="max-h-56 w-full rounded-xl object-cover ring-1 ring-[var(--woody-divider)]/80 sm:max-h-64"
+                              controls
+                              playsInline
+                              preload="metadata"
                             />
-                          </a>
-                        </li>
-                      ))}
+                          ) : (
+                            <a
+                              href={a.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={cn(
+                                woodyFocus.ring,
+                                "block overflow-hidden rounded-xl ring-1 ring-[var(--woody-divider)]/80"
+                              )}
+                            >
+                              <img
+                                src={a.url}
+                                alt=""
+                                className={cn(
+                                  "max-h-56 w-full object-cover sm:max-h-64",
+                                  mt === "sticker" && "object-contain max-h-40 bg-transparent"
+                                )}
+                                loading="lazy"
+                                decoding="async"
+                                referrerPolicy="no-referrer"
+                              />
+                            </a>
+                          )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   ) : null}
                 </>

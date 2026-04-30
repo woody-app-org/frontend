@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { woodyMotion, woodyPinPill } from "@/lib/woody-ui";
 import type { Post } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { PostMediaGallery } from "@/components/media/PostMediaGallery";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
 import { PostProfileContextBar } from "./PostProfileContextBar";
 import { PostOverflowMenu, type PostProfilePinMenuProps } from "./PostOverflowMenu";
@@ -135,6 +136,8 @@ export function PostCard({
         ? [post.imageUrl]
         : [];
 
+  const typedMedia = post.mediaAttachments && post.mediaAttachments.length > 0 ? post.mediaAttachments : null;
+
   const hasContextBar =
     Boolean(post.community) || (post.publicationContext === "profile" && postSurface !== "profile");
   const showProfileContext =
@@ -257,7 +260,15 @@ export function PostCard({
         <p className={cn(styles.content, (post.title || post.tags?.length) && "mt-2")}>
           {post.content}
         </p>
-        {imageGallery.length === 1 ? (
+        {typedMedia ? (
+          <div
+            data-post-ignore-open="true"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <PostMediaGallery items={typedMedia} />
+          </div>
+        ) : imageGallery.length === 1 ? (
           <div className={styles.imageWrap}>
             <img src={imageGallery[0]} alt="" className={styles.image} />
           </div>

@@ -1,54 +1,154 @@
 import { useRef, useState } from "react";
-import { ImagePlus, Loader2, Send, X } from "lucide-react";
+import { ImagePlus, Loader2, Send, SmilePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
+import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { DM_MESSAGE_BODY_MAX_LENGTH, DM_MESSAGE_MAX_IMAGE_ATTACHMENTS } from "../lib/dmLimits";
 
+export type OutgoingDmAttachment = { url: string; mediaType: string; durationSeconds?: number };
+
 export interface DmComposerProps {
   disabled?: boolean;
-  onSend: (payload: { body?: string | null; attachmentUrls?: string[] | null }) => Promise<void>;
+  onSend: (payload: {
+    body?: string | null;
+    attachmentUrls?: string[] | null;
+    attachments?: OutgoingDmAttachment[] | null;
+  }) => Promise<void>;
+}
+
+type Staged = {
+  key: string;
+  previewUrl: string;
+  sendUrl: string;
+  mediaType: string;
+  durationSeconds?: number;
+};
+
+function readVideoDurationSeconds(objectUrl: string): Promise<number | undefined> {
+  return new Promise((resolve) => {
+    const v = document.createElement("video");
+    v.preload = "metadata";
+    v.muted = true;
+    const finish = (sec?: number) => {
+      v.removeAttribute("src");
+      v.load();
+      resolve(sec);
+    };
+    v.onloadedmetadata = () => finish(Number.isFinite(v.duration) ? Math.round(v.duration) : undefined);
+    v.onerror = () => finish(undefined);
+    v.src = objectUrl;
+  });
 }
 
 export function DmComposer({ disabled, onSend }: DmComposerProps) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const stickerRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState("");
-  const [urls, setUrls] = useState<string[]>([]);
+  const [staged, setStaged] = useState<Staged[]>([]);
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [extrasOpen, setExtrasOpen] = useState(false);
 
-  const canSend = Boolean(draft.trim() || urls.length > 0);
+  const canSend = Boolean(draft.trim() || staged.length > 0);
   const blocked = disabled || busy;
 
   const addFiles = async (files: FileList | null) => {
     if (!files?.length) return;
-    const next: string[] = [...urls];
+    const next = [...staged];
     for (const file of Array.from(files)) {
       if (next.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS) break;
-      if (!file.type.startsWith("image/")) continue;
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       try {
-        const dataUrl = await readImageAsDataUrlIfSmall(file);
-        if (!next.includes(dataUrl)) next.push(dataUrl);
+        if (file.type.startsWith("video/")) {
+          if (file.type !== "video/mp4" && file.type !== "video/webm") continue;
+          const blobUrl = URL.createObjectURL(file);
+          const uploaded = await uploadVideoMedia(file);
+          const dur = await readVideoDurationSeconds(blobUrl);
+          URL.revokeObjectURL(blobUrl);
+          next.push({
+            key,
+            previewUrl: uploaded.url,
+            sendUrl: uploaded.url,
+            mediaType: "video",
+            ...(dur != null && dur > 0 ? { durationSeconds: dur } : {}),
+          });
+        } else if (file.type.startsWith("image/")) {
+          if (file.size <= 450 * 1024 && file.type !== "image/gif") {
+            const dataUrl = await readImageAsDataUrlIfSmall(file);
+            next.push({ key, previewUrl: dataUrl, sendUrl: dataUrl, mediaType: "image" });
+          } else {
+            const uploaded = await uploadImageMedia(file);
+            const mt = mediaTypeFromUpload(uploaded);
+            next.push({
+              key,
+              previewUrl: uploaded.url,
+              sendUrl: uploaded.url,
+              mediaType: mt === "gif" ? "gif" : "image",
+            });
+          }
+        }
       } catch {
         /* ignorar ficheiro inválido */
       }
     }
-    setUrls(next);
+    setStaged(next);
     if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const addStickerOrGifFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    const next = [...staged];
+    for (const file of Array.from(files)) {
+      if (next.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS) break;
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      try {
+        if (file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif")) {
+          const uploaded = await uploadImageMedia(file);
+          next.push({
+            key,
+            previewUrl: uploaded.url,
+            sendUrl: uploaded.url,
+            mediaType: "gif",
+          });
+        } else if (file.type === "image/webp" || file.type === "image/png") {
+          const uploaded = await uploadImageMedia(file);
+          next.push({
+            key,
+            previewUrl: uploaded.url,
+            sendUrl: uploaded.url,
+            mediaType: "sticker",
+          });
+        }
+      } catch {
+        /* ignorar */
+      }
+    }
+    setStaged(next);
+    if (stickerRef.current) stickerRef.current.value = "";
+    setExtrasOpen(false);
   };
 
   const submit = async () => {
     if (!canSend || blocked) return;
     const body = draft.trim() || null;
-    const attachmentUrls = urls.length > 0 ? urls : null;
+    const attachments =
+      staged.length > 0
+        ? staged.map((s) => ({
+            url: s.sendUrl,
+            mediaType: s.mediaType,
+            ...(s.durationSeconds != null ? { durationSeconds: s.durationSeconds } : {}),
+          }))
+        : null;
     setBusy(true);
     setSendError(null);
     try {
-      await onSend({ body, attachmentUrls });
+      await onSend({ body, attachments, attachmentUrls: null });
       setDraft("");
-      setUrls([]);
+      setStaged([]);
     } catch (e) {
       setSendError(e instanceof Error ? e.message : "Não foi possível enviar.");
     } finally {
@@ -60,21 +160,25 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
     <div className="shrink-0 border-t border-[var(--woody-divider)] bg-[var(--woody-header)]/40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm md:bg-transparent md:pb-3 md:backdrop-blur-none">
       {sendError ? <p className="mb-2 text-xs text-red-600">{sendError}</p> : null}
 
-      {urls.length > 0 ? (
+      {staged.length > 0 ? (
         <ul className="mb-2 flex list-none flex-wrap gap-2 p-0">
-          {urls.map((u) => (
-            <li key={u.slice(0, 48)} className="relative">
+          {staged.map((s) => (
+            <li key={s.key} className="relative">
               <div className="size-16 overflow-hidden rounded-lg ring-1 ring-[var(--woody-divider)]">
-                <img src={u} alt="" className="size-full object-cover" />
+                {s.mediaType === "video" ? (
+                  <video src={s.previewUrl} className="size-full object-cover" muted playsInline />
+                ) : (
+                  <img src={s.previewUrl} alt="" className="size-full object-cover" />
+                )}
               </div>
               <button
                 type="button"
-                onClick={() => setUrls((prev) => prev.filter((x) => x !== u))}
+                onClick={() => setStaged((prev) => prev.filter((x) => x.key !== s.key))}
                 className={cn(
                   woodyFocus.ring,
                   "absolute -top-1 -right-1 inline-flex size-6 items-center justify-center rounded-full bg-[var(--woody-card)] text-[var(--woody-text)] shadow ring-1 ring-[var(--woody-divider)]"
                 )}
-                aria-label="Remover imagem"
+                aria-label="Remover anexo"
               >
                 <X className="size-3.5" />
               </button>
@@ -87,10 +191,18 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
         <input
           ref={fileRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/mp4,video/webm"
           multiple
           className="sr-only"
           onChange={(e) => void addFiles(e.target.files)}
+        />
+        <input
+          ref={stickerRef}
+          type="file"
+          accept="image/gif,image/webp,image/png,.gif"
+          multiple
+          className="sr-only"
+          onChange={(e) => void addStickerOrGifFiles(e.target.files)}
         />
         <div className="flex min-w-0 flex-1 gap-2 max-md:items-end">
           <Button
@@ -98,11 +210,22 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
             variant="outline"
             size="icon"
             className="size-11 shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)]"
-            disabled={blocked || urls.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
+            disabled={blocked || staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
             onClick={() => fileRef.current?.click()}
-            aria-label="Anexar imagem"
+            aria-label="Anexar imagem ou vídeo"
           >
             <ImagePlus className="size-5 text-[var(--woody-nav)]" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-11 shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)]"
+            disabled={blocked || staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
+            onClick={() => setExtrasOpen(true)}
+            aria-label="GIF ou sticker"
+          >
+            <SmilePlus className="size-5 text-[var(--woody-nav)]" />
           </Button>
           <Textarea
             value={draft}
@@ -148,8 +271,23 @@ export function DmComposer({ disabled, onSend }: DmComposerProps) {
         </Button>
       </div>
       <p className="mt-1.5 hidden text-[0.65rem] text-[var(--woody-muted)] md:block">
-        Enter envia · Shift+Enter nova linha · até {DM_MESSAGE_MAX_IMAGE_ATTACHMENTS} imagens
+        Enter envia · Shift+Enter nova linha · até {DM_MESSAGE_MAX_IMAGE_ATTACHMENTS} anexos
       </p>
+
+      <Dialog open={extrasOpen} onOpenChange={setExtrasOpen}>
+        <DialogContent className="max-w-sm border-[var(--woody-divider)] bg-[var(--woody-card)]">
+          <DialogHeader>
+            <DialogTitle className="text-[var(--woody-text)]">GIF e stickers</DialogTitle>
+            <DialogDescription className="text-[var(--woody-muted)]">
+              Escolhe um GIF, WebP ou PNG local. Integração com provedores externos fica plugável no backend (
+              <code className="text-xs">IExternalAnimatedMediaProvider</code>).
+            </DialogDescription>
+          </DialogHeader>
+          <Button type="button" className="w-full" onClick={() => stickerRef.current?.click()}>
+            Escolher ficheiro…
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

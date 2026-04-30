@@ -202,6 +202,7 @@ export function ConversationsPage() {
   const handleSendMessage = async (payload: {
     body?: string | null;
     attachmentUrls?: string[] | null;
+    attachments?: Array<{ url: string; mediaType: string; durationSeconds?: number }> | null;
   }) => {
     if (selectedId == null) return;
     const msg = await sendConversationMessage(selectedId, payload);

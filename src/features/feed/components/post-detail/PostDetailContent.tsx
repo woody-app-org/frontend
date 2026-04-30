@@ -1,11 +1,19 @@
 import { cn } from "@/lib/utils";
 import type { Post } from "@/domain/types";
+import { PostMediaGallery } from "@/components/media/PostMediaGallery";
 
 export interface PostDetailContentProps {
   post: Post;
 }
 
 export function PostDetailContent({ post }: PostDetailContentProps) {
+  const legacy =
+    post.imageUrls && post.imageUrls.length > 0
+      ? post.imageUrls
+      : post.imageUrl
+        ? [post.imageUrl]
+        : [];
+
   return (
     <article className="space-y-4">
       {post.title ? <h1 className="text-balance text-2xl font-bold text-[var(--woody-text)]">{post.title}</h1> : null}
@@ -22,9 +30,22 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
         </div>
       ) : null}
       <p className={cn("whitespace-pre-wrap text-[0.98rem] leading-relaxed text-[var(--woody-text)]/90")}>{post.content}</p>
-      {post.imageUrl ? (
+      {post.mediaAttachments && post.mediaAttachments.length > 0 ? (
+        <PostMediaGallery items={post.mediaAttachments} className="mt-0" />
+      ) : legacy.length === 1 ? (
         <div className="overflow-hidden rounded-2xl border border-[var(--woody-accent)]/12 bg-[var(--woody-nav)]/5">
-          <img src={post.imageUrl} alt="" className="max-h-[460px] w-full object-cover" />
+          <img src={legacy[0]} alt="" className="max-h-[460px] w-full object-cover" />
+        </div>
+      ) : legacy.length > 1 ? (
+        <div className="flex flex-col gap-3">
+          {legacy.map((src) => (
+            <div
+              key={src.slice(0, 80)}
+              className="overflow-hidden rounded-2xl border border-[var(--woody-accent)]/12 bg-[var(--woody-nav)]/5"
+            >
+              <img src={src} alt="" className="max-h-[460px] w-full object-cover" />
+            </div>
+          ))}
         </div>
       ) : null}
     </article>

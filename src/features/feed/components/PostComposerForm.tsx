@@ -14,13 +14,30 @@ import {
   POST_COMPOSER_TITLE_MAX_LENGTH,
   createPost,
   normalizePostComposerTags,
-  readImageFileAsDataUrlIfSmall,
 } from "../services/post.service";
+import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
+import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 
 const selectClass = cn(
   postComposerFieldStyles.input,
   "w-full appearance-none bg-[var(--woody-bg)] pr-9 cursor-pointer"
 );
+
+function readVideoDurationSeconds(objectUrl: string): Promise<number | undefined> {
+  return new Promise((resolve) => {
+    const v = document.createElement("video");
+    v.preload = "metadata";
+    v.muted = true;
+    const finish = (sec?: number) => {
+      v.removeAttribute("src");
+      v.load();
+      resolve(sec);
+    };
+    v.onloadedmetadata = () => finish(Number.isFinite(v.duration) ? Math.round(v.duration) : undefined);
+    v.onerror = () => finish(undefined);
+    v.src = objectUrl;
+  });
+}
 
 function targetOptionClass(selected: boolean) {
   return cn(
@@ -68,8 +85,8 @@ export function PostComposerForm({
   const [content, setContent] = useState("");
   const [tagsRaw, setTagsRaw] = useState("");
   const [imageUrlInput, setImageUrlInput] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [communityLoadError, setCommunityLoadError] = useState(false);
@@ -129,19 +146,19 @@ export function PostComposerForm({
   }, [forcedCommunity, initialCommunityId, communityReloadKey, publishTarget]);
 
   useEffect(() => {
-    if (!imageFile) {
-      setImagePreviewUrl(null);
+    if (!mediaFile) {
+      setMediaPreviewUrl(null);
       return;
     }
-    const url = URL.createObjectURL(imageFile);
-    setImagePreviewUrl(url);
+    const url = URL.createObjectURL(mediaFile);
+    setMediaPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
-  }, [imageFile]);
+  }, [mediaFile]);
 
-  const clearImage = useCallback(() => {
-    setImageFile(null);
+  const clearMedia = useCallback(() => {
+    setMediaFile(null);
     setImageUrlInput("");
-    setImagePreviewUrl(null);
+    setMediaPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
 
@@ -150,12 +167,22 @@ export function PostComposerForm({
   const onFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (f.type.startsWith("video/")) {
+      if (f.type !== "video/mp4" && f.type !== "video/webm") {
+        setFormError("Vídeo: usa MP4 ou WebM.");
+        return;
+      }
+      setFormError(null);
+      setMediaFile(f);
+      setImageUrlInput("");
+      return;
+    }
     if (!f.type.startsWith("image/")) {
-      setFormError("Escolha um ficheiro de imagem.");
+      setFormError("Escolhe uma imagem ou um vídeo.");
       return;
     }
     setFormError(null);
-    setImageFile(f);
+    setMediaFile(f);
     setImageUrlInput("");
   }, []);
 
@@ -179,15 +206,43 @@ export function PostComposerForm({
 
     setSubmitting(true);
     try {
+      const urlTrim = imageUrlInput.trim();
       let imageUrl: string | undefined;
       let imageUrls: string[] | undefined;
+      let mediaAttachments:
+        | Array<{ url: string; mediaType: "image" | "video" | "gif" | "sticker"; durationSeconds?: number }>
+        | undefined;
 
-      const urlTrim = imageUrlInput.trim();
       if (urlTrim) {
         imageUrl = urlTrim;
-      } else if (imageFile) {
-        const dataUrl = await readImageFileAsDataUrlIfSmall(imageFile);
-        imageUrls = [dataUrl];
+      } else if (mediaFile) {
+        if (mediaFile.type.startsWith("video/")) {
+          const uploaded = await uploadVideoMedia(mediaFile);
+          let durationSeconds: number | undefined;
+          if (mediaPreviewUrl) {
+            const dur = await readVideoDurationSeconds(mediaPreviewUrl);
+            if (dur != null && dur > 0) durationSeconds = dur;
+          }
+          mediaAttachments = [
+            {
+              url: uploaded.url,
+              mediaType: "video",
+              ...(durationSeconds != null ? { durationSeconds } : {}),
+            },
+          ];
+        } else if (mediaFile.size <= 450 * 1024 && mediaFile.type !== "image/gif") {
+          const dataUrl = await readImageAsDataUrlIfSmall(mediaFile);
+          mediaAttachments = [{ url: dataUrl, mediaType: "image" }];
+        } else {
+          const uploaded = await uploadImageMedia(mediaFile);
+          const mt = mediaTypeFromUpload(uploaded);
+          mediaAttachments = [
+            {
+              url: uploaded.url,
+              mediaType: mt === "gif" ? "gif" : "image",
+            },
+          ];
+        }
       }
 
       const tags = normalizePostComposerTags(tagsRaw);
@@ -202,6 +257,7 @@ export function PostComposerForm({
           tags: tags.length ? tags : undefined,
           imageUrl: imageUrl ?? null,
           imageUrls,
+          mediaAttachments,
         },
         viewerId
       );
@@ -209,7 +265,7 @@ export function PostComposerForm({
       setTitle("");
       setContent("");
       setTagsRaw("");
-      clearImage();
+      clearMedia();
       if (composerFeedback === "full") {
         setSuccessKind(context);
         setShowSuccess(true);
@@ -235,7 +291,8 @@ export function PostComposerForm({
   const submitDisabled =
     submitting || communityBlocking || !title.trim() || !content.trim();
 
-  const previewSrc = imagePreviewUrl ?? (imageUrlInput.trim() ? imageUrlInput.trim() : null);
+  const previewSrc = mediaPreviewUrl ?? (imageUrlInput.trim() ? imageUrlInput.trim() : null);
+  const previewIsVideo = Boolean(mediaFile?.type.startsWith("video/"));
 
   const contentPlaceholder =
     publishTarget === "profile" && !forcedCommunity
@@ -427,12 +484,12 @@ export function PostComposerForm({
       </div>
 
       <div className="space-y-2">
-        <span className="text-sm font-medium text-[var(--woody-text)]">Imagem</span>
+        <span className="text-sm font-medium text-[var(--woody-text)]">Mídia (opcional)</span>
         <div className="flex flex-wrap items-center gap-2">
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm"
             className="hidden"
             aria-hidden
             onChange={onFileChange}
@@ -446,31 +503,35 @@ export function PostComposerForm({
             disabled={fieldsDisabled || !!imageUrlInput.trim()}
           >
             <ImagePlus className="size-4" aria-hidden />
-            Escolher ficheiro
+            Imagem ou vídeo
           </Button>
-          <span className="text-xs text-[var(--woody-muted)]">ou cole um URL abaixo</span>
+          <span className="text-xs text-[var(--woody-muted)]">ou cole um URL (imagem) abaixo</span>
         </div>
         <Input
           placeholder="https://… (URL público da imagem)"
           value={imageUrlInput}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             setImageUrlInput(e.target.value);
-            if (e.target.value.trim()) setImageFile(null);
+            if (e.target.value.trim()) setMediaFile(null);
           }}
-          disabled={fieldsDisabled || !!imageFile}
+          disabled={fieldsDisabled || !!mediaFile}
           className={postComposerFieldStyles.input}
         />
         {previewSrc && (
           <div className="relative mt-2 overflow-hidden rounded-xl border border-[var(--woody-accent)]/15 bg-[var(--woody-nav)]/5">
-            <img src={previewSrc} alt="Pré-visualização" className="max-h-56 w-full object-contain" />
+            {previewIsVideo ? (
+              <video src={previewSrc} className="max-h-56 w-full object-contain" controls muted playsInline />
+            ) : (
+              <img src={previewSrc} alt="Pré-visualização" className="max-h-56 w-full object-contain" />
+            )}
             <Button
               type="button"
               variant="secondary"
               size="icon"
               className="absolute right-2 top-2 size-9 rounded-full shadow-md"
-              onClick={clearImage}
+              onClick={clearMedia}
               disabled={fieldsDisabled}
-              aria-label="Remover imagem"
+              aria-label="Remover mídia"
             >
               <X className="size-4" />
             </Button>
