@@ -6,8 +6,13 @@ import { usePostDetail } from "../hooks/usePostDetail";
 
 export function PostDetailPage() {
   const { postId } = useParams<{ postId: string }>();
-  const { search } = useLocation();
+  const { search, hash } = useLocation();
   const focusComments = useMemo(() => new URLSearchParams(search).get("focus") === "comments", [search]);
+  const scrollToCommentId = useMemo(() => {
+    const h = (hash ?? "").replace(/^#/, "");
+    const m = /^comment-(.+)$/.exec(h);
+    return m ? m[1] : null;
+  }, [hash]);
   const {
     post,
     comments,
@@ -72,6 +77,7 @@ export function PostDetailPage() {
               isCommentsLoading={isCommentsLoading}
               commentsError={commentsError}
               focusCommentsOnOpen={focusComments}
+              scrollToCommentId={scrollToCommentId}
               isMutatingLike={isMutatingLike}
               isCreatingComment={isCreatingComment}
               onToggleLike={() => void toggleLike()}

@@ -40,6 +40,7 @@ export function CommentItem({
 
   return (
     <article
+      id={`comment-${comment.id}`}
       className={cn(
         "flex py-4 first:pt-0 last:pb-0",
         nested ? "gap-2.5 sm:gap-3" : "gap-3",

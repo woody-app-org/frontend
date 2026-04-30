@@ -16,6 +16,8 @@ export interface PostDetailViewProps {
   isCommentsLoading: boolean;
   commentsError: string | null;
   focusCommentsOnOpen?: boolean;
+  /** Comentário a realçar (ex.: hash `#comment-12` na URL). */
+  scrollToCommentId?: string | null;
   isMutatingLike: boolean;
   isCreatingComment: boolean;
   onToggleLike: () => void;
@@ -34,6 +36,7 @@ export function PostDetailView({
   isCommentsLoading,
   commentsError,
   focusCommentsOnOpen = false,
+  scrollToCommentId = null,
   isMutatingLike,
   isCreatingComment,
   onToggleLike,
@@ -52,6 +55,15 @@ export function PostDetailView({
     }, 30);
     return () => window.clearTimeout(id);
   }, [focusCommentsOnOpen, isCommentsLoading]);
+
+  useEffect(() => {
+    if (!scrollToCommentId || isCommentsLoading) return;
+    const id = window.setTimeout(() => {
+      const el = document.getElementById(`comment-${scrollToCommentId}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+    return () => window.clearTimeout(id);
+  }, [scrollToCommentId, isCommentsLoading]);
 
   return (
     <Card className="border-[var(--woody-accent)]/15 bg-[var(--woody-card)] px-4 py-4 sm:px-6 sm:py-5">
