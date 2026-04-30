@@ -11,7 +11,8 @@ import {
   fetchNotificationsPage,
   markAllNotificationsRead,
   markNotificationRead,
-  type UserNotificationItem,
+  notificationNavigationContext,
+  type NotificationItem,
 } from "../services/notifications.service";
 import { notificationSummary } from "../lib/notificationCopy";
 import { getNotificationHref } from "../lib/notificationNavigation";
@@ -33,7 +34,7 @@ export function NotificationsPanel({
   signalsUnreadCount,
 }: NotificationsPanelProps) {
   const navigate = useNavigate();
-  const [items, setItems] = useState<UserNotificationItem[]>([]);
+  const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
@@ -60,7 +61,7 @@ export function NotificationsPanel({
     setMarkingAll(true);
     try {
       await markAllNotificationsRead();
-      setItems((prev) => prev.map((n) => ({ ...n, readAtUtc: n.readAtUtc ?? new Date().toISOString() })));
+      setItems((prev) => prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })));
       onAfterRead?.();
     } catch (e) {
       setError(getApiErrorMessage(e, "Não foi possível marcar tudo como lido."));
@@ -69,12 +70,12 @@ export function NotificationsPanel({
     }
   };
 
-  const onRowActivate = async (n: UserNotificationItem) => {
-    const href = getNotificationHref(n.type, (n.payload ?? {}) as Record<string, unknown>, viewerUserId);
-    if (!n.readAtUtc) {
+  const onRowActivate = async (n: NotificationItem) => {
+    const href = getNotificationHref(n.type, notificationNavigationContext(n), viewerUserId);
+    if (!n.readAt) {
       try {
         await markNotificationRead(n.id);
-        setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, readAtUtc: new Date().toISOString() } : x)));
+        setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, readAt: new Date().toISOString() } : x)));
         onAfterRead?.();
       } catch {
         /* navega mesmo assim */
@@ -97,7 +98,7 @@ export function NotificationsPanel({
           type="button"
           variant="ghost"
           size="sm"
-          disabled={markingAll || items.every((x) => x.readAtUtc) || items.length === 0}
+          disabled={markingAll || items.every((x) => x.readAt) || items.length === 0}
           onClick={() => void onMarkAll()}
           className="shrink-0 gap-1 text-xs text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
         >
@@ -139,7 +140,7 @@ export function NotificationsPanel({
           <ul className="divide-y divide-[var(--woody-divider)]">
             {items.map((n) => {
               const actor = n.actor;
-              const name = actor?.name ?? "Alguém";
+              const name = actor?.displayName ?? "Alguém";
               const initials = name
                 .split(" ")
                 .map((p) => p[0])
@@ -147,8 +148,8 @@ export function NotificationsPanel({
                 .slice(0, 2)
                 .toUpperCase();
               const summary = notificationSummary(n.type, name);
-              const unread = !n.readAtUtc;
-              const href = getNotificationHref(n.type, (n.payload ?? {}) as Record<string, unknown>, viewerUserId);
+              const unread = !n.readAt;
+              const href = getNotificationHref(n.type, notificationNavigationContext(n), viewerUserId);
 
               return (
                 <li key={n.id}>
@@ -165,7 +166,7 @@ export function NotificationsPanel({
                     )}
                   >
                     <Avatar className="size-10 shrink-0">
-                      <AvatarImage src={actor?.avatarUrl ?? undefined} alt="" />
+                      <AvatarImage src={actor?.avatar ?? undefined} alt="" />
                       <AvatarFallback className="bg-[var(--woody-nav)]/12 text-xs font-medium text-[var(--woody-text)]">
                         {initials}
                       </AvatarFallback>
@@ -173,7 +174,7 @@ export function NotificationsPanel({
                     <span className="min-w-0 flex-1">
                       <span className="line-clamp-2 text-sm text-[var(--woody-text)]">{summary}</span>
                       <span className="mt-0.5 block text-xs tabular-nums text-[var(--woody-muted)]">
-                        {formatRelativeTimeUtc(n.createdAtUtc)}
+                        {formatRelativeTimeUtc(n.createdAt)}
                       </span>
                     </span>
                     {unread ? (

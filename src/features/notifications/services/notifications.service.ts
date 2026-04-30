@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 
-export type UserNotificationType =
+export type NotificationType =
   | "post_like"
   | "post_comment"
   | "comment_reply"
@@ -11,34 +11,55 @@ export type UserNotificationType =
   | "community_request_approved"
   | string;
 
+/** @deprecated use NotificationType */
+export type UserNotificationType = NotificationType;
+
 export interface NotificationActor {
   id: string;
-  name: string;
+  displayName: string;
   username: string;
-  avatarUrl?: string | null;
-  bio?: string | null;
-  pronouns?: string | null;
-  showProBadge: boolean;
+  avatar?: string | null;
 }
 
-export interface UserNotificationItem {
+export interface NotificationItem {
   id: string;
-  type: UserNotificationType;
-  createdAtUtc: string;
-  readAtUtc?: string | null;
+  type: NotificationType;
+  targetType: string;
+  targetId?: number | null;
+  title?: string | null;
+  message?: string | null;
+  metadata: Record<string, unknown>;
+  /** Alias legado; preferir `metadata`. */
+  payload?: Record<string, unknown>;
+  createdAt: string;
+  readAt?: string | null;
   actor: NotificationActor | null;
-  payload: Record<string, unknown>;
 }
 
-export interface UserNotificationListResponse {
-  items: UserNotificationItem[];
+/** @deprecated use NotificationItem */
+export type UserNotificationItem = NotificationItem;
+
+export interface NotificationListResponse {
+  items: NotificationItem[];
   total: number;
   page: number;
   pageSize: number;
 }
 
-export async function fetchNotificationsPage(page = 1, pageSize = 30): Promise<UserNotificationListResponse> {
-  const { data } = await api.get<UserNotificationListResponse>("notifications", { params: { page, pageSize } });
+/** @deprecated use NotificationListResponse */
+export type UserNotificationListResponse = NotificationListResponse;
+
+/** Contexto de navegação (metadata da API; fallback a payload legado). */
+export function notificationNavigationContext(n: NotificationItem): Record<string, unknown> {
+  const meta = n.metadata;
+  if (meta && typeof meta === "object" && !Array.isArray(meta)) return meta as Record<string, unknown>;
+  const p = n.payload;
+  if (p && typeof p === "object" && !Array.isArray(p)) return p as Record<string, unknown>;
+  return {};
+}
+
+export async function fetchNotificationsPage(page = 1, pageSize = 30): Promise<NotificationListResponse> {
+  const { data } = await api.get<NotificationListResponse>("notifications", { params: { page, pageSize } });
   return data;
 }
 
@@ -48,9 +69,9 @@ export async function fetchNotificationsUnreadCount(): Promise<number> {
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
-  await api.post(`notifications/${encodeURIComponent(id)}/read`);
+  await api.patch(`notifications/${encodeURIComponent(id)}/read`);
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  await api.post("notifications/read-all");
+  await api.patch("notifications/read-all");
 }

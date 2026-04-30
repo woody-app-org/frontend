@@ -1,4 +1,4 @@
-import type { UserNotificationType } from "../services/notifications.service";
+import type { NotificationType } from "../services/notifications.service";
 
 function num(v: unknown): number | undefined {
   if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -15,7 +15,7 @@ function str(v: unknown): string | undefined {
  * @param viewerUserId id da utilizadora autenticada (para sinais recebidos → separador sinais no próprio perfil).
  */
 export function getNotificationHref(
-  type: UserNotificationType,
+  type: NotificationType,
   payload: Record<string, unknown>,
   viewerUserId?: string | null
 ): string | null {
