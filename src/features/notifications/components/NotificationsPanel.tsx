@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
-import { getNotificationHref } from "../lib/notificationNavigation";
-import { notificationNavigationContext } from "../services/notifications.service";
+import { handleNotificationClick } from "../lib/notificationNavigation";
 import type { NotificationItem } from "../services/notifications.service";
 import { useNotifications } from "../hooks/useNotifications";
 import { NotificationsList } from "./NotificationsList";
@@ -47,19 +46,14 @@ export function NotificationsPanel({
   };
 
   const onActivateRow = async (n: NotificationItem) => {
-    const href = getNotificationHref(n.type, notificationNavigationContext(n), viewerUserId);
-    if (!n.readAt) {
-      try {
-        await markOneRead(n.id);
-        onAfterRead?.();
-      } catch {
-        /* continua navegação se existir destino */
-      }
-    }
-    if (href) {
-      navigate(href);
-      onRequestClose();
-    }
+    await handleNotificationClick({
+      notification: n,
+      viewerUserId,
+      navigate,
+      markReadIfNeeded: markOneRead,
+      onAfterRead,
+      onClose: onRequestClose,
+    });
   };
 
   return (

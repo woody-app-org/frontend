@@ -34,14 +34,13 @@ export function NotificationListItem({ item, summary, hasDestination, onActivate
     <li>
       <button
         type="button"
-        disabled={!hasDestination}
         onClick={onActivate}
         className={cn(
-          "flex w-full items-start gap-3 px-3 py-3 text-left transition-colors",
+          "flex w-full cursor-pointer items-start gap-3 px-3 py-3 text-left transition-colors",
           "hover:bg-black/[0.04] dark:hover:bg-white/[0.06]",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--woody-accent)]/30",
           unread ? "bg-[var(--woody-nav)]/[0.07]" : "",
-          !hasDestination ? "cursor-default opacity-65" : "cursor-pointer"
+          !hasDestination ? "opacity-90" : ""
         )}
       >
         <Avatar className="size-11 shrink-0 ring-1 ring-black/[0.04] dark:ring-white/[0.08]">

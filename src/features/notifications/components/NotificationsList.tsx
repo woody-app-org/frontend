@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { NotificationItem } from "../services/notifications.service";
-import { notificationNavigationContext } from "../services/notifications.service";
 import { notificationSummaryFromItem } from "../lib/notificationCopy";
-import { getNotificationHref } from "../lib/notificationNavigation";
+import { getNotificationTargetRoute } from "../lib/notificationNavigation";
 import type { NotificationFilter } from "../hooks/useNotifications";
 import { NotificationListItem } from "./NotificationListItem";
 
@@ -146,14 +145,14 @@ export function NotificationsList({
         {!loading && !error && filteredItems.length > 0 ? (
           <ul className="divide-y divide-[var(--woody-divider)]">
             {filteredItems.map((n) => {
-              const href = getNotificationHref(n.type, notificationNavigationContext(n), viewerUserId);
+              const route = getNotificationTargetRoute(n, viewerUserId);
               const summary = notificationSummaryFromItem(n);
               return (
                 <NotificationListItem
                   key={n.id}
                   item={n}
                   summary={summary}
-                  hasDestination={Boolean(href)}
+                  hasDestination={Boolean(route)}
                   onActivate={() => void onActivateRow(n)}
                 />
               );
