@@ -36,10 +36,12 @@ export function NotificationListItem({ item, summary, hasDestination, onActivate
         type="button"
         onClick={onActivate}
         className={cn(
-          "flex w-full cursor-pointer items-start gap-3 px-3 py-3 text-left transition-colors",
+          "flex w-full cursor-pointer items-start gap-3 border-l-[3px] py-3 pl-[calc(0.75rem-3px)] pr-3 text-left transition-colors",
+          unread
+            ? "border-[var(--woody-nav)] bg-black/[0.02] dark:bg-white/[0.03]"
+            : "border-transparent",
           "hover:bg-black/[0.04] dark:hover:bg-white/[0.06]",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--woody-accent)]/30",
-          unread ? "bg-[var(--woody-nav)]/[0.07]" : "",
           !hasDestination ? "opacity-90" : ""
         )}
       >

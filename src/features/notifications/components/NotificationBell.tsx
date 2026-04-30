@@ -16,6 +16,7 @@ const bellWrap = "relative";
 
 /**
  * Botão do sino com badge (in-app) ou ponto (só sinais).
+ * Prioridade do número: contagem in-app; se for 0 e houver sinais por ler, mostra ponto.
  * No desktop usar com `PopoverTrigger asChild` (ref e onClick são injetados pelo Radix).
  */
 export const NotificationBell = React.forwardRef<HTMLButtonElement, NotificationBellProps>(

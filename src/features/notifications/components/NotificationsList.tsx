@@ -52,7 +52,7 @@ export function NotificationsList({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h2 className="truncate text-base font-semibold tracking-tight text-[var(--woody-text)]">Notificações</h2>
-            <p className="truncate text-xs text-[var(--woody-muted)]">Atividade recente na Woody</p>
+            <p className="truncate text-xs text-[var(--woody-muted)]">Gostos, comentários e pedidos — num só sítio</p>
           </div>
           <Button
             type="button"

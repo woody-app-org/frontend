@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { NOTIFICATIONS_SYNC_EVENT } from "../lib/notificationsRealtimeBus";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { NOTIFICATIONS_SYNC_EVENT, requestNotificationsSyncFromRealtime } from "../lib/notificationsRealtimeBus";
 import {
   fetchNotificationsPage,
   markAllNotificationsRead,
@@ -24,6 +24,7 @@ export function useNotifications({ enabled, isOpen, pageSize = 40 }: UseNotifica
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
+  const refetchGeneration = useRef(0);
 
   const refetch = useCallback(async () => {
     if (!enabled) {
@@ -31,16 +32,19 @@ export function useNotifications({ enabled, isOpen, pageSize = 40 }: UseNotifica
       setError(null);
       return;
     }
+    const gen = ++refetchGeneration.current;
     setLoading(true);
     setError(null);
     try {
       const page = await fetchNotificationsPage(1, pageSize);
+      if (gen !== refetchGeneration.current) return;
       setItems(page.items);
     } catch (e) {
+      if (gen !== refetchGeneration.current) return;
       setError(getApiErrorMessage(e, "Não foi possível carregar as notificações."));
       setItems([]);
     } finally {
-      setLoading(false);
+      if (gen === refetchGeneration.current) setLoading(false);
     }
   }, [enabled, pageSize]);
 
@@ -72,6 +76,7 @@ export function useNotifications({ enabled, isOpen, pageSize = 40 }: UseNotifica
     try {
       await markAllNotificationsRead();
       setItems((prev) => prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })));
+      requestNotificationsSyncFromRealtime();
     } catch (e) {
       setError(getApiErrorMessage(e, "Não foi possível marcar tudo como lido."));
     } finally {
@@ -82,6 +87,7 @@ export function useNotifications({ enabled, isOpen, pageSize = 40 }: UseNotifica
   const markOneRead = useCallback(async (id: string) => {
     await markNotificationRead(id);
     setItems((prev) => prev.map((x) => (x.id === id ? { ...x, readAt: new Date().toISOString() } : x)));
+    requestNotificationsSyncFromRealtime();
   }, []);
 
   return {

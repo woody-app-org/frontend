@@ -1,5 +1,11 @@
 import { api } from "@/lib/api";
 
+/**
+ * Cliente HTTP das notificações in-app (fonte de verdade = API).
+ * Roadmap típico: preferências por tipo, e-mail digest, push, agrupamento e arquivo —
+ * antecipar `NotificationItem` com campos opcionais (`muted?`, `groupKey?`, `archived?`) e
+ * novos endpoints sem duplicar lógica de navegação (usar `notificationNavigation.ts`).
+ */
 export type NotificationType =
   | "post_like"
   | "post_comment"

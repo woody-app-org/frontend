@@ -16,6 +16,13 @@ function str(v: unknown): string | undefined {
   return typeof v === "string" && v.trim() ? v.trim() : undefined;
 }
 
+/** Slug URL → nome legível curto (ex.: `minha-comunidade` → "minha comunidade"). */
+function communityNameFromSlug(slug: string | undefined): string | undefined {
+  const s = str(slug);
+  if (!s) return undefined;
+  return s.replace(/-/g, " ");
+}
+
 /** Rótulo curto + emoji para o tipo de sinal vindo da API (snake_case). */
 function profileSignalSnippet(ctx: Record<string, unknown>): string | null {
   const api = str(ctx.profileSignalType);
@@ -60,16 +67,23 @@ export function notificationSummaryFromItem(item: NotificationItem): string {
       return `${name} começou a seguir-te`;
     case "profile_signal": {
       const bit = profileSignalSnippet(ctx);
-      return bit ? `${name} enviou-te um sinal: ${bit}.` : `${name} enviou-te um sinal.`;
+      return bit ? `${name} enviou-te um sinal: ${bit}` : `${name} enviou-te um sinal`;
     }
     case "message_request":
-      return `${name} pediu para conversar contigo`;
-    case "community_request":
-      return `${name} pediu para entrar numa comunidade que moderas`;
-    case "community_request_approved":
-      return name && name !== "Alguém"
-        ? `${name} aceitou o teu pedido para entrares na comunidade`
-        : "O teu pedido para entrar na comunidade foi aceite";
+      return `${name} quer conversar contigo`;
+    case "community_request": {
+      const cname = communityNameFromSlug(str(ctx.communitySlug));
+      return cname
+        ? `${name} pediu para entrar em «${cname}» (comunidade que moderas)`
+        : `${name} pediu para entrar numa comunidade que moderas`;
+    }
+    case "community_request_approved": {
+      const cname = communityNameFromSlug(str(ctx.communitySlug));
+      if (name && name !== "Alguém") {
+        return cname ? `${name} aceitou o teu pedido para «${cname}»` : `${name} aceitou o teu pedido de entrada`;
+      }
+      return cname ? `O teu pedido para «${cname}» foi aceite` : "O teu pedido de entrada na comunidade foi aceite";
+    }
     default:
       return `${name} — nova atividade`;
   }
