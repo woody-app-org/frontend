@@ -47,8 +47,35 @@ export interface MessageAttachmentResponseDto {
   contentType: string | null;
   thumbnailUrl?: string | null;
   durationSeconds?: number | null;
+  provider?: string | null;
+  externalId?: string | null;
   displayOrder: number;
   createdAt: string;
+}
+
+/** Item do picker (resposta do endpoint de pesquisa plugável). */
+export interface StickerGifSearchItemDto {
+  title: string;
+  url: string;
+  thumbnailUrl: string | null;
+  mediaType: string;
+  provider: string;
+  externalId: string;
+}
+
+export interface StickerGifSearchResponseDto {
+  items: StickerGifSearchItemDto[];
+  providerKey: string;
+}
+
+/** Anexo na mensagem a enviar (alinhado a <c>MessageAttachmentItemRequestDto</c>). */
+export interface OutgoingMessageAttachment {
+  url: string;
+  mediaType: string;
+  durationSeconds?: number;
+  thumbnailUrl?: string | null;
+  provider?: string | null;
+  externalId?: string | null;
 }
 
 export interface MessageResponseDto {

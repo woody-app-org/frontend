@@ -1,5 +1,4 @@
 import { VideoPostPlayer } from "@/components/media/VideoPostPlayer";
-import { cn } from "@/lib/utils";
 
 export interface VideoMessageAttachmentProps {
   src: string;

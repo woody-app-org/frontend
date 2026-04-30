@@ -13,7 +13,12 @@ import {
   sendConversationMessage,
 } from "../services/messages.service";
 import { useDirectMessagesSignalR } from "../hooks/useDirectMessagesSignalR";
-import type { ConversationRealtimeDto, ConversationResponseDto, MessageResponseDto } from "../types";
+import type {
+  ConversationRealtimeDto,
+  ConversationResponseDto,
+  MessageResponseDto,
+  OutgoingMessageAttachment,
+} from "../types";
 import { woodyLayout, woodySection } from "@/lib/woody-ui";
 import { cn } from "@/lib/utils";
 import { ConversationList } from "../components/ConversationList";
@@ -202,7 +207,7 @@ export function ConversationsPage() {
   const handleSendMessage = async (payload: {
     body?: string | null;
     attachmentUrls?: string[] | null;
-    attachments?: Array<{ url: string; mediaType: string; durationSeconds?: number }> | null;
+    attachments?: OutgoingMessageAttachment[] | null;
   }) => {
     if (selectedId == null) return;
     const msg = await sendConversationMessage(selectedId, payload);

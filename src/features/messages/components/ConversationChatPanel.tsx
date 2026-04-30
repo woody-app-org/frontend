@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
-import type { ConversationPeerPreviewDto, MessageResponseDto } from "../types";
+import type { ConversationPeerPreviewDto, MessageResponseDto, OutgoingMessageAttachment } from "../types";
 import { DmComposer } from "./DmComposer";
 import { DmMessageList } from "./DmMessageList";
 
@@ -28,7 +28,7 @@ export interface ConversationChatPanelProps {
   onSendMessage: (payload: {
     body?: string | null;
     attachmentUrls?: string[] | null;
-    attachments?: Array<{ url: string; mediaType: string; durationSeconds?: number }> | null;
+    attachments?: OutgoingMessageAttachment[] | null;
   }) => Promise<void>;
   onEditMessage: (messageId: number, body: string) => Promise<void>;
   onDeleteMessage: (messageId: number) => Promise<void>;

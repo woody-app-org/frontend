@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { ImagePlus, Loader2, Send, SmilePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
@@ -15,8 +14,10 @@ import {
 } from "../lib/dmMessageMediaLimits";
 import { MessageMediaPicker } from "./MessageMediaPicker";
 import { MessageMediaPreview, type MessageMediaPreviewItem } from "./MessageMediaPreview";
+import { GifStickerPickerDialog } from "./GifStickerPickerDialog";
+import type { OutgoingMessageAttachment, StickerGifSearchItemDto } from "../types";
 
-export type OutgoingDmAttachment = { url: string; mediaType: string; durationSeconds?: number };
+export type OutgoingDmAttachment = OutgoingMessageAttachment;
 
 export interface DmComposerProps {
   conversationId: number;
@@ -39,6 +40,9 @@ type StagedRow = {
   status: "uploading" | "ready" | "error";
   blobToRevoke?: string | null;
   errorMessage?: string;
+  thumbnailUrl?: string | null;
+  provider?: string | null;
+  externalId?: string | null;
 };
 
 function previewKind(mt: string): MessageMediaPreviewItem["kind"] {
@@ -65,7 +69,7 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
   const [staged, setStaged] = useState<StagedRow[]>([]);
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
-  const [extrasOpen, setExtrasOpen] = useState(false);
+  const [stickerPickerOpen, setStickerPickerOpen] = useState(false);
 
   const hasUploading = staged.some((s) => s.status === "uploading");
   const hasReady = staged.some((s) => s.status === "ready" && s.sendUrl);
@@ -73,6 +77,27 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
   const blocked = disabled || busy || hasUploading;
 
   const uploadCtx = { scope: "message" as const, conversationId: String(conversationId) };
+
+  const addFromCatalog = (item: StickerGifSearchItemDto) => {
+    const id = `cat-${item.externalId}-${Date.now()}`;
+    const mt = item.mediaType === "sticker" ? "sticker" : "gif";
+    setStaged((prev) => {
+      if (prev.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS) return prev;
+      return [
+        ...prev,
+        {
+          id,
+          previewUrl: item.thumbnailUrl ?? item.url,
+          sendUrl: item.url,
+          mediaType: mt,
+          status: "ready" as const,
+          thumbnailUrl: item.thumbnailUrl,
+          provider: item.provider,
+          externalId: item.externalId,
+        },
+      ];
+    });
+  };
 
   const removeStaged = (id: string) => {
     setStaged((prev) => {
@@ -371,7 +396,7 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
       }
     }
     if (stickerRef.current) stickerRef.current.value = "";
-    setExtrasOpen(false);
+    setStickerPickerOpen(false);
   };
 
   const submit = async () => {
@@ -385,6 +410,9 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
               url: s.sendUrl,
               mediaType: s.mediaType,
               ...(s.durationSeconds != null ? { durationSeconds: s.durationSeconds } : {}),
+              ...(s.thumbnailUrl ? { thumbnailUrl: s.thumbnailUrl } : {}),
+              ...(s.provider ? { provider: s.provider } : {}),
+              ...(s.externalId ? { externalId: s.externalId } : {}),
             }))
         : null;
     setBusy(true);
@@ -437,7 +465,7 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
             size="icon"
             className="size-11 shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)]"
             disabled={blocked || staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
-            onClick={() => setExtrasOpen(true)}
+            onClick={() => setStickerPickerOpen(true)}
             aria-label="GIF ou sticker"
           >
             <SmilePlus className="size-5 text-[var(--woody-nav)]" />
@@ -495,20 +523,13 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
         </span>
       </p>
 
-      <Dialog open={extrasOpen} onOpenChange={setExtrasOpen}>
-        <DialogContent className="max-w-sm border-[var(--woody-divider)] bg-[var(--woody-card)]">
-          <DialogHeader>
-            <DialogTitle className="text-[var(--woody-text)]">GIF e stickers</DialogTitle>
-            <DialogDescription className="text-[var(--woody-muted)]">
-              Escolhe um GIF, WebP ou PNG local. Integração com provedores externos fica plugável no backend (
-              <code className="text-xs">IExternalAnimatedMediaProvider</code>).
-            </DialogDescription>
-          </DialogHeader>
-          <Button type="button" className="w-full" onClick={() => stickerRef.current?.click()}>
-            Escolher ficheiro…
-          </Button>
-        </DialogContent>
-      </Dialog>
+      <GifStickerPickerDialog
+        open={stickerPickerOpen}
+        onOpenChange={setStickerPickerOpen}
+        onPick={(item) => addFromCatalog(item)}
+        onRequestLocalFile={() => stickerRef.current?.click()}
+        disabled={busy || disabled}
+      />
     </div>
   );
 }

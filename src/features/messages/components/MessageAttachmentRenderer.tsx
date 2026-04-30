@@ -34,7 +34,7 @@ export function MessageAttachmentRenderer({ attachments, className }: MessageAtt
     <ul className={cn("list-none space-y-2 p-0", className)}>
       {attachments.map((a) => {
         const item = toBubbleItem(a);
-        const wrapLink = item.mediaType !== "video" && item.mediaType !== "sticker";
+        const wrapLink = item.mediaType === "image";
         const inner =
           item.mediaType === "video" ? (
             <VideoMessageAttachment src={item.url} poster={item.thumbnailUrl ?? undefined} />

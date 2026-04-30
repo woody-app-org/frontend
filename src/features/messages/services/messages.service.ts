@@ -4,6 +4,7 @@ import type {
   ConversationMessagesPageDto,
   ConversationResponseDto,
   MessageResponseDto,
+  OutgoingMessageAttachment,
 } from "../types";
 
 export async function startOrGetConversation(otherUserId: number): Promise<ConversationResponseDto> {
@@ -58,7 +59,7 @@ export async function sendConversationMessage(
   body: {
     body?: string | null;
     attachmentUrls?: string[] | null;
-    attachments?: Array<{ url: string; mediaType: string; durationSeconds?: number }> | null;
+    attachments?: OutgoingMessageAttachment[] | null;
   }
 ): Promise<MessageResponseDto> {
   try {
