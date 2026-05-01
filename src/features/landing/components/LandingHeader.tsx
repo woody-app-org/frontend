@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LANDING_IDS } from "../constants";
+import { LANDING_NARRATIVE_IDS } from "../constants";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 
-const anchorNav = [
-  { label: "Como funciona", id: LANDING_IDS.comoFunciona },
-  { label: "Comunidades", id: LANDING_IDS.comunidades },
-  { label: "Recursos", id: LANDING_IDS.recursos },
-  { label: "Planos", id: LANDING_IDS.planos },
-  { label: "Segurança", id: LANDING_IDS.seguranca },
+const narrativeNav = [
+  { label: "O que é Woody", id: LANDING_NARRATIVE_IDS.oQueEWoody },
+  { label: "Missão", id: LANDING_NARRATIVE_IDS.missao },
+  { label: "Regras", id: LANDING_NARRATIVE_IDS.regras },
+  { label: "Políticas", id: LANDING_NARRATIVE_IDS.politicas },
+  { label: "No celular", id: LANDING_NARRATIVE_IDS.mobileQr },
 ] as const;
 
 export function LandingHeader() {
@@ -52,10 +52,10 @@ export function LandingHeader() {
         </Link>
 
         <nav
-          className="hidden items-center gap-6 text-[13px] font-semibold tracking-tight text-[var(--woody-text)]/68 xl:flex xl:gap-9"
-          aria-label="Navegação principal"
+          className="hidden items-center gap-5 text-[12px] font-semibold tracking-tight text-[var(--woody-text)]/68 xl:flex xl:gap-7"
+          aria-label="Secções da landing"
         >
-          {anchorNav.map((item) => (
+          {narrativeNav.map((item) => (
             <a
               key={item.id}
               href={anchorHref(item.id)}
@@ -71,7 +71,7 @@ export function LandingHeader() {
               location.pathname.startsWith("/institutional") && "text-[var(--woody-ink)] after:scale-x-100"
             )}
           >
-            Institucional
+            Índice
           </Link>
         </nav>
 

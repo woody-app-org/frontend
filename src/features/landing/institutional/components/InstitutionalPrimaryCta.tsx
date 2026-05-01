@@ -65,9 +65,12 @@ export function InstitutionalPrimaryCta({
       </Link>
     );
   }
-  return (
-    <a href={href} className={cls}>
-      {content}
-    </a>
-  );
+  if (href !== undefined) {
+    return (
+      <a href={href} className={cls}>
+        {content}
+      </a>
+    );
+  }
+  return null;
 }

@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
-import { LANDING_IDS } from "../constants";
+import { LANDING_NARRATIVE_IDS } from "../constants";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
+
+const landingAnchor = (id: string) => `/landing#${id}`;
 
 export function LandingFooter() {
   return (
@@ -18,38 +20,54 @@ export function LandingFooter() {
           </div>
           <div className="grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 md:max-w-xl">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--woody-muted)]">Produto</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--woody-muted)]">A Woody</p>
               <ul className="mt-4 space-y-2.5">
                 <li>
                   <a
-                    href={`#${LANDING_IDS.comoFunciona}`}
+                    href="/landing"
                     className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
                   >
-                    Como funciona
+                    Topo da página
                   </a>
                 </li>
                 <li>
                   <a
-                    href={`#${LANDING_IDS.recursos}`}
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.oQueEWoody)}
                     className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
                   >
-                    Recursos
+                    O que é Woody
                   </a>
                 </li>
                 <li>
                   <a
-                    href={`#${LANDING_IDS.comunidades}`}
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.missao)}
                     className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
                   >
-                    Comunidades
+                    Missão principal
                   </a>
                 </li>
                 <li>
                   <a
-                    href={`#${LANDING_IDS.seguranca}`}
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.regras)}
                     className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
                   >
-                    Segurança
+                    Regras de convívio
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.politicas)}
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                  >
+                    Políticas
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.mobileQr)}
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                  >
+                    Woody no celular
                   </a>
                 </li>
               </ul>
@@ -73,14 +91,6 @@ export function LandingFooter() {
                     Entrar
                   </Link>
                 </li>
-                <li>
-                  <a
-                    href={`#${LANDING_IDS.planos}`}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
-                  >
-                    Planos
-                  </a>
-                </li>
               </ul>
             </div>
             <div>
@@ -91,7 +101,7 @@ export function LandingFooter() {
                     to={INSTITUTIONAL_PATHS.hub}
                     className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
                   >
-                    Institucional
+                    Índice institucional
                   </Link>
                 </li>
                 <li>
