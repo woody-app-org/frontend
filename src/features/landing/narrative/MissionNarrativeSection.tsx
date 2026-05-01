@@ -59,7 +59,7 @@ export function MissionNarrativeSection({ embedInLanding = false }: MissionNarra
                 showChevron={false}
                 onClick={() => setExpanded((e) => !e)}
               >
-                {expanded ? "Ler menos" : "Ler mais"}
+                {expanded ? "LER MENOS" : "LER MAIS"}
               </InstitutionalPrimaryCta>
             </div>
 

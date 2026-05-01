@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
+import logoWoody from "@/assets/logo.svg";
 import { mobileQr } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
 import { ScrollReveal } from "../motion/ScrollReveal";
@@ -62,25 +63,18 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
           }
         >
           <ScrollReveal enabled={motion} yOffset={16} className="lg:pr-4">
-            <h2 className="max-w-[min(100%,22rem)] font-sans text-[clamp(2rem,5.5vw,3.75rem)] font-black lowercase leading-[0.95] tracking-[-0.03em] text-[#8dbf43] md:max-w-none">
+            <h2 className="max-w-[min(100%,22rem)] font-sans text-[clamp(2rem,5.5vw,3.75rem)] font-black leading-[0.95] tracking-[-0.03em] text-[#8dbf43] md:max-w-none">
               {mobileQr.title}
             </h2>
-            <svg
-              className="mt-5 h-10 w-44 text-white transition-transform duration-500 ease-out motion-reduce:transition-none md:mt-6 md:h-12 md:w-52"
-              viewBox="0 0 200 40"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <img
+              src={logoWoody}
+              alt=""
+              width={399}
+              height={83}
+              className="mt-5 h-auto w-[min(100%,14rem)] object-contain object-left opacity-95 md:mt-6 md:w-[min(100%,17rem)]"
+              decoding="async"
               aria-hidden
-            >
-              <path
-                d="M6 32 Q 48 6 100 26 Q 152 44 194 20"
-                stroke="currentColor"
-                strokeWidth="2.8"
-                strokeLinecap="round"
-                fill="none"
-                opacity="0.92"
-              />
-            </svg>
+            />
           </ScrollReveal>
 
           <ScrollReveal enabled={motion} delayMs={100} yOffset={14}>
@@ -106,7 +100,7 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
           </ScrollReveal>
 
           <ScrollReveal enabled={motion} delayMs={200} yOffset={12} className="text-left lg:text-right">
-            <p className="max-w-md font-sans text-[clamp(0.7rem,1.35vw,0.82rem)] font-extrabold uppercase leading-snug tracking-[0.14em] text-white lg:ml-auto lg:max-w-[14.5rem] xl:max-w-[16rem]">
+            <p className="max-w-[min(100%,17rem)] font-sans text-[clamp(1.02rem,2.28vw,2.2rem)] font-extrabold uppercase leading-[0.98] tracking-[0.1em] text-white md:max-w-[18rem] lg:ml-auto lg:max-w-[18.5rem] xl:max-w-[19.5rem]">
               {mobileQr.instructions}
             </p>
           </ScrollReveal>

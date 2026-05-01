@@ -4,37 +4,37 @@
  */
 
 export const mission = {
-  title: "Nossa missão principal",
+  title: "Nossa Missão Principal",
   lead:
-    "Esse não é um lugar para caber em caixas; é para quebrá-las. Um espaço propício para olhar umas às outras, sem manual, sem rótulo e sem medo — longe o bastante do controlo masculino e perto o suficiente para perceber que, se a sociedade nos quer fragmentadas, na Woody nos reconstruímos em rede.",
+    "Esse não é um lugar para caber em caixas; é para quebrá-las. Um espaço propício para olhar umas às outras, sem manual, sem rótulo e sem medo — longe o bastante do controle masculino e perto o suficiente para entender que, se a sociedade nos quer fragmentadas, na Woody nos reconstruímos...",
   body: [
-    "Queremos que cada pessoa sinta ritmo, coragem e cuidado ao partilhar voz, corpo e ideias. A curadoria não é sobre filtrar quem és, mas sobre proteger o território comum onde a intimidade floresce sem violência.",
-    "Missão, para nós, é também prática diária: ferramentas claras, equipa atenta e comunidades que honram limites — para que a Woody continue a ser um sítio onde «sim» e «não» sejam ouvidos com a mesma seriedade.",
+    "Queremos que cada pessoa sinta ritmo, coragem e cuidado ao compartilhar voz, corpo e ideias. A curadoria não é sobre filtrar quem você é, mas sobre proteger o território comum onde a intimidade floresce sem violência.",
+    "Missão, para nós, é também prática diária: ferramentas claras, equipe atenta e comunidades que honram limites — para que a Woody continue a ser um lugar onde «sim» e «não» sejam ouvidos com a mesma seriedade.",
   ],
 };
 
 export const whatIsWoody = {
   title: "O que é Woody?",
   paragraphs: [
-    "Woody é uma plataforma voltada para mulheres LBP (lésbicas, bissexuais, pansexuais) cis, e pessoas alinhadas ao feminino. O nome Woody é alusivo ao «olhar amadeirado», expressão utilizada no meio lésbico. Em inglês, woody significa «amadeirado». Para nós, Woody é também centelha, início de jornada, possibilidade de conexão e expansão, é green flag — pessoal e profissional.",
-    "Aqui encontras curadoria, gestão, suporte e espaço aberto para trocas sinceras, desafiadoras, reais, íntimas, leves, profundas. Diversidade é palavra-chave: criamos um ambiente com menos barreiras artificiais, onde pessoas dispostas se reconhecem e se atraem com consentimento e contexto.",
+    'Woody é uma plataforma voltada para mulheres LBP (lésbicas, bissexuais, pansexuais) cis, e pessoas alinhadas ao feminino. O nome Woody é alusivo ao "olhar amadeirado", expressão utilizada no meio lésbico. Em inglês, woody significa "amadeirado". Para nós, Woody é também centelha, início de jornada, possibilidade de conexão e expansão, é green flag — pessoal e profissional.',
+    "Aqui, você encontra curadoria, gestão, suporte e espaço aberto para trocas sinceras, desafiadoras, reais, íntimas, leves, profundas. Diversidade é palavra-chave, que busca criar um ambiente sem barreiras, onde pessoas dispostas se atraem.",
   ],
 };
 
 export const rules = {
   topBar:
-    "Não queremos que estejas entediada a rolar scroll infinito. Queremos que existas, cries e te conectes com outras utilizadoras da Woody.",
-  title: "O que não é legal fazer aqui",
+    "NÃO QUEREMOS VOCÊ ENTEDIADA, ROLANDO TELA INFINITA. QUEREMOS VOCÊ EXISTINDO, CRIANDO, SE CONECTANDO COM OUTRAS USUÁRIAS DA WOODY.",
+  title: "O QUE NÃO É LEGAL FAZER AQUI",
 };
 
 export const policiesIndexIntro =
   "Documentos essenciais para navegares a Woody com segurança. Cada página inclui orientações práticas — não substituem aconselhamento jurídico personalizado.";
 
 export const policyConfidentiality = {
-  title: "Política de confidencialidade",
+  title: "POLITICA DE CONFIDENCIALIDADE",
   badge: "#01",
   excerpt:
-    "Ao participar da Woody, concordas que mensagens, imagens, áudios, ficheiros e informações partilhadas neste espaço são confidenciais e restritas às pessoas envolvidas. É proibido copiar, gravar, divulgar, reencaminhar ou capturar ecrã para terceiros ou redes sociais sem consentimento explícito.",
+    "Ao participar da Woody, você concorda que mensagens, imagens, áudios, arquivos e informações compartilhadas neste espaço são confidenciais e restritas às pessoas envolvidas. É proibido copiar, gravar, divulgar, encaminhar ou fazer capturas de tela para terceiros ou redes sociais.",
   sections: [
     {
       heading: "1. Princípio geral",
@@ -56,10 +56,10 @@ export const policyConfidentiality = {
 };
 
 export const policyAccess = {
-  title: "Política restritiva de acesso",
+  title: "POLITICA RESTRITIVA DE ACESSO",
   badge: "#02",
   excerpt:
-    "A Woody é um espaço reservado a mulheres LBP e pessoas alinhadas ao feminino, conforme a proposta, os valores e as regras da plataforma. Não é permitido o acesso, a permanência ou a utilização por pessoas fora deste público.",
+    "A Woody é um espaço reservado para mulheres LBP e pessoas alinhadas ao feminino, conforme a proposta, os valores e as regras da plataforma Não é permitido o acesso, a permanência ou a utilização da Woody por pessoas fora desse público,",
   sections: [
     {
       heading: "1. Público-alvo",
@@ -98,7 +98,7 @@ export const policyBan = {
 };
 
 export const mobileQr = {
-  title: "tenha Woody na palma da sua mão.",
+  title: "Tenha Woody na palma da sua mão.",
   instructions:
-    "Leia o QR code com a câmara do seu telefone, e acesse no seu celular.",
+    "Leia o QR code com a câmera do seu telefone, e acesse no seu celular.",
 };

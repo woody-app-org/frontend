@@ -28,7 +28,7 @@ export function InstitutionalPolicyCard({ badge, title, excerpt, to, className }
         {excerpt}
       </p>
       <span className="mt-9 inline-flex w-fit items-center self-center rounded-md bg-[#556b2f] px-6 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition-[background-color,transform,box-shadow] duration-300 ease-out group-hover:bg-[#627836] group-hover:shadow-[0_8px_24px_-12px_rgba(61,79,47,0.45)]">
-        Ler mais
+        LER MAIS
       </span>
     </Link>
   );
