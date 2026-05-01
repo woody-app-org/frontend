@@ -1,0 +1,112 @@
+/**
+ * Textos institucionais — alinhados às referências da equipa, com espaço para evolução legal.
+ * Imagens hero: `src/assets/what-is-woody.jpg`, `src/assets/not-allowed.jpg` (import em `institutionalMedia.ts`).
+ */
+
+export const mission = {
+  title: "Nossa missão principal",
+  lead:
+    "Esse não é um lugar para caber em caixas; é para quebrá-las. Um espaço propício para olhar umas às outras, sem manual, sem rótulo e sem medo — longe o bastante do controlo masculino e perto o suficiente para perceber que, se a sociedade nos quer fragmentadas, na Woody nos reconstruímos em rede.",
+  body: [
+    "Queremos que cada pessoa sinta ritmo, coragem e cuidado ao partilhar voz, corpo e ideias. A curadoria não é sobre filtrar quem és, mas sobre proteger o território comum onde a intimidade floresce sem violência.",
+    "Missão, para nós, é também prática diária: ferramentas claras, equipa atenta e comunidades que honram limites — para que a Woody continue a ser um sítio onde «sim» e «não» sejam ouvidos com a mesma seriedade.",
+  ],
+};
+
+export const whatIsWoody = {
+  title: "O que é Woody?",
+  paragraphs: [
+    "Woody é uma plataforma voltada para mulheres LBP (lésbicas, bissexuais, pansexuais) cis, e pessoas alinhadas ao feminino. O nome Woody é alusivo ao «olhar amadeirado», expressão utilizada no meio lésbico. Em inglês, woody significa «amadeirado». Para nós, Woody é também centelha, início de jornada, possibilidade de conexão e expansão, é green flag — pessoal e profissional.",
+    "Aqui encontras curadoria, gestão, suporte e espaço aberto para trocas sinceras, desafiadoras, reais, íntimas, leves, profundas. Diversidade é palavra-chave: criamos um ambiente com menos barreiras artificiais, onde pessoas dispostas se reconhecem e se atraem com consentimento e contexto.",
+  ],
+};
+
+export const rules = {
+  topBar:
+    "Não queremos que estejas entediada a rolar scroll infinito. Queremos que existas, cries e te conectes com outras utilizadoras da Woody.",
+  title: "O que não é legal fazer aqui",
+  intro:
+    "Esta página resume valores e limites. Abaixo encontrarás regras concretas e ligações para políticas detalhadas — lê com calma: faz parte de cuidar deste espaço coletivo.",
+  bullets: [
+    "Assédio, ameaças, outing ou pressão sexual — incluindo em mensagens privadas — não são tolerados.",
+    "Conteúdo que sexualize menores, incite violência ou promova ódio identitário é removido e pode ser reportado às autoridades.",
+    "Spam, scams, phishing ou contas automatizadas destroem a confiança: são bloqueados.",
+    "Respeita o consentimento em todas as interações: fotos, áudios, convites e proximidade física descrita também entram nesta regra.",
+  ],
+};
+
+export const policiesIndexIntro =
+  "Documentos essenciais para navegares a Woody com segurança. Cada página inclui orientações práticas — não substituem aconselhamento jurídico personalizado.";
+
+export const policyConfidentiality = {
+  title: "Política de confidencialidade",
+  badge: "#01",
+  excerpt:
+    "Ao participar da Woody, concordas que mensagens, imagens, áudios, ficheiros e informações partilhadas neste espaço são confidenciais e restritas às pessoas envolvidas. É proibido copiar, gravar, divulgar, reencaminhar ou capturar ecrã para terceiros ou redes sociais sem consentimento explícito.",
+  sections: [
+    {
+      heading: "1. Princípio geral",
+      body: "Tratamos dados pessoais com finalidade limitada, transparência e medidas técnicas razoáveis. Só pedimos o necessário para criar conta, moderar, faturar (quando aplicável) e melhorar o produto.",
+    },
+    {
+      heading: "2. Mensagens e anexos",
+      body: "O conteúdo que envias em conversas e publicações destina-se a ser visível apenas aos destinatários e contextos que escolheres. A equipa pode aceder a metadados e, em caso de denúncia fundamentada, a excertos para investigação e cumprimento legal.",
+    },
+    {
+      heading: "3. Retenção e apagamento",
+      body: "Guardamos informação pelo tempo necessário a prestar o serviço, resolver litígios e cumprir obrigações legais. Podes solicitar apagamento da conta; alguns registos mínimos podem manter-se anonimizados por motivos legais ou de segurança.",
+    },
+    {
+      heading: "4. Os teus direitos",
+      body: "Dependendo da jurisdição, podes ter direito de acesso, retificação, oposição ou portabilidade. Contacta o suporte indicando o email da conta — respondemos no prazo legal aplicável.",
+    },
+  ],
+};
+
+export const policyAccess = {
+  title: "Política restritiva de acesso",
+  badge: "#02",
+  excerpt:
+    "A Woody é um espaço reservado a mulheres LBP e pessoas alinhadas ao feminino, conforme a proposta, os valores e as regras da plataforma. Não é permitido o acesso, a permanência ou a utilização por pessoas fora deste público.",
+  sections: [
+    {
+      heading: "1. Público-alvo",
+      body: "A definição de público existe para proteger quem aqui se sente a ver — não para dividir com violência. Contas que falsifiquem identidade ou motivem ódio contra o público permitido serão removidas.",
+    },
+    {
+      heading: "2. Verificação e limites",
+      body: "Podemos pedir verificações adicionais quando houver risco de fraude, segurança da comunidade ou pedidos legais. Recusas injustificadas podem impedir o uso de certas funcionalidades.",
+    },
+    {
+      heading: "3. Convites e comunidades",
+      body: "Comunidades privadas podem definir critérios extra, desde que não contradizam a lei nem a dignidade humana. Moderadoras e anfitriãs são responsáveis por aplicar regras de forma consistente.",
+    },
+  ],
+};
+
+export const policyBan = {
+  title: "Como evitar banimento na Woody",
+  badge: "#03",
+  excerpt:
+    "Respeita a proposta da plataforma e utiliza a Woody apenas se fizeres parte do público permitido. Não partilhes conta, palavra-passe, convite ou acesso com terceiros — trata o login como um bem pessoal.",
+  sections: [
+    {
+      heading: "1. Boas práticas diárias",
+      body: "Lê as notificações da equipa, responde a pedidos de esclarecimento e mantém o perfil verídico. Erros honestos corrigem-se; má fé acumula strikes.",
+    },
+    {
+      heading: "2. Denúncias e contexto",
+      body: "Se fores denunciada, explica o contexto com calma. Ocultar provas relevantes ou assediar quem denunciou agrava a situação.",
+    },
+    {
+      heading: "3. Escalação",
+      body: "Banimentos temporários permitem arrefecer conflitos. Banimentos permanentes ocorrem por violações graves, reincidência ou risco imediato à comunidade.",
+    },
+  ],
+};
+
+export const mobileQr = {
+  title: "tenha Woody na palma da sua mão.",
+  instructions:
+    "Leia o QR code com a câmara do seu telefone, e acesse no seu celular.",
+};

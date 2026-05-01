@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LANDING_IDS } from "../constants";
+import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 
-const nav = [
-  { label: "Como funciona", href: `#${LANDING_IDS.comoFunciona}` },
-  { label: "Comunidades", href: `#${LANDING_IDS.comunidades}` },
-  { label: "Recursos", href: `#${LANDING_IDS.recursos}` },
-  { label: "Planos", href: `#${LANDING_IDS.planos}` },
-  { label: "Segurança", href: `#${LANDING_IDS.seguranca}` },
+const anchorNav = [
+  { label: "Como funciona", id: LANDING_IDS.comoFunciona },
+  { label: "Comunidades", id: LANDING_IDS.comunidades },
+  { label: "Recursos", id: LANDING_IDS.recursos },
+  { label: "Planos", id: LANDING_IDS.planos },
+  { label: "Segurança", id: LANDING_IDS.seguranca },
 ] as const;
 
 export function LandingHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const onLanding = location.pathname === "/landing";
+  const anchorHref = (id: string) => (onLanding ? `#${id}` : `/landing#${id}`);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -31,7 +35,7 @@ export function LandingHeader() {
           : "border-transparent bg-transparent"
       )}
     >
-      <div className="mx-auto flex h-[4.25rem] max-w-[var(--layout-max-width)] items-center justify-between gap-6 px-[var(--layout-gutter)]">
+      <div className="mx-auto flex h-[4.25rem] max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--layout-gutter)] sm:gap-6">
         <Link
           to="/landing"
           className="group flex shrink-0 items-baseline gap-0.5 outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-lime)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f2ec]"
@@ -48,27 +52,36 @@ export function LandingHeader() {
         </Link>
 
         <nav
-          className="hidden items-center gap-9 text-[13px] font-semibold tracking-tight text-[var(--woody-text)]/68 lg:flex"
+          className="hidden items-center gap-6 text-[13px] font-semibold tracking-tight text-[var(--woody-text)]/68 xl:flex xl:gap-9"
           aria-label="Navegação principal"
         >
-          {nav.map((item) => (
+          {anchorNav.map((item) => (
             <a
-              key={item.href}
-              href={item.href}
+              key={item.id}
+              href={anchorHref(item.id)}
               className="relative transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[var(--woody-lime)] after:transition-transform after:content-[''] hover:text-[var(--woody-ink)] hover:after:scale-x-100"
             >
               {item.label}
             </a>
           ))}
+          <Link
+            to={INSTITUTIONAL_PATHS.hub}
+            className={cn(
+              "relative transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[var(--woody-lime)] after:transition-transform after:content-[''] hover:text-[var(--woody-ink)] hover:after:scale-x-100",
+              location.pathname.startsWith("/institutional") && "text-[var(--woody-ink)] after:scale-x-100"
+            )}
+          >
+            Institucional
+          </Link>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <Button variant="ghost" size="sm" className="hidden text-[var(--woody-muted)] sm:inline-flex" asChild>
             <Link to="/auth/login">Entrar</Link>
           </Button>
           <Button
             size="sm"
-            className="rounded-full bg-[var(--woody-ink)] px-4 font-semibold text-[var(--woody-lime)] shadow-[0_0_0_1px_rgba(139,195,74,0.35),0_8px_24px_rgba(139,195,74,0.18)] hover:bg-black"
+            className="rounded-full bg-[var(--woody-ink)] px-3 font-semibold text-[var(--woody-lime)] shadow-[0_0_0_1px_rgba(139,195,74,0.35),0_8px_24px_rgba(139,195,74,0.18)] sm:px-4 hover:bg-black"
             asChild
           >
             <Link to="/auth/onboarding/1">Criar conta</Link>

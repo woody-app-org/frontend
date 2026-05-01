@@ -23,6 +23,14 @@ import { CommunityAdminDashboardPage } from "@/features/communities/pages/Commun
 import { AssinaturaCanceladaPage, AssinaturaSucessoPage, PlanosPage } from "@/features/subscription/pages";
 import { ConversationsPage } from "@/features/messages";
 import { LandingPage } from "@/features/landing";
+import { InstitutionalLayout } from "@/features/landing/institutional/InstitutionalLayout";
+import { InstitutionalHubPage } from "@/features/landing/institutional/pages/InstitutionalHubPage";
+import { MissionPage } from "@/features/landing/institutional/pages/MissionPage";
+import { MobileQrPage } from "@/features/landing/institutional/pages/MobileQrPage";
+import { PoliciesIndexPage } from "@/features/landing/institutional/pages/PoliciesIndexPage";
+import { PolicyDetailPage } from "@/features/landing/institutional/pages/PolicyDetailPage";
+import { RulesPage } from "@/features/landing/institutional/pages/RulesPage";
+import { WhatIsWoodyPage } from "@/features/landing/institutional/pages/WhatIsWoodyPage";
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +42,19 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <IntroPage /> },
       { path: "landing", element: <LandingPage /> },
+      {
+        path: "institutional",
+        element: <InstitutionalLayout />,
+        children: [
+          { index: true, element: <InstitutionalHubPage /> },
+          { path: "missao", element: <MissionPage /> },
+          { path: "o-que-e-a-woody", element: <WhatIsWoodyPage /> },
+          { path: "regras-e-comportamento", element: <RulesPage /> },
+          { path: "politicas", element: <PoliciesIndexPage /> },
+          { path: "politicas/:slug", element: <PolicyDetailPage /> },
+          { path: "woody-no-celular", element: <MobileQrPage /> },
+        ],
+      },
       { path: "auth", element: <AuthEntryPage /> },
       { path: "auth/login", element: <LoginPage /> },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },

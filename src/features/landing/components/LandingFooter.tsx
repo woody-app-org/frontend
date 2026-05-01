@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { LANDING_IDS } from "../constants";
+import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 
 export function LandingFooter() {
   return (
@@ -84,10 +85,39 @@ export function LandingFooter() {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--woody-muted)]">Legal</p>
-              <ul className="mt-4 space-y-2.5 text-sm text-[var(--woody-muted)]/70">
-                <li>Privacidade — brevemente</li>
-                <li>Termos — brevemente</li>
-                <li>Contacto — brevemente</li>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.hub}
+                    className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                  >
+                    Institucional
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.politicaConfidencialidade}
+                    className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                  >
+                    Confidencialidade
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.politicaAcesso}
+                    className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                  >
+                    Acesso restritivo
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.evitarBanimento}
+                    className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                  >
+                    Evitar banimento
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
