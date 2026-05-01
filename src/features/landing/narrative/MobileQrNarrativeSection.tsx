@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { mobileQr } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
+import { ScrollReveal } from "../motion/ScrollReveal";
 
 const qrSize = 320;
 
@@ -11,6 +12,8 @@ export interface MobileQrNarrativeSectionProps {
 
 export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNarrativeSectionProps) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const motion = embedInLanding;
+
   const targetUrl = useMemo(() => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     return `${origin}/landing`;
@@ -58,12 +61,12 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
               : "grid flex-1 grid-cols-1 items-center gap-12 pb-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-6 lg:gap-x-4 xl:gap-x-8"
           }
         >
-          <div className="lg:pr-4">
+          <ScrollReveal enabled={motion} yOffset={16} className="lg:pr-4">
             <h2 className="max-w-[min(100%,22rem)] font-sans text-[clamp(2rem,5.5vw,3.75rem)] font-black lowercase leading-[0.95] tracking-[-0.03em] text-[#8dbf43] md:max-w-none">
               {mobileQr.title}
             </h2>
             <svg
-              className="mt-5 h-10 w-44 text-white md:mt-6 md:h-12 md:w-52"
+              className="mt-5 h-10 w-44 text-white transition-transform duration-500 ease-out motion-reduce:transition-none md:mt-6 md:h-12 md:w-52"
               viewBox="0 0 200 40"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -78,33 +81,35 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
                 opacity="0.92"
               />
             </svg>
-          </div>
+          </ScrollReveal>
 
-          <div className="relative mx-auto flex w-full max-w-[min(88vw,340px)] shrink-0 justify-center">
-            <div className="relative rounded-[2.5rem] border border-white/[0.12] bg-white/[0.04] p-4 shadow-[0_0_0_1px_rgba(141,191,67,0.2)] md:p-5">
-              <div className="relative overflow-hidden rounded-[1.75rem] bg-white p-3 ring-1 ring-black/15">
-                {dataUrl ? (
-                  <img
-                    src={dataUrl}
-                    width={qrSize}
-                    height={qrSize}
-                    className="size-[min(78vw,320px)]"
-                    alt="Código QR para abrir a Woody no telemóvel"
-                  />
-                ) : (
-                  <div className="flex size-[min(78vw,320px)] items-center justify-center bg-white text-sm text-black/45">
-                    A gerar QR…
-                  </div>
-                )}
+          <ScrollReveal enabled={motion} delayMs={100} yOffset={14}>
+            <div className="relative mx-auto flex w-full max-w-[min(88vw,340px)] shrink-0 justify-center">
+              <div className="relative rounded-[2.5rem] border border-white/[0.12] bg-white/[0.04] p-4 shadow-[0_0_0_1px_rgba(141,191,67,0.2)] md:p-5">
+                <div className="relative overflow-hidden rounded-[1.75rem] bg-white p-3 ring-1 ring-black/15">
+                  {dataUrl ? (
+                    <img
+                      src={dataUrl}
+                      width={qrSize}
+                      height={qrSize}
+                      className="size-[min(78vw,320px)]"
+                      alt="Código QR para abrir a Woody no telemóvel"
+                    />
+                  ) : (
+                    <div className="flex size-[min(78vw,320px)] items-center justify-center bg-white text-sm text-black/45">
+                      A gerar QR…
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
-          <div className="text-left lg:text-right">
+          <ScrollReveal enabled={motion} delayMs={200} yOffset={12} className="text-left lg:text-right">
             <p className="max-w-md font-sans text-[clamp(0.7rem,1.35vw,0.82rem)] font-extrabold uppercase leading-snug tracking-[0.14em] text-white lg:ml-auto lg:max-w-[14.5rem] xl:max-w-[16rem]">
               {mobileQr.instructions}
             </p>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </div>

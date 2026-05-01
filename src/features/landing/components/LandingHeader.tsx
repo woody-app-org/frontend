@@ -38,7 +38,7 @@ export function LandingHeader() {
       <div className="mx-auto flex h-[4.25rem] max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--layout-gutter)] sm:gap-6">
         <Link
           to="/landing"
-          className="group flex shrink-0 items-baseline gap-0.5 outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-lime)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f2ec]"
+          className="group flex shrink-0 items-baseline gap-0.5 outline-none transition-opacity duration-300 ease-out hover:opacity-[0.88] focus-visible:ring-2 focus-visible:ring-[var(--woody-lime)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f2ec]"
         >
           <span className="font-serif text-xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-2xl">
             Woody
@@ -59,7 +59,7 @@ export function LandingHeader() {
             <a
               key={item.id}
               href={anchorHref(item.id)}
-              className="relative transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[var(--woody-lime)] after:transition-transform after:content-[''] hover:text-[var(--woody-ink)] hover:after:scale-x-100"
+              className="relative transition-colors duration-300 ease-out after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[var(--woody-lime)] after:transition-transform after:duration-300 after:ease-out after:content-[''] hover:text-[var(--woody-ink)] hover:after:scale-x-100"
             >
               {item.label}
             </a>
@@ -67,7 +67,7 @@ export function LandingHeader() {
           <Link
             to={INSTITUTIONAL_PATHS.hub}
             className={cn(
-              "relative transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[var(--woody-lime)] after:transition-transform after:content-[''] hover:text-[var(--woody-ink)] hover:after:scale-x-100",
+              "relative transition-colors duration-300 ease-out after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[var(--woody-lime)] after:transition-transform after:duration-300 after:ease-out after:content-[''] hover:text-[var(--woody-ink)] hover:after:scale-x-100",
               location.pathname.startsWith("/institutional") && "text-[var(--woody-ink)] after:scale-x-100"
             )}
           >

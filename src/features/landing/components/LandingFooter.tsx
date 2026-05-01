@@ -25,7 +25,7 @@ export function LandingFooter() {
                 <li>
                   <a
                     href="/landing"
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Topo da página
                   </a>
@@ -33,7 +33,7 @@ export function LandingFooter() {
                 <li>
                   <a
                     href={landingAnchor(LANDING_NARRATIVE_IDS.oQueEWoody)}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     O que é Woody
                   </a>
@@ -41,7 +41,7 @@ export function LandingFooter() {
                 <li>
                   <a
                     href={landingAnchor(LANDING_NARRATIVE_IDS.missao)}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Missão principal
                   </a>
@@ -49,7 +49,7 @@ export function LandingFooter() {
                 <li>
                   <a
                     href={landingAnchor(LANDING_NARRATIVE_IDS.regras)}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Regras de convívio
                   </a>
@@ -57,7 +57,7 @@ export function LandingFooter() {
                 <li>
                   <a
                     href={landingAnchor(LANDING_NARRATIVE_IDS.politicas)}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Políticas
                   </a>
@@ -65,7 +65,7 @@ export function LandingFooter() {
                 <li>
                   <a
                     href={landingAnchor(LANDING_NARRATIVE_IDS.mobileQr)}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Woody no celular
                   </a>
@@ -78,7 +78,7 @@ export function LandingFooter() {
                 <li>
                   <Link
                     to="/auth/onboarding/1"
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Criar conta
                   </Link>
@@ -86,7 +86,7 @@ export function LandingFooter() {
                 <li>
                   <Link
                     to="/auth/login"
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Entrar
                   </Link>
@@ -99,7 +99,7 @@ export function LandingFooter() {
                 <li>
                   <Link
                     to={INSTITUTIONAL_PATHS.hub}
-                    className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Índice institucional
                   </Link>
@@ -107,7 +107,7 @@ export function LandingFooter() {
                 <li>
                   <Link
                     to={INSTITUTIONAL_PATHS.politicaConfidencialidade}
-                    className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Confidencialidade
                   </Link>
@@ -115,7 +115,7 @@ export function LandingFooter() {
                 <li>
                   <Link
                     to={INSTITUTIONAL_PATHS.politicaAcesso}
-                    className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Acesso restritivo
                   </Link>
@@ -123,7 +123,7 @@ export function LandingFooter() {
                 <li>
                   <Link
                     to={INSTITUTIONAL_PATHS.evitarBanimento}
-                    className="text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Evitar banimento
                   </Link>

@@ -188,8 +188,10 @@
   * {
     @apply border-border outline-ring/50;
     }
+  /* clip em vez de hidden: evita segundo eixo de scroll (hidden+visible → overflow-y auto no mesmo elemento). */
   html {
     overflow-x: hidden;
+    overflow-x: clip;
   }
   body {
     @apply bg-background text-foreground antialiased;

@@ -1,5 +1,6 @@
 import { LandingFooter } from "../components/LandingFooter";
 import { LandingHeader } from "../components/LandingHeader";
+import { ScrollReveal } from "../motion/ScrollReveal";
 import { LANDING_NARRATIVE_IDS } from "../constants";
 import { MissionNarrativeSection } from "../narrative/MissionNarrativeSection";
 import { MobileQrNarrativeSection } from "../narrative/MobileQrNarrativeSection";
@@ -14,7 +15,7 @@ import { WhatIsWoodySection } from "../narrative/WhatIsWoodySection";
  */
 export function LandingPage() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f4f2ec] text-[var(--woody-text)] antialiased selection:bg-[var(--woody-lime)]/25">
+    <div className="min-h-screen bg-[#f4f2ec] text-[var(--woody-text)] antialiased selection:bg-[var(--woody-lime)]/25">
       <LandingHeader />
       <main>
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.oQueEWoody}>
@@ -37,7 +38,9 @@ export function LandingPage() {
           <MobileQrNarrativeSection embedInLanding />
         </NarrativeScrollSection>
       </main>
-      <LandingFooter />
+      <ScrollReveal enabled yOffset={12}>
+        <LandingFooter />
+      </ScrollReveal>
     </div>
   );
 }
