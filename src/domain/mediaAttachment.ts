@@ -15,3 +15,8 @@ export interface PostMediaAttachment {
   durationSeconds?: number | null;
   durationMs?: number | null;
 }
+
+/** Converte URLs legadas (`imageUrl` / `imageUrls`) em anexos para a galeria unificada. */
+export function legacyImageUrlsToPostMediaAttachments(urls: string[]): PostMediaAttachment[] {
+  return urls.map((url) => ({ url, mediaType: "image" }));
+}

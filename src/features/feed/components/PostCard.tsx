@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { woodyMotion, woodyPinPill } from "@/lib/woody-ui";
 import type { Post } from "../types";
 import { resolvePublicMediaUrl } from "@/lib/api";
+import { legacyImageUrlsToPostMediaAttachments } from "@/domain/mediaAttachment";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostMediaGallery } from "@/components/media/PostMediaGallery";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
@@ -53,8 +54,6 @@ const styles = {
   content:
     "text-[var(--woody-text)]/92 text-[0.9375rem] leading-[1.65] whitespace-pre-wrap break-words",
   contentBlock: "relative z-[1] p-0 pt-1 pb-0",
-  imageWrap: "mt-4 w-full overflow-hidden rounded-lg bg-black/[0.025] ring-1 ring-black/[0.05]",
-  image: "w-full object-cover max-h-[min(22rem,56vw)] rounded-lg md:max-h-[20rem]",
   footer:
     "relative z-[1] flex items-center gap-7 mt-5 pt-0.5 text-[var(--woody-muted)]",
   footerItem:
@@ -141,7 +140,12 @@ export function PostCard({
         : [];
   const imageGallery = imageGalleryRaw.map((u) => resolvePublicMediaUrl(u));
 
-  const typedMedia = post.mediaAttachments && post.mediaAttachments.length > 0 ? post.mediaAttachments : null;
+  const galleryItems =
+    post.mediaAttachments && post.mediaAttachments.length > 0
+      ? post.mediaAttachments
+      : imageGallery.length > 0
+        ? legacyImageUrlsToPostMediaAttachments(imageGallery)
+        : null;
 
   const hasContextBar =
     Boolean(post.community) || (post.publicationContext === "profile" && postSurface !== "profile");
@@ -265,36 +269,13 @@ export function PostCard({
         <p className={cn(styles.content, (post.title || post.tags?.length) && "mt-2")}>
           {post.content}
         </p>
-        {typedMedia ? (
+        {galleryItems ? (
           <div
             data-post-ignore-open="true"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <PostMediaGallery items={typedMedia} />
-          </div>
-        ) : imageGallery.length === 1 ? (
-          <div className={styles.imageWrap}>
-            <img src={imageGallery[0]} alt="" className={styles.image} />
-          </div>
-        ) : imageGallery.length > 1 ? (
-          <div
-            className="mt-3 flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
-            data-post-ignore-open="true"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-            role="list"
-            aria-label="Imagens da publicação"
-          >
-            {imageGallery.map((src, idx) => (
-              <div
-                key={`${idx}-${src.slice(0, 48)}`}
-                role="listitem"
-                className={cn(styles.imageWrap, "min-w-[min(100%,280px)] shrink-0 snap-center max-w-[85vw]")}
-              >
-                <img src={src} alt="" className={styles.image} />
-              </div>
-            ))}
+            <PostMediaGallery items={galleryItems} />
           </div>
         ) : null}
         <div className={styles.footer}>

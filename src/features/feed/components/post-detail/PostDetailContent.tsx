@@ -1,6 +1,7 @@
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Post } from "@/domain/types";
+import { legacyImageUrlsToPostMediaAttachments } from "@/domain/mediaAttachment";
 import { PostMediaGallery } from "@/components/media/PostMediaGallery";
 
 export interface PostDetailContentProps {
@@ -15,6 +16,10 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
         ? [post.imageUrl]
         : [];
   const legacy = legacyRaw.map((u) => resolvePublicMediaUrl(u));
+  const legacyItems = legacy.length > 0 ? legacyImageUrlsToPostMediaAttachments(legacy) : [];
+
+  const galleryItems =
+    post.mediaAttachments && post.mediaAttachments.length > 0 ? post.mediaAttachments : legacyItems;
 
   return (
     <article className="space-y-4">
@@ -32,23 +37,8 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
         </div>
       ) : null}
       <p className={cn("whitespace-pre-wrap text-[0.98rem] leading-relaxed text-[var(--woody-text)]/90")}>{post.content}</p>
-      {post.mediaAttachments && post.mediaAttachments.length > 0 ? (
-        <PostMediaGallery items={post.mediaAttachments} className="mt-0" variant="detail" />
-      ) : legacy.length === 1 ? (
-        <div className="overflow-hidden rounded-2xl border border-[var(--woody-accent)]/12 bg-[var(--woody-nav)]/5">
-          <img src={legacy[0]} alt="" className="max-h-[460px] w-full object-cover" />
-        </div>
-      ) : legacy.length > 1 ? (
-        <div className="flex flex-col gap-3">
-          {legacy.map((src) => (
-            <div
-              key={src.slice(0, 80)}
-              className="overflow-hidden rounded-2xl border border-[var(--woody-accent)]/12 bg-[var(--woody-nav)]/5"
-            >
-              <img src={src} alt="" className="max-h-[460px] w-full object-cover" />
-            </div>
-          ))}
-        </div>
+      {galleryItems.length > 0 ? (
+        <PostMediaGallery items={galleryItems} className="mt-0" variant="detail" />
       ) : null}
     </article>
   );
