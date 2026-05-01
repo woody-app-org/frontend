@@ -1,9 +1,7 @@
 import { useRef } from "react";
-import { ChevronDown } from "lucide-react";
 import { rules } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
 import { InstitutionalPrimaryCta } from "../institutional/components/InstitutionalPrimaryCta";
-import { InstitutionalProse } from "../institutional/components/InstitutionalProse";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 import { INSTITUTIONAL_HERO_NOT_ALLOWED } from "../institutional/institutionalMedia";
 import { LANDING_NARRATIVE_IDS } from "../constants";
@@ -74,56 +72,20 @@ export function RulesNarrativeSection({ embedInLanding = false }: RulesNarrative
                   <RulesHeroTitle />
                 </h2>
               </ScrollReveal>
-              <ScrollReveal enabled={motion} delayMs={140} yOffset={10} className="mt-10 flex justify-center">
-                <span
-                  className="inline-flex size-12 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white shadow-[0_0_40px_-8px_rgba(255,255,255,0.35)] transition-transform duration-300 ease-out motion-reduce:transition-none"
-                  style={
-                    motion && !reduce ? { transform: `translate3d(0, ${parallaxY * 0.35}px, 0)` } : undefined
-                  }
-                  aria-hidden
-                >
-                  <ChevronDown className="size-6" />
-                </span>
-              </ScrollReveal>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={
-          embedInLanding
-            ? "bg-[#f4f2ec] px-[var(--layout-gutter)] pb-20 pt-12 md:pb-24 md:pt-16"
-            : "px-[var(--layout-gutter)] pb-24 pt-14 md:pt-20"
-        }
-      >
-        <div className="mx-auto max-w-[var(--layout-max-width)]">
-          <ScrollReveal enabled={motion} delayMs={40} yOffset={14}>
-            <div className="mx-auto max-w-2xl md:ml-[4%] md:mr-auto lg:max-w-[26rem] lg:ml-[6%]">
-              <InstitutionalProse>
-                <p className="!text-[1.05rem] !leading-[1.8]">{rules.intro}</p>
-                <ul className="mt-8 list-none space-y-5 border-l-2 border-[var(--woody-lime)]/50 pl-6">
-                  {rules.bullets.map((b) => (
-                    <li key={b.slice(0, 32)} className="relative text-[0.98rem] leading-relaxed">
-                      <span
-                        className="absolute -left-[1.35rem] top-2.5 size-2 rounded-full bg-[var(--woody-lime)]"
-                        aria-hidden
-                      />
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              </InstitutionalProse>
-              <div className="mt-12 flex flex-wrap gap-3">
+              <ScrollReveal enabled={motion} delayMs={140} yOffset={10} className="mt-10 flex flex-wrap items-center justify-center gap-4">
                 <InstitutionalPrimaryCta {...politicasLink} variant="dark">
                   Ver políticas
                 </InstitutionalPrimaryCta>
-                <InstitutionalPrimaryCta {...extraLink} variant="ghost">
+                <InstitutionalPrimaryCta
+                  {...extraLink}
+                  variant="ghost"
+                  className="!border-white/30 !bg-white/10 !text-white hover:!border-white/45 hover:!bg-white/18 focus-visible:!ring-offset-black/40"
+                >
                   {extraLabel}
                 </InstitutionalPrimaryCta>
-              </div>
+              </ScrollReveal>
             </div>
-          </ScrollReveal>
+          </div>
         </div>
       </div>
     </div>

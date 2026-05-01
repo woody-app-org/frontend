@@ -25,14 +25,6 @@ export const rules = {
   topBar:
     "Não queremos que estejas entediada a rolar scroll infinito. Queremos que existas, cries e te conectes com outras utilizadoras da Woody.",
   title: "O que não é legal fazer aqui",
-  intro:
-    "Esta página resume valores e limites. Abaixo encontrarás regras concretas e ligações para políticas detalhadas — lê com calma: faz parte de cuidar deste espaço coletivo.",
-  bullets: [
-    "Assédio, ameaças, outing ou pressão sexual — incluindo em mensagens privadas — não são tolerados.",
-    "Conteúdo que sexualize menores, incite violência ou promova ódio identitário é removido e pode ser reportado às autoridades.",
-    "Spam, scams, phishing ou contas automatizadas destroem a confiança: são bloqueados.",
-    "Respeita o consentimento em todas as interações: fotos, áudios, convites e proximidade física descrita também entram nesta regra.",
-  ],
 };
 
 export const policiesIndexIntro =
