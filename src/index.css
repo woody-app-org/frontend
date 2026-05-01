@@ -231,3 +231,36 @@
     opacity: 1;
   }
 }
+
+/* Micro-anim like nos posts (PostLikeIcon) — respeitada via `motion-reduce:` no componente */
+@keyframes woodyLikePopIn {
+  0% {
+    transform: scale(0.88);
+  }
+  55% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes woodyLikePopOut {
+  0% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes woodyLikeBurst {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}

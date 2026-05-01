@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
+import { MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,6 +17,8 @@ import { PostCommunityContextBar } from "./PostCommunityContextBar";
 import { PostProfileContextBar } from "./PostProfileContextBar";
 import { PostOverflowMenu, type PostProfilePinMenuProps } from "./PostOverflowMenu";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { PostLikeIcon } from "./PostLikeIcon";
+import { usePostLikeTapAnimation } from "../hooks/usePostLikeTapAnimation";
 
 // --- Helpers ---
 
@@ -110,6 +112,7 @@ export function PostCard({
   const navigate = useNavigate();
   const viewerId = useViewerId();
   const ignoreNextCardClickRef = useRef(false);
+  const { tapPhase, triggerTap } = usePostLikeTapAnimation();
 
   const resolvedProfilePinMenu = profilePinMenu
     ? {
@@ -308,16 +311,14 @@ export function PostCard({
             aria-pressed={post.likedByCurrentUser}
             onClick={(event) => {
               event.stopPropagation();
+              if (!isLikePending && onLike) triggerTap(!post.likedByCurrentUser);
               void onLike?.(post.id);
             }}
           >
             {isLikePending ? (
               <Loader2 className="size-[1em] animate-spin" strokeWidth={2} />
             ) : (
-              <Heart
-                className={cn("size-[1em] stroke-current", post.likedByCurrentUser && "fill-current")}
-                strokeWidth={1.75}
-              />
+              <PostLikeIcon liked={post.likedByCurrentUser} tapPhase={tapPhase} />
             )}
             {formatCount(post.likesCount)}
           </button>
