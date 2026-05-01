@@ -52,14 +52,16 @@
     /* Layout: container principal (ajuste aqui para mudar respiro/largura) */
     --layout-max-width: 1520px;
     --layout-gutter: 1rem;
-    --layout-gap-columns: 0;
+    /* Espaço entre miolo e coluna direita (topnav; sidebar esquerda removida) */
+    --layout-gap-columns: 1.5rem;
+    --app-topnav-height: 4rem;
     /* Feed desktop — 3 colunas (~22–24% laterais, miolo editorial) */
     --feed-sidebar-width: 296px;
     --feed-right-min: 260px;
     --feed-right-max: 300px;
     --feed-column-gap: 2rem;
     /* Miolo do feed (posts, hubs); evitar linhas demasiado longas em ecrãs enormes */
-    --feed-main-max: min(52rem, 100%);
+    --feed-main-max: min(54rem, 100%);
     /* Woody — tema referência: preto + branco + verde #8bc34a */
     --woody-sand: #f4f4f5;
     --woody-ink: #0a0a0a;

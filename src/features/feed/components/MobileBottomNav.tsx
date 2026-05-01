@@ -1,15 +1,16 @@
-import { Home, UsersRound, PlusSquare, Search, MessageCircle } from "lucide-react";
+import { Home, UsersRound, PlusSquare, Search, MessageCircle, Sparkles } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 
 const ITEMS = [
-  { id: "home", path: "/feed", label: "Home", icon: Home },
-  { id: "comunidades", path: "/communities", label: "Comunidades", icon: UsersRound },
+  { id: "home", path: "/feed", label: "Início", icon: Home },
+  { id: "comunidades", path: "/communities", label: "Comun.", icon: UsersRound },
+  { id: "planos", path: "/planos", label: "Planos", icon: Sparkles },
   { id: "create", path: "/criar", label: "Criar", icon: PlusSquare },
   { id: "search", path: "/feed", label: "Busca", icon: Search },
-  { id: "mensagens", path: "/messages", label: "Mensagens", icon: MessageCircle },
-];
+  { id: "mensagens", path: "/messages", label: "Msgs", icon: MessageCircle },
+] as const;
 
 export interface MobileBottomNavProps {
   className?: string;
@@ -24,7 +25,7 @@ export function MobileBottomNav({ className, onOpenSearch, isSearchOpen }: Mobil
   return (
     <nav
       className={cn(
-        "md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around py-2 px-1.5 bg-[var(--woody-sidebar)]/98 backdrop-blur-md border-t border-white/10 text-white shadow-[0_-4px_24px_rgba(0,0,0,0.35)] safe-area-pb",
+        "md:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-6 gap-0 border-t border-black/[0.08] bg-[var(--woody-card)]/97 py-1.5 px-0.5 text-[var(--woody-text)] shadow-[0_-4px_24px_rgba(10,10,10,0.08)] backdrop-blur-md safe-area-pb",
         className
       )}
     >
@@ -34,9 +35,11 @@ export function MobileBottomNav({ className, onOpenSearch, isSearchOpen }: Mobil
             ? location.pathname === "/feed" || location.pathname === "/"
             : item.id === "comunidades"
               ? location.pathname.startsWith("/communities")
-              : item.id === "search"
-                ? !!isSearchOpen
-                : location.pathname.startsWith(item.path);
+              : item.id === "planos"
+                ? location.pathname.startsWith("/planos")
+                : item.id === "search"
+                  ? !!isSearchOpen
+                  : location.pathname.startsWith(item.path);
         const Icon = item.icon;
         const isSearch = item.id === "search";
         return (
@@ -51,17 +54,15 @@ export function MobileBottomNav({ className, onOpenSearch, isSearchOpen }: Mobil
               navigate(item.path);
             }}
             className={cn(
-              "flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 min-w-[52px] max-w-[72px] rounded-xl transition-colors duration-200",
+              "flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl py-1 transition-colors duration-200",
               woodyFocus.ring,
               isActive
-                ? "text-[var(--woody-nav)] bg-white/10 font-semibold"
-                : "text-white/85 font-medium hover:bg-white/6"
+                ? "font-semibold text-[var(--woody-nav)]"
+                : "font-medium text-[var(--woody-muted)] hover:bg-black/[0.04] hover:text-[var(--woody-text)]"
             )}
           >
-            <Icon
-              className={cn("size-5", isActive && "stroke-[var(--woody-nav)]")}
-            />
-            <span className="text-xs font-medium">{item.label}</span>
+            <Icon className={cn("size-[1.15rem] shrink-0", isActive && "stroke-[var(--woody-nav)]")} strokeWidth={2} />
+            <span className="max-w-full truncate px-0.5 text-[0.625rem] leading-tight">{item.label}</span>
           </button>
         );
       })}
