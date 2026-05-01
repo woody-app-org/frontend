@@ -90,6 +90,8 @@ export function ProfilePage() {
     pinActionSuccess,
     dismissPinActionSuccess,
     applyFollowPatch,
+    togglePostLike,
+    isPostLikePending,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
 
@@ -310,6 +312,8 @@ export function ProfilePage() {
                   onDismissPinError={dismissPinActionError}
                   pinActionSuccess={pinActionSuccess}
                   onDismissPinSuccess={dismissPinActionSuccess}
+                  onLike={togglePostLike}
+                  isLikePending={isPostLikePending}
                 />
               ) : null}
 

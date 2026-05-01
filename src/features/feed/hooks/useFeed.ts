@@ -6,10 +6,10 @@ import {
 } from "@/domain/mocks/postInteractionMockStore";
 import { subscribeUserDisplayPatches, getUserDisplayPatchesVersion } from "@/domain/mocks/userDisplayPatchStore";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
-import { togglePostLikeMock } from "@/domain/services/postMock.service";
 import type { Post, FeedFilter } from "../types";
 import { getFeed } from "../services/feed.service";
 import { SOCIAL_GRAPH_CHANGED_EVENT } from "@/lib/socialGraphEvents";
+import { usePostListLikeToggle } from "./usePostListLikeToggle";
 
 interface UseFeedReturn {
   posts: Post[];
@@ -60,7 +60,7 @@ export function useFeed(): UseFeedReturn {
   const [filter, setFilterState] = useState<FeedFilter>("trending");
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
-  const [pendingLikePostIds, setPendingLikePostIds] = useState<Set<string>>(new Set());
+  const { togglePostLike, isPostLikePending } = usePostListLikeToggle(setPosts);
   const isFirstLoadRef = useRef(true);
   const pageRef = useRef(page);
   pageRef.current = page;
@@ -139,73 +139,6 @@ export function useFeed(): UseFeedReturn {
       void fetchFeed();
     },
     [fetchFeed]
-  );
-
-  const togglePostLike = useCallback(
-    async (postId: string) => {
-      if (!postId) return;
-      if (pendingLikePostIds.has(postId)) return;
-
-      setPendingLikePostIds((current) => {
-        const next = new Set(current);
-        next.add(postId);
-        return next;
-      });
-
-      setPosts((current) =>
-        current.map((post) =>
-          post.id !== postId
-            ? post
-            : {
-                ...post,
-                likedByCurrentUser: !post.likedByCurrentUser,
-                likesCount: post.likedByCurrentUser ? Math.max(0, post.likesCount - 1) : post.likesCount + 1,
-              }
-        )
-      );
-
-      try {
-        const result = await togglePostLikeMock(postId, viewerId);
-        if (!result) throw new Error("Post não encontrado.");
-        setPosts((current) =>
-          current.map((post) =>
-            post.id !== postId
-              ? post
-              : {
-                  ...post,
-                  likedByCurrentUser: result.likedByCurrentUser,
-                  likesCount: result.likesCount,
-                }
-          )
-        );
-      } catch {
-        setPosts((current) =>
-          current.map((post) =>
-            post.id !== postId
-              ? post
-              : {
-                  ...post,
-                  likedByCurrentUser: !post.likedByCurrentUser,
-                  likesCount: post.likedByCurrentUser ? Math.max(0, post.likesCount - 1) : post.likesCount + 1,
-                }
-          )
-        );
-      } finally {
-        setPendingLikePostIds((current) => {
-          const next = new Set(current);
-          next.delete(postId);
-          return next;
-        });
-      }
-    },
-    [pendingLikePostIds, viewerId]
-  );
-
-  const isPostLikePending = useCallback(
-    (postId: string) => {
-      return pendingLikePostIds.has(postId);
-    },
-    [pendingLikePostIds]
   );
 
   return {

@@ -97,6 +97,8 @@ export interface UseUserProfileReturn {
   dismissPinActionSuccess: () => void;
   /** Após seguir/deixar de seguir, mantém o perfil alinhado à API sem refetch completo. */
   applyFollowPatch: (patch: { isFollowing: boolean; followersCount: number }) => void;
+  togglePostLike: (postId: string) => Promise<void>;
+  isPostLikePending: (postId: string) => boolean;
 }
 
 export type { Post, User };

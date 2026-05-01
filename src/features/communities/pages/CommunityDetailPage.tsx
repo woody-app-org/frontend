@@ -42,6 +42,7 @@ import { CommunityMembersManagerDialog } from "../components/members-manager/Com
 import { CommunityGrowthDialog } from "../components/CommunityGrowthDialog";
 import { CommunityPostBoostDialog } from "../components/CommunityPostBoostDialog";
 import { CommunityPremiumSidebarCard } from "../components/CommunityPremiumSidebarCard";
+import { usePostListLikeToggle } from "@/features/feed/hooks/usePostListLikeToggle";
 
 const COMMUNITY_FEED_PAGE_SIZE = 10;
 
@@ -60,6 +61,8 @@ interface CommunityDetailLoadedProps {
   /** Feed de posts não carregado (ex. 403 em comunidade privada sem acesso). */
   postsFeedAccessDenied: boolean;
   premiumCapabilities?: CommunityPremiumCapabilities;
+  togglePostLike: (postId: string) => Promise<void>;
+  isPostLikePending: (postId: string) => boolean;
 }
 
 function CommunityDetailLoaded({
@@ -76,6 +79,8 @@ function CommunityDetailLoaded({
   setJoinPending,
   postsFeedAccessDenied,
   premiumCapabilities,
+  togglePostLike,
+  isPostLikePending,
 }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
   const { setPageComposerCommunity } = useCreatePostComposer();
@@ -293,6 +298,8 @@ function CommunityDetailLoaded({
             premiumCapabilities={premiumCapabilities}
             onBoostPost={premiumCapabilities?.canBoostCommunityPosts ? (id) => setBoostPostId(id) : undefined}
             boostingPostId={null}
+            onLike={togglePostLike}
+            isLikePending={isPostLikePending}
           />
         </div>
 
@@ -344,6 +351,8 @@ function CommunityDetailPageContent() {
   const [premiumCapabilities, setPremiumCapabilities] = useState<CommunityPremiumCapabilities | undefined>(
     undefined
   );
+
+  const { togglePostLike, isPostLikePending } = usePostListLikeToggle(setPosts);
 
   const bump = useCallback(() => setRevision((n) => n + 1), []);
 
@@ -493,6 +502,8 @@ function CommunityDetailPageContent() {
       setJoinPending={setJoinPending}
       postsFeedAccessDenied={postsFeedAccessDenied}
       premiumCapabilities={premiumCapabilities}
+      togglePostLike={togglePostLike}
+      isPostLikePending={isPostLikePending}
     />
   );
 }
