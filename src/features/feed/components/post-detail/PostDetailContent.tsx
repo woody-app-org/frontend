@@ -1,3 +1,4 @@
+import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Post } from "@/domain/types";
 import { PostMediaGallery } from "@/components/media/PostMediaGallery";
@@ -7,12 +8,13 @@ export interface PostDetailContentProps {
 }
 
 export function PostDetailContent({ post }: PostDetailContentProps) {
-  const legacy =
+  const legacyRaw =
     post.imageUrls && post.imageUrls.length > 0
       ? post.imageUrls
       : post.imageUrl
         ? [post.imageUrl]
         : [];
+  const legacy = legacyRaw.map((u) => resolvePublicMediaUrl(u));
 
   return (
     <article className="space-y-4">

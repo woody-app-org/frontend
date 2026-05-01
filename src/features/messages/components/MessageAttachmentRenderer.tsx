@@ -1,3 +1,4 @@
+import { resolvePublicMediaUrl } from "@/lib/api";
 import { woodyFocus } from "@/lib/woody-ui";
 import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
@@ -46,7 +47,7 @@ export function MessageAttachmentRenderer({ attachments, className }: MessageAtt
           <li key={`att-${a.id}-${idx}-${item.storageKey ?? item.url}`}>
             {wrapLink ? (
               <a
-                href={a.url}
+                href={resolvePublicMediaUrl(a.url)}
                 target="_blank"
                 rel="noreferrer"
                 className={cn(

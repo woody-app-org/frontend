@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyMotion, woodyPinPill } from "@/lib/woody-ui";
 import type { Post } from "../types";
+import { resolvePublicMediaUrl } from "@/lib/api";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { PostMediaGallery } from "@/components/media/PostMediaGallery";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
@@ -129,12 +130,13 @@ export function PostCard({
   const openPost = () => navigate(`/posts/${post.id}`);
   const openPostComments = () => navigate(`/posts/${post.id}?focus=comments`);
 
-  const imageGallery =
+  const imageGalleryRaw =
     post.imageUrls && post.imageUrls.length > 0
       ? post.imageUrls
       : post.imageUrl
         ? [post.imageUrl]
         : [];
+  const imageGallery = imageGalleryRaw.map((u) => resolvePublicMediaUrl(u));
 
   const typedMedia = post.mediaAttachments && post.mediaAttachments.length > 0 ? post.mediaAttachments : null;
 

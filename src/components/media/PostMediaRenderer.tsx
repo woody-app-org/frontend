@@ -1,3 +1,4 @@
+import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
 import { VideoPostPlayer } from "./VideoPostPlayer";
@@ -33,7 +34,7 @@ export function PostMediaItem({ item, variant, className }: PostMediaItemProps) 
     variant === "detail" ? imgDetail : variant === "message" ? imgMessage : imgFeed;
   return (
     <img
-      src={item.url}
+      src={resolvePublicMediaUrl(item.url)}
       alt=""
       className={cn(
         imgClass,

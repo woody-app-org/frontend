@@ -1,3 +1,4 @@
+import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const feed =
@@ -30,10 +31,12 @@ export function VideoPostPlayer({ src, poster, variant, className, ariaLabel }: 
     (variant === "message" ? "Vídeo anexado à mensagem" : "Vídeo da publicação");
   const sizeClass =
     variant === "detail" ? detail : variant === "message" ? message : feed;
+  const resolvedSrc = resolvePublicMediaUrl(src);
+  const resolvedPoster = poster ? resolvePublicMediaUrl(poster) : undefined;
   return (
     <video
-      src={src}
-      poster={poster}
+      src={resolvedSrc}
+      poster={resolvedPoster}
       className={cn(sizeClass, className)}
       controls
       controlsList="nodownload"
