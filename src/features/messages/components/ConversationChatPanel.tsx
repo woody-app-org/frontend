@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
-import type { ConversationPeerPreviewDto, MessageResponseDto } from "../types";
+import type { ConversationPeerPreviewDto, MessageResponseDto, OutgoingMessageAttachment } from "../types";
 import { DmComposer } from "./DmComposer";
 import { DmMessageList } from "./DmMessageList";
 
@@ -19,12 +19,17 @@ function peerInitials(peer: ConversationPeerPreviewDto | null): string {
 }
 
 export interface ConversationChatPanelProps {
+  conversationId: number;
   peer: ConversationPeerPreviewDto | null;
   messages: MessageResponseDto[];
   loadingMessages: boolean;
   messagesLoadError: string | null;
   currentUserId: string | undefined;
-  onSendMessage: (payload: { body?: string | null; attachmentUrls?: string[] | null }) => Promise<void>;
+  onSendMessage: (payload: {
+    body?: string | null;
+    attachmentUrls?: string[] | null;
+    attachments?: OutgoingMessageAttachment[] | null;
+  }) => Promise<void>;
   onEditMessage: (messageId: number, body: string) => Promise<void>;
   onDeleteMessage: (messageId: number) => Promise<void>;
   onRetryMessages: () => void;
@@ -32,6 +37,7 @@ export interface ConversationChatPanelProps {
 }
 
 export function ConversationChatPanel({
+  conversationId,
   peer,
   messages,
   loadingMessages,
@@ -153,7 +159,7 @@ export function ConversationChatPanel({
       ) : messages.length === 0 ? (
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
           <p className="text-sm font-medium text-[var(--woody-text)]">Ainda não há mensagens</p>
-          <p className="max-w-xs text-sm text-[var(--woody-muted)]">Envia uma mensagem ou uma imagem para iniciar a conversa.</p>
+          <p className="max-w-xs text-sm text-[var(--woody-muted)]">Envia uma mensagem ou anexa imagem, vídeo ou GIF para iniciar a conversa.</p>
         </div>
       ) : (
         <DmMessageList
@@ -165,7 +171,7 @@ export function ConversationChatPanel({
         />
       )}
 
-      <DmComposer disabled={composerBlocked} onSend={onSendMessage} />
+      <DmComposer conversationId={conversationId} disabled={composerBlocked} onSend={onSendMessage} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import type { Post, UseUserProfileReturn } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { getProfile, getProfilePosts } from "../services/profile.service";
 import { pinPostOnProfile, unpinPostFromProfile } from "@/features/feed/services/postPin.service";
+import { usePostListLikeToggle } from "@/features/feed/hooks/usePostListLikeToggle";
 
 export function useUserProfile(userId: string | undefined): UseUserProfileReturn {
   const viewerId = useViewerId();
@@ -17,6 +18,8 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
   const [pinningPostId, setPinningPostId] = useState<string | null>(null);
   const [pinActionError, setPinActionError] = useState<string | null>(null);
   const [pinActionSuccess, setPinActionSuccess] = useState<string | null>(null);
+
+  const { togglePostLike, isPostLikePending } = usePostListLikeToggle(setPosts, setPinnedPosts);
 
   const loadPosts = useCallback(
     async (targetUserId: string, targetPage: number): Promise<void> => {
@@ -143,5 +146,7 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     pinActionSuccess,
     dismissPinActionSuccess,
     applyFollowPatch,
+    togglePostLike,
+    isPostLikePending,
   };
 }

@@ -10,12 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@microsoft/signalr": "^9.0.6",
     "@hookform/resolvers": "^5.2.2",
+    "@microsoft/signalr": "^9.0.6",
     "axios": "^1.13.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
+    "qrcode": "^1.5.4",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -28,6 +29,7 @@
     "@eslint/js": "^9.39.1",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/node": "^24.10.1",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

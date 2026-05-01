@@ -8,6 +8,8 @@ import type {
   PostPublicationContext,
   User,
 } from "@/domain/types";
+import type { PostMediaAttachment } from "@/domain/mediaAttachment";
+import { isWoodyMediaType } from "@/domain/mediaAttachment";
 import type { SocialLink, UserProfile } from "@/features/profile/types";
 import { mapSubscription } from "@/features/auth/services/auth.service";
 import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
@@ -98,6 +100,37 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
   const imageUrls = Array.isArray(raw.imageUrls) ? raw.imageUrls.map((u: unknown) => String(u)) : undefined;
   const primaryImage =
     imageUrls && imageUrls.length > 0 ? imageUrls[0] : (raw.imageUrl != null ? String(raw.imageUrl) : null);
+  let mediaAttachments: PostMediaAttachment[] | undefined;
+  if (Array.isArray(raw.mediaAttachments)) {
+    const list: PostMediaAttachment[] = [];
+    for (const item of raw.mediaAttachments) {
+      if (!item || typeof item !== "object") continue;
+      const o = item as ApiRecord;
+      const mt = String(o.mediaType ?? "image");
+      if (!isWoodyMediaType(mt)) continue;
+      const u = String(o.url ?? "");
+      if (!u) continue;
+      let durationSeconds: number | null = null;
+      if (o.durationSeconds != null) {
+        const n = Number(o.durationSeconds);
+        if (Number.isFinite(n)) durationSeconds = Math.round(n);
+      } else if (o.durationMs != null) {
+        const ms = Number(o.durationMs);
+        if (Number.isFinite(ms)) durationSeconds = Math.round(ms / 1000);
+      }
+      list.push({
+        url: u,
+        mediaType: mt,
+        storageKey: o.storageKey != null ? String(o.storageKey) : null,
+        mimeType: o.mimeType != null ? String(o.mimeType) : null,
+        thumbnailUrl: o.thumbnailUrl != null ? String(o.thumbnailUrl) : null,
+        durationSeconds,
+        durationMs:
+          o.durationMs != null && Number.isFinite(Number(o.durationMs)) ? Number(o.durationMs) : null,
+      });
+    }
+    if (list.length > 0) mediaAttachments = list;
+  }
   const communityId =
     publicationContext === "profile"
       ? null
@@ -114,6 +147,7 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
     content: asString(raw.content),
     imageUrl: primaryImage || null,
     imageUrls: imageUrls && imageUrls.length > 0 ? imageUrls : undefined,
+    mediaAttachments,
     tags: Array.isArray(raw.tags) ? raw.tags.map((t: unknown) => String(t)) : undefined,
     createdAt: formatDisplayDateTimeFromIso(asString(raw.createdAt)),
     updatedAt: raw.updatedAt ?? null,

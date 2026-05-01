@@ -9,7 +9,7 @@ export { ReportContentModal } from "./components/report/ReportContentModal";
 export type { ReportContentTarget } from "./components/report/ReportContentModal";
 export { CreatePostCard } from "./components/CreatePostCard";
 export { FeedTabs } from "./components/FeedTabs";
-export { Sidebar } from "./components/Sidebar";
+export { AppTopNav } from "./components/AppTopNav";
 export { RightPanel } from "./components/RightPanel";
 export { MobileBottomNav } from "./components/MobileBottomNav";
 export { Pagination } from "./components/Pagination";

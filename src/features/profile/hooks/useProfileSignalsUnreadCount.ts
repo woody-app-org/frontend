@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
 import { subscribeProfileSignalsChanged } from "@/lib/profileSignalsEvents";
 import { fetchProfileSignalsUnreadCount } from "../services/profile-signals.service";
 
@@ -13,19 +13,27 @@ export function useProfileSignalsUnreadCount(enabled: boolean) {
 
   const refresh = useCallback(async () => {
     if (!enabled) {
-      setUnreadCount(0);
+      startTransition(() => {
+        setUnreadCount(0);
+      });
       return;
     }
     try {
       const n = await fetchProfileSignalsUnreadCount();
-      setUnreadCount(n);
+      startTransition(() => {
+        setUnreadCount(n);
+      });
     } catch {
-      setUnreadCount(0);
+      startTransition(() => {
+        setUnreadCount(0);
+      });
     }
   }, [enabled]);
 
   useEffect(() => {
-    void refresh();
+    startTransition(() => {
+      void refresh();
+    });
   }, [refresh]);
 
   useEffect(() => {

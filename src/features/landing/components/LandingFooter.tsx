@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
-import { LANDING_IDS } from "../constants";
+import { LANDING_NARRATIVE_IDS } from "../constants";
+import { INSTITUTIONAL_PATHS } from "../institutional/routes";
+
+const landingAnchor = (id: string) => `/landing#${id}`;
 
 export function LandingFooter() {
   return (
@@ -17,38 +20,54 @@ export function LandingFooter() {
           </div>
           <div className="grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 md:max-w-xl">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--woody-muted)]">Produto</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--woody-muted)]">A Woody</p>
               <ul className="mt-4 space-y-2.5">
                 <li>
                   <a
-                    href={`#${LANDING_IDS.comoFunciona}`}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    href="/landing"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
-                    Como funciona
+                    Topo da página
                   </a>
                 </li>
                 <li>
                   <a
-                    href={`#${LANDING_IDS.recursos}`}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.oQueEWoody)}
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
-                    Recursos
+                    O que é Woody
                   </a>
                 </li>
                 <li>
                   <a
-                    href={`#${LANDING_IDS.comunidades}`}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.missao)}
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
-                    Comunidades
+                    Missão principal
                   </a>
                 </li>
                 <li>
                   <a
-                    href={`#${LANDING_IDS.seguranca}`}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.regras)}
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
-                    Segurança
+                    Regras de convívio
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.politicas)}
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Políticas
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={landingAnchor(LANDING_NARRATIVE_IDS.mobileQr)}
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Woody no celular
                   </a>
                 </li>
               </ul>
@@ -59,7 +78,7 @@ export function LandingFooter() {
                 <li>
                   <Link
                     to="/auth/onboarding/1"
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Criar conta
                   </Link>
@@ -67,27 +86,48 @@ export function LandingFooter() {
                 <li>
                   <Link
                     to="/auth/login"
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
+                    className="text-sm text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
                     Entrar
                   </Link>
-                </li>
-                <li>
-                  <a
-                    href={`#${LANDING_IDS.planos}`}
-                    className="text-sm text-[var(--woody-text)]/80 transition-colors hover:text-[var(--woody-ink)]"
-                  >
-                    Planos
-                  </a>
                 </li>
               </ul>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--woody-muted)]">Legal</p>
-              <ul className="mt-4 space-y-2.5 text-sm text-[var(--woody-muted)]/70">
-                <li>Privacidade — brevemente</li>
-                <li>Termos — brevemente</li>
-                <li>Contacto — brevemente</li>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.hub}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Índice institucional
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.politicaConfidencialidade}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Confidencialidade
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.politicaAcesso}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Acesso restritivo
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.evitarBanimento}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Evitar banimento
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

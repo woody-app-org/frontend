@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
-
 /**
  * Hero editorial de alto impacto — tipografia display, acentos lime e composição tipo marca premium.
+ * (Não compõe a landing principal actual; mantido para reutilização eventual.)
  */
 export function LandingHero() {
   return (

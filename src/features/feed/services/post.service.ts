@@ -23,7 +23,20 @@ export interface CreatePostPayload {
   tags?: string[];
   imageUrl?: string | null;
   imageUrls?: string[];
+  /** Anexos tipados (prioridade sobre <code>imageUrl</code> / <code>imageUrls</code>). */
+  mediaAttachments?: CreatePostMediaAttachmentPayload[];
 }
+
+/** Corpo JSON de <code>mediaAttachments</code> em <code>POST /posts</code> (camelCase). */
+export type CreatePostMediaAttachmentPayload = {
+  url: string;
+  mediaType: "image" | "video" | "gif" | "sticker";
+  durationSeconds?: number;
+  /** Devolvido pelo upload Woody; opcional mas recomendado para CDN/migração. */
+  storageKey?: string;
+  mimeType?: string;
+  fileSize?: number;
+};
 
 function normalizeTags(raw: string): string[] {
   const seen = new Set<string>();
@@ -64,7 +77,8 @@ export async function createPost(payload: CreatePostPayload, viewerId: string): 
       body.communityId = cid;
     }
     if (payload.tags && payload.tags.length > 0) body.tags = payload.tags;
-    if (payload.imageUrls && payload.imageUrls.length > 0) body.imageUrls = payload.imageUrls;
+    if (payload.mediaAttachments && payload.mediaAttachments.length > 0) body.mediaAttachments = payload.mediaAttachments;
+    else if (payload.imageUrls && payload.imageUrls.length > 0) body.imageUrls = payload.imageUrls;
     else if (payload.imageUrl) body.imageUrl = payload.imageUrl;
 
     const { data } = await api.post("posts", body);

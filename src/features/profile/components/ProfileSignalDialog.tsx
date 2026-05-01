@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Send, Sparkles, X } from "lucide-react";
 import {
   Dialog,
@@ -40,8 +40,10 @@ export function ProfileSignalDialog({
 
   useEffect(() => {
     if (open && !wasOpenRef.current) {
-      reset();
-      setSelected("te_notei");
+      startTransition(() => {
+        reset();
+        setSelected("te_notei");
+      });
     }
     wasOpenRef.current = open;
   }, [open, reset]);

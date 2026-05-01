@@ -30,7 +30,7 @@ export function CommentComposer({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [body, setBody] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const statusClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusClearRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {

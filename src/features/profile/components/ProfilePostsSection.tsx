@@ -42,6 +42,9 @@ export interface ProfilePostsSectionProps {
   onDismissPinError: () => void;
   pinActionSuccess: string | null;
   onDismissPinSuccess: () => void;
+  /** Curtir/descurtir na lista (sincroniza com `togglePostLikeMock`). */
+  onLike?: (postId: string) => void | Promise<void>;
+  isLikePending?: (postId: string) => boolean;
 }
 
 const headerStyles = {
@@ -72,6 +75,8 @@ export function ProfilePostsSection({
   onDismissPinError,
   pinActionSuccess,
   onDismissPinSuccess,
+  onLike,
+  isLikePending,
 }: ProfilePostsSectionProps) {
   const viewerId = useViewerId();
 
@@ -116,6 +121,8 @@ export function ProfilePostsSection({
                 profilePinMenu={profilePinMenuFor(post)}
                 onPostUpdated={onPostUpdated}
                 onPostDeleted={onPostDeleted}
+                onLike={onLike}
+                isLikePending={isLikePending?.(post.id) ?? false}
               />
             </li>
           ))}
@@ -200,6 +207,8 @@ export function ProfilePostsSection({
                     profilePinMenu={profilePinMenuFor(post)}
                     onPostUpdated={onPostUpdated}
                     onPostDeleted={onPostDeleted}
+                    onLike={onLike}
+                    isLikePending={isLikePending?.(post.id) ?? false}
                   />
                 </li>
               ))}

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
+import { MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,11 +10,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyMotion, woodyPinPill } from "@/lib/woody-ui";
 import type { Post } from "../types";
+import { resolvePublicMediaUrl } from "@/lib/api";
+import { legacyImageUrlsToPostMediaAttachments } from "@/domain/mediaAttachment";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { PostMediaGallery } from "@/components/media/PostMediaGallery";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
 import { PostProfileContextBar } from "./PostProfileContextBar";
 import { PostOverflowMenu, type PostProfilePinMenuProps } from "./PostOverflowMenu";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { PostLikeIcon } from "./PostLikeIcon";
+import { usePostLikeTapAnimation } from "../hooks/usePostLikeTapAnimation";
 
 // --- Helpers ---
 
@@ -49,8 +54,6 @@ const styles = {
   content:
     "text-[var(--woody-text)]/92 text-[0.9375rem] leading-[1.65] whitespace-pre-wrap break-words",
   contentBlock: "relative z-[1] p-0 pt-1 pb-0",
-  imageWrap: "mt-4 w-full overflow-hidden rounded-lg bg-black/[0.025] ring-1 ring-black/[0.05]",
-  image: "w-full object-cover max-h-[min(22rem,56vw)] rounded-lg md:max-h-[20rem]",
   footer:
     "relative z-[1] flex items-center gap-7 mt-5 pt-0.5 text-[var(--woody-muted)]",
   footerItem:
@@ -108,6 +111,7 @@ export function PostCard({
   const navigate = useNavigate();
   const viewerId = useViewerId();
   const ignoreNextCardClickRef = useRef(false);
+  const { tapPhase, triggerTap } = usePostLikeTapAnimation();
 
   const resolvedProfilePinMenu = profilePinMenu
     ? {
@@ -128,12 +132,20 @@ export function PostCard({
   const openPost = () => navigate(`/posts/${post.id}`);
   const openPostComments = () => navigate(`/posts/${post.id}?focus=comments`);
 
-  const imageGallery =
+  const imageGalleryRaw =
     post.imageUrls && post.imageUrls.length > 0
       ? post.imageUrls
       : post.imageUrl
         ? [post.imageUrl]
         : [];
+  const imageGallery = imageGalleryRaw.map((u) => resolvePublicMediaUrl(u));
+
+  const galleryItems =
+    post.mediaAttachments && post.mediaAttachments.length > 0
+      ? post.mediaAttachments
+      : imageGallery.length > 0
+        ? legacyImageUrlsToPostMediaAttachments(imageGallery)
+        : null;
 
   const hasContextBar =
     Boolean(post.community) || (post.publicationContext === "profile" && postSurface !== "profile");
@@ -257,28 +269,13 @@ export function PostCard({
         <p className={cn(styles.content, (post.title || post.tags?.length) && "mt-2")}>
           {post.content}
         </p>
-        {imageGallery.length === 1 ? (
-          <div className={styles.imageWrap}>
-            <img src={imageGallery[0]} alt="" className={styles.image} />
-          </div>
-        ) : imageGallery.length > 1 ? (
+        {galleryItems ? (
           <div
-            className="mt-3 flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory [-webkit-overflow-scrolling:touch]"
             data-post-ignore-open="true"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
-            role="list"
-            aria-label="Imagens da publicação"
           >
-            {imageGallery.map((src, idx) => (
-              <div
-                key={`${idx}-${src.slice(0, 48)}`}
-                role="listitem"
-                className={cn(styles.imageWrap, "min-w-[min(100%,280px)] shrink-0 snap-center max-w-[85vw]")}
-              >
-                <img src={src} alt="" className={styles.image} />
-              </div>
-            ))}
+            <PostMediaGallery items={galleryItems} />
           </div>
         ) : null}
         <div className={styles.footer}>
@@ -295,16 +292,14 @@ export function PostCard({
             aria-pressed={post.likedByCurrentUser}
             onClick={(event) => {
               event.stopPropagation();
+              if (!isLikePending && onLike) triggerTap(!post.likedByCurrentUser);
               void onLike?.(post.id);
             }}
           >
             {isLikePending ? (
               <Loader2 className="size-[1em] animate-spin" strokeWidth={2} />
             ) : (
-              <Heart
-                className={cn("size-[1em] stroke-current", post.likedByCurrentUser && "fill-current")}
-                strokeWidth={1.75}
-              />
+              <PostLikeIcon liked={post.likedByCurrentUser} tapPhase={tapPhase} />
             )}
             {formatCount(post.likesCount)}
           </button>

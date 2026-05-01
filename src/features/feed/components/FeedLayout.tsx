@@ -1,16 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { MessageCircle, Search } from "lucide-react";
-import { Sidebar } from "./Sidebar";
+import { useLocation } from "react-router-dom";
 import { RightPanel } from "./RightPanel";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { PrivateNotificationsBell } from "./PrivateNotificationsBell";
 import { cn } from "@/lib/utils";
 import { SearchModal } from "@/features/search/components/SearchModal";
-import { UserAccountMenu } from "./UserAccountMenu";
 import { CreatePostComposerProvider, useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { CreatePostModal } from "./CreatePostModal";
-import logoLight from "@/assets/logo.svg";
+import { AppTopNav } from "./AppTopNav";
 
 export interface FeedLayoutProps {
   children: React.ReactNode;
@@ -34,30 +30,15 @@ const MAIN_GRID =
 
 /**
  * Mobile: fluxo natural + scroll no documento (body).
- * Desktop (md+): sidebar fixa à esquerda; scroll só na coluna direita.
+ * Desktop (md+): coluna com topnav; scroll na área abaixo do header.
  */
 const LAYOUT_ROOT =
-  "min-h-screen w-full flex flex-col bg-[var(--woody-bg)] md:h-screen md:min-h-0 md:overflow-hidden md:flex-row";
+  "min-h-screen w-full flex flex-col bg-[var(--woody-bg)] md:h-screen md:min-h-0 md:overflow-hidden";
 
-const SCROLL_COLUMN =
-  "flex min-w-0 flex-1 flex-col min-h-0 md:min-h-0 md:bg-[var(--woody-main-surface)]";
+const SCROLL_COLUMN = "flex min-w-0 flex-1 flex-col min-h-0 md:min-h-0 md:bg-[var(--woody-main-surface)]";
 
 const SCROLL_WRAPPER =
   "w-full flex flex-col flex-1 min-h-0 md:flex-1 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden";
-
-const styles = {
-  mobileHeader:
-    "md:hidden sticky top-0 z-50 w-full shrink-0 bg-[var(--woody-sidebar)] text-white border-b border-white/10",
-  mobileHeaderInner: "flex items-center justify-between h-14 gap-3 px-[var(--layout-gutter)]",
-  mobileLogo: "flex items-center shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-sidebar)]",
-  mobileRight: "flex items-center gap-0.5 shrink-0",
-  desktopToolbar:
-    "hidden md:flex sticky top-0 z-40 w-full shrink-0 items-center justify-end gap-1 border-b border-black/[0.06] bg-[var(--woody-main-surface)] px-6 py-3",
-  iconBtn:
-    "size-10 flex items-center justify-center rounded-full text-[var(--woody-text)] hover:bg-black/5 transition-colors shrink-0",
-  iconBtnOnDark:
-    "size-10 flex items-center justify-center rounded-full text-white hover:bg-white/10 transition-colors shrink-0",
-} as const;
 
 const SCROLL_KEYS = [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp"] as const;
 const PAGE_SCROLL = 0.85;
@@ -100,6 +81,7 @@ function FeedLayoutShell({
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const immersiveMobileDmChat = isMobileDirectMessageThread(location.pathname);
+  const { openCreatePostModal, createPostOpen } = useCreatePostComposer();
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -175,135 +157,66 @@ function FeedLayoutShell({
   }, []);
 
   return (
-    <CreatePostComposerProvider>
-      <div className={cn(LAYOUT_ROOT, className)}>
-        <FeedLayoutSidebarBridge
-          className="hidden md:flex h-full min-h-0 w-[var(--feed-sidebar-width)] shrink-0 flex-col self-stretch"
+    <div className={cn(LAYOUT_ROOT, className)}>
+      <div
+        className={cn(
+          SCROLL_COLUMN,
+          immersiveMobileDmChat && "max-md:flex max-md:min-h-[100dvh] max-md:flex-col"
+        )}
+      >
+        <AppTopNav
+          onOpenSearch={() => setIsSearchOpen(true)}
           isSearchOpen={isSearchOpen}
-          setIsSearchOpen={setIsSearchOpen}
+          onOpenCreatePost={openCreatePostModal}
+          isCreatePostOpen={createPostOpen}
+          hideOnMobile={immersiveMobileDmChat}
         />
 
         <div
+          ref={scrollWrapperRef}
           className={cn(
-            SCROLL_COLUMN,
-            immersiveMobileDmChat && "max-md:flex max-md:min-h-[100dvh] max-md:flex-col"
+            SCROLL_WRAPPER,
+            immersiveMobileDmChat && "max-md:flex max-md:min-h-0 max-md:flex-1"
           )}
         >
-          <header className={cn(styles.mobileHeader, immersiveMobileDmChat && "max-md:hidden")}>
-            <div className={styles.mobileHeaderInner}>
-              <Link to="/" className={styles.mobileLogo} aria-label="Woody - Início">
-                <img
-                  src={logoLight}
-                  alt=""
-                  width={399}
-                  height={83}
-                  decoding="async"
-                  className="h-7 w-auto max-w-[min(200px,calc(100vw-9rem))] object-contain object-left select-none"
-                />
-              </Link>
-              <div className={styles.mobileRight}>
-                <button
-                  type="button"
-                  className={styles.iconBtnOnDark}
-                  aria-label="Abrir busca"
-                  onClick={() => setIsSearchOpen(true)}
-                >
-                  <Search className="size-5" />
-                </button>
-                <Link to="/messages" className={styles.iconBtnOnDark} aria-label="Mensagens">
-                  <MessageCircle className="size-5" />
-                </Link>
-                <PrivateNotificationsBell variant="mobileHeader" />
-                <UserAccountMenu variant="inverse" />
-              </div>
-            </div>
-          </header>
-
           <div
-            ref={scrollWrapperRef}
             className={cn(
-              SCROLL_WRAPPER,
-              immersiveMobileDmChat && "max-md:flex max-md:min-h-0 max-md:flex-1"
+              MAIN_GRID,
+              showRightPanel
+                ? "md:grid-cols-[minmax(0,1fr)_minmax(var(--feed-right-min),var(--feed-right-max))]"
+                : "md:grid-cols-1",
+              stretchMainGrid && "md:flex-1 md:min-h-0 md:items-stretch",
+              immersiveMobileDmChat && "max-md:min-h-0 max-md:flex-1"
             )}
           >
-            <div className={styles.desktopToolbar}>
-              <button
-                type="button"
-                className={styles.iconBtn}
-                aria-label="Abrir busca"
-                onClick={() => setIsSearchOpen(true)}
-              >
-                <Search className="size-5" />
-              </button>
-              <Link to="/messages" className={styles.iconBtn} aria-label="Mensagens">
-                <MessageCircle className="size-5" />
-              </Link>
-              <PrivateNotificationsBell variant="toolbar" />
-              <UserAccountMenu />
-            </div>
-
-            <div
+            <main
               className={cn(
-                MAIN_GRID,
-                showRightPanel
-                  ? "md:grid-cols-[minmax(0,1fr)_minmax(var(--feed-right-min),var(--feed-right-max))]"
-                  : "md:grid-cols-1",
-                /* Miolo largo: ocupar altura útil da coluna de scroll + esticar <main> (items-start cortava altura ao conteúdo). */
-                stretchMainGrid && "md:flex-1 md:min-h-0 md:items-stretch",
-                immersiveMobileDmChat && "max-md:min-h-0 max-md:flex-1"
+                "min-w-0 flex w-full flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] pt-4 md:pb-10 md:pt-6",
+                wideMain && !showRightPanel
+                  ? "md:mx-0 md:h-full md:min-h-0 md:max-w-none md:justify-self-stretch"
+                  : "md:mx-auto md:max-w-[var(--feed-main-max)] md:justify-self-center",
+                immersiveMobileDmChat && "max-md:flex-1 max-md:min-h-0 max-md:pb-0 max-md:pt-0"
               )}
+              aria-label="Feed principal"
             >
-              <main
-                className={cn(
-                  "min-w-0 flex w-full flex-col pb-16 pt-4 md:pb-10 md:pt-6",
-                  wideMain && !showRightPanel
-                    ? "md:mx-0 md:h-full md:min-h-0 md:max-w-none md:justify-self-stretch"
-                    : "md:mx-auto md:max-w-[var(--feed-main-max)] md:justify-self-center",
-                  immersiveMobileDmChat && "max-md:flex-1 max-md:min-h-0 max-md:pb-0 max-md:pt-0"
-                )}
-                aria-label="Feed principal"
-              >
-                {children}
-              </main>
-              {showRightPanel ? (
-                <RightPanel className="hidden md:flex md:sticky md:top-[4.75rem] md:max-h-[calc(100dvh-4.75rem)] md:min-h-0 md:overflow-y-auto md:overscroll-y-contain md:self-start md:pt-6 md:justify-self-stretch" />
-              ) : null}
-            </div>
+              {children}
+            </main>
+            {showRightPanel ? (
+              <RightPanel className="hidden md:flex md:sticky md:top-[calc(var(--app-topnav-height)+0.75rem)] md:max-h-[calc(100dvh-var(--app-topnav-height)-1.25rem)] md:min-h-0 md:overflow-y-auto md:overscroll-y-contain md:self-start md:pt-6 md:justify-self-stretch" />
+            ) : null}
           </div>
-
-          <MobileBottomNav
-            className={immersiveMobileDmChat ? "max-md:hidden" : undefined}
-            onOpenSearch={() => setIsSearchOpen(true)}
-            isSearchOpen={isSearchOpen}
-          />
-
-          <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
-          <CreatePostModal />
         </div>
+
+        <MobileBottomNav
+          className={immersiveMobileDmChat ? "max-md:hidden" : undefined}
+          onOpenSearch={() => setIsSearchOpen(true)}
+          isSearchOpen={isSearchOpen}
+        />
+
+        <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
+        <CreatePostModal />
       </div>
-    </CreatePostComposerProvider>
-  );
-}
-
-function FeedLayoutSidebarBridge({
-  className,
-  isSearchOpen,
-  setIsSearchOpen,
-}: {
-  className?: string;
-  isSearchOpen: boolean;
-  setIsSearchOpen: (v: boolean) => void;
-}) {
-  const { openCreatePostModal, createPostOpen } = useCreatePostComposer();
-
-  return (
-    <Sidebar
-      className={className}
-      onOpenSearch={() => setIsSearchOpen(true)}
-      isSearchOpen={isSearchOpen}
-      onOpenCreatePost={openCreatePostModal}
-      isCreatePostOpen={createPostOpen}
-    />
+    </div>
   );
 }
 
@@ -316,14 +229,16 @@ export function FeedLayout({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <FeedLayoutShell
-      className={className}
-      showRightPanel={showRightPanel}
-      wideMain={wideMain}
-      isSearchOpen={isSearchOpen}
-      setIsSearchOpen={setIsSearchOpen}
-    >
-      {children}
-    </FeedLayoutShell>
+    <CreatePostComposerProvider>
+      <FeedLayoutShell
+        className={className}
+        showRightPanel={showRightPanel}
+        wideMain={wideMain}
+        isSearchOpen={isSearchOpen}
+        setIsSearchOpen={setIsSearchOpen}
+      >
+        {children}
+      </FeedLayoutShell>
+    </CreatePostComposerProvider>
   );
 }

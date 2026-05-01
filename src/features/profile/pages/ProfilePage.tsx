@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { startTransition, useCallback, useEffect, useState, type ReactNode } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Activity, Bookmark } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
@@ -90,6 +90,8 @@ export function ProfilePage() {
     pinActionSuccess,
     dismissPinActionSuccess,
     applyFollowPatch,
+    togglePostLike,
+    isPostLikePending,
   } = useUserProfile(userId);
   const { isOwnProfile } = useProfilePermissions(userId);
 
@@ -101,7 +103,9 @@ export function ProfilePage() {
     if (!isOwnProfile) return;
     const q = searchParams.get("tab");
     if (q === "signals") {
-      setTab("signals");
+      startTransition(() => {
+        setTab("signals");
+      });
     }
   }, [isOwnProfile, searchParams]);
 
@@ -308,6 +312,8 @@ export function ProfilePage() {
                   onDismissPinError={dismissPinActionError}
                   pinActionSuccess={pinActionSuccess}
                   onDismissPinSuccess={dismissPinActionSuccess}
+                  onLike={togglePostLike}
+                  isLikePending={isPostLikePending}
                 />
               ) : null}
 

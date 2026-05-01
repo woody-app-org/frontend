@@ -30,6 +30,28 @@ export function getApiOrigin(): string {
   return baseURL.replace(/\/api\/?$/, "");
 }
 
+/**
+ * URLs de mídia vindas da API são frequentemente relativas (`/api/media/videos/...`).
+ * No dev (Vite em :5173, API em :5000), `<img src>` / `<video src>` com caminho absoluto na
+ * origem errada não carregam — prefixamos com a origem configurada da API.
+ */
+export function resolvePublicMediaUrl(url: string | null | undefined): string {
+  if (url == null) return "";
+  const u = url.trim();
+  if (!u) return "";
+  if (/^(https?:|blob:|data:)/i.test(u)) return u;
+  if (u.startsWith("//")) {
+    if (typeof window !== "undefined" && window.location?.protocol) {
+      return `${window.location.protocol}${u}`;
+    }
+    return `https:${u}`;
+  }
+  if (u.startsWith("/")) {
+    return `${getApiOrigin()}${u}`;
+  }
+  return u;
+}
+
 /** URL completa do hub SignalR (JWT via query `access_token`). */
 export function getDirectMessagesHubUrl(): string {
   return `${getApiOrigin()}/hubs/direct-messages`;

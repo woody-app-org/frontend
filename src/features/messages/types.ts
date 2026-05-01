@@ -42,9 +42,45 @@ export interface MessageAuthorResponseDto {
 export interface MessageAttachmentResponseDto {
   id: number;
   url: string;
+  /** `image` | `video` | `gif` | `sticker` — omissão trata-se como imagem (legado). */
+  mediaType?: string;
   contentType: string | null;
+  thumbnailUrl?: string | null;
+  durationSeconds?: number | null;
+  provider?: string | null;
+  externalId?: string | null;
+  /** Chave de armazenamento Woody quando existir. */
+  storageKey?: string | null;
   displayOrder: number;
   createdAt: string;
+}
+
+/** Item do picker (resposta do endpoint de pesquisa plugável). */
+export interface StickerGifSearchItemDto {
+  title: string;
+  url: string;
+  thumbnailUrl: string | null;
+  mediaType: string;
+  provider: string;
+  externalId: string;
+}
+
+export interface StickerGifSearchResponseDto {
+  items: StickerGifSearchItemDto[];
+  providerKey: string;
+}
+
+/** Anexo na mensagem a enviar (alinhado a <c>MessageAttachmentItemRequestDto</c>). */
+export interface OutgoingMessageAttachment {
+  url: string;
+  mediaType: string;
+  durationSeconds?: number;
+  thumbnailUrl?: string | null;
+  provider?: string | null;
+  externalId?: string | null;
+  storageKey?: string;
+  mimeType?: string;
+  fileSize?: number;
 }
 
 export interface MessageResponseDto {

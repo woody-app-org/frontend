@@ -25,6 +25,8 @@ export interface CommunityFeedProps {
   premiumCapabilities?: CommunityPremiumCapabilities;
   onBoostPost?: (postId: string) => void | Promise<void>;
   boostingPostId?: string | null;
+  onLike?: (postId: string) => void | Promise<void>;
+  isLikePending?: (postId: string) => boolean;
 }
 
 export function CommunityFeed({
@@ -42,6 +44,8 @@ export function CommunityFeed({
   premiumCapabilities,
   onBoostPost,
   boostingPostId = null,
+  onLike,
+  isLikePending,
 }: CommunityFeedProps) {
   const showPagination =
     totalPostCount != null &&
@@ -88,6 +92,8 @@ export function CommunityFeed({
                   post={post}
                   postListingContext="community"
                   onPin={(id) => console.log("Pin", id)}
+                  onLike={onLike}
+                  isLikePending={isLikePending?.(post.id) ?? false}
                   communityBoost={
                     premiumCapabilities?.isStaffForPremiumTools
                       ? {
