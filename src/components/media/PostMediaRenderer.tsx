@@ -1,13 +1,13 @@
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
-import { PostHeroFramedStill } from "./PostHeroFramedStill";
+import { PostAdaptiveStill } from "./PostAdaptiveStill";
 import { VideoPostPlayer } from "./VideoPostPlayer";
 
 export type PostMediaRenderVariant = "feed" | "detail" | "message";
 
-/** `hero` = destaque no post; `grid` = miniatura na grelha; `lightbox` = visualização ampliada. */
-export type PostMediaDisplayMode = "hero" | "grid" | "lightbox";
+/** `hero` · `grid` · `lightbox` · `carouselSlide` (= slide no viewport do carrossel). */
+export type PostMediaDisplayMode = "hero" | "grid" | "lightbox" | "carouselSlide";
 
 export interface PostMediaItemProps {
   item: PostMediaAttachment;
@@ -52,6 +52,42 @@ function GridVideoThumb({
 /** Um único anexo de publicação (imagem/GIF/sticker ou vídeo). */
 export function PostMediaItem({ item, variant, displayMode = "hero", className }: PostMediaItemProps) {
   const mode = displayMode;
+
+  if (mode === "carouselSlide") {
+    const url = resolvePublicMediaUrl(item.url);
+    if (item.mediaType === "video") {
+      const v = variant === "detail" ? "detail" : "feed";
+      return (
+        <VideoPostPlayer
+          src={item.url}
+          poster={item.thumbnailUrl ?? undefined}
+          variant={v}
+          carouselFillParent
+          className={className}
+        />
+      );
+    }
+    if (item.mediaType === "sticker") {
+      return (
+        <img
+          src={url}
+          alt=""
+          className={cn("absolute inset-0 m-auto max-h-[85%] max-w-[85%] object-contain", className)}
+          loading="lazy"
+          decoding="async"
+        />
+      );
+    }
+    return (
+      <img
+        src={url}
+        alt=""
+        className={cn("absolute inset-0 size-full object-cover object-center", className)}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
 
   if (item.mediaType === "video") {
     if (mode === "grid") {
@@ -125,6 +161,6 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
 
   const v = variant === "detail" ? "detail" : "feed";
   return (
-    <PostHeroFramedStill src={item.url} variant={v} className={className} />
+    <PostAdaptiveStill src={item.url} variant={v} className={className} />
   );
 }

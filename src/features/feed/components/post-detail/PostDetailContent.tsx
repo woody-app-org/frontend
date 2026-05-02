@@ -22,7 +22,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
     post.mediaAttachments && post.mediaAttachments.length > 0 ? post.mediaAttachments : legacyItems;
 
   return (
-    <article className="space-y-4">
+    <article className="space-y-5">
       {post.title ? <h1 className="text-balance text-2xl font-bold text-[var(--woody-text)]">{post.title}</h1> : null}
       {post.tags?.length ? (
         <div className="flex flex-wrap gap-2">
@@ -38,7 +38,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
       ) : null}
       <p className={cn("whitespace-pre-wrap text-[0.98rem] leading-relaxed text-[var(--woody-text)]/90")}>{post.content}</p>
       {galleryItems.length > 0 ? (
-        <PostMediaGallery items={galleryItems} className="mt-0" variant="detail" />
+        <PostMediaGallery items={galleryItems} className="mt-2 sm:mt-3" variant="detail" />
       ) : null}
     </article>
   );

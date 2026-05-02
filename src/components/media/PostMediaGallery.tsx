@@ -8,10 +8,10 @@ import { PostMediaCarousel } from "./PostMediaCarousel";
 import { PostMediaItem, type PostMediaRenderVariant } from "./PostMediaRenderer";
 import { PostMediaLightbox } from "./PostMediaLightbox";
 
-const mediaBlock = "mt-4 w-full overflow-hidden";
+const mediaBlock = "mt-5 w-full overflow-visible sm:mt-6";
 
 const heroTap =
-  "block w-full cursor-zoom-in rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]";
+  "block w-full cursor-zoom-in rounded-2xl sm:rounded-[1.25rem] outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]";
 
 export interface PostMediaGalleryProps {
   items: PostMediaAttachment[];

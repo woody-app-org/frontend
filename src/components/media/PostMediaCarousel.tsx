@@ -5,12 +5,14 @@ import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
 import { Button } from "@/components/ui/button";
+import { carouselViewportShellClass } from "./postAdaptivePresentation";
 import { PostMediaItem, type PostMediaRenderVariant } from "./PostMediaRenderer";
 
 type Variant = Extract<PostMediaRenderVariant, "feed" | "detail">;
 
-const heroTap =
-  "block w-full cursor-zoom-in rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]";
+/** Dentro da moldura do carrossel: sem cantos próprios (o viewport já define o raio). */
+const heroTapCarousel =
+  "block size-full cursor-zoom-in rounded-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-inset focus-visible:ring-offset-0 focus-visible:ring-offset-transparent";
 
 const navBtnClass =
   "absolute top-1/2 z-20 size-10 -translate-y-1/2 rounded-full border border-white/25 bg-black/45 text-white shadow-md backdrop-blur-sm hover:bg-black/60 disabled:pointer-events-none disabled:opacity-[0.22] sm:size-11";
@@ -65,8 +67,6 @@ export function PostMediaCarousel({
     else goPrev();
   };
 
-  const roundedOuter = variant === "detail" ? "rounded-xl" : "rounded-lg";
-
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowLeft") {
       e.preventDefault();
@@ -81,7 +81,7 @@ export function PostMediaCarousel({
 
   return (
     <div
-      className={cn("relative w-full touch-pan-y", roundedOuter, className)}
+      className={cn("relative w-full touch-pan-y", className)}
       role="region"
       aria-roledescription="carrossel"
       aria-label={`Mídias da publicação, ${safeIdx + 1} de ${n}`}
@@ -90,32 +90,33 @@ export function PostMediaCarousel({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <div className="relative w-full overflow-hidden">
-        <div
-          className="flex w-full transition-transform duration-300 ease-out motion-reduce:transition-none"
-          style={{ transform: `translateX(-${safeIdx * 100}%)` }}
-        >
+      <div className={carouselViewportShellClass(variant)}>
+        <div className="relative size-full overflow-hidden">
+          <div
+            className="flex size-full transition-transform duration-300 ease-out motion-reduce:transition-none"
+            style={{ transform: `translateX(-${safeIdx * 100}%)` }}
+          >
           {items.map((item, i) => {
             const expandable = slideExpandable(item.mediaType);
 
             return (
               <div
                 key={`${item.storageKey ?? item.url}-${i}`}
-                className="w-full shrink-0"
+                className="relative h-full w-full shrink-0 basis-full"
                 aria-hidden={i !== safeIdx}
               >
                 {expandable ? (
                   <button
                     type="button"
-                    className={cn(heroTap, variant === "detail" && "rounded-xl")}
+                    className={heroTapCarousel}
                     aria-label={`Ampliar mídia ${i + 1} de ${n}`}
                     onClick={() => onExpandAt(i)}
                   >
-                    <PostMediaItem item={item} variant={variant} displayMode="hero" />
+                    <PostMediaItem item={item} variant={variant} displayMode="carouselSlide" />
                   </button>
                 ) : (
-                  <div className="relative">
-                    <PostMediaItem item={item} variant={variant} displayMode="hero" />
+                  <div className="relative size-full">
+                    <PostMediaItem item={item} variant={variant} displayMode="carouselSlide" />
                     <button
                       type="button"
                       className="absolute bottom-2 right-2 z-10 flex size-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-white shadow-md backdrop-blur-sm transition hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/50"
@@ -129,6 +130,7 @@ export function PostMediaCarousel({
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 

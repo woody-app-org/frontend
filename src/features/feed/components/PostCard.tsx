@@ -281,11 +281,11 @@ export function PostCard({
         {galleryItems ? (
           <div
             data-post-ignore-open="true"
-            className={cn("mt-3", mediaBleedClass)}
+            className={cn("mt-4 sm:mt-5", mediaBleedClass)}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <PostMediaGallery items={galleryItems} className="mt-0 rounded-none" />
+            <PostMediaGallery items={galleryItems} className="mt-0 sm:mt-1" />
           </div>
         ) : null}
         <div className={styles.footer}>
