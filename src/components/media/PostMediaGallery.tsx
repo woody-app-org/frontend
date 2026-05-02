@@ -4,8 +4,8 @@ import { useCallback, useState } from "react";
 import { Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
+import { PostMediaCarousel } from "./PostMediaCarousel";
 import { PostMediaItem, type PostMediaRenderVariant } from "./PostMediaRenderer";
-import { PostMediaGridLayout } from "./PostMediaGridLayout";
 import { PostMediaLightbox } from "./PostMediaLightbox";
 
 const mediaBlock = "mt-4 w-full overflow-hidden";
@@ -26,12 +26,12 @@ function singleItemTapExpandable(mediaType: PostMediaAttachment["mediaType"]): b
 
 export function PostMediaGallery({ items, className, variant = "feed" }: PostMediaGalleryProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [slideIndex, setSlideIndex] = useState(0);
 
   const v: "feed" | "detail" = variant === "detail" ? "detail" : "feed";
 
   const openAt = useCallback((index: number) => {
-    setLightboxIndex(index);
+    setSlideIndex(index);
     setLightboxOpen(true);
   }, []);
 
@@ -42,8 +42,8 @@ export function PostMediaGallery({ items, className, variant = "feed" }: PostMed
       open={lightboxOpen}
       onOpenChange={setLightboxOpen}
       items={items}
-      index={lightboxIndex}
-      onIndexChange={setLightboxIndex}
+      index={slideIndex}
+      onIndexChange={setSlideIndex}
       variant={v}
     />
   );
@@ -81,7 +81,13 @@ export function PostMediaGallery({ items, className, variant = "feed" }: PostMed
   return (
     <>
       <div className={cn(mediaBlock, className)}>
-        <PostMediaGridLayout items={items} variant={v} onCellActivate={openAt} />
+        <PostMediaCarousel
+          items={items}
+          variant={v}
+          activeIndex={slideIndex}
+          onActiveIndexChange={setSlideIndex}
+          onExpandAt={openAt}
+        />
       </div>
       {lightbox}
     </>
