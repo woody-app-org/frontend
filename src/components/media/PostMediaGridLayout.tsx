@@ -1,3 +1,4 @@
+import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
 import { PostMediaItem, type PostMediaRenderVariant } from "./PostMediaRenderer";
@@ -7,11 +8,11 @@ export type PostMediaGridDensity = Extract<PostMediaRenderVariant, "feed" | "det
 const cellInteractive =
   "group relative flex min-h-0 min-w-0 cursor-zoom-in overflow-hidden rounded-[0.65rem] bg-black/5 ring-1 ring-black/[0.07] outline-none transition-[box-shadow,transform] hover:ring-black/12 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)] [&:has(video)]:bg-black/90";
 
-/** Altura do bloco multi-média: feed mais compacto, detalhe mais alto. */
+/** Altura do bloco multi-média: feed mais generoso, detalhe mais alto. */
 function galleryShellHeight(variant: PostMediaGridDensity): string {
   return variant === "detail"
-    ? "h-[min(34rem,72vh)] sm:h-[min(38rem,76vh)]"
-    : "h-[min(22rem,56vw)] sm:h-[min(26rem,48vw)]";
+    ? "h-[min(36rem,74vh)] sm:h-[min(40rem,78vh)]"
+    : "h-[min(26rem,62vw)] sm:h-[min(30rem,52vw)]";
 }
 
 export interface PostMediaGridLayoutProps {
@@ -28,7 +29,21 @@ function MediaThumb({
   item: PostMediaAttachment;
   variant: PostMediaGridDensity;
 }) {
-  return <PostMediaItem item={item} variant={variant} displayMode="grid" />;
+  return (
+    <>
+      <PostMediaItem item={item} variant={variant} displayMode="grid" />
+      {item.mediaType === "video" ? (
+        <span
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          aria-hidden
+        >
+          <span className="flex size-9 items-center justify-center rounded-full bg-black/55 text-white ring-1 ring-white/20 backdrop-blur-sm">
+            <Play className="size-4 ml-0.5" fill="currentColor" strokeWidth={0} />
+          </span>
+        </span>
+      ) : null}
+    </>
+  );
 }
 
 export function PostMediaGridLayout({ items, variant, onCellActivate, className }: PostMediaGridLayoutProps) {

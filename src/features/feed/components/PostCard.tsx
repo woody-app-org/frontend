@@ -33,7 +33,7 @@ function formatCount(count: number): string {
 const styles = {
   card: cn(
     woodyMotion.postCardHover,
-    "relative flex flex-col gap-0 overflow-hidden rounded-2xl border border-black/[0.06] border-l-[3px] border-l-[var(--woody-nav)] bg-[var(--woody-card)]",
+    "relative flex flex-col gap-0 overflow-hidden rounded-2xl border border-black/[0.08] bg-[var(--woody-card)]",
     "px-6 pt-5 pb-5 shadow-[0_2px_14px_rgba(10,10,10,0.045),0_8px_28px_rgba(10,10,10,0.03)]"
   ),
   header:
@@ -55,7 +55,7 @@ const styles = {
     "text-[var(--woody-text)]/92 text-[0.9375rem] leading-[1.65] whitespace-pre-wrap break-words",
   contentBlock: "relative z-[1] p-0 pt-1 pb-0",
   footer:
-    "relative z-[1] flex items-center gap-7 mt-5 pt-0.5 text-[var(--woody-muted)]",
+    "relative z-[1] flex items-center gap-7 mt-4 pt-0.5 text-[var(--woody-muted)]",
   footerItem:
     "flex items-center gap-1.5 text-xs transition-colors rounded-md py-1 px-1.5 -mx-1.5 hover:text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/5 [&_svg]:size-3.5",
 };
@@ -146,6 +146,15 @@ export function PostCard({
       : imageGallery.length > 0
         ? legacyImageUrlsToPostMediaAttachments(imageGallery)
         : null;
+
+  // Classe de bleed: cancela o padding horizontal do card para que a mídia chegue às bordas.
+  // A variante "profile" tem px-4/sm:px-5; community tem px-6/sm:px-7; default tem px-6.
+  const mediaBleedClass =
+    postSurface === "profile"
+      ? "-mx-4 sm:-mx-5"
+      : postListingContext === "community"
+        ? "-mx-6 sm:-mx-7"
+        : "-mx-6";
 
   const hasContextBar =
     Boolean(post.community) || (post.publicationContext === "profile" && postSurface !== "profile");
@@ -272,10 +281,11 @@ export function PostCard({
         {galleryItems ? (
           <div
             data-post-ignore-open="true"
+            className={cn("mt-4 sm:mt-5", mediaBleedClass)}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <PostMediaGallery items={galleryItems} />
+            <PostMediaGallery items={galleryItems} className="mt-0 sm:mt-1" />
           </div>
         ) : null}
         <div className={styles.footer}>

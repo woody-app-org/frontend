@@ -1,12 +1,13 @@
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
+import { PostAdaptiveStill } from "./PostAdaptiveStill";
 import { VideoPostPlayer } from "./VideoPostPlayer";
 
 export type PostMediaRenderVariant = "feed" | "detail" | "message";
 
-/** `hero` = destaque no post; `grid` = miniatura na grelha; `lightbox` = visualização ampliada. */
-export type PostMediaDisplayMode = "hero" | "grid" | "lightbox";
+/** `hero` · `grid` · `lightbox` · `carouselSlide` (= slide no viewport do carrossel). */
+export type PostMediaDisplayMode = "hero" | "grid" | "lightbox" | "carouselSlide";
 
 export interface PostMediaItemProps {
   item: PostMediaAttachment;
@@ -15,10 +16,6 @@ export interface PostMediaItemProps {
   className?: string;
 }
 
-const heroImgFeed =
-  "mx-auto h-auto w-full max-w-full object-contain max-h-[min(26rem,68vh)] min-h-[140px] md:max-h-[min(30rem,72vh)]";
-const heroImgDetail =
-  "mx-auto h-auto w-full max-w-full object-contain max-h-[min(36rem,82vh)] min-h-[160px] md:max-h-[min(42rem,85vh)]";
 const heroImgMessage = cn(
   "mx-auto h-auto w-full max-w-[min(100%,min(18rem,85vw))] max-h-36 object-contain sm:max-h-40"
 );
@@ -56,6 +53,42 @@ function GridVideoThumb({
 export function PostMediaItem({ item, variant, displayMode = "hero", className }: PostMediaItemProps) {
   const mode = displayMode;
 
+  if (mode === "carouselSlide") {
+    const url = resolvePublicMediaUrl(item.url);
+    if (item.mediaType === "video") {
+      const v = variant === "detail" ? "detail" : "feed";
+      return (
+        <VideoPostPlayer
+          src={item.url}
+          poster={item.thumbnailUrl ?? undefined}
+          variant={v}
+          carouselFillParent
+          className={className}
+        />
+      );
+    }
+    if (item.mediaType === "sticker") {
+      return (
+        <img
+          src={url}
+          alt=""
+          className={cn("absolute inset-0 m-auto max-h-[85%] max-w-[85%] object-contain", className)}
+          loading="lazy"
+          decoding="async"
+        />
+      );
+    }
+    return (
+      <img
+        src={url}
+        alt=""
+        className={cn("absolute inset-0 size-full object-cover object-center", className)}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
   if (item.mediaType === "video") {
     if (mode === "grid") {
       return <GridVideoThumb src={item.url} poster={item.thumbnailUrl ?? undefined} className={className} />;
@@ -80,9 +113,6 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
       />
     );
   }
-
-  const imgHeroClass =
-    variant === "detail" ? heroImgDetail : variant === "message" ? heroImgMessage : heroImgFeed;
 
   if (mode === "grid") {
     return (
@@ -112,21 +142,25 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
     );
   }
 
+  // Stickers e mensagens: manter comportamento contido (sem aspect-ratio)
+  if (item.mediaType === "sticker" || variant === "message") {
+    const msgOrStickerClass =
+      variant === "message"
+        ? heroImgMessage
+        : "mx-auto max-h-48 bg-transparent object-contain";
+    return (
+      <img
+        src={resolvePublicMediaUrl(item.url)}
+        alt=""
+        className={cn(msgOrStickerClass, className)}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  const v = variant === "detail" ? "detail" : "feed";
   return (
-    <img
-      src={resolvePublicMediaUrl(item.url)}
-      alt=""
-      className={cn(
-        imgHeroClass,
-        item.mediaType === "sticker"
-          ? variant === "message"
-            ? "max-h-28 bg-transparent object-contain"
-            : "max-h-48 bg-transparent object-contain"
-          : undefined,
-        className
-      )}
-      loading="lazy"
-      decoding="async"
-    />
+    <PostAdaptiveStill src={item.url} variant={v} className={className} />
   );
 }

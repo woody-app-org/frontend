@@ -174,6 +174,7 @@ function FeedLayoutShell({
 
         <div
           ref={scrollWrapperRef}
+          data-feed-scroll-root
           className={cn(
             SCROLL_WRAPPER,
             immersiveMobileDmChat && "max-md:flex max-md:min-h-0 max-md:flex-1"
