@@ -5,10 +5,11 @@ import { Play } from "lucide-react";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-const feedSize =
-  "min-h-[120px] w-full max-h-[min(22rem,72vw)] rounded-lg md:max-h-[24rem]";
-const detailVideo =
-  "min-h-[140px] w-full max-h-[min(32rem,85vw)] rounded-2xl bg-black object-contain md:max-h-[32rem]";
+const frameFeedCls =
+  "relative mx-auto aspect-[4/5] w-full max-h-[min(24rem,50dvh)] cursor-pointer overflow-hidden rounded-lg bg-black sm:max-h-[min(26rem,52dvh)]";
+const frameDetailCls =
+  "relative mx-auto aspect-[4/5] w-full max-h-[min(26rem,52dvh)] overflow-hidden rounded-2xl bg-black sm:max-h-[min(28rem,54dvh)]";
+
 const messageVideo =
   "min-h-[88px] w-full max-w-[min(100%,min(18rem,85vw))] max-h-36 rounded-lg bg-black object-contain touch-manipulation sm:max-h-40";
 const lightboxVideo =
@@ -21,7 +22,6 @@ export interface VideoPostPlayerProps {
   poster?: string;
   variant: VideoPostPlayerVariant;
   className?: string;
-  /** `lightbox` = área ampliada no modal. */
   presentation?: "default" | "lightbox";
   ariaLabel?: string;
 }
@@ -46,15 +46,10 @@ export function VideoPostPlayer({
   const resolvedSrc = resolvePublicMediaUrl(src);
   const resolvedPoster = poster ? resolvePublicMediaUrl(poster) : undefined;
 
-  // Feed mode antes de clicar: poster visual + botão play customizado
   if (variant === "feed" && presentation !== "lightbox" && !playing) {
     return (
       <div
-        className={cn(
-          "relative overflow-hidden rounded-lg bg-black cursor-pointer",
-          feedSize,
-          className
-        )}
+        className={cn(frameFeedCls, className)}
         role="button"
         tabIndex={0}
         aria-label={`Reproduzir: ${label}`}
@@ -70,14 +65,13 @@ export function VideoPostPlayer({
           <img
             src={resolvedPoster}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover"
+            className="pointer-events-none absolute inset-0 size-full object-cover object-center"
             loading="lazy"
             decoding="async"
           />
         ) : null}
-        {/* overlay escuro leve para destacar o botão play */}
-        <div className="absolute inset-0 bg-black/25" />
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 bg-black/25" />
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <span className="flex size-16 items-center justify-center rounded-full bg-black/55 text-white ring-2 ring-white/20 backdrop-blur-sm transition-transform hover:scale-105 hover:bg-black/70">
             <Play className="size-7 ml-1" fill="currentColor" strokeWidth={0} />
           </span>
@@ -86,28 +80,55 @@ export function VideoPostPlayer({
     );
   }
 
-  // Detail / message / lightbox / playing: player nativo
-  const sizeClass =
-    presentation === "lightbox"
-      ? lightboxVideo
-      : variant === "detail"
-        ? detailVideo
-        : variant === "message"
-          ? messageVideo
-          : cn(feedSize, "bg-black object-contain");
+  if (presentation === "lightbox") {
+    return (
+      // eslint-disable-next-line jsx-a11y/media-has-caption
+      <video
+        src={resolvedSrc}
+        poster={resolvedPoster}
+        className={cn(lightboxVideo, className)}
+        controls
+        controlsList="nodownload"
+        playsInline
+        preload={preloadForVariant(variant, presentation)}
+        aria-label={label}
+      />
+    );
+  }
+
+  if (variant === "message") {
+    return (
+      // eslint-disable-next-line jsx-a11y/media-has-caption
+      <video
+        src={resolvedSrc}
+        poster={resolvedPoster}
+        className={cn(messageVideo, className)}
+        controls
+        controlsList="nodownload"
+        playsInline
+        autoPlay={playing}
+        preload={preloadForVariant(variant, presentation)}
+        aria-label={label}
+      />
+    );
+  }
+
+  const framedShell = variant === "detail" ? frameDetailCls : frameFeedCls;
 
   return (
-    <video
-      src={resolvedSrc}
-      poster={resolvedPoster}
-      className={cn(sizeClass, className)}
-      controls
-      controlsList="nodownload"
-      playsInline
-      // eslint-disable-next-line jsx-a11y/media-has-caption
-      autoPlay={playing}
-      preload={preloadForVariant(variant, presentation)}
-      aria-label={label}
-    />
+    <div className={cn(framedShell, className)}>
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+      <video
+        src={resolvedSrc}
+        poster={resolvedPoster}
+        className="absolute inset-0 size-full object-cover object-center bg-black"
+        controls
+        controlsList="nodownload"
+        playsInline
+        autoPlay={playing}
+        preload={preloadForVariant(variant, presentation)}
+        aria-label={label}
+      />
+    </div>
   );
 }

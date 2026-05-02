@@ -1,6 +1,7 @@
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
+import { PostHeroFramedStill } from "./PostHeroFramedStill";
 import { VideoPostPlayer } from "./VideoPostPlayer";
 
 export type PostMediaRenderVariant = "feed" | "detail" | "message";
@@ -15,12 +16,6 @@ export interface PostMediaItemProps {
   className?: string;
 }
 
-/** Contentor aspect-ratio para imagens hero — preenche a largura sem espaço vazio nas laterais. */
-const heroAspectFeed = "relative w-full overflow-hidden rounded-lg aspect-[4/3] bg-black/5";
-const heroAspectDetail = "relative w-full overflow-hidden rounded-xl aspect-[4/3] bg-black/5";
-
-const heroImgFeed = "absolute inset-0 h-full w-full object-cover";
-const heroImgDetail = "absolute inset-0 h-full w-full object-cover";
 const heroImgMessage = cn(
   "mx-auto h-auto w-full max-w-[min(100%,min(18rem,85vw))] max-h-36 object-contain sm:max-h-40"
 );
@@ -128,18 +123,8 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
     );
   }
 
-  // Imagens hero (feed/detail): contentor aspect-[4/3] + object-cover
-  const aspectClass = variant === "detail" ? heroAspectDetail : heroAspectFeed;
-  const coverClass = variant === "detail" ? heroImgDetail : heroImgFeed;
+  const v = variant === "detail" ? "detail" : "feed";
   return (
-    <div className={cn(aspectClass, className)}>
-      <img
-        src={resolvePublicMediaUrl(item.url)}
-        alt=""
-        className={coverClass}
-        loading="lazy"
-        decoding="async"
-      />
-    </div>
+    <PostHeroFramedStill src={item.url} variant={v} className={className} />
   );
 }

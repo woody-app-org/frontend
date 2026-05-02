@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Images } from "lucide-react";
+import { Images, Layers, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { legacyImageUrlsToPostMediaAttachments } from "@/domain/mediaAttachment";
@@ -12,13 +12,11 @@ import {
 } from "@/components/media/PostMediaLightbox";
 import type { Post } from "@/features/feed/types";
 
-/** Agrupa a mídia com o post de origem para manter a relação mídia→post. */
+/** Uma célula da grelha por publicação: miniatura da primeira mídia; resto navegável no lightbox. */
 interface MediaEntry {
   attachment: PostMediaAttachment;
-  /** Todas as mídias do mesmo post (para navegação interna no lightbox). */
+  /** Todas as mídias do mesmo post (carrossel / lightbox). */
   siblingAttachments: PostMediaAttachment[];
-  /** Índice desta mídia dentro das suas irmãs. */
-  siblingIndex: number;
   postContext: PostLightboxContext;
 }
 
@@ -46,14 +44,11 @@ function collectMediaEntries(posts: Post[]): MediaEntry[] {
       createdAt: post.createdAt,
     };
 
-    for (let i = 0; i < attachments.length; i++) {
-      entries.push({
-        attachment: attachments[i],
-        siblingAttachments: attachments,
-        siblingIndex: i,
-        postContext,
-      });
-    }
+    entries.push({
+      attachment: attachments[0],
+      siblingAttachments: attachments,
+      postContext,
+    });
   }
 
   return entries;
@@ -77,7 +72,7 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
 
   const openLightbox = (entry: MediaEntry) => {
     setLightboxItems(entry.siblingAttachments);
-    setLightboxIndex(entry.siblingIndex);
+    setLightboxIndex(0);
     setLightboxContext(entry.postContext);
     setLightboxOpen(true);
   };
@@ -90,7 +85,7 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
           Fotos & Vídeos
         </h3>
         <span className="ml-auto text-xs text-[var(--woody-muted)]">
-          {entries.length} {entries.length === 1 ? "item" : "itens"}
+          {entries.length} {entries.length === 1 ? "publicação" : "publicações"}
         </span>
       </div>
 
@@ -105,23 +100,26 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
           const { attachment, postContext } = entry;
           const isVideo = attachment.mediaType === "video";
           const resolvedUrl = resolvePublicMediaUrl(attachment.thumbnailUrl ?? attachment.url);
+          const siblingCount = entry.siblingAttachments.length;
 
           return (
             <button
-              key={`${postContext.postId}-${entry.siblingIndex}-${i}`}
+              key={`${postContext.postId}-${i}`}
               type="button"
-              className="group relative aspect-square overflow-hidden bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--woody-accent)]/50"
+              className="group relative aspect-[4/5] overflow-hidden bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--woody-accent)]/50"
               aria-label={
-                isVideo
+                isVideo && siblingCount === 1
                   ? `Abrir vídeo do post de ${postContext.authorName}`
-                  : `Abrir foto ${entry.siblingIndex + 1} de ${entry.siblingAttachments.length} do post de ${postContext.authorName}`
+                  : siblingCount > 1
+                    ? `Abrir publicação com ${siblingCount} médias de ${postContext.authorName}`
+                    : `Abrir foto do post de ${postContext.authorName}`
               }
               onClick={() => openLightbox(entry)}
             >
               <img
                 src={resolvedUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                className="absolute inset-0 size-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.04]"
                 loading="lazy"
                 decoding="async"
               />
@@ -138,13 +136,13 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
                 <span className="pointer-events-none absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
               )}
 
-              {/* Indicador de múltiplas fotos no mesmo post */}
-              {entry.siblingAttachments.length > 1 && entry.siblingIndex === 0 && !isVideo ? (
+              {siblingCount > 1 ? (
                 <span
-                  className="pointer-events-none absolute right-1.5 top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-black/60 px-1.5 text-[0.6rem] font-semibold tabular-nums text-white backdrop-blur-sm"
+                  className="pointer-events-none absolute right-1.5 top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center gap-0.5 rounded-full bg-black/60 px-1.5 text-[0.6rem] font-semibold tabular-nums text-white backdrop-blur-sm"
                   aria-hidden
                 >
-                  1/{entry.siblingAttachments.length}
+                  <Layers className="size-2.5 opacity-90" strokeWidth={2.5} />
+                  {siblingCount}
                 </span>
               ) : null}
             </button>
@@ -155,7 +153,8 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
       {/* Indicação de mais itens além dos 12 exibidos */}
       {entries.length > 12 ? (
         <p className="text-center text-xs text-[var(--woody-muted)]">
-          +{entries.length - 12} {entries.length - 12 === 1 ? "item" : "itens"} adicionais nos posts abaixo
+          +{entries.length - 12}{" "}
+          {entries.length - 12 === 1 ? "publicação com mídia" : "publicações com mídia"} na lista abaixo
         </p>
       ) : null}
 
