@@ -4,14 +4,16 @@ import { PenLine } from "lucide-react";
 import { FeedLayout } from "../components/FeedLayout";
 import { FeedTabs } from "../components/FeedTabs";
 import { PostCard } from "../components/PostCard";
-import { Pagination } from "../components/Pagination";
 import { FeedSkeleton } from "../components/FeedSkeleton";
+import { InfiniteScrollSentinel } from "../components/InfiniteScrollSentinel";
 import { FeedEmptyState } from "../components/FeedEmptyState";
 import { FeedErrorState } from "../components/FeedErrorState";
 import { FeedCommunityContextStrip } from "../components/FeedCommunityContextStrip";
 import { useFeed } from "../hooks/useFeed";
 import { Flame, Compass, UserRoundCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { FeedFilter } from "../types";
 import { useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -109,17 +111,16 @@ function FeedPageContent() {
   const {
     posts,
     isLoading,
+    isLoadingMore,
     isRefreshing,
     hasLoadedOnce,
     error,
-    page,
+    loadMoreError,
     hasNextPage,
-    hasPreviousPage,
     filter,
     setFilter,
-    nextPage,
-    previousPage,
-    refetch,
+    refreshFeed,
+    loadMore,
     registerNewPostFromComposer,
     togglePostLike,
     isPostLikePending,
@@ -240,7 +241,7 @@ function FeedPageContent() {
       <section className="relative space-y-6 min-h-[280px]">
         {showInitialLoading && <FeedSkeleton count={3} />}
 
-        {hasBlockingError && <FeedErrorState message={error?.message} onRetry={refetch} />}
+        {hasBlockingError && <FeedErrorState message={error?.message} onRetry={() => void refreshFeed()} />}
 
         {!showInitialLoading && !error && !hasPosts && (
           <FeedEmptyState title={emptyState.title} description={emptyState.description} />
@@ -272,13 +273,44 @@ function FeedPageContent() {
                 </li>
               ))}
             </ul>
-            <Pagination
-              page={page}
-              hasPreviousPage={hasPreviousPage}
-              hasNextPage={hasNextPage}
-              onPrevious={previousPage}
-              onNext={nextPage}
-            />
+
+            {loadMoreError && (
+              <div
+                className="flex flex-col items-center gap-3 rounded-2xl border border-amber-500/35 bg-amber-500/10 px-4 py-4 text-center sm:flex-row sm:justify-center"
+                role="alert"
+              >
+                <p className="text-sm text-amber-900 dark:text-amber-200">{loadMoreError.message}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-[var(--woody-nav)]/35 shrink-0"
+                  onClick={() => void loadMore()}
+                >
+                  Tentar novamente
+                </Button>
+              </div>
+            )}
+
+            {isLoadingMore && (
+              <div className="pt-2" aria-live="polite" aria-busy="true">
+                <div className="rounded-xl border border-black/[0.06] bg-white/90 px-4 py-3 shadow-[0_1px_6px_rgba(10,10,10,0.04)]">
+                  <Skeleton className="h-3 w-3/5 max-w-[14rem] bg-[var(--woody-nav)]/12" />
+                  <Skeleton className="mt-2.5 h-3 w-2/5 max-w-[10rem] bg-[var(--woody-nav)]/10" />
+                </div>
+              </div>
+            )}
+
+            {hasNextPage && !loadMoreError && (
+              <InfiniteScrollSentinel
+                onIntersect={() => void loadMore()}
+                enabled={!isLoadingMore && !isLoading && !isRefreshing}
+              />
+            )}
+
+            {!hasNextPage && !loadMoreError && (
+              <p className="py-6 text-center text-sm text-[var(--woody-muted)]">Você chegou ao fim.</p>
+            )}
           </>
         )}
 

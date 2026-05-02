@@ -11,23 +11,33 @@ import { getFeed } from "../services/feed.service";
 import { SOCIAL_GRAPH_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 import { usePostListLikeToggle } from "./usePostListLikeToggle";
 
+function appendPostsDeduped(existing: Post[], incoming: Post[]): Post[] {
+  const seen = new Set(existing.map((p) => p.id));
+  const out = [...existing];
+  for (const p of incoming) {
+    if (seen.has(p.id)) continue;
+    seen.add(p.id);
+    out.push(p);
+  }
+  return out;
+}
+
 interface UseFeedReturn {
   posts: Post[];
   isLoading: boolean;
+  isLoadingMore: boolean;
   isRefreshing: boolean;
   hasLoadedOnce: boolean;
   error: Error | null;
+  loadMoreError: Error | null;
   page: number;
   hasNextPage: boolean;
-  hasPreviousPage: boolean;
   filter: FeedFilter;
   setFilter: (filter: FeedFilter) => void;
-  nextPage: () => void;
-  previousPage: () => void;
-  refetch: () => void;
+  refreshFeed: () => Promise<void>;
+  loadMore: () => Promise<void>;
   /**
-   * Após criar publicação: se o feed não está na página 1, volta à página 1 (recarrega do servidor).
-   * Na página 1, insere o post no topo sem duplicar.
+   * Após criar publicação: recarrega desde a página 1 (substitui a lista acumulada).
    */
   registerNewPostFromComposer: (post: Post) => void;
   togglePostLike: (postId: string) => Promise<void>;
@@ -51,110 +61,154 @@ export function useFeed(): UseFeedReturn {
     getPostInteractionsVersion,
     getPostInteractionsVersion
   );
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [loadMoreError, setLoadMoreError] = useState<Error | null>(null);
   const [page, setPage] = useState(1);
   const [filter, setFilterState] = useState<FeedFilter>("trending");
   const [hasNextPage, setHasNextPage] = useState(false);
-  const [hasPreviousPage, setHasPreviousPage] = useState(false);
-  const { togglePostLike, isPostLikePending } = usePostListLikeToggle(setPosts);
-  const isFirstLoadRef = useRef(true);
-  const pageRef = useRef(page);
-  pageRef.current = page;
+
   const filterRef = useRef(filter);
   filterRef.current = filter;
-  /** Troca de tab ou recarga “desde zero”: mostrar skeleton em vez de posts do filtro anterior. */
-  const expectEmptyFeedRef = useRef(false);
+  const pageRef = useRef(page);
+  pageRef.current = page;
+  const postsRef = useRef(posts);
+  postsRef.current = posts;
+  const hasNextPageRef = useRef(hasNextPage);
+  hasNextPageRef.current = hasNextPage;
 
-  const fetchFeed = useCallback(async () => {
+  const loadMoreInFlightRef = useRef(false);
+
+  const { togglePostLike, isPostLikePending } = usePostListLikeToggle(setPosts);
+
+  const loadFirstPage = useCallback(async () => {
+    const filterSnapshot = filterRef.current;
+    const hadPosts = postsRef.current.length > 0;
+
+    setError(null);
+    setLoadMoreError(null);
+
+    if (!hadPosts) {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
+
+    try {
+      const response = await getFeed(1, filterSnapshot, viewerId);
+      if (filterRef.current !== filterSnapshot) return;
+
+      setPosts(response.items);
+      setPage(1);
+      setHasNextPage(response.hasNextPage);
+      setHasLoadedOnce(true);
+    } catch (err) {
+      if (filterRef.current === filterSnapshot) {
+        setError(err instanceof Error ? err : new Error("Falha ao carregar feed"));
+      }
+    } finally {
+      if (filterRef.current === filterSnapshot) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    }
+  }, [viewerId]);
+
+  useEffect(() => {
     void userDisplayRev;
     void communityDraftRev;
     void postInteractionRev;
-    const treatAsFullLoad = isFirstLoadRef.current || expectEmptyFeedRef.current;
-    if (expectEmptyFeedRef.current) expectEmptyFeedRef.current = false;
-
-    setIsLoading(treatAsFullLoad);
-    setIsRefreshing(!treatAsFullLoad);
-    setError(null);
-    try {
-      const response = await getFeed(page, filter, viewerId);
-      setPosts(response.items);
-      setHasNextPage(response.hasNextPage);
-      setHasPreviousPage(response.hasPreviousPage);
-      setHasLoadedOnce(true);
-      isFirstLoadRef.current = false;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Falha ao carregar feed"));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [page, filter, viewerId, userDisplayRev, communityDraftRev, postInteractionRev]);
-
-  useEffect(() => {
-    fetchFeed();
-  }, [fetchFeed]);
+    void loadFirstPage();
+  }, [filter, viewerId, userDisplayRev, communityDraftRev, postInteractionRev, loadFirstPage]);
 
   useEffect(() => {
     const onFollowGraphChanged = () => {
       if (filterRef.current !== "following") return;
-      void fetchFeed();
+      void loadFirstPage();
     };
     window.addEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
     return () => window.removeEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
-  }, [fetchFeed]);
+  }, [loadFirstPage]);
 
   const setFilter = useCallback((newFilter: FeedFilter) => {
     setFilterState((prev) => {
       if (prev === newFilter) return prev;
-      expectEmptyFeedRef.current = true;
       setPosts([]);
       setPage(1);
+      setHasNextPage(false);
       setError(null);
+      setLoadMoreError(null);
       return newFilter;
     });
   }, []);
 
-  const nextPage = useCallback(() => {
-    setPage((p) => p + 1);
-  }, []);
+  const refreshFeed = useCallback(async () => {
+    await loadFirstPage();
+  }, [loadFirstPage]);
 
-  const previousPage = useCallback(() => {
-    setPage((p) => Math.max(1, p - 1));
-  }, []);
+  const loadMore = useCallback(async () => {
+    if (
+      !hasNextPageRef.current ||
+      loadMoreInFlightRef.current ||
+      isLoading ||
+      isLoadingMore ||
+      isRefreshing
+    ) {
+      return;
+    }
 
-  const refetch = useCallback(() => {
-    fetchFeed();
-  }, [fetchFeed]);
+    const filterSnapshot = filterRef.current;
+    const nextPageNum = pageRef.current + 1;
+
+    loadMoreInFlightRef.current = true;
+    setIsLoadingMore(true);
+    setLoadMoreError(null);
+
+    try {
+      const response = await getFeed(nextPageNum, filterSnapshot, viewerId);
+      if (filterRef.current !== filterSnapshot) return;
+
+      setPosts((prev) => appendPostsDeduped(prev, response.items));
+      setPage(nextPageNum);
+      setHasNextPage(response.hasNextPage);
+    } catch (err) {
+      if (filterRef.current === filterSnapshot) {
+        setLoadMoreError(
+          err instanceof Error ? err : new Error("Não foi possível carregar mais publicações.")
+        );
+      }
+    } finally {
+      loadMoreInFlightRef.current = false;
+      setIsLoadingMore(false);
+    }
+  }, [viewerId, isLoading, isLoadingMore, isRefreshing]);
 
   const registerNewPostFromComposer = useCallback(
     (_post: Post) => {
-      if (pageRef.current !== 1) {
-        setPage(1);
-        return;
-      }
-      void fetchFeed();
+      void loadFirstPage();
     },
-    [fetchFeed]
+    [loadFirstPage]
   );
 
   return {
     posts,
     isLoading,
+    isLoadingMore,
     isRefreshing,
     hasLoadedOnce,
     error,
+    loadMoreError,
     page,
     hasNextPage,
-    hasPreviousPage,
     filter,
     setFilter,
-    nextPage,
-    previousPage,
-    refetch,
+    refreshFeed,
+    loadMore,
     registerNewPostFromComposer,
     togglePostLike,
     isPostLikePending,
