@@ -2,6 +2,7 @@ import { PostCard } from "@/features/feed/components/PostCard";
 import { FeedEmptyState } from "@/features/feed/components/FeedEmptyState";
 import { FeedSkeleton } from "@/features/feed/components/FeedSkeleton";
 import { Pagination } from "@/features/feed/components/Pagination";
+import { ProfileMediaGrid } from "./ProfileMediaGrid";
 import { cn } from "@/lib/utils";
 import { woodySection } from "@/lib/woody-ui";
 import { canManageOwnPostProfilePin } from "@/domain/contentModerationPermissions";
@@ -102,6 +103,20 @@ export function ProfilePostsSection({
     </div>
   );
 
+  const allPostsForMedia = [...pinnedPosts, ...posts];
+
+  const mediaGridBlock =
+    allPostsForMedia.some(
+      (p) =>
+        (p.mediaAttachments?.length ?? 0) > 0 ||
+        (p.imageUrls?.length ?? 0) > 0 ||
+        Boolean(p.imageUrl)
+    ) ? (
+      <div className="rounded-2xl border border-black/[0.07] bg-[var(--woody-card)] p-4 shadow-[0_1px_8px_rgba(10,10,10,0.04)] sm:p-5">
+        <ProfileMediaGrid posts={allPostsForMedia} />
+      </div>
+    ) : null;
+
   const featuredBlock =
     pinnedPosts.length > 0 ? (
       <div className={featuredStyles.wrap}>
@@ -186,6 +201,8 @@ export function ProfilePostsSection({
           </button>
         </div>
       ) : null}
+
+      {mediaGridBlock}
 
       {featuredBlock}
 

@@ -8,8 +8,7 @@ import { PostMediaItem, type PostMediaRenderVariant } from "./PostMediaRenderer"
 import { PostMediaGridLayout } from "./PostMediaGridLayout";
 import { PostMediaLightbox } from "./PostMediaLightbox";
 
-const mediaBlock =
-  "mt-4 w-full overflow-hidden rounded-xl border border-black/[0.06] bg-gradient-to-b from-black/[0.03] to-[var(--woody-card)] p-1 shadow-[0_1px_0_rgba(255,255,255,0.06)_inset] ring-1 ring-black/[0.04] [&:has(video)]:from-black/15";
+const mediaBlock = "mt-4 w-full overflow-hidden";
 
 const heroTap =
   "block w-full cursor-zoom-in rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]";

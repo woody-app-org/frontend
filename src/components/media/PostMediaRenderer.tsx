@@ -15,10 +15,12 @@ export interface PostMediaItemProps {
   className?: string;
 }
 
-const heroImgFeed =
-  "mx-auto h-auto w-full max-w-full object-contain max-h-[min(26rem,68vh)] min-h-[140px] md:max-h-[min(30rem,72vh)]";
-const heroImgDetail =
-  "mx-auto h-auto w-full max-w-full object-contain max-h-[min(36rem,82vh)] min-h-[160px] md:max-h-[min(42rem,85vh)]";
+/** Contentor aspect-ratio para imagens hero — preenche a largura sem espaço vazio nas laterais. */
+const heroAspectFeed = "relative w-full overflow-hidden rounded-lg aspect-[4/3] bg-black/5";
+const heroAspectDetail = "relative w-full overflow-hidden rounded-xl aspect-[4/3] bg-black/5";
+
+const heroImgFeed = "absolute inset-0 h-full w-full object-cover";
+const heroImgDetail = "absolute inset-0 h-full w-full object-cover";
 const heroImgMessage = cn(
   "mx-auto h-auto w-full max-w-[min(100%,min(18rem,85vw))] max-h-36 object-contain sm:max-h-40"
 );
@@ -81,9 +83,6 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
     );
   }
 
-  const imgHeroClass =
-    variant === "detail" ? heroImgDetail : variant === "message" ? heroImgMessage : heroImgFeed;
-
   if (mode === "grid") {
     return (
       <img
@@ -112,21 +111,35 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
     );
   }
 
+  // Stickers e mensagens: manter comportamento contido (sem aspect-ratio)
+  if (item.mediaType === "sticker" || variant === "message") {
+    const msgOrStickerClass =
+      variant === "message"
+        ? heroImgMessage
+        : "mx-auto max-h-48 bg-transparent object-contain";
+    return (
+      <img
+        src={resolvePublicMediaUrl(item.url)}
+        alt=""
+        className={cn(msgOrStickerClass, className)}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  // Imagens hero (feed/detail): contentor aspect-[4/3] + object-cover
+  const aspectClass = variant === "detail" ? heroAspectDetail : heroAspectFeed;
+  const coverClass = variant === "detail" ? heroImgDetail : heroImgFeed;
   return (
-    <img
-      src={resolvePublicMediaUrl(item.url)}
-      alt=""
-      className={cn(
-        imgHeroClass,
-        item.mediaType === "sticker"
-          ? variant === "message"
-            ? "max-h-28 bg-transparent object-contain"
-            : "max-h-48 bg-transparent object-contain"
-          : undefined,
-        className
-      )}
-      loading="lazy"
-      decoding="async"
-    />
+    <div className={cn(aspectClass, className)}>
+      <img
+        src={resolvePublicMediaUrl(item.url)}
+        alt=""
+        className={coverClass}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
   );
 }
