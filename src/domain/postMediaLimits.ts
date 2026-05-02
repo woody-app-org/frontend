@@ -2,6 +2,8 @@
 export const POST_COMPOSER_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
 export const POST_COMPOSER_VIDEO_MAX_BYTES = 100 * 1024 * 1024;
 export const POST_COMPOSER_VIDEO_MAX_DURATION_SEC = 120;
+/** Máximo de imagens por publicação (imagem e vídeo são mutuamente exclusivos). */
+export const POST_COMPOSER_IMAGES_MAX_COUNT = 3;
 
 const units = ["B", "KB", "MB", "GB"];
 

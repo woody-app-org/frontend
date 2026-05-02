@@ -10,6 +10,8 @@ export interface MediaPickerProps {
   buttonDisabled?: boolean;
   children: React.ReactNode;
   buttonClassName?: string;
+  /** Permite selecionar vários ficheiros de uma vez. */
+  multiple?: boolean;
 }
 
 export function MediaPicker({
@@ -20,6 +22,7 @@ export function MediaPicker({
   buttonDisabled,
   children,
   buttonClassName,
+  multiple = false,
 }: MediaPickerProps) {
   return (
     <>
@@ -29,6 +32,7 @@ export function MediaPicker({
         accept={accept}
         className="hidden"
         aria-hidden
+        multiple={multiple}
         onChange={onChange}
       />
       <Button

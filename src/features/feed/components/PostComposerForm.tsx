@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { ImagePlus, Loader2, UserRound, Users } from "lucide-react";
+import { ImagePlus, Loader2, UserRound, Users, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +21,7 @@ import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/m
 import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
 import {
   POST_COMPOSER_IMAGE_MAX_BYTES,
+  POST_COMPOSER_IMAGES_MAX_COUNT,
   POST_COMPOSER_VIDEO_MAX_BYTES,
   POST_COMPOSER_VIDEO_MAX_DURATION_SEC,
   formatFileSize,
@@ -45,6 +46,19 @@ function targetOptionClass(selected: boolean) {
   );
 }
 
+/** Item de imagem no compositor (antes do upload). */
+interface ComposerImageItem {
+  id: string;
+  file: File;
+  previewUrl: string;
+}
+
+/** Item de vídeo no compositor (antes do upload). */
+interface ComposerVideoItem {
+  file: File;
+  previewUrl: string;
+}
+
 export interface PostComposerFormProps {
   viewerId: string;
   /** Publicação sempre nesta comunidade (ex.: página da comunidade). */
@@ -66,7 +80,8 @@ export function PostComposerForm({
   className,
 }: PostComposerFormProps) {
   const idBase = useId();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [publishTarget, setPublishTarget] = useState<PostPublicationContext>(() => {
     if (forcedCommunity) return "community";
@@ -80,9 +95,11 @@ export function PostComposerForm({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tagsRaw, setTagsRaw] = useState("");
-  const [imageUrlInput, setImageUrlInput] = useState("");
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
+
+  // Listas de mídia (imagem e vídeo são mutuamente exclusivos)
+  const [imageItems, setImageItems] = useState<ComposerImageItem[]>([]);
+  const [videoItem, setVideoItem] = useState<ComposerVideoItem | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [communityLoadError, setCommunityLoadError] = useState(false);
@@ -92,6 +109,15 @@ export function PostComposerForm({
 
   const isCommunityFlow = !!forcedCommunity || publishTarget === "community";
   const canPickTarget = !forcedCommunity;
+
+  // Limpar Object URLs ao desmontar
+  useEffect(() => {
+    return () => {
+      imageItems.forEach((it) => URL.revokeObjectURL(it.previewUrl));
+      if (videoItem) URL.revokeObjectURL(videoItem.previewUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (composerFeedback === "full" && showSuccess) {
@@ -141,99 +167,140 @@ export function PostComposerForm({
     };
   }, [forcedCommunity, initialCommunityId, communityReloadKey, publishTarget]);
 
-  useEffect(() => {
-    if (!mediaFile) {
-      setMediaPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(mediaFile);
-    setMediaPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [mediaFile]);
+  // --- Handlers de imagem ---
 
-  const clearMedia = useCallback(() => {
-    setMediaFile(null);
-    setImageUrlInput("");
-    setMediaPreviewUrl(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const onImageFilesChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []);
+      e.target.value = "";
+      if (!files.length) return;
+
+      if (videoItem) {
+        setFormError("Remove o vídeo antes de adicionar imagens.");
+        return;
+      }
+
+      const remaining = POST_COMPOSER_IMAGES_MAX_COUNT - imageItems.length;
+      if (remaining <= 0) {
+        setFormError(`Máximo de ${POST_COMPOSER_IMAGES_MAX_COUNT} imagens por publicação.`);
+        return;
+      }
+
+      // Validar tipo e tamanho
+      for (const f of files) {
+        if (!f.type.startsWith("image/")) {
+          setFormError("Apenas imagens são aceites neste campo.");
+          return;
+        }
+        if (f.size > POST_COMPOSER_IMAGE_MAX_BYTES) {
+          setFormError(
+            `"${f.name}" é demasiado grande (máx. ${formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)}).`
+          );
+          return;
+        }
+      }
+
+      const toAdd = files.slice(0, remaining);
+      const skipped = files.length - toAdd.length;
+
+      const newItems: ComposerImageItem[] = toAdd.map((f) => ({
+        id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file: f,
+        previewUrl: URL.createObjectURL(f),
+      }));
+
+      setImageItems((prev) => [...prev, ...newItems]);
+
+      if (skipped > 0) {
+        setFormError(
+          `Só foram adicionadas ${toAdd.length} imagens — máximo de ${POST_COMPOSER_IMAGES_MAX_COUNT} por publicação.`
+        );
+      } else {
+        setFormError(null);
+      }
+    },
+    [imageItems.length, videoItem]
+  );
+
+  const removeImage = useCallback((id: string) => {
+    setImageItems((prev) => {
+      const item = prev.find((it) => it.id === id);
+      if (item) URL.revokeObjectURL(item.previewUrl);
+      return prev.filter((it) => it.id !== id);
+    });
+    setFormError(null);
   }, []);
 
-  const onFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const input = e.target;
-    const f = input.files?.[0];
-    if (!f) return;
+  // --- Handlers de vídeo ---
 
-    const resetInput = () => {
-      input.value = "";
-    };
+  const onVideoFileChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const f = e.target.files?.[0];
+      e.target.value = "";
+      if (!f) return;
 
-    void (async () => {
-      if (f.type.startsWith("video/")) {
-        if (!VIDEO_MIME_OK.has(f.type)) {
-          setFormError("Vídeo: escolhe MP4, WebM ou MOV.");
-          resetInput();
-          return;
-        }
-        if (f.size > POST_COMPOSER_VIDEO_MAX_BYTES) {
-          setFormError(`Vídeo demasiado grande (máx. ${formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)}).`);
-          resetInput();
-          return;
-        }
+      if (imageItems.length > 0) {
+        setFormError("Remove as imagens antes de adicionar um vídeo.");
+        return;
+      }
+
+      if (!VIDEO_MIME_OK.has(f.type)) {
+        setFormError("Vídeo: escolhe MP4, WebM ou MOV.");
+        return;
+      }
+      if (f.size > POST_COMPOSER_VIDEO_MAX_BYTES) {
+        setFormError(`Vídeo demasiado grande (máx. ${formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)}).`);
+        return;
+      }
+
+      void (async () => {
         const blobUrl = URL.createObjectURL(f);
         const dur = await readVideoDurationSeconds(blobUrl);
         URL.revokeObjectURL(blobUrl);
         if (dur != null && dur > POST_COMPOSER_VIDEO_MAX_DURATION_SEC) {
           setFormError(
-            `Vídeo demasiado longo (máx. ${POST_COMPOSER_VIDEO_MAX_DURATION_SEC} s). O teu ficheiro tem ~${dur} s.`
+            `Vídeo demasiado longo (máx. ${POST_COMPOSER_VIDEO_MAX_DURATION_SEC} s). O teu ficheiro tem ~${Math.round(dur)} s.`
           );
-          resetInput();
           return;
         }
         setFormError(null);
-        setMediaFile(f);
-        setImageUrlInput("");
-        resetInput();
-        return;
-      }
-      if (!f.type.startsWith("image/")) {
-        setFormError("Escolhe uma imagem ou um vídeo.");
-        resetInput();
-        return;
-      }
-      if (f.size > POST_COMPOSER_IMAGE_MAX_BYTES) {
-        setFormError(`Imagem demasiado grande (máx. ${formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)}).`);
-        resetInput();
-        return;
-      }
-      setFormError(null);
-      setMediaFile(f);
-      setImageUrlInput("");
-      resetInput();
-    })();
+        setVideoItem({ file: f, previewUrl: URL.createObjectURL(f) });
+      })();
+    },
+    [imageItems.length]
+  );
+
+  const removeVideo = useCallback(() => {
+    setVideoItem((prev) => {
+      if (prev) URL.revokeObjectURL(prev.previewUrl);
+      return null;
+    });
+    setFormError(null);
   }, []);
 
+  // --- Preview para MediaPreviewGrid ---
+
   const previewItems = useMemo((): MediaPreviewItem[] => {
-    if (mediaFile && mediaPreviewUrl) {
-      return [
-        {
-          id: "local",
-          previewUrl: mediaPreviewUrl,
-          kind: mediaFile.type.startsWith("video/") ? "video" : "image",
-        },
-      ];
-    }
-    const url = imageUrlInput.trim();
-    if (url) return [{ id: "url", previewUrl: url, kind: "image" }];
-    return [];
-  }, [mediaFile, mediaPreviewUrl, imageUrlInput]);
+    const imgs: MediaPreviewItem[] = imageItems.map((it) => ({
+      id: it.id,
+      previewUrl: it.previewUrl,
+      kind: "image" as const,
+    }));
+    const vid: MediaPreviewItem[] = videoItem
+      ? [{ id: "video", previewUrl: videoItem.previewUrl, kind: "video" as const }]
+      : [];
+    return [...imgs, ...vid];
+  }, [imageItems, videoItem]);
 
   const removePreview = useCallback(
     (id: string) => {
-      if (id === "local") clearMedia();
-      else setImageUrlInput("");
+      if (id === "video") removeVideo();
+      else removeImage(id);
     },
-    [clearMedia]
+    [removeImage, removeVideo]
   );
+
+  // --- Submit ---
 
   const handleSubmit = async () => {
     setFormError(null);
@@ -255,9 +322,7 @@ export function PostComposerForm({
 
     setSubmitting(true);
     try {
-      const urlTrim = imageUrlInput.trim();
       let imageUrl: string | undefined;
-      let imageUrls: string[] | undefined;
       let mediaAttachments: CreatePostMediaAttachmentPayload[] | undefined;
 
       const cid = forcedCommunity?.id ?? communityId;
@@ -266,46 +331,47 @@ export function PostComposerForm({
           ? ({ scope: "post" as const, publicationContext: "community" as const, communityId: cid } as const)
           : ({ scope: "post" as const, publicationContext: "profile" as const } as const);
 
-      if (urlTrim) {
-        imageUrl = urlTrim;
-      } else if (mediaFile) {
-        if (mediaFile.type.startsWith("video/")) {
-          let durationSeconds: number | undefined;
-          if (mediaPreviewUrl) {
-            const dur = await readVideoDurationSeconds(mediaPreviewUrl);
-            if (dur != null && dur > 0) durationSeconds = dur;
-          }
-          const uploaded = await uploadVideoMedia(mediaFile, uploadCtx, { durationSeconds });
-          const sec =
-            uploaded.durationSeconds != null && Number.isFinite(uploaded.durationSeconds)
-              ? uploaded.durationSeconds
-              : durationSeconds;
-          mediaAttachments = [
-            {
+      if (videoItem) {
+        let durationSeconds: number | undefined;
+        const dur = await readVideoDurationSeconds(videoItem.previewUrl);
+        if (dur != null && dur > 0) durationSeconds = dur;
+
+        const uploaded = await uploadVideoMedia(videoItem.file, uploadCtx, { durationSeconds });
+        const sec =
+          uploaded.durationSeconds != null && Number.isFinite(uploaded.durationSeconds)
+            ? uploaded.durationSeconds
+            : durationSeconds;
+        mediaAttachments = [
+          {
+            url: uploaded.url,
+            mediaType: "video",
+            storageKey: uploaded.storageKey,
+            mimeType: uploaded.contentType,
+            fileSize: uploaded.sizeBytes,
+            ...(sec != null && sec > 0 ? { durationSeconds: Math.round(sec) } : {}),
+          },
+        ];
+      } else if (imageItems.length > 0) {
+        // Upload de todas as imagens em paralelo para melhor performance
+        const results = await Promise.all(
+          imageItems.map(async (item) => {
+            const f = item.file;
+            if (f.size <= 450 * 1024 && f.type !== "image/gif") {
+              const dataUrl = await readImageAsDataUrlIfSmall(f);
+              return { url: dataUrl, mediaType: "image" as const };
+            }
+            const uploaded = await uploadImageMedia(f, uploadCtx);
+            const mt = mediaTypeFromUpload(uploaded);
+            return {
               url: uploaded.url,
-              mediaType: "video",
+              mediaType: (mt === "gif" ? "gif" : "image") as "image" | "gif",
               storageKey: uploaded.storageKey,
               mimeType: uploaded.contentType,
               fileSize: uploaded.sizeBytes,
-              ...(sec != null && sec > 0 ? { durationSeconds: Math.round(sec) } : {}),
-            },
-          ];
-        } else if (mediaFile.size <= 450 * 1024 && mediaFile.type !== "image/gif") {
-          const dataUrl = await readImageAsDataUrlIfSmall(mediaFile);
-          mediaAttachments = [{ url: dataUrl, mediaType: "image" }];
-        } else {
-          const uploaded = await uploadImageMedia(mediaFile, uploadCtx);
-          const mt = mediaTypeFromUpload(uploaded);
-          mediaAttachments = [
-            {
-              url: uploaded.url,
-              mediaType: mt === "gif" ? "gif" : "image",
-              storageKey: uploaded.storageKey,
-              mimeType: uploaded.contentType,
-              fileSize: uploaded.sizeBytes,
-            },
-          ];
-        }
+            };
+          })
+        );
+        mediaAttachments = results;
       }
 
       const tags = normalizePostComposerTags(tagsRaw);
@@ -313,22 +379,29 @@ export function PostComposerForm({
       const post = await createPost(
         {
           publicationContext: context,
-          communityId:
-            context === "community" ? (forcedCommunity?.id ?? communityId) : undefined,
+          communityId: context === "community" ? (forcedCommunity?.id ?? communityId) : undefined,
           title: title.trim(),
           content: content.trim(),
           tags: tags.length ? tags : undefined,
           imageUrl: imageUrl ?? null,
-          imageUrls,
           mediaAttachments,
         },
         viewerId
       );
 
+      // Limpar estado de mídia após sucesso
       setTitle("");
       setContent("");
       setTagsRaw("");
-      clearMedia();
+      setImageItems((prev) => {
+        prev.forEach((it) => URL.revokeObjectURL(it.previewUrl));
+        return [];
+      });
+      setVideoItem((prev) => {
+        if (prev) URL.revokeObjectURL(prev.previewUrl);
+        return null;
+      });
+
       if (composerFeedback === "full") {
         setSuccessKind(context);
         setShowSuccess(true);
@@ -351,13 +424,16 @@ export function PostComposerForm({
 
   const fieldsDisabled = submitting || (isCommunityFlow && !forcedCommunity && loadingCommunities);
 
-  const submitDisabled =
-    submitting || communityBlocking || !title.trim() || !content.trim();
+  const submitDisabled = submitting || communityBlocking || !title.trim() || !content.trim();
 
   const contentPlaceholder =
     publishTarget === "profile" && !forcedCommunity
       ? "Partilha algo no teu perfil…"
       : "Partilha algo com a comunidade…";
+
+  const hasImages = imageItems.length > 0;
+  const hasVideo = videoItem !== null;
+  const imagesFull = imageItems.length >= POST_COMPOSER_IMAGES_MAX_COUNT;
 
   return (
     <div className={cn("space-y-3", className)} aria-busy={submitting}>
@@ -543,35 +619,61 @@ export function PostComposerForm({
         />
       </div>
 
+      {/* Secção de mídia */}
       <div className="space-y-2">
-        <span className="text-sm font-medium text-[var(--woody-text)]">Mídia (opcional)</span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium text-[var(--woody-text)]">Fotos ou vídeo</span>
+          {hasImages && (
+            <span
+              className={cn(
+                "text-xs tabular-nums font-medium",
+                imagesFull ? "text-[var(--woody-accent)]" : "text-[var(--woody-muted)]"
+              )}
+            >
+              {imageItems.length}/{POST_COMPOSER_IMAGES_MAX_COUNT}
+            </span>
+          )}
+        </div>
+
         <div className="flex flex-wrap items-center gap-2">
+          {/* Botão de imagem */}
           <MediaPicker
-            fileInputRef={fileInputRef}
-            accept="image/*,video/mp4,video/webm,video/quicktime"
-            onChange={onFileChange}
-            disabled={fieldsDisabled}
-            buttonDisabled={!!imageUrlInput.trim()}
+            fileInputRef={imageInputRef}
+            accept="image/*"
+            multiple
+            onChange={onImageFilesChange}
+            disabled={fieldsDisabled || hasVideo}
+            buttonDisabled={imagesFull || hasVideo}
           >
             <ImagePlus className="size-4" aria-hidden />
-            Imagem ou vídeo
+            {hasImages
+              ? imagesFull
+                ? "Máximo atingido"
+                : "Adicionar foto"
+              : "Adicionar foto"}
           </MediaPicker>
-          <span className="text-xs text-[var(--woody-muted)]">ou cole um URL (imagem) abaixo</span>
+
+          {/* Botão de vídeo (só quando não há imagens) */}
+          {!hasImages && (
+            <MediaPicker
+              fileInputRef={videoInputRef}
+              accept="video/mp4,video/webm,video/quicktime"
+              onChange={onVideoFileChange}
+              disabled={fieldsDisabled || hasImages}
+              buttonDisabled={hasVideo || hasImages}
+            >
+              <Video className="size-4" aria-hidden />
+              {hasVideo ? "Vídeo adicionado" : "Adicionar vídeo"}
+            </MediaPicker>
+          )}
         </div>
+
         <p className="text-[0.7rem] leading-snug text-[var(--woody-muted)]">
-          Imagem até {formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} · vídeo MP4/WebM/MOV até{" "}
-          {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} e {POST_COMPOSER_VIDEO_MAX_DURATION_SEC} s
+          Até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos (máx. {formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} cada) · ou 1
+          vídeo MP4/WebM/MOV até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} e{" "}
+          {POST_COMPOSER_VIDEO_MAX_DURATION_SEC} s
         </p>
-        <Input
-          placeholder="https://… (URL público da imagem)"
-          value={imageUrlInput}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setImageUrlInput(e.target.value);
-            if (e.target.value.trim()) setMediaFile(null);
-          }}
-          disabled={fieldsDisabled || !!mediaFile}
-          className={postComposerFieldStyles.input}
-        />
+
         <MediaPreviewGrid
           items={previewItems}
           onRemove={removePreview}
