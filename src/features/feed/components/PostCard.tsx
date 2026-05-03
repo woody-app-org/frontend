@@ -113,15 +113,9 @@ export function PostCard({
   const ignoreNextCardClickRef = useRef(false);
   const { tapPhase, triggerTap } = usePostLikeTapAnimation();
 
-  const resolvedProfilePinMenu = profilePinMenu
-    ? {
-        ...profilePinMenu,
-        onBeforeProfilePinPointerDown: () => {
-          ignoreNextCardClickRef.current = true;
-          profilePinMenu.onBeforeProfilePinPointerDown?.();
-        },
-      }
-    : undefined;
+  const suppressNextCardOpenFromMenu = () => {
+    ignoreNextCardClickRef.current = true;
+  };
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -245,10 +239,11 @@ export function PostCard({
         <PostOverflowMenu
           post={post}
           viewerId={viewerId}
-          profilePinMenu={resolvedProfilePinMenu}
+          profilePinMenu={profilePinMenu}
           onPin={profilePinMenu ? undefined : onPin}
           onPostUpdated={onPostUpdated}
           onPostDeleted={onPostDeleted}
+          onBeforeMenuActionPointerDown={suppressNextCardOpenFromMenu}
           triggerClassName={styles.menuTrigger}
         />
       </CardHeader>
