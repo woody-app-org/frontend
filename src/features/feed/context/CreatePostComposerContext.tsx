@@ -7,14 +7,23 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useLocation } from "react-router-dom";
 import type { Community, Post } from "@/domain/types";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import {
+  type CreatePostModalPublication,
+  resolveCreatePostPublicationFromRoute,
+} from "../lib/createPostPublicationContext";
 
 interface CreatePostComposerContextValue {
   pageComposerCommunity: Community | null;
   setPageComposerCommunity: (community: Community | null) => void;
   createPostOpen: boolean;
+  /** Abre o modal com destino derivado da rota atual (perfil vs comunidade em contexto). */
   openCreatePostModal: () => void;
   setCreatePostOpen: (open: boolean) => void;
+  /** Contexto fixado no último pedido de abertura (para o modal). */
+  modalPublication: CreatePostModalPublication;
   registerFeedIngest: (fn: ((post: Post) => void) | null) => void;
   registerCommunityRefresh: (fn: (() => void) | null) => void;
   /** Chamado após POST bem-sucedido (modal usa `location.pathname`). */
@@ -31,8 +40,11 @@ function pathWithoutQuery(path: string): string {
 const COMMUNITY_DETAIL_PATH = /^\/communities\/[^/]+\/?$/;
 
 export function CreatePostComposerProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const { user } = useAuth();
   const [pageComposerCommunity, setPageComposerCommunity] = useState<Community | null>(null);
   const [createPostOpen, setCreatePostOpen] = useState(false);
+  const [modalPublication, setModalPublication] = useState<CreatePostModalPublication>({ kind: "profile" });
   const feedIngestRef = useRef<((post: Post) => void) | null>(null);
   const communityRefreshRef = useRef<(() => void) | null>(null);
 
@@ -44,7 +56,14 @@ export function CreatePostComposerProvider({ children }: { children: ReactNode }
     communityRefreshRef.current = fn;
   }, []);
 
-  const openCreatePostModal = useCallback(() => setCreatePostOpen(true), []);
+  const openCreatePostModal = useCallback(() => {
+    const next = resolveCreatePostPublicationFromRoute(location.pathname, {
+      pageComposerCommunity,
+      viewerUserId: user?.id,
+    });
+    setModalPublication(next);
+    setCreatePostOpen(true);
+  }, [location.pathname, pageComposerCommunity, user?.id]);
 
   const runAfterPostCreated = useCallback((post: Post, pathname: string) => {
     const p = pathWithoutQuery(pathname);
@@ -63,14 +82,16 @@ export function CreatePostComposerProvider({ children }: { children: ReactNode }
       createPostOpen,
       openCreatePostModal,
       setCreatePostOpen,
+      modalPublication,
       registerFeedIngest,
       registerCommunityRefresh,
       runAfterPostCreated,
     }),
     [
       createPostOpen,
-      pageComposerCommunity,
+      modalPublication,
       openCreatePostModal,
+      pageComposerCommunity,
       registerFeedIngest,
       registerCommunityRefresh,
       runAfterPostCreated,
@@ -91,3 +112,5 @@ export function useCreatePostComposer(): CreatePostComposerContextValue {
   }
   return ctx;
 }
+
+export type { CreatePostModalPublication } from "../lib/createPostPublicationContext";
