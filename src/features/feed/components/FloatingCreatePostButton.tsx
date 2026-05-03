@@ -32,18 +32,32 @@ export function FloatingCreatePostButton({ hidden, className }: FloatingCreatePo
       aria-label="Nova publicação"
       className={cn(
         woodyFocus.ring,
-        "fixed z-[50] flex size-14 items-center justify-center rounded-full",
+        "group fixed z-[50] flex size-14 items-center justify-center rounded-full",
         "border-2 border-[var(--woody-text)]/15 bg-[var(--woody-card)] text-[var(--woody-text)]",
-        "shadow-[0_6px_28px_rgba(10,10,10,0.12),0_2px_8px_rgba(10,10,10,0.06)]",
-        "transition-[transform,box-shadow,border-color,background-color] duration-200",
-        "hover:scale-[1.04] hover:border-[var(--woody-nav)]/45 hover:shadow-[0_8px_32px_rgba(139,195,74,0.18),0_4px_12px_rgba(10,10,10,0.08)]",
-        "active:scale-[0.96] active:duration-100",
+        "shadow-[0_4px_20px_rgba(10,10,10,0.1),0_2px_6px_rgba(10,10,10,0.05)]",
+        "transition-[transform,box-shadow,border-color] duration-200 ease-out",
+        "motion-reduce:transition-colors motion-reduce:duration-150",
+        /* Hover só desktop (pointer fine); glow verde muito discreto */
+        "md:hover:scale-[1.03] md:hover:border-[var(--woody-nav)]/32",
+        "md:hover:shadow-[0_6px_22px_rgba(10,10,10,0.1),0_0_20px_-6px_rgba(139,195,74,0.12)]",
+        /* Toque / click: leve compressão, mesma curva de transição */
+        "active:scale-[0.97]",
+        "motion-reduce:md:hover:scale-100 motion-reduce:active:scale-100",
+        "motion-reduce:md:hover:shadow-[0_4px_20px_rgba(10,10,10,0.1),0_2px_6px_rgba(10,10,10,0.05)]",
         /* Acima da bottom navigation (≈4.5rem + safe area) no mobile; canto no desktop */
         "right-4 max-md:bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px)+0.75rem)] md:bottom-8 md:right-8",
         className
       )}
     >
-      <Plus className="size-7 stroke-[2.25]" aria-hidden />
+      <Plus
+        className={cn(
+          "size-7 stroke-[2.25]",
+          "transition-transform duration-200 ease-out",
+          "md:group-hover:rotate-[22deg]",
+          "motion-reduce:transition-none motion-reduce:md:group-hover:rotate-0"
+        )}
+        aria-hidden
+      />
     </button>
   );
 }

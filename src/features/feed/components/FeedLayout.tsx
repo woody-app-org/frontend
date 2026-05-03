@@ -217,7 +217,7 @@ function FeedLayoutShell({
 
         <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
         <CreatePostModal />
-        <FloatingCreatePostButton hidden={immersiveMobileDmChat} />
+        <FloatingCreatePostButton hidden={immersiveMobileDmChat || createPostOpen} />
       </div>
     </div>
   );
