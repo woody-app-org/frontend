@@ -9,7 +9,7 @@ export const readImageFileAsDataUrlIfSmall = readImageAsDataUrlIfSmall;
 
 /** Alinhado ao `maxLength` do composer e validação no servidor. */
 export const POST_COMPOSER_TITLE_MAX_LENGTH = 200;
-export const POST_COMPOSER_TAGS_MAX_COUNT = 20;
+export const POST_COMPOSER_TAGS_MAX_COUNT = 5;
 
 /**
  * Corpo de `POST /posts`. Campos estáveis para evoluções futuras (rascunhos, edição) sem mudar o contrato base.

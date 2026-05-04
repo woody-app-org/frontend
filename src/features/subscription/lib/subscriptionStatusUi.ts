@@ -6,17 +6,23 @@ export function describeSubscriptionHeadline(sub: AuthUserSubscription): string 
   const pro = sub.effectivePlan === "pro";
   const canceling = sub.status === "canceling" || (Boolean(sub.cancelAtPeriodEnd) && pro);
 
-  if (!pro && sub.billingPlan === "pro" && sub.status === "past_due") {
-    return "Pro em pausa por pagamento — regulariza o método na área Stripe para reativar os benefícios.";
+  const paidBillingPaused =
+    !pro && (sub.billingPlan === "pro" || sub.billingPlan === "max") && sub.status === "past_due";
+  if (paidBillingPaused) {
+    return "Subscrição em pausa por pagamento — regulariza o método na área Stripe para reativar os benefícios.";
   }
 
   if (pro && sub.status === "past_due") {
-    return "Pagamento em falta — atualiza o método na área Stripe para manter o Pro.";
+    return "Pagamento em falta — atualiza o método na área Stripe para manter os benefícios premium.";
   }
   if (pro && canceling && sub.currentPeriodEnd) {
-    return `Cancelamento agendado: manténs o Woody Pro até ${formatDisplayDateFromIso(sub.currentPeriodEnd)}.`;
+    const product = sub.billingPlan === "max" ? "Criador Max" : "Woody Pro";
+    return `Cancelamento agendado: manténs o ${product} até ${formatDisplayDateFromIso(sub.currentPeriodEnd)}.`;
   }
   if (pro) {
+    if (sub.billingPlan === "max") {
+      return "Criador Max ativo — benefícios premium disponíveis.";
+    }
     return "Woody Pro ativo — benefícios premium disponíveis.";
   }
   if (sub.canOpenBillingPortal) {

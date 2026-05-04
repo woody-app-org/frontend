@@ -50,8 +50,10 @@ function mergeSessionIntoSeedUser(
 }
 
 export interface CreatePostCardProps {
-  /** Comunidade fixa (página da comunidade). */
+  /** Comunidade fixa (página da comunidade ou modal contextual). */
   forcedCommunity?: Community;
+  /** Só perfil: esconde escolha de destino (modal a partir do feed). */
+  forceProfilePublication?: boolean;
   initialCommunityId?: string;
   /** `none` na página dedicada (feedback via banner no feed). */
   composerFeedback?: "full" | "none";
@@ -61,6 +63,7 @@ export interface CreatePostCardProps {
 
 export function CreatePostCard({
   forcedCommunity,
+  forceProfilePublication,
   initialCommunityId,
   composerFeedback = "full",
   onPostCreated,
@@ -129,6 +132,7 @@ export function CreatePostCard({
           className="mt-3"
           viewerId={viewerId}
           forcedCommunity={forcedCommunity}
+          forceProfilePublication={forceProfilePublication}
           initialCommunityId={initialCommunityId}
           composerFeedback={composerFeedback}
           onPostCreated={onPostCreated}

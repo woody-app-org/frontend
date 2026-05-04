@@ -1,6 +1,10 @@
-import type { NavigateFunction } from "react-router-dom";
+import type { Location, NavigateFunction } from "react-router-dom";
 import type { NotificationItem, NotificationType } from "../services/notifications.service";
 import { notificationNavigationContext } from "../services/notifications.service";
+import {
+  buildPostDetailNavState,
+  routeTargetsPostDetail,
+} from "@/features/feed/lib/postDetailNavState";
 
 function num(v: unknown): number | undefined {
   if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -121,6 +125,8 @@ export interface HandleNotificationClickOptions {
   markReadIfNeeded: (id: string) => Promise<void>;
   onAfterRead?: () => void;
   onClose: () => void;
+  /** Página onde o utilizador estava ao abrir a notificação — usado para “Voltar” em posts. */
+  currentLocation?: Pick<Location, "pathname" | "search" | "hash">;
 }
 
 /**
@@ -133,6 +139,7 @@ export async function handleNotificationClick({
   markReadIfNeeded,
   onAfterRead,
   onClose,
+  currentLocation,
 }: HandleNotificationClickOptions): Promise<void> {
   if (!notification.readAt) {
     try {
@@ -145,7 +152,11 @@ export async function handleNotificationClick({
 
   const route = getNotificationTargetRoute(notification, viewerUserId ?? null);
   if (route) {
-    navigate(route);
+    if (routeTargetsPostDetail(route) && currentLocation) {
+      navigate(route, { state: buildPostDetailNavState(currentLocation) });
+    } else {
+      navigate(route);
+    }
   }
   onClose();
 }

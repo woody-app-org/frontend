@@ -4,6 +4,7 @@ import { useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Clock, ExternalLink, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
+import type { PostDetailNavState } from "@/features/feed/lib/postDetailNavState";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,6 +30,8 @@ export interface PostMediaLightboxProps {
   variant: "feed" | "detail";
   /** Quando presente, exibe barra inferior com contexto do post de origem. */
   postContext?: PostLightboxContext;
+  /** Estado para o botão “Ver publicação” voltar ao sítio correcto. */
+  postDetailLinkState?: PostDetailNavState;
 }
 
 export function PostMediaLightbox({
@@ -39,6 +42,7 @@ export function PostMediaLightbox({
   onIndexChange,
   variant,
   postContext,
+  postDetailLinkState,
 }: PostMediaLightboxProps) {
   const safeIndex = Math.min(Math.max(0, index), Math.max(0, items.length - 1));
   const current = items[safeIndex];
@@ -108,6 +112,7 @@ export function PostMediaLightbox({
           {postContext && (
             <Link
               to={`/posts/${postContext.postId}`}
+              state={postDetailLinkState}
               className="flex items-center gap-1 text-xs text-white/60 hover:text-white/90 transition-colors"
               onClick={() => onOpenChange(false)}
             >

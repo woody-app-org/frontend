@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { SearchModal } from "@/features/search/components/SearchModal";
 import { CreatePostComposerProvider, useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { CreatePostModal } from "./CreatePostModal";
+import { FloatingCreatePostButton } from "./FloatingCreatePostButton";
 import { AppTopNav } from "./AppTopNav";
 
 export interface FeedLayoutProps {
@@ -216,6 +217,7 @@ function FeedLayoutShell({
 
         <SearchModal open={isSearchOpen} onOpenChange={setIsSearchOpen} />
         <CreatePostModal />
+        <FloatingCreatePostButton hidden={immersiveMobileDmChat || createPostOpen} />
       </div>
     </div>
   );

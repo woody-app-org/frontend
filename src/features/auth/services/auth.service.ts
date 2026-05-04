@@ -38,7 +38,8 @@ export function mapSubscription(raw: unknown): AuthUserSubscription {
   const o = raw as Record<string, unknown>;
   return {
     effectivePlan: o.effectivePlan === "pro" ? "pro" : "free",
-    billingPlan: o.billingPlan === "pro" ? "pro" : "free",
+    billingPlan:
+      o.billingPlan === "max" ? "max" : o.billingPlan === "pro" ? "pro" : "free",
     planCode: o.planCode != null ? String(o.planCode) : null,
     status: typeof o.status === "string" ? o.status : "active",
     currentPeriodEnd: o.currentPeriodEnd != null ? String(o.currentPeriodEnd) : null,

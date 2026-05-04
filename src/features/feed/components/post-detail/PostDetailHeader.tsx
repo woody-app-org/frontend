@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Clock, ChevronLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { PostCommunityContextBar } from "../PostCommunityContextBar";
 import { PostProfileContextBar } from "../PostProfileContextBar";
 import { PostOverflowMenu } from "../PostOverflowMenu";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { resolvePostDetailBackTarget } from "../../lib/postDetailNavState";
 
 export interface PostDetailHeaderProps {
   post: Post;
@@ -24,7 +25,18 @@ export function PostDetailHeader({
   postDeleteRedirectTo = "/feed",
   onPostUpdated,
 }: PostDetailHeaderProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const viewerId = useViewerId();
+
+  const handleBack = () => {
+    const target = resolvePostDetailBackTarget(location, location.state);
+    if (target.kind === "path") {
+      navigate(target.path);
+      return;
+    }
+    navigate(-1);
+  };
   const initials = post.author.name
     .split(" ")
     .map((n) => n[0])
@@ -35,11 +47,9 @@ export function PostDetailHeader({
   return (
     <header className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/feed">
-            <ChevronLeft className="size-4" />
-            Voltar
-          </Link>
+        <Button variant="ghost" size="sm" type="button" onClick={handleBack}>
+          <ChevronLeft className="size-4" />
+          Voltar
         </Button>
         <PostOverflowMenu
           post={post}

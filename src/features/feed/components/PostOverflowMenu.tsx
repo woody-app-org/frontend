@@ -48,6 +48,12 @@ export interface PostOverflowMenuProps {
   onPostUpdated?: (post: Post) => void;
   onPostDeleted?: (postId: string) => void;
   /**
+   * Chamado em `pointerdown` em cada ação do menu (exceto o trigger).
+   * O {@link PostCard} usa isto para ignorar o clique seguinte no cartão — sem isto, ao fechar
+   * o dropdown (conteúdo em portal) o evento pode abrir o detalhe do post.
+   */
+  onBeforeMenuActionPointerDown?: () => void;
+  /**
    * No cartão do feed o clique propaga para abrir o post; no detalhe não.
    * @default true
    */
@@ -63,6 +69,7 @@ export function PostOverflowMenu({
   deleteRedirectTo,
   onPostUpdated,
   onPostDeleted,
+  onBeforeMenuActionPointerDown,
   stopTriggerPropagation = true,
 }: PostOverflowMenuProps) {
   const navigate = useNavigate();
@@ -137,7 +144,12 @@ export function PostOverflowMenu({
           {showEdit ? (
             <DropdownMenuItem
               className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
-              onClick={() => setEditOpen(true)}
+              onPointerDown={() => onBeforeMenuActionPointerDown?.()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setEditOpen(true);
+              }}
             >
               <Pencil className="mr-2 size-4" />
               Editar
@@ -147,7 +159,12 @@ export function PostOverflowMenu({
             <DropdownMenuItem
               variant="destructive"
               className="focus:bg-[var(--woody-accent)]/10"
-              onClick={() => setDeleteOpen(true)}
+              onPointerDown={() => onBeforeMenuActionPointerDown?.()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDeleteOpen(true);
+              }}
             >
               <Trash2 className="mr-2 size-4" />
               Excluir
@@ -160,7 +177,10 @@ export function PostOverflowMenu({
             <DropdownMenuItem
               className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
               disabled={profilePinMenu!.busy}
-              onPointerDown={() => profilePinMenu!.onBeforeProfilePinPointerDown?.()}
+              onPointerDown={() => {
+                onBeforeMenuActionPointerDown?.();
+                profilePinMenu!.onBeforeProfilePinPointerDown?.();
+              }}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -177,7 +197,12 @@ export function PostOverflowMenu({
           ) : legacyPin ? (
             <DropdownMenuItem
               className="text-[var(--woody-text)] focus:bg-[var(--woody-nav)]/10"
-              onClick={() => onPin!(post.id)}
+              onPointerDown={() => onBeforeMenuActionPointerDown?.()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onPin!(post.id);
+              }}
             >
               <Pin className="mr-2 size-4" />
               Fixar
@@ -189,7 +214,12 @@ export function PostOverflowMenu({
           {showReport ? (
             <DropdownMenuItem
               className="text-[var(--woody-muted)] focus:bg-[var(--woody-nav)]/10 focus:text-[var(--woody-text)]"
-              onClick={() => setReportOpen(true)}
+              onPointerDown={() => onBeforeMenuActionPointerDown?.()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setReportOpen(true);
+              }}
             >
               <Flag className="mr-2 size-4 opacity-80" />
               Denunciar

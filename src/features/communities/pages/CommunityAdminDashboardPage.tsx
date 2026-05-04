@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, BarChart3, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   type CommunityPremiumDashboardPayload,
 } from "../services/community.service";
 import { isAxiosError } from "axios";
+import { buildPostDetailNavState } from "@/features/feed/lib/postDetailNavState";
 
 const PERIOD_OPTIONS = [
   { days: 7, label: "7 dias" },
@@ -85,6 +86,7 @@ function ChartDayStatsContent({ d }: { d: ChartDayRow }) {
 
 export function CommunityAdminDashboardPage() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
+  const location = useLocation();
   const slug = communitySlug ?? "";
 
   const [communityId, setCommunityId] = useState<string | null>(null);
@@ -486,6 +488,7 @@ export function CommunityAdminDashboardPage() {
                       >
                         <Link
                           to={`/posts/${encodeURIComponent(post.postId)}`}
+                          state={buildPostDetailNavState(location)}
                           className={cn(woodyFocus.ring, "text-sm font-medium text-[var(--woody-text)] hover:underline")}
                         >
                           {post.title || "Sem título"}
@@ -540,6 +543,7 @@ export function CommunityAdminDashboardPage() {
                     >
                       <Link
                         to={`/posts/${encodeURIComponent(b.postId)}`}
+                        state={buildPostDetailNavState(location)}
                         className={cn(woodyFocus.ring, "font-medium text-[var(--woody-text)] hover:underline")}
                       >
                         {b.postTitle?.trim() || `Post #${b.postId}`}

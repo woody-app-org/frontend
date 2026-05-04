@@ -63,6 +63,11 @@ export interface PostComposerFormProps {
   viewerId: string;
   /** Publicação sempre nesta comunidade (ex.: página da comunidade). */
   forcedCommunity?: Community;
+  /**
+   * Só perfil: esconde a escolha perfil/comunidade (ex.: modal aberto a partir do feed geral).
+   * Incompatível com `forcedCommunity` (prioridade da comunidade forçada).
+   */
+  forceProfilePublication?: boolean;
   /** Pré-selecionar comunidade no feed quando não está fixada. */
   initialCommunityId?: string;
   /** `none` evita mensagem de sucesso no cartão (ex.: redirecionamento para o feed). */
@@ -74,6 +79,7 @@ export interface PostComposerFormProps {
 export function PostComposerForm({
   viewerId,
   forcedCommunity,
+  forceProfilePublication = false,
   initialCommunityId,
   composerFeedback = "full",
   onPostCreated,
@@ -85,6 +91,7 @@ export function PostComposerForm({
 
   const [publishTarget, setPublishTarget] = useState<PostPublicationContext>(() => {
     if (forcedCommunity) return "community";
+    if (forceProfilePublication) return "profile";
     if (initialCommunityId) return "community";
     return "profile";
   });
@@ -108,7 +115,7 @@ export function PostComposerForm({
   const [successKind, setSuccessKind] = useState<PostPublicationContext>("profile");
 
   const isCommunityFlow = !!forcedCommunity || publishTarget === "community";
-  const canPickTarget = !forcedCommunity;
+  const canPickTarget = !forcedCommunity && !forceProfilePublication;
 
   // Limpar Object URLs ao desmontar
   useEffect(() => {
@@ -167,7 +174,12 @@ export function PostComposerForm({
     };
   }, [forcedCommunity, initialCommunityId, communityReloadKey, publishTarget]);
 
-  // --- Handlers de imagem ---
+  useEffect(() => {
+    if (forceProfilePublication && !forcedCommunity) {
+      setPublishTarget("profile");
+      setFormError(null);
+    }
+  }, [forceProfilePublication, forcedCommunity]);
 
   const onImageFilesChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -305,7 +317,11 @@ export function PostComposerForm({
   const handleSubmit = async () => {
     setFormError(null);
 
-    const context: PostPublicationContext = forcedCommunity ? "community" : publishTarget;
+    const context: PostPublicationContext = forcedCommunity
+      ? "community"
+      : forceProfilePublication
+        ? "profile"
+        : publishTarget;
 
     if (context === "community") {
       const cid = forcedCommunity?.id ?? communityId;
@@ -429,7 +445,9 @@ export function PostComposerForm({
   const contentPlaceholder =
     publishTarget === "profile" && !forcedCommunity
       ? "Partilha algo no teu perfil…"
-      : "Partilha algo com a comunidade…";
+      : forcedCommunity
+        ? `Partilha algo com ${forcedCommunity.name}…`
+        : "Partilha algo com a comunidade…";
 
   const hasImages = imageItems.length > 0;
   const hasVideo = videoItem !== null;
