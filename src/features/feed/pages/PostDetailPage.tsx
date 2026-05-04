@@ -3,10 +3,13 @@ import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { FeedLayout } from "../components/FeedLayout";
 import { PostDetailView } from "../components/post-detail/PostDetailView";
 import { usePostDetail } from "../hooks/usePostDetail";
+import { postDetailDeleteRedirectFromState } from "../lib/postDetailNavState";
 
 export function PostDetailPage() {
   const { postId } = useParams<{ postId: string }>();
-  const { search, hash } = useLocation();
+  const location = useLocation();
+  const { search, hash } = location;
+  const deleteRedirectTo = postDetailDeleteRedirectFromState(location.state);
   const focusComments = useMemo(() => new URLSearchParams(search).get("focus") === "comments", [search]);
   const scrollToCommentId = useMemo(() => {
     const h = (hash ?? "").replace(/^#/, "");
@@ -72,7 +75,7 @@ export function PostDetailPage() {
             ) : null}
             <PostDetailView
               post={post}
-              postDeleteRedirectTo="/feed"
+              postDeleteRedirectTo={deleteRedirectTo}
               comments={comments}
               isCommentsLoading={isCommentsLoading}
               commentsError={commentsError}

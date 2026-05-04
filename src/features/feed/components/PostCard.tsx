@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
   Card,
@@ -20,6 +20,7 @@ import { PostOverflowMenu, type PostProfilePinMenuProps } from "./PostOverflowMe
 import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { PostLikeIcon } from "./PostLikeIcon";
 import { usePostLikeTapAnimation } from "../hooks/usePostLikeTapAnimation";
+import { buildPostDetailNavState } from "../lib/postDetailNavState";
 
 // --- Helpers ---
 
@@ -109,6 +110,7 @@ export function PostCard({
   communityBoost,
 }: PostCardProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const viewerId = useViewerId();
   const ignoreNextCardClickRef = useRef(false);
   const { tapPhase, triggerTap } = usePostLikeTapAnimation();
@@ -123,8 +125,9 @@ export function PostCard({
     .slice(0, 2)
     .toUpperCase();
 
-  const openPost = () => navigate(`/posts/${post.id}`);
-  const openPostComments = () => navigate(`/posts/${post.id}?focus=comments`);
+  const openPost = () => navigate(`/posts/${post.id}`, { state: buildPostDetailNavState(location) });
+  const openPostComments = () =>
+    navigate(`/posts/${post.id}?focus=comments`, { state: buildPostDetailNavState(location) });
 
   const imageGalleryRaw =
     post.imageUrls && post.imageUrls.length > 0

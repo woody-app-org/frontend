@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Images, Layers, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolvePublicMediaUrl } from "@/lib/api";
@@ -11,6 +12,7 @@ import {
   type PostLightboxContext,
 } from "@/components/media/PostMediaLightbox";
 import type { Post } from "@/features/feed/types";
+import { buildPostDetailNavState } from "@/features/feed/lib/postDetailNavState";
 
 /** Uma célula da grelha por publicação: miniatura da primeira mídia; resto navegável no lightbox. */
 interface MediaEntry {
@@ -61,6 +63,7 @@ export interface ProfileMediaGridProps {
 }
 
 export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
+  const location = useLocation();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxItems, setLightboxItems] = useState<PostMediaAttachment[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -166,6 +169,7 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
         onIndexChange={setLightboxIndex}
         variant="feed"
         postContext={lightboxContext}
+        postDetailLinkState={buildPostDetailNavState(location)}
       />
     </div>
   );

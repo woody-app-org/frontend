@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 import { handleNotificationClick } from "../lib/notificationNavigation";
 import type { NotificationItem } from "../services/notifications.service";
@@ -27,6 +27,7 @@ export function NotificationsPanel({
   signalsUnreadCount,
 }: NotificationsPanelProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     items,
     filteredItems,
@@ -50,6 +51,7 @@ export function NotificationsPanel({
       notification: n,
       viewerUserId,
       navigate,
+      currentLocation: location,
       markReadIfNeeded: markOneRead,
       onAfterRead,
       onClose: onRequestClose,
