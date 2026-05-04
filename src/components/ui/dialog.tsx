@@ -48,7 +48,7 @@ function DialogContent({ className, ...props }: React.ComponentProps<typeof Dial
           "p-4 sm:p-6",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          // Sem zoom: zoom-in-95 usa só `scale` em `transform` e apaga o translate de centragem (-50%,-50%).
           "focus:outline-none",
           className
         )}
