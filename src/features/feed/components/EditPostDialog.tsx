@@ -15,6 +15,7 @@ import { woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import type { Post } from "@/domain/types";
 import { updatePostMock } from "@/domain/services/contentModerationMock.service";
 import { postComposerFieldStyles } from "../lib/postComposerFieldStyles";
+import { showSuccessToast } from "@/lib/toast";
 
 export interface EditPostDialogProps {
   open: boolean;
@@ -49,6 +50,7 @@ export function EditPostDialog({ open, onOpenChange, post, viewerId, onSaved }: 
         return;
       }
       onSaved(result.data);
+      showSuccessToast("Publicação atualizada.", { id: `woody-post-updated-${post.id}` });
       onOpenChange(false);
     } finally {
       setIsSaving(false);

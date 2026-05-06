@@ -266,3 +266,11 @@
     transform: scale(1.5);
   }
 }
+
+/* Toasts (Sonner) — reduzir movimento sem remover feedback */
+@media (prefers-reduced-motion: reduce) {
+  [data-sonner-toast],
+  [data-sonner-toast][data-styled="true"] {
+    animation: none !important;
+  }
+}

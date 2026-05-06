@@ -55,8 +55,6 @@ export interface CreatePostCardProps {
   /** Só perfil: esconde escolha de destino (modal a partir do feed). */
   forceProfilePublication?: boolean;
   initialCommunityId?: string;
-  /** `none` na página dedicada (feedback via banner no feed). */
-  composerFeedback?: "full" | "none";
   onPostCreated?: (post: Post) => void;
   className?: string;
 }
@@ -65,7 +63,6 @@ export function CreatePostCard({
   forcedCommunity,
   forceProfilePublication,
   initialCommunityId,
-  composerFeedback = "full",
   onPostCreated,
   className,
 }: CreatePostCardProps) {
@@ -134,7 +131,6 @@ export function CreatePostCard({
           forcedCommunity={forcedCommunity}
           forceProfilePublication={forceProfilePublication}
           initialCommunityId={initialCommunityId}
-          composerFeedback={composerFeedback}
           onPostCreated={onPostCreated}
         />
       </CardContent>

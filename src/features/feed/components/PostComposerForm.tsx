@@ -28,6 +28,7 @@ import {
 } from "@/domain/postMediaLimits";
 import { MediaPicker } from "@/components/media/MediaPicker";
 import { MediaPreviewGrid, type MediaPreviewItem } from "@/components/media/MediaPreviewGrid";
+import { showSuccessToast, showActionErrorToast } from "@/lib/toast";
 
 const selectClass = cn(
   postComposerFieldStyles.input,
@@ -70,8 +71,6 @@ export interface PostComposerFormProps {
   forceProfilePublication?: boolean;
   /** Pré-selecionar comunidade no feed quando não está fixada. */
   initialCommunityId?: string;
-  /** `none` evita mensagem de sucesso no cartão (ex.: redirecionamento para o feed). */
-  composerFeedback?: "full" | "none";
   onPostCreated?: (post: Post) => void;
   className?: string;
 }
@@ -81,7 +80,6 @@ export function PostComposerForm({
   forcedCommunity,
   forceProfilePublication = false,
   initialCommunityId,
-  composerFeedback = "full",
   onPostCreated,
   className,
 }: PostComposerFormProps) {
@@ -111,8 +109,6 @@ export function PostComposerForm({
   const [formError, setFormError] = useState<string | null>(null);
   const [communityLoadError, setCommunityLoadError] = useState(false);
   const [communityReloadKey, setCommunityReloadKey] = useState(0);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successKind, setSuccessKind] = useState<PostPublicationContext>("profile");
 
   const isCommunityFlow = !!forcedCommunity || publishTarget === "community";
   const canPickTarget = !forcedCommunity && !forceProfilePublication;
@@ -125,13 +121,6 @@ export function PostComposerForm({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (composerFeedback === "full" && showSuccess) {
-      const t = window.setTimeout(() => setShowSuccess(false), 3200);
-      return () => window.clearTimeout(t);
-    }
-  }, [composerFeedback, showSuccess]);
 
   useEffect(() => {
     if (forcedCommunity) {
@@ -418,13 +407,10 @@ export function PostComposerForm({
         return null;
       });
 
-      if (composerFeedback === "full") {
-        setSuccessKind(context);
-        setShowSuccess(true);
-      }
+      showSuccessToast("Publicação criada com sucesso.", { id: "woody-post-created" });
       onPostCreated?.(post);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Falha ao publicar.");
+      showActionErrorToast(err, "Falha ao publicar.");
     } finally {
       setSubmitting(false);
     }
@@ -455,18 +441,6 @@ export function PostComposerForm({
 
   return (
     <div className={cn("space-y-3", className)} aria-busy={submitting}>
-      {composerFeedback === "full" && showSuccess && (
-        <p
-          className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-950 dark:text-emerald-100"
-          role="status"
-          aria-live="polite"
-        >
-          {successKind === "profile"
-            ? "Publicação criada no teu perfil."
-            : "Publicação criada na comunidade."}
-        </p>
-      )}
-
       {canPickTarget && (
         <div className="space-y-2">
           <span id={`${idBase}-target-legend`} className="text-sm font-medium text-[var(--woody-text)]">

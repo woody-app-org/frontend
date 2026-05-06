@@ -85,10 +85,6 @@ export function ProfilePage() {
     removePostFromList,
     toggleProfilePin,
     pinningPostId,
-    pinActionError,
-    dismissPinActionError,
-    pinActionSuccess,
-    dismissPinActionSuccess,
     applyFollowPatch,
     togglePostLike,
     isPostLikePending,
@@ -308,10 +304,6 @@ export function ProfilePage() {
                   isOwnProfile={isOwnProfile}
                   onToggleProfilePin={toggleProfilePin}
                   pinningPostId={pinningPostId}
-                  pinActionError={pinActionError}
-                  onDismissPinError={dismissPinActionError}
-                  pinActionSuccess={pinActionSuccess}
-                  onDismissPinSuccess={dismissPinActionSuccess}
                   onLike={togglePostLike}
                   isLikePending={isPostLikePending}
                 />

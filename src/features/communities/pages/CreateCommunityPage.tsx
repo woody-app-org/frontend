@@ -18,6 +18,7 @@ import type { CommunityCategory, CommunityVisibility } from "@/domain/types";
 import { CommunityBasicInfoSection } from "../components/community-settings/CommunityBasicInfoSection";
 import { CommunityTagsAndRulesSection } from "../components/community-settings/CommunityTagsAndRulesSection";
 import { CommunityAccessSection } from "../components/community-settings/CommunityAccessSection";
+import { showSuccessToast } from "@/lib/toast";
 
 const fieldClass =
   "rounded-xl border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] " +
@@ -69,6 +70,7 @@ export function CreateCommunityPage() {
       setIsSubmitting(true);
       try {
         const created = await createCommunity(payload);
+        showSuccessToast("Comunidade criada.", { id: `woody-community-created-${created.id}` });
         navigate(`/communities/${encodeURIComponent(created.slug)}`, { replace: true });
       } catch (err) {
         if (err instanceof ProSubscriptionRequiredError) {

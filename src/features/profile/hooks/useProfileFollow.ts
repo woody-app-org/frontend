@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { followUser, unfollowUser } from "../services/follow.service";
+import { showSuccessToast, showActionErrorToast } from "@/lib/toast";
 
 export interface UseProfileFollowOptions {
   targetUserId: string;
@@ -15,8 +16,6 @@ export interface UseProfileFollowResult {
   isFollowing: boolean;
   followersCount: number;
   busy: boolean;
-  error: string | null;
-  clearError: () => void;
   toggleFollow: () => Promise<void>;
 }
 
@@ -34,15 +33,11 @@ export function useProfileFollow({
   const [isFollowing, setIsFollowing] = useState(Boolean(initialIsFollowing));
   const [followersCount, setFollowersCount] = useState(initialFollowersCount ?? 0);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsFollowing(Boolean(initialIsFollowing));
     setFollowersCount(initialFollowersCount ?? 0);
-    setError(null);
   }, [targetUserId, initialIsFollowing, initialFollowersCount]);
-
-  const clearError = useCallback(() => setError(null), []);
 
   const toggleFollow = useCallback(async () => {
     if (!enabled || busy) return;
@@ -50,7 +45,6 @@ export function useProfileFollow({
     const wasFollowing = isFollowing;
     const nextFollowing = !wasFollowing;
     setBusy(true);
-    setError(null);
     setIsFollowing(nextFollowing);
 
     try {
@@ -61,9 +55,15 @@ export function useProfileFollow({
         isFollowing: r.isFollowing,
         followersCount: r.followersCount,
       });
+      showSuccessToast(
+        r.isFollowing ? "Você começou a seguir esta pessoa." : "Você deixou de seguir esta pessoa.",
+        { id: `woody-follow-${targetUserId}` }
+      );
     } catch (err) {
       setIsFollowing(wasFollowing);
-      setError(err instanceof Error ? err.message : "Algo correu mal.");
+      showActionErrorToast(err, "Não foi possível concluir a ação. Tente novamente.", {
+        id: `woody-follow-err-${targetUserId}`,
+      });
     } finally {
       setBusy(false);
     }
@@ -73,8 +73,6 @@ export function useProfileFollow({
     isFollowing,
     followersCount,
     busy,
-    error,
-    clearError,
     toggleFollow,
   };
 }

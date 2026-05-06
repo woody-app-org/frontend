@@ -50,7 +50,6 @@ export function CreatePostModal() {
           </DialogHeader>
 
           <CreatePostCard
-            composerFeedback="none"
             forceProfilePublication={!community}
             forcedCommunity={community ?? undefined}
             className="border-0 bg-transparent shadow-none"

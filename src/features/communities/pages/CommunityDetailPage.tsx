@@ -43,6 +43,7 @@ import { CommunityGrowthDialog } from "../components/CommunityGrowthDialog";
 import { CommunityPostBoostDialog } from "../components/CommunityPostBoostDialog";
 import { CommunityPremiumSidebarCard } from "../components/CommunityPremiumSidebarCard";
 import { usePostListLikeToggle } from "@/features/feed/hooks/usePostListLikeToggle";
+import { showSuccessToast } from "@/lib/toast";
 
 const COMMUNITY_FEED_PAGE_SIZE = 10;
 
@@ -142,13 +143,16 @@ function CommunityDetailLoaded({
   });
 
   const runAccess = useCallback(
-    async (fn: () => Promise<CommunityMembershipActionResult>) => {
+    async (fn: () => Promise<CommunityMembershipActionResult>, successMessage?: string) => {
       setCtaBusy(true);
       setAccessNotice(null);
       try {
         const r = await fn();
         if (!r.ok) setAccessNotice(r.error);
-        else onDataChanged();
+        else {
+          onDataChanged();
+          if (successMessage) showSuccessToast(successMessage, { id: "woody-community-membership" });
+        }
       } finally {
         setCtaBusy(false);
       }
@@ -219,21 +223,21 @@ function CommunityDetailLoaded({
             const r = await leaveCommunity(viewerId, community.id);
             if (r.ok) setJoinPending(false);
             return r;
-          })
+          }, "Saíste desta comunidade.")
         }
         onJoinPublic={() =>
           runAccess(async () => {
             const r = await joinCommunityPublic(viewerId, community.id);
             if (r.ok) setJoinPending(false);
             return r;
-          })
+          }, "Agora participas nesta comunidade.")
         }
         onRequestJoin={() =>
           runAccess(async () => {
             const r = await requestJoinCommunity(viewerId, community.id);
             if (r.ok) setJoinPending(true);
             return r;
-          })
+          }, "Pedido de entrada enviado.")
         }
         ctaBusy={ctaBusy}
         accessNotice={accessNotice}

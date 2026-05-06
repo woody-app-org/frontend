@@ -19,7 +19,7 @@ import {
 } from "@/domain/services/contentModerationMock.service";
 import { postComposerFieldStyles } from "../../lib/postComposerFieldStyles";
 import { ReportReasonSelector } from "./ReportReasonSelector";
-import { ReportSuccessState } from "./ReportSuccessState";
+import { showSuccessToast } from "@/lib/toast";
 
 const DETAILS_MAX = 500;
 
@@ -42,7 +42,6 @@ export interface ReportContentModalProps {
 
 export function ReportContentModal({ open, onOpenChange, target, viewerId }: ReportContentModalProps) {
   const formName = useId();
-  const [step, setStep] = useState<"form" | "success">("form");
   const [reason, setReason] = useState<ContentReportReasonCode | null>(null);
   const [details, setDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,7 +51,6 @@ export function ReportContentModal({ open, onOpenChange, target, viewerId }: Rep
 
   useEffect(() => {
     if (!open) return;
-    setStep("form");
     setReason(null);
     setDetails("");
     setError(null);
@@ -93,7 +91,8 @@ export function ReportContentModal({ open, onOpenChange, target, viewerId }: Rep
         setError(result.message);
         return;
       }
-      setStep("success");
+      showSuccessToast("Denúncia enviada. Vamos analisar.", { id: `woody-report-${targetEntityId}` });
+      onOpenChange(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -109,23 +108,19 @@ export function ReportContentModal({ open, onOpenChange, target, viewerId }: Rep
           "max-h-[min(92vh,720px)] flex flex-col gap-0 border-[var(--woody-accent)]/15 p-0 sm:max-w-2xl"
         )}
       >
-        {step === "success" ? (
-          <ReportSuccessState isComment={isComment} onClose={handleClose} />
-        ) : (
-          <>
-            <DialogHeader className="shrink-0 border-b border-[var(--woody-accent)]/10 px-4 py-4 sm:px-5">
-              <DialogTitle className="text-[var(--woody-text)]">{title}</DialogTitle>
-              <DialogDescription className="text-pretty">
-                Sua denúncia é confidencial. Escolha o motivo que melhor descreve o problema — isso nos ajuda a
-                priorizar com sensibilidade.
-              </DialogDescription>
-            </DialogHeader>
+        <DialogHeader className="shrink-0 border-b border-[var(--woody-accent)]/10 px-4 py-4 sm:px-5">
+          <DialogTitle className="text-[var(--woody-text)]">{title}</DialogTitle>
+          <DialogDescription className="text-pretty">
+            Sua denúncia é confidencial. Escolha o motivo que melhor descreve o problema — isso nos ajuda a priorizar
+            com sensibilidade.
+          </DialogDescription>
+        </DialogHeader>
 
-            <form
-              id={formName}
-              onSubmit={(e) => void handleSubmit(e)}
-              className="flex min-h-0 flex-1 flex-col"
-            >
+        <form
+          id={formName}
+          onSubmit={(e) => void handleSubmit(e)}
+          className="flex min-h-0 flex-1 flex-col"
+        >
               <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4 sm:px-5">
                 {preview ? (
                   <div className="rounded-xl border border-[var(--woody-accent)]/10 bg-[var(--woody-nav)]/5 px-3 py-2.5">
@@ -198,8 +193,6 @@ export function ReportContentModal({ open, onOpenChange, target, viewerId }: Rep
                 </Button>
               </div>
             </form>
-          </>
-        )}
       </DialogContent>
     </Dialog>
   );

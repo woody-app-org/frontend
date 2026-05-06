@@ -6,6 +6,7 @@ import {
   postCommentsMockApi,
   togglePostLikeMock,
 } from "@/domain/services/postMock.service";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 interface UsePostDetailReturn {
   post: Post | null;
@@ -153,11 +154,10 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
       const trimmed = body.trim();
       if (!trimmed) return false;
       setIsCreatingComment(true);
-      setError(null);
       try {
         const result = await postCommentsMockApi.create(postId, viewerId, trimmed, parentCommentId ?? null);
         if (!result.ok) {
-          setError(result.error);
+          showErrorToast(result.error, { id: `woody-comment-err-${postId}` });
           return false;
         }
         setCommentsError(null);
@@ -170,9 +170,10 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
               }
             : current
         );
+        showSuccessToast("Comentário publicado.", { id: `woody-comment-ok-${postId}` });
         return true;
       } catch {
-        setError("Não foi possível publicar o comentário.");
+        showErrorToast("Não foi possível publicar o comentário.", { id: `woody-comment-ex-${postId}` });
         return false;
       } finally {
         setIsCreatingComment(false);

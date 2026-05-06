@@ -91,10 +91,6 @@ export interface UseUserProfileReturn {
   /** Alterna fixação no perfil (só para a própria autora no próprio perfil). */
   toggleProfilePin: (post: Post) => Promise<void>;
   pinningPostId: string | null;
-  pinActionError: string | null;
-  dismissPinActionError: () => void;
-  pinActionSuccess: string | null;
-  dismissPinActionSuccess: () => void;
   /** Após seguir/deixar de seguir, mantém o perfil alinhado à API sem refetch completo. */
   applyFollowPatch: (patch: { isFollowing: boolean; followersCount: number }) => void;
   togglePostLike: (postId: string) => Promise<void>;

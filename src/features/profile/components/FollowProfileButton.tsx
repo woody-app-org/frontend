@@ -31,7 +31,7 @@ export function FollowProfileButton({
   onCommit,
   className,
 }: FollowProfileButtonProps) {
-  const { isFollowing, busy, error, clearError, toggleFollow } = useProfileFollow({
+  const { isFollowing, busy, toggleFollow } = useProfileFollow({
     targetUserId,
     enabled: true,
     initialIsFollowing,
@@ -57,7 +57,6 @@ export function FollowProfileButton({
         aria-pressed={isFollowing}
         aria-label={ariaLabel}
         onClick={() => {
-          clearError();
           void toggleFollow();
         }}
         className={cn(
@@ -78,11 +77,6 @@ export function FollowProfileButton({
           "Seguir"
         )}
       </Button>
-      {error ? (
-        <p className="max-w-[16rem] text-right text-xs text-red-600 dark:text-red-400" role="alert">
-          {error}
-        </p>
-      ) : null}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FeedLayout } from "../components/FeedLayout";
 import { FeedTabs } from "../components/FeedTabs";
@@ -105,7 +105,6 @@ function FeedPageContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [postCreatedBanner, setPostCreatedBanner] = useState<string | null>(null);
 
   const {
     posts,
@@ -135,21 +134,12 @@ function FeedPageContent() {
   useEffect(() => {
     const st = location.state as { createdPostTitle?: string } | null;
     if (!st?.createdPostTitle) return;
-    const t = st.createdPostTitle.trim();
-    const short = t.length > 56 ? `${t.slice(0, 53)}…` : t;
     const path = `${location.pathname}${location.search}`;
     void (async () => {
       await Promise.resolve();
-      setPostCreatedBanner(short ? `«${short}» foi publicada com sucesso.` : "Publicação criada com sucesso.");
       navigate(path, { replace: true, state: {} });
     })();
   }, [location.pathname, location.search, location.state, navigate]);
-
-  useEffect(() => {
-    if (!postCreatedBanner) return;
-    const timer = window.setTimeout(() => setPostCreatedBanner(null), 6000);
-    return () => window.clearTimeout(timer);
-  }, [postCreatedBanner]);
 
   const hasPosts = posts.length > 0;
   const hasBlockingError = !hasPosts && !!error;
@@ -173,16 +163,6 @@ function FeedPageContent() {
       <div className="overflow-hidden rounded-[1.5rem] border border-black/[0.07] bg-[#ebebed] shadow-[0_1px_4px_rgba(10,10,10,0.05)]">
         <FeedTabs activeFilter={filter} onFilterChange={setFilter} className="w-full min-w-0 rounded-[inherit]" />
       </div>
-
-      {postCreatedBanner && (
-        <div
-          className="rounded-2xl border border-emerald-500/35 bg-emerald-500/10 px-3 py-2.5 text-sm text-emerald-950 dark:text-emerald-100"
-          role="status"
-          aria-live="polite"
-        >
-          {postCreatedBanner}
-        </div>
-      )}
 
       <div className="pt-1">
         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-[var(--woody-text)] md:text-[1.25rem]">

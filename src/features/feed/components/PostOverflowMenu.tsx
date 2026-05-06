@@ -24,6 +24,7 @@ import { deletePostMock } from "@/domain/services/contentModerationMock.service"
 import { EditPostDialog } from "./EditPostDialog";
 import { DeletePostConfirmationDialog } from "./DeletePostConfirmationDialog";
 import { ReportContentModal } from "./report/ReportContentModal";
+import { showSuccessToast } from "@/lib/toast";
 
 export interface PostProfilePinMenuProps {
   isPinned: boolean;
@@ -105,6 +106,7 @@ export function PostOverflowMenu({
       }
       onPostDeleted?.(post.id);
       setDeleteOpen(false);
+      showSuccessToast("Publicação removida.", { id: `woody-post-deleted-${post.id}` });
       if (deleteRedirectTo) navigate(deleteRedirectTo);
     } finally {
       setIsDeleting(false);

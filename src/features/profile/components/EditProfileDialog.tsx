@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import type { InterestTag, UserProfile } from "../types";
 import { updateProfile, validateProfileUpdatePayload } from "../services/profile.service";
+import { showSuccessToast } from "@/lib/toast";
 
 const inputClass =
   "rounded-xl border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] " +
@@ -86,7 +87,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const profileRef = useRef(profile);
   profileRef.current = profile;
@@ -94,7 +94,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   useEffect(() => {
     if (!open) {
       setSubmitError(null);
-      setSuccess(false);
       setIsSubmitting(false);
       return;
     }
@@ -109,7 +108,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     setAvatarUrl(p.avatarUrl);
     setBannerUrl(p.bannerUrl);
     setSubmitError(null);
-    setSuccess(false);
   }, [open]);
 
   const handleAvatarFile = useCallback(
@@ -188,12 +186,9 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
           setSubmitError(result.error);
           return;
         }
-        setSuccess(true);
+        showSuccessToast("Perfil atualizado.", { id: `woody-profile-updated-${profile.id}` });
         onSaved(result.profile);
-        window.setTimeout(() => {
-          onOpenChange(false);
-          setSuccess(false);
-        }, 900);
+        onOpenChange(false);
       } finally {
         setIsSubmitting(false);
       }
@@ -423,15 +418,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
             </p>
           ) : null}
 
-          {success ? (
-            <p
-              role="status"
-              className="rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-800 dark:text-emerald-200"
-            >
-              Perfil atualizado.
-            </p>
-          ) : null}
-
           <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
             <Button
               type="button"
@@ -447,7 +433,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || success}
+              disabled={isSubmitting}
               className={cn(
                 "min-h-11 w-full rounded-xl bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:scale-[0.98] sm:w-auto",
                 woodyFocus.ring

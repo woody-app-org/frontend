@@ -4,6 +4,7 @@ import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { getProfile, getProfilePosts } from "../services/profile.service";
 import { pinPostOnProfile, unpinPostFromProfile } from "@/features/feed/services/postPin.service";
 import { usePostListLikeToggle } from "@/features/feed/hooks/usePostListLikeToggle";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 export function useUserProfile(userId: string | undefined): UseUserProfileReturn {
   const viewerId = useViewerId();
@@ -16,8 +17,6 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
   const [pinningPostId, setPinningPostId] = useState<string | null>(null);
-  const [pinActionError, setPinActionError] = useState<string | null>(null);
-  const [pinActionSuccess, setPinActionSuccess] = useState<string | null>(null);
 
   const { togglePostLike, isPostLikePending } = usePostListLikeToggle(setPosts, setPinnedPosts);
 
@@ -88,8 +87,6 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
   const toggleProfilePin = useCallback(
     async (post: Post) => {
       const wasPinned = Boolean(post.pinnedOnProfileAt);
-      setPinActionError(null);
-      setPinActionSuccess(null);
       setPinningPostId(post.id);
       try {
         if (wasPinned) {
@@ -98,20 +95,21 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
           await pinPostOnProfile(post.id);
         }
         if (userId) await loadPosts(userId, page);
-        setPinActionSuccess(
-          wasPinned ? "O destaque foi removido do teu perfil." : "Publicação destacada no perfil."
+        showSuccessToast(
+          wasPinned ? "Publicação removida dos destaques." : "Publicação fixada no perfil.",
+          { id: `woody-profile-pin-${post.id}` }
         );
       } catch (err) {
-        setPinActionError(err instanceof Error ? err.message : "Não foi possível atualizar o destaque.");
+        showErrorToast(
+          err instanceof Error ? err.message : "Não foi possível atualizar o destaque.",
+          { id: `woody-profile-pin-err-${post.id}` }
+        );
       } finally {
         setPinningPostId(null);
       }
     },
     [userId, page, loadPosts]
   );
-
-  const dismissPinActionError = useCallback(() => setPinActionError(null), []);
-  const dismissPinActionSuccess = useCallback(() => setPinActionSuccess(null), []);
 
   const applyFollowPatch = useCallback((patch: { isFollowing: boolean; followersCount: number }) => {
     setProfile((p) =>
@@ -141,10 +139,6 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     removePostFromList,
     toggleProfilePin,
     pinningPostId,
-    pinActionError,
-    dismissPinActionError,
-    pinActionSuccess,
-    dismissPinActionSuccess,
     applyFollowPatch,
     togglePostLike,
     isPostLikePending,

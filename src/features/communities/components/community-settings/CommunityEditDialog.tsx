@@ -16,6 +16,7 @@ import { CommunityAppearanceSection } from "./CommunityAppearanceSection";
 import { CommunityBasicInfoSection } from "./CommunityBasicInfoSection";
 import { CommunityTagsAndRulesSection } from "./CommunityTagsAndRulesSection";
 import { CommunityAccessSection } from "./CommunityAccessSection";
+import { showSuccessToast } from "@/lib/toast";
 
 const fieldClass =
   "rounded-xl border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] " +
@@ -63,7 +64,6 @@ export function CommunityEditDialog({
   const [fileError, setFileError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const communityRef = useRef(community);
   communityRef.current = community;
@@ -72,7 +72,6 @@ export function CommunityEditDialog({
     if (!open) {
       setSubmitError(null);
       setFileError(null);
-      setSuccess(false);
       setIsSubmitting(false);
       return;
     }
@@ -87,7 +86,6 @@ export function CommunityEditDialog({
     setVisibility(c.visibility);
     setSubmitError(null);
     setFileError(null);
-    setSuccess(false);
   }, [open]);
 
   const handleSubmit = useCallback(
@@ -118,12 +116,9 @@ export function CommunityEditDialog({
           setSubmitError(result.error);
           return;
         }
-        setSuccess(true);
+        showSuccessToast("Comunidade atualizada.", { id: `woody-community-updated-${community.id}` });
         onSaved(result.community);
-        window.setTimeout(() => {
-          onOpenChange(false);
-          setSuccess(false);
-        }, 900);
+        onOpenChange(false);
       } finally {
         setIsSubmitting(false);
       }
@@ -213,14 +208,6 @@ export function CommunityEditDialog({
               {submitError}
             </p>
           ) : null}
-          {success ? (
-            <p
-              role="status"
-              className="rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-800 dark:text-emerald-200"
-            >
-              Comunidade atualizada.
-            </p>
-          ) : null}
 
           <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
             <Button
@@ -237,7 +224,7 @@ export function CommunityEditDialog({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || success}
+              disabled={isSubmitting}
               className={cn(
                 "min-h-11 w-full rounded-xl bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:scale-[0.98] sm:w-auto",
                 woodyFocus.ring

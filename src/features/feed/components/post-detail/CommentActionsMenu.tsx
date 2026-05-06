@@ -30,6 +30,7 @@ import {
   HideCommentConfirmationDialog,
 } from "./CommentModerationDialogs";
 import { ReportContentModal } from "../report/ReportContentModal";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 export interface CommentActionsMenuProps {
   post: Post;
@@ -98,6 +99,8 @@ export function CommentActionsMenu({
         return;
       }
       setDeleteOpen(false);
+      showSuccessToast("Comentário removido.", { id: `woody-del-comment-${comment.id}` });
+      await onCommentsReload?.();
     } finally {
       setDeleteBusy(false);
     }
@@ -113,6 +116,8 @@ export function CommentActionsMenu({
         return;
       }
       setHideOpen(false);
+      showSuccessToast("Comentário ocultado.", { id: `woody-hide-comment-${comment.id}` });
+      await onCommentsReload?.();
     } finally {
       setHideBusy(false);
     }
@@ -130,8 +135,14 @@ export function CommentActionsMenu({
         await pinCommentOnPost(post.id, comment.id);
       }
       await onCommentsReload();
+      showSuccessToast(
+        comment.pinnedOnPostAt ? "Destaque do comentário removido." : "Comentário destacado no topo.",
+        { id: `woody-comment-pin-${comment.id}` }
+      );
     } catch (e) {
-      onActionMessage?.(e instanceof Error ? e.message : "Não foi possível atualizar o destaque.");
+      const msg = e instanceof Error ? e.message : "Não foi possível atualizar o destaque.";
+      onActionMessage?.(msg);
+      showErrorToast(msg, { id: `woody-comment-pin-err-${comment.id}` });
     } finally {
       setPinBusy(false);
     }

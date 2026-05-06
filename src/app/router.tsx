@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { WoodyToaster } from "@/components/ui/woody-toaster";
 import { AuthProvider } from "@/features/auth/context/AuthContext";
 import { AuthEntryPage } from "@/features/auth/pages/AuthEntryPage";
 import { IntroPage } from "@/features/auth/pages/IntroPage";
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
   {
     element: (
       <AuthProvider>
+        <WoodyToaster />
         <Outlet />
       </AuthProvider>
     ),

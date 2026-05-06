@@ -39,7 +39,6 @@ export function CreatePostPage() {
         </div>
 
         <CreatePostCard
-          composerFeedback="none"
           onPostCreated={(post) => {
             navigate("/feed", { replace: true, state: { createdPostTitle: post.title } });
           }}

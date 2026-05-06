@@ -18,6 +18,7 @@ import {
 } from "../services/profile-signals.service";
 import { useSendProfileSignal } from "../hooks/useSendProfileSignal";
 import { ProfileSignalOptionCard } from "./ProfileSignalOptionCard";
+import { showSuccessToast } from "@/lib/toast";
 
 export interface ProfileSignalDialogProps {
   open: boolean;
@@ -57,6 +58,7 @@ export function ProfileSignalDialog({
     try {
       const signal = await sendSignal(selected);
       onSent?.(signal);
+      showSuccessToast("Sinal enviado.", { id: `woody-profile-signal-${recipientUserId}` });
     } catch {
       // Erro tratado no hook / estado `error`.
     }
@@ -145,19 +147,6 @@ export function ProfileSignalDialog({
                 </div>
               ) : null}
 
-              {sentSignal ? (
-                <div
-                  className="flex items-start gap-2 rounded-xl border border-[var(--woody-nav)]/25 bg-[var(--woody-nav)]/10 px-3 py-2.5 text-sm text-[var(--woody-text)]"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
-                  <span>
-                    <span className="font-semibold text-[var(--woody-nav)]">{`${sentSignal.label} ${sentSignal.emoji}`.trim()}</span>
-                    <span className="text-[var(--woody-muted)]"> enviado em privado.</span>
-                  </span>
-                </div>
-              ) : null}
             </div>
           </div>
 

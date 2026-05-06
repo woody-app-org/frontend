@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,13 @@ import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { isProUser } from "@/features/subscription/subscriptionCapabilities";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
+import { showInfoToast } from "@/lib/toast";
 
 export function AssinaturaSucessoPage() {
   const { patchUser } = useAuth();
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [hint, setHint] = useState<string | null>(null);
+  const toastSentRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,6 +39,12 @@ export function AssinaturaSucessoPage() {
       cancelled = true;
     };
   }, [patchUser]);
+
+  useEffect(() => {
+    if (phase !== "ready" || toastSentRef.current) return;
+    toastSentRef.current = true;
+    showInfoToast(hint ?? "Estado da conta sincronizado.", { id: "woody-subscription-success" });
+  }, [phase, hint]);
 
   return (
     <FeedLayout>
