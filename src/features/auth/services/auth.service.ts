@@ -1,8 +1,9 @@
 import type { AuthUserSubscription } from "@/features/subscription/types";
 import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
-import { AUTH_STORAGE_KEY, AUTH_TOKEN_KEY } from "../constants";
+import { AUTH_STORAGE_KEY } from "../constants";
+import { clearAuthPersistence } from "../authSessionCleanup";
 import { syncAuthUserToDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
-import { api, getApiErrorMessage, setStoredToken } from "@/lib/api";
+import { api, getApiErrorMessage, getStoredToken, setStoredToken } from "@/lib/api";
 
 function getStoredUser(): AuthUser | null {
   try {
@@ -109,12 +110,11 @@ export async function registerMock(credentials: RegisterCredentials): Promise<Au
 }
 
 export function logoutMock(): void {
-  setStoredUser(null);
-  setStoredToken(null);
+  clearAuthPersistence();
 }
 
 export async function logoutSessionMock(): Promise<void> {
-  const t = localStorage.getItem(AUTH_TOKEN_KEY);
+  const t = getStoredToken();
   if (t) {
     try {
       await api.post("/Auth/logout");
@@ -127,6 +127,42 @@ export async function logoutSessionMock(): Promise<void> {
 
 export function getAuthUser(): AuthUser | null {
   return getStoredUser();
+}
+
+/** Hidrata `AuthUser` a partir de `GET /users/me` (requer JWT válido). */
+export async function fetchAuthUserFromMe(): Promise<AuthUser> {
+  const { data } = await api.get("/users/me");
+  const raw = data as Record<string, unknown>;
+  const id = raw.id != null ? String(raw.id) : "";
+  if (!id) throw new Error("Resposta inválida de /users/me.");
+  const user: AuthUser = {
+    id,
+    username: raw.username != null ? String(raw.username) : id,
+    name: raw.name != null ? String(raw.name) : undefined,
+    avatarUrl: raw.avatarUrl != null ? String(raw.avatarUrl) : undefined,
+    subscription: mapSubscription(raw.subscription),
+  };
+  return normalizeStoredUser(user);
+}
+
+/**
+ * Valida sessão ao arranque: sem token limpa cache antigo; com token confirma com `/users/me`.
+ */
+export async function bootstrapAuthSession(): Promise<AuthUser | null> {
+  const token = getStoredToken();
+  if (!token) {
+    clearAuthPersistence();
+    return null;
+  }
+  try {
+    const user = await fetchAuthUserFromMe();
+    setStoredUser(user);
+    syncAuthUserToDisplayPatch(user);
+    return user;
+  } catch {
+    clearAuthPersistence();
+    return null;
+  }
 }
 
 /** Atualiza o estado de assinatura a partir de `GET /users/me` (inclui `subscription` só para a própria utilizadora). */

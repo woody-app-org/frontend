@@ -42,6 +42,12 @@ export function getUserDisplayPatch(userId: string): UserDisplayPatch | undefine
   return p ? { ...p } : undefined;
 }
 
+/** Remove overrides de exibição para esta utilizadora (logout / sessão inválida). */
+export function removeUserDisplayPatch(userId: string): void {
+  if (!patchesByUserId.delete(userId)) return;
+  notifyUserPatchListeners();
+}
+
 /** Alinha sessão (localStorage) ao mesmo espelho usado em `getUserById`. */
 export function syncAuthUserToDisplayPatch(u: {
   id: string;

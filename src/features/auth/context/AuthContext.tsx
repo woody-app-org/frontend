@@ -1,19 +1,20 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-import type { AuthUser } from "../types";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
 import {
-  getAuthUser,
+  bootstrapAuthSession,
   loginMock,
   logoutMock,
   logoutSessionMock,
   patchStoredUser,
   registerMock,
 } from "../services/auth.service";
-import { syncAuthUserToDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
-import type { LoginCredentials, RegisterCredentials } from "../types";
+import { WOODY_AUTH_LOGOUT_EVENT } from "../authSessionCleanup";
+import { SessionBootstrapSplash } from "../components/SessionBootstrapSplash";
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  /** `true` apenas até a primeira validação de sessão (`/users/me`) terminar. */
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
@@ -26,15 +27,30 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readInitialAuthUser(): AuthUser | null {
-  const u = getAuthUser();
-  if (u) syncAuthUserToDisplayPatch(u);
-  return u;
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(readInitialAuthUser);
-  const isLoading = false;
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const onRemoteLogout = () => setUser(null);
+    window.addEventListener(WOODY_AUTH_LOGOUT_EVENT, onRemoteLogout);
+    return () => window.removeEventListener(WOODY_AUTH_LOGOUT_EVENT, onRemoteLogout);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const u = await bootstrapAuthSession();
+        if (!cancelled) setUser(u);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const u = await loginMock(credentials);
@@ -63,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextValue = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated: Boolean(user),
     isLoading,
     login,
     register,
@@ -73,7 +89,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={value}>
+      {isLoading ? <SessionBootstrapSplash /> : children}
+    </AuthContext.Provider>
   );
 }
 

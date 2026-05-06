@@ -1,6 +1,7 @@
 import { startTransition, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { SessionBootstrapSplash } from "../components/SessionBootstrapSplash";
 
 const INTRO_DURATION_MS = 2200;
 
@@ -25,11 +26,7 @@ export function IntroPage() {
   }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-white" aria-live="polite" aria-busy="true">
-        <p className="text-[var(--woody-text)]">Carregando...</p>
-      </main>
-    );
+    return <SessionBootstrapSplash />;
   }
 
   if (isAuthenticated) {

@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { SessionBootstrapSplash } from "@/features/auth/components/SessionBootstrapSplash";
 
 export interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,15 +14,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
 
   if (isLoading) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center bg-[var(--woody-bg)]"
-        aria-live="polite"
-        aria-busy="true"
-      >
-        <p className="text-[var(--woody-muted)]">Carregando...</p>
-      </div>
-    );
+    return <SessionBootstrapSplash />;
   }
 
   if (!isAuthenticated) {

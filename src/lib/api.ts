@@ -1,5 +1,6 @@
 import axios from "axios";
 import { AUTH_TOKEN_KEY } from "@/features/auth/constants";
+import { clearAuthPersistence, dispatchAuthLogoutEvent } from "@/features/auth/authSessionCleanup";
 
 /**
  * Base da API: sempre termina em `/api` (prefixo dos controllers ASP.NET).
@@ -74,6 +75,17 @@ export function setStoredToken(token: string | null): void {
   else localStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
+function normalizeRequestPath(url: string | undefined): string {
+  if (!url) return "";
+  return url.split("?")[0].replace(/^\/+/, "").toLowerCase();
+}
+
+/** Não disparar limpeza global em falhas de credenciais no formulário de login/registo. */
+function isAuthCredentialsRequest(url: string | undefined): boolean {
+  const path = normalizeRequestPath(url);
+  return path === "auth/login" || path === "auth/register";
+}
+
 api.interceptors.request.use((config) => {
   // Caminhos com "/" inicial são tratados como absolutos à raiz do host e removem o `/api` do baseURL.
   // Usar caminhos relativos ao baseURL garante `.../api/Auth/login`, `.../api/posts/...`, etc.
@@ -87,6 +99,21 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (!axios.isAxiosError(err)) return Promise.reject(err);
+    const status = err.response?.status;
+    if (status !== 401) return Promise.reject(err);
+    if (isAuthCredentialsRequest(err.config?.url)) return Promise.reject(err);
+    if (getStoredToken()) {
+      clearAuthPersistence();
+      dispatchAuthLogoutEvent();
+    }
+    return Promise.reject(err);
+  }
+);
 
 /** Extrai texto útil de corpos JSON da API (incl. ProblemDetails do ASP.NET). */
 export function getMessageFromApiResponseData(data: unknown): string | null {
