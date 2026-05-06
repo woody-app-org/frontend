@@ -16,19 +16,17 @@ export interface ScrollRevealProps {
 export function ScrollReveal({ children, className, delayMs = 0, yOffset = 14, enabled = true }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = usePrefersReducedMotion();
-  const [visible, setVisible] = useState(!enabled);
+  const motionOff = !enabled || reduce;
+  const [revealedByScroll, setRevealedByScroll] = useState(false);
 
   useEffect(() => {
-    if (!enabled || reduce) {
-      setVisible(true);
-      return;
-    }
+    if (motionOff) return;
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
         if (e?.isIntersecting) {
-          setVisible(true);
+          setRevealedByScroll(true);
           io.disconnect();
         }
       },
@@ -36,12 +34,12 @@ export function ScrollReveal({ children, className, delayMs = 0, yOffset = 14, e
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [enabled, reduce]);
+  }, [motionOff]);
 
-  const motionOff = !enabled || reduce;
+  const visible = motionOff || revealedByScroll;
   const style: CSSProperties = {
-    opacity: motionOff || visible ? 1 : 0,
-    transform: motionOff || visible ? "translate3d(0,0,0)" : `translate3d(0,${yOffset}px,0)`,
+    opacity: visible ? 1 : 0,
+    transform: visible ? "translate3d(0,0,0)" : `translate3d(0,${yOffset}px,0)`,
     transition: motionOff ? "none" : "opacity 620ms cubic-bezier(0.22,1,0.36,1), transform 620ms cubic-bezier(0.22,1,0.36,1)",
     transitionDelay: motionOff || delayMs === 0 ? undefined : `${delayMs}ms`,
   };

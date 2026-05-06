@@ -163,7 +163,6 @@ export function VideoPostPlayer({
 
   if (presentation === "lightbox") {
     return (
-      // eslint-disable-next-line jsx-a11y/media-has-caption
       <video
         src={resolvedSrc}
         poster={resolvedPoster}
@@ -179,7 +178,6 @@ export function VideoPostPlayer({
 
   if (variant === "message") {
     return (
-      // eslint-disable-next-line jsx-a11y/media-has-caption
       <video
         src={resolvedSrc}
         poster={resolvedPoster}
@@ -200,7 +198,6 @@ export function VideoPostPlayer({
 
   return (
     <div className={cn(framedShell, className)}>
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <video
         src={resolvedSrc}
         poster={resolvedPoster}
