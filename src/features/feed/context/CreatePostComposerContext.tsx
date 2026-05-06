@@ -25,6 +25,8 @@ interface CreatePostComposerContextValue {
   /** Contexto fixado no último pedido de abertura (para o modal). */
   modalPublication: CreatePostModalPublication;
   registerFeedIngest: (fn: ((post: Post) => void) | null) => void;
+  /** Lista “Publicações” do perfil (quando montada) — novas publicações no perfil aparecem sem F5. */
+  registerProfilePostIngest: (fn: ((post: Post) => void) | null) => void;
   registerCommunityRefresh: (fn: (() => void) | null) => void;
   /** Chamado após POST bem-sucedido (modal usa `location.pathname`). */
   runAfterPostCreated: (post: Post, pathname: string) => void;
@@ -46,10 +48,15 @@ export function CreatePostComposerProvider({ children }: { children: ReactNode }
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [modalPublication, setModalPublication] = useState<CreatePostModalPublication>({ kind: "profile" });
   const feedIngestRef = useRef<((post: Post) => void) | null>(null);
+  const profilePostIngestRef = useRef<((post: Post) => void) | null>(null);
   const communityRefreshRef = useRef<(() => void) | null>(null);
 
   const registerFeedIngest = useCallback((fn: ((post: Post) => void) | null) => {
     feedIngestRef.current = fn;
+  }, []);
+
+  const registerProfilePostIngest = useCallback((fn: ((post: Post) => void) | null) => {
+    profilePostIngestRef.current = fn;
   }, []);
 
   const registerCommunityRefresh = useCallback((fn: (() => void) | null) => {
@@ -67,6 +74,9 @@ export function CreatePostComposerProvider({ children }: { children: ReactNode }
 
   const runAfterPostCreated = useCallback((post: Post, pathname: string) => {
     const p = pathWithoutQuery(pathname);
+    if (post.publicationContext === "profile") {
+      profilePostIngestRef.current?.(post);
+    }
     if (p === "/feed") {
       feedIngestRef.current?.(post);
     }
@@ -84,6 +94,7 @@ export function CreatePostComposerProvider({ children }: { children: ReactNode }
       setCreatePostOpen,
       modalPublication,
       registerFeedIngest,
+      registerProfilePostIngest,
       registerCommunityRefresh,
       runAfterPostCreated,
     }),
@@ -93,6 +104,7 @@ export function CreatePostComposerProvider({ children }: { children: ReactNode }
       openCreatePostModal,
       pageComposerCommunity,
       registerFeedIngest,
+      registerProfilePostIngest,
       registerCommunityRefresh,
       runAfterPostCreated,
     ]

@@ -88,6 +88,8 @@ export interface UseUserProfileReturn {
   /** Atualiza um post na lista local (edição mock). */
   updatePostInList: (post: Post) => void;
   removePostFromList: (postId: string) => void;
+  /** Insere no topo após criar publicação no perfil (evita F5). */
+  prependCreatedProfilePost: (post: Post) => void;
   /** Alterna fixação no perfil (só para a própria autora no próprio perfil). */
   toggleProfilePin: (post: Post) => Promise<void>;
   pinningPostId: string | null;

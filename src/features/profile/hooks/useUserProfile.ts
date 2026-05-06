@@ -84,6 +84,19 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     setPinnedPosts((prev) => prev.filter((p) => p.id !== postId));
   }, []);
 
+  const prependCreatedProfilePost = useCallback(
+    (post: Post) => {
+      if (!userId) return;
+      if (post.publicationContext !== "profile") return;
+      if (post.author.id !== userId) return;
+      setPosts((prev) => {
+        if (prev.some((p) => p.id === post.id)) return prev;
+        return [post, ...prev];
+      });
+    },
+    [userId]
+  );
+
   const toggleProfilePin = useCallback(
     async (post: Post) => {
       const wasPinned = Boolean(post.pinnedOnProfileAt);
@@ -137,6 +150,7 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     refetch,
     updatePostInList,
     removePostFromList,
+    prependCreatedProfilePost,
     toggleProfilePin,
     pinningPostId,
     applyFollowPatch,

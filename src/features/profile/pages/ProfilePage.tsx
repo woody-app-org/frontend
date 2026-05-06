@@ -2,6 +2,7 @@ import { startTransition, useCallback, useEffect, useState, type ReactNode } fro
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Activity, Bookmark } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
+import { useCreatePostComposer } from "@/features/feed/context/CreatePostComposerContext";
 import { FeedErrorState } from "@/features/feed/components/FeedErrorState";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { FollowProfileButton } from "../components/FollowProfileButton";
@@ -60,7 +61,7 @@ function ProfileEmptyTab({
   );
 }
 
-export function ProfilePage() {
+function ProfilePageInner() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -83,13 +84,20 @@ export function ProfilePage() {
     refetch,
     updatePostInList,
     removePostFromList,
+    prependCreatedProfilePost,
     toggleProfilePin,
     pinningPostId,
     applyFollowPatch,
     togglePostLike,
     isPostLikePending,
   } = useUserProfile(userId);
+  const { registerProfilePostIngest } = useCreatePostComposer();
   const { isOwnProfile } = useProfilePermissions(userId);
+
+  useEffect(() => {
+    registerProfilePostIngest(prependCreatedProfilePost);
+    return () => registerProfilePostIngest(null);
+  }, [registerProfilePostIngest, prependCreatedProfilePost]);
 
   const { unreadCount: unreadSignalsCount } = useProfileSignalsUnreadCount(
     Boolean(isOwnProfile && authUser?.id)
@@ -165,13 +173,12 @@ export function ProfilePage() {
   const activeTab = !isOwnProfile && tab === "signals" ? "posts" : tab;
 
   return (
-    <FeedLayout>
-      <div
-        className={cn(
-          "flex flex-col flex-1 w-full max-w-4xl mx-auto pb-16 md:pb-6",
-          woodyLayout.pagePad
-        )}
-      >
+    <div
+      className={cn(
+        "flex flex-col flex-1 w-full max-w-4xl mx-auto pb-16 md:pb-6",
+        woodyLayout.pagePad
+      )}
+    >
         {isLoading && <ProfileSkeleton />}
 
         {!isLoading && error && <FeedErrorState message={error.message} onRetry={refetch} />}
@@ -358,6 +365,13 @@ export function ProfilePage() {
           </div>
         )}
       </div>
+  );
+}
+
+export function ProfilePage() {
+  return (
+    <FeedLayout>
+      <ProfilePageInner />
     </FeedLayout>
   );
 }
