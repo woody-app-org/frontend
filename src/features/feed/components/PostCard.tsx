@@ -21,6 +21,10 @@ import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { PostLikeIcon } from "./PostLikeIcon";
 import { usePostLikeTapAnimation } from "../hooks/usePostLikeTapAnimation";
 import { buildPostDetailNavState } from "../lib/postDetailNavState";
+import {
+  isBackgroundNavigationSuppressed,
+  isWoodyModalDialogOpen,
+} from "@/lib/modalBackgroundNavSuppress";
 
 // --- Helpers ---
 
@@ -163,6 +167,7 @@ export function PostCard({
       ignoreNextCardClickRef.current = false;
       return;
     }
+    if (isBackgroundNavigationSuppressed() || isWoodyModalDialogOpen()) return;
     const target = event.target as HTMLElement;
     if (target.closest("a,button,[data-post-ignore-open='true']")) return;
     openPost();
@@ -170,6 +175,17 @@ export function PostCard({
 
   const handleCardKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key !== "Enter" && event.key !== " ") return;
+    // Conteúdo em portal (ex.: Editar publicação) propaga keydown na árvore React até ao Card;
+    // não chamar preventDefault antes destes guardas — senão o espaço nunca chega ao input/textarea.
+    if (isBackgroundNavigationSuppressed() || isWoodyModalDialogOpen()) return;
+
+    const rawTarget = event.target;
+    if (rawTarget instanceof HTMLElement) {
+      const tag = rawTarget.tagName.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select" || rawTarget.isContentEditable) return;
+      if (rawTarget.closest('[role="dialog"]') || rawTarget.closest('[data-slot="dialog-content"]')) return;
+    }
+
     event.preventDefault();
     openPost();
   };

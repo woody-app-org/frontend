@@ -4,6 +4,7 @@ import * as React from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
+import { suppressBackgroundNavigationAfterModalPointerDownOutside } from "@/lib/modalBackgroundNavSuppress";
 
 function Dialog(props: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -36,7 +37,11 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
   );
 }
 
-function DialogContent({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) {
+function DialogContent({
+  className,
+  onPointerDownOutside,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Content>) {
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -52,6 +57,12 @@ function DialogContent({ className, ...props }: React.ComponentProps<typeof Dial
           "focus:outline-none",
           className
         )}
+        onPointerDownOutside={(event) => {
+          onPointerDownOutside?.(event);
+          if (!event.defaultPrevented) {
+            suppressBackgroundNavigationAfterModalPointerDownOutside();
+          }
+        }}
         {...props}
       />
     </DialogPortal>

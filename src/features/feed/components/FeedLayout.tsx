@@ -125,8 +125,11 @@ function FeedLayoutShell({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!mq.matches) return;
       if (!isScrollKey(e.key)) return;
-      if (isEditableElement(document.activeElement)) return;
-      if (isInsideDialogLayer(document.activeElement)) return;
+      // Capture: usar `e.target` e activeElement — no diálogo o foco pode estar no painel
+      // (`role="dialog"`) enquanto o evento alvo é o `input`/`textarea`; só checar
+      // activeElement fazia `preventDefault` no Espaço e impedia espaços no texto.
+      if (isEditableElement(e.target) || isEditableElement(document.activeElement)) return;
+      if (isInsideDialogLayer(e.target) || isInsideDialogLayer(document.activeElement)) return;
 
       const wrapper = scrollWrapperRef.current;
       if (!wrapper) return;
