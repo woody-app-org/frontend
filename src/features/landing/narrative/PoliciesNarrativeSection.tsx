@@ -8,6 +8,7 @@ import { InstitutionalBackLink } from "../institutional/components/Institutional
 import { InstitutionalPolicyCard } from "../institutional/components/InstitutionalPolicyCard";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 import { ScrollReveal } from "../motion/ScrollReveal";
+import { Link } from "react-router-dom";
 
 export interface PoliciesNarrativeSectionProps {
   embedInLanding?: boolean;
@@ -65,6 +66,23 @@ export function PoliciesNarrativeSection({ embedInLanding = false }: PoliciesNar
             </ScrollReveal>
           ))}
         </div>
+
+        <ScrollReveal enabled={motion} delayMs={450} yOffset={12} className="mt-14 max-w-3xl">
+          <div className="rounded-[1.5rem] border border-black/[0.08] bg-white/70 px-6 py-6 shadow-sm md:px-8 md:py-7">
+            <p className="font-sans text-sm font-bold uppercase tracking-[0.12em] text-[#6b7280]">Privacidade</p>
+            <p className="mt-3 font-serif text-[1.02rem] leading-relaxed text-[var(--woody-ink)]/88 md:text-[1.05rem]">
+              Como usamos o armazenamento do navegador (login, onboarding) e o que não fazemos hoje em matéria de cookies de
+              rastreamento — explicado com transparência, sem juridiquês pesado.
+            </p>
+            <Link
+              to={INSTITUTIONAL_PATHS.privacidadeCookies}
+              className="mt-5 inline-flex items-center gap-2 font-sans text-sm font-semibold text-[#3d4a28] underline-offset-4 transition-colors hover:text-[var(--woody-ink)] hover:underline"
+            >
+              Privacidade e cookies
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
+        </ScrollReveal>
       </div>
     </div>
   );

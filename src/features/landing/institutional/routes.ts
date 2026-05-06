@@ -8,5 +8,6 @@ export const INSTITUTIONAL_PATHS = {
   politicaConfidencialidade: "/institutional/politicas/confidencialidade",
   politicaAcesso: "/institutional/politicas/acesso-restritivo",
   evitarBanimento: "/institutional/politicas/evitar-banimento",
+  privacidadeCookies: "/institutional/privacidade-e-cookies",
   mobileQr: "/institutional/woody-no-celular",
 } as const;

@@ -29,6 +29,12 @@ const entries = [
   },
   {
     kicker: "05",
+    title: "Privacidade e cookies",
+    desc: "Armazenamento no navegador, API e o que pode mudar no futuro.",
+    to: INSTITUTIONAL_PATHS.privacidadeCookies,
+  },
+  {
+    kicker: "06",
     title: "Woody no celular",
     desc: "QR code para abrir no telemóvel.",
     to: INSTITUTIONAL_PATHS.mobileQr,

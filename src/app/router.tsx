@@ -29,6 +29,7 @@ import { InstitutionalHubPage } from "@/features/landing/institutional/pages/Ins
 import { MissionPage } from "@/features/landing/institutional/pages/MissionPage";
 import { MobileQrPage } from "@/features/landing/institutional/pages/MobileQrPage";
 import { PoliciesIndexPage } from "@/features/landing/institutional/pages/PoliciesIndexPage";
+import { PrivacyAndCookiesPage } from "@/features/landing/institutional/pages/PrivacyAndCookiesPage";
 import { PolicyDetailPage } from "@/features/landing/institutional/pages/PolicyDetailPage";
 import { RulesPage } from "@/features/landing/institutional/pages/RulesPage";
 import { WhatIsWoodyPage } from "@/features/landing/institutional/pages/WhatIsWoodyPage";
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
           { path: "regras-e-comportamento", element: <RulesPage /> },
           { path: "politicas", element: <PoliciesIndexPage /> },
           { path: "politicas/:slug", element: <PolicyDetailPage /> },
+          { path: "privacidade-e-cookies", element: <PrivacyAndCookiesPage /> },
           { path: "woody-no-celular", element: <MobileQrPage /> },
         ],
       },

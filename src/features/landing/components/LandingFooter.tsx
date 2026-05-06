@@ -106,6 +106,22 @@ export function LandingFooter() {
                 </li>
                 <li>
                   <Link
+                    to={INSTITUTIONAL_PATHS.regras}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Regras e comportamento
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.privacidadeCookies}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Privacidade e cookies
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to={INSTITUTIONAL_PATHS.politicaConfidencialidade}
                     className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
