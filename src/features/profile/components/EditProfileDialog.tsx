@@ -15,7 +15,9 @@ import { cn } from "@/lib/utils";
 import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import type { InterestTag, UserProfile } from "../types";
 import { updateProfile, validateProfileUpdatePayload } from "../services/profile.service";
-import { showSuccessToast } from "@/lib/toast";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { ImageCropDialog } from "@/components/media/ImageCropDialog";
+import { uploadImageMedia } from "@/lib/mediaUpload";
 
 const inputClass =
   "rounded-xl border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] " +
@@ -84,6 +86,8 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const [interestsRaw, setInterestsRaw] = useState(interestsToField(profile.interests));
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl);
   const [bannerUrl, setBannerUrl] = useState<string | null>(profile.bannerUrl);
+  const [avatarCropOpen, setAvatarCropOpen] = useState(false);
+  const [avatarCropSrc, setAvatarCropSrc] = useState<string | null>(null);
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -110,27 +114,53 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     setSubmitError(null);
   }, [open]);
 
-  const handleAvatarFile = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      e.target.value = "";
-      if (!file || !file.type.startsWith("image/")) {
-        setSubmitError("Selecione uma imagem válida.");
-        return;
-      }
-      if (file.size > fileMaxBytes) {
-        setSubmitError("Imagem muito grande (máx. ~2,5 MB neste mock).");
-        return;
-      }
+  const dismissAvatarCrop = useCallback(() => {
+    setAvatarCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setAvatarCropOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!open) dismissAvatarCrop();
+  }, [open, dismissAvatarCrop]);
+
+  const handleAvatarFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !file.type.startsWith("image/")) {
+      setSubmitError("Selecione uma imagem válida.");
+      return;
+    }
+    if (file.size > fileMaxBytes) {
+      setSubmitError("Imagem muito grande (máx. ~2,5 MB).");
+      return;
+    }
+    setSubmitError(null);
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarCropSrc(objectUrl);
+    setAvatarCropOpen(true);
+  }, []);
+
+  const handleAvatarCropConfirm = useCallback(
+    async (file: File) => {
       try {
-        const url = await readFileAsDataUrl(file);
-        setAvatarUrl(url);
-        setSubmitError(null);
-      } catch {
-        setSubmitError("Não foi possível carregar a foto.");
+        const uploaded = await uploadImageMedia(file, {
+          scope: "post",
+          publicationContext: "profile",
+        });
+        setAvatarUrl(uploaded.url);
+        dismissAvatarCrop();
+      } catch (err) {
+        showErrorToast(
+          err instanceof Error ? err.message : "Não foi possível enviar a foto. Tente novamente.",
+          { id: "woody-profile-avatar-upload" }
+        );
+        throw err;
       }
     },
-    []
+    [dismissAvatarCrop]
   );
 
   const handleBannerFile = useCallback(
@@ -211,6 +241,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   );
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
@@ -315,7 +346,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
               </Button>
             </div>
             <p className="text-center text-xs text-[var(--woody-muted)] sm:mt-2 sm:flex-1 sm:text-left">
-              PNG ou JPG até ~2,5 MB. A imagem é convertida para pré-visualização local (mock).
+              PNG ou JPG até ~2,5 MB. Você ajusta o enquadramento e enviamos a foto de forma segura para o servidor.
             </p>
           </div>
 
@@ -452,5 +483,21 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
         </form>
       </DialogContent>
     </Dialog>
+
+    <ImageCropDialog
+      open={avatarCropOpen}
+      onOpenChange={(next) => {
+        if (!next) dismissAvatarCrop();
+        else setAvatarCropOpen(true);
+      }}
+      imageSrc={avatarCropSrc}
+      title="Ajustar foto"
+      description="Escolha o enquadramento que aparecerá no seu perfil."
+      cropShape="round"
+      aspect={1}
+      outputSize={512}
+      onConfirm={handleAvatarCropConfirm}
+    />
+    </>
   );
 }
