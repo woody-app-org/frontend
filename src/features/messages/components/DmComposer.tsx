@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, Plus, Send, Smile, SmilePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
@@ -74,6 +74,7 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
   const fileRef = useRef<HTMLInputElement>(null);
   const stickerRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const composerShellRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState("");
   const [staged, setStaged] = useState<StagedRow[]>([]);
   const [busy, setBusy] = useState(false);
@@ -116,6 +117,41 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
     if (!mq.matches || !becameExpanded) return;
     onMobileComposerExpand?.();
   }, [isExpanded, onMobileComposerExpand]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    let t: ReturnType<typeof setTimeout> | null = null;
+    let lastHeight = vv.height;
+    const onViewportChange = () => {
+      if (!mq.matches) return;
+      const dh = Math.abs(vv.height - lastHeight);
+      lastHeight = vv.height;
+      if (dh < 56) return;
+      if (t != null) clearTimeout(t);
+      t = setTimeout(() => {
+        t = null;
+        onMobileComposerExpand?.();
+      }, 72);
+    };
+    vv.addEventListener("resize", onViewportChange);
+    vv.addEventListener("scroll", onViewportChange);
+    return () => {
+      vv.removeEventListener("resize", onViewportChange);
+      vv.removeEventListener("scroll", onViewportChange);
+      if (t != null) clearTimeout(t);
+    };
+  }, [onMobileComposerExpand]);
+
+  const scrollComposerIntoViewMobile = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    window.requestAnimationFrame(() => {
+      composerShellRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+  }, []);
 
   const uploadCtx = { scope: "message" as const, conversationId: String(conversationId) };
 
@@ -486,23 +522,32 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
 
   return (
     <div
+      ref={composerShellRef}
       className={cn(
-        "shrink-0 border-t border-[var(--woody-divider)] bg-[var(--woody-header)]/40 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none",
-        "transition-[padding] duration-200 ease-out",
-        "md:p-3 md:pb-3",
-        "max-md:px-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]",
-        isExpanded ? "max-md:pt-3" : "max-md:pt-2"
+        "shrink-0 border-t border-[var(--woody-divider)] backdrop-blur-sm md:bg-transparent md:backdrop-blur-none",
+        "transition-[padding,background-color] duration-[220ms] ease-out",
+        "md:border-t md:border-[var(--woody-divider)] md:p-3 md:pb-3",
+        "max-md:border-[var(--woody-divider)]/80 max-md:bg-[var(--woody-card)]/[0.93] max-md:shadow-[0_-8px_32px_rgba(15,15,15,0.045)] max-md:backdrop-blur-md",
+        "max-md:ps-[max(0.75rem,env(safe-area-inset-left))] max-md:pe-[max(0.75rem,env(safe-area-inset-right))] max-md:pb-[max(0.625rem,env(safe-area-inset-bottom))]",
+        isExpanded ? "max-md:pt-3.5" : "max-md:pt-2.5"
       )}
     >
       {sendError ? (
-        <p className="mb-2 text-xs text-red-600 transition-opacity duration-200 ease-out">{sendError}</p>
+        <div
+          role="alert"
+          className={cn(
+            "mb-2 rounded-xl border border-red-300/55 bg-red-500/[0.07] px-3 py-2 md:mb-2.5",
+            "transition-opacity duration-200 ease-out dark:border-red-400/35 dark:bg-red-500/10"
+          )}
+        >
+          <p className="text-xs font-medium leading-snug text-red-800 dark:text-red-100">{sendError}</p>
+        </div>
       ) : null}
 
       <div
         className={cn(
-          "flex flex-col transition-[gap] duration-200 ease-out",
-          "gap-2 md:gap-2",
-          isExpanded ? "max-md:gap-2" : "max-md:gap-1.5"
+          "flex flex-col transition-[gap] duration-[220ms] ease-out md:gap-2",
+          isExpanded ? "max-md:gap-2.5" : "max-md:gap-1.5"
         )}
       >
         <MessageMediaPreview
@@ -514,9 +559,9 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
         <div
           className={cn(
             "flex flex-col md:flex-row md:items-end",
-            "transition-[gap] duration-200 ease-out",
+            "transition-[gap] duration-[220ms] ease-out",
             "gap-2 md:gap-2",
-            isExpanded ? "max-md:gap-2.5" : "max-md:gap-1.5"
+            isExpanded ? "max-md:gap-2.5" : "max-md:gap-2"
           )}
         >
           <div className="hidden shrink-0 md:block">
@@ -543,10 +588,10 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
           />
           <div
             className={cn(
-              "flex min-w-0 flex-1 max-md:items-end",
-              "transition-[gap] duration-200 ease-out",
+              "flex min-w-0 flex-1",
+              "transition-[gap] duration-[220ms] ease-out",
               "gap-2",
-              isExpanded ? "max-md:gap-2.5" : "max-md:gap-1.5"
+              isExpanded ? "max-md:items-end max-md:gap-2.5" : "max-md:items-center max-md:gap-2"
             )}
           >
             <div className="shrink-0 md:hidden">
@@ -562,30 +607,38 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
                     aria-haspopup="menu"
                     aria-expanded={actionsMenuOpen}
                     className={cn(
-                      "border-[var(--woody-divider)] bg-[var(--woody-card)]",
-                      "transition-[width,height,min-height,min-width] duration-200 ease-out",
+                      "rounded-full border-[var(--woody-divider)]/90 bg-[var(--woody-card)] shadow-sm",
+                      "transition-[width,height,box-shadow] duration-[220ms] ease-out",
+                      "hover:bg-[var(--woody-bg)] active:bg-[var(--woody-nav)]/[0.07]",
+                      actionsMenuOpen && "border-[var(--woody-nav)]/35 ring-2 ring-[var(--woody-nav)]/25",
                       !isExpanded ? "size-10" : "size-11"
                     )}
                   >
-                    <Plus className="size-5 text-[var(--woody-nav)]" strokeWidth={2.25} />
+                    <Plus className="size-[1.15rem] text-[var(--woody-nav)]" strokeWidth={2.5} />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
                   side="top"
                   align="start"
-                  sideOffset={10}
+                  sideOffset={12}
                   collisionPadding={16}
-                  className="z-[90] w-[min(calc(100vw-2rem),17.5rem)] p-1.5 shadow-xl"
+                  className={cn(
+                    "z-[90] w-[min(calc(100vw-2rem),18rem)] max-w-[min(calc(100vw-2rem),18rem)] overflow-hidden border-[var(--woody-divider)] bg-[var(--woody-card)] p-1.5 shadow-xl ring-1 ring-black/[0.035]",
+                    "data-[state=open]:animate-in data-[state=closed]:animate-out",
+                    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+                    "data-[state=open]:zoom-in-100 data-[state=closed]:zoom-out-100",
+                    "data-[state=open]:duration-200 data-[state=closed]:duration-150 data-[state=open]:ease-out data-[state=closed]:ease-out"
+                  )}
                 >
-                  <div role="menu" aria-label="Anexos e extras" className="flex flex-col gap-0.5">
+                  <div role="menu" aria-label="Anexos e extras" className="flex flex-col gap-1 py-0.5">
                     <button
                       type="button"
                       role="menuitem"
                       disabled={blocked || attachmentSlotsFull}
                       className={cn(
                         woodyFocus.ring,
-                        "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-[var(--woody-text)]",
-                        "transition-colors hover:bg-[var(--woody-nav)]/10",
+                        "flex min-h-[3rem] w-full touch-manipulation items-center gap-3.5 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[var(--woody-text)]",
+                        "transition-colors duration-150 ease-out hover:bg-[var(--woody-nav)]/[0.08] active:bg-[var(--woody-nav)]/13",
                         "disabled:pointer-events-none disabled:opacity-45"
                       )}
                       onClick={() =>
@@ -594,13 +647,13 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
                         })
                       }
                     >
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--woody-nav)]/12">
-                        <ImagePlus className="size-[1.15rem] text-[var(--woody-nav)]" aria-hidden />
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--woody-nav)]/[0.11] ring-1 ring-[var(--woody-divider)]/40">
+                        <ImagePlus className="size-[1.2rem] text-[var(--woody-nav)]" aria-hidden strokeWidth={2} />
                       </span>
                       <span className="min-w-0 flex-1 leading-snug">
-                        <span className="block">Foto ou vídeo</span>
-                        <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
-                          Da galeria ou câmara
+                        <span className="block tracking-tight">Foto ou vídeo</span>
+                        <span className="mt-0.5 block text-[0.7rem] font-normal leading-snug text-[var(--woody-muted)]">
+                          Galeria ou câmara
                         </span>
                       </span>
                     </button>
@@ -610,8 +663,8 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
                       disabled={busy || disabled || attachmentSlotsFull}
                       className={cn(
                         woodyFocus.ring,
-                        "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-[var(--woody-text)]",
-                        "transition-colors hover:bg-[var(--woody-nav)]/10",
+                        "flex min-h-[3rem] w-full touch-manipulation items-center gap-3.5 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[var(--woody-text)]",
+                        "transition-colors duration-150 ease-out hover:bg-[var(--woody-nav)]/[0.08] active:bg-[var(--woody-nav)]/13",
                         "disabled:pointer-events-none disabled:opacity-45"
                       )}
                       onClick={() =>
@@ -620,13 +673,13 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
                         })
                       }
                     >
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--woody-nav)]/12">
-                        <SmilePlus className="size-[1.15rem] text-[var(--woody-nav)]" aria-hidden />
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--woody-nav)]/[0.11] ring-1 ring-[var(--woody-divider)]/40">
+                        <SmilePlus className="size-[1.2rem] text-[var(--woody-nav)]" aria-hidden strokeWidth={2} />
                       </span>
                       <span className="min-w-0 flex-1 leading-snug">
-                        <span className="block">GIF e stickers</span>
-                        <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
-                          Pesquisar ou ficheiro local
+                        <span className="block tracking-tight">GIF e stickers</span>
+                        <span className="mt-0.5 block text-[0.7rem] font-normal leading-snug text-[var(--woody-muted)]">
+                          Catálogo ou ficheiro local
                         </span>
                       </span>
                     </button>
@@ -636,23 +689,24 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
                       disabled={blocked}
                       className={cn(
                         woodyFocus.ring,
-                        "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-[var(--woody-text)]",
-                        "transition-colors hover:bg-[var(--woody-nav)]/10",
+                        "flex min-h-[3rem] w-full touch-manipulation items-center gap-3.5 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-[var(--woody-text)]",
+                        "transition-colors duration-150 ease-out hover:bg-[var(--woody-nav)]/[0.08] active:bg-[var(--woody-nav)]/13",
                         "disabled:pointer-events-none disabled:opacity-45"
                       )}
                       onClick={() =>
                         scheduleAfterActionsMenuClose(() => {
                           textareaRef.current?.focus();
+                          scrollComposerIntoViewMobile();
                         })
                       }
                     >
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--woody-nav)]/12">
-                        <Smile className="size-[1.15rem] text-[var(--woody-nav)]" aria-hidden />
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--woody-nav)]/[0.11] ring-1 ring-[var(--woody-divider)]/40">
+                        <Smile className="size-[1.2rem] text-[var(--woody-nav)]" aria-hidden strokeWidth={2} />
                       </span>
                       <span className="min-w-0 flex-1 leading-snug">
-                        <span className="block">Emoji</span>
-                        <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
-                          Abre o teclado do sistema
+                        <span className="block tracking-tight">Emoji</span>
+                        <span className="mt-0.5 block text-[0.7rem] font-normal leading-snug text-[var(--woody-muted)]">
+                          Teclado do sistema
                         </span>
                       </span>
                     </button>
@@ -682,7 +736,10 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
                 setDraft(e.target.value);
                 if (sendError) setSendError(null);
               }}
-              onFocus={() => setTextareaFocused(true)}
+              onFocus={() => {
+                setTextareaFocused(true);
+                scrollComposerIntoViewMobile();
+              }}
               onBlur={() => setTextareaFocused(false)}
               placeholder="Mensagem…"
               maxLength={DM_MESSAGE_BODY_MAX_LENGTH}
@@ -690,10 +747,11 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
               disabled={blocked}
               className={cn(
                 "flex-1 resize-none touch-manipulation min-h-[44px] md:min-h-0",
-                "transition-[min-height,max-height,padding,border-radius] duration-200 ease-out",
+                "transition-[min-height,max-height,padding,border-radius,box-shadow] duration-[220ms] ease-out",
+                "max-md:text-base md:text-sm",
                 isExpanded
-                  ? "max-md:min-h-[5rem] max-md:max-h-32 max-md:rounded-2xl max-md:border max-md:border-[var(--woody-divider)] max-md:bg-[var(--woody-card)] max-md:px-3.5 max-md:py-2.5"
-                  : "max-md:min-h-[2.5rem] max-md:max-h-[2.75rem] max-md:rounded-full max-md:border max-md:border-[var(--woody-divider)] max-md:bg-[var(--woody-card)] max-md:px-4 max-md:py-2 max-md:leading-snug"
+                  ? "max-md:min-h-[5.25rem] max-md:max-h-32 max-md:rounded-[1.125rem] max-md:border max-md:border-[var(--woody-divider)]/90 max-md:bg-[var(--woody-card)] max-md:px-3.5 max-md:py-3 max-md:leading-relaxed max-md:shadow-sm max-md:placeholder:text-[var(--woody-muted)]/80"
+                  : "max-md:min-h-[2.625rem] max-md:max-h-[2.875rem] max-md:rounded-full max-md:border max-md:border-[var(--woody-divider)]/85 max-md:bg-[var(--woody-card)] max-md:px-[1.05rem] max-md:py-2 max-md:leading-snug max-md:shadow-[inset_0_1px_2px_rgba(15,15,15,0.04)] max-md:placeholder:text-[var(--woody-muted)]/75"
               )}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -707,21 +765,21 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
               variant="outline"
               size="icon"
               className={cn(
-                "shrink-0 border-[var(--woody-divider)] md:hidden",
-                "transition-[opacity,box-shadow,width,height] duration-200 ease-out",
+                "shrink-0 rounded-full border-transparent md:hidden",
+                "touch-manipulation transition-[opacity,box-shadow,width,height] duration-[220ms] ease-out",
                 isExpanded && canSend
-                  ? "border-transparent bg-[var(--woody-nav)] text-white opacity-100 shadow-sm ring-2 ring-[var(--woody-nav)]/35 hover:bg-[var(--woody-nav)]/90 hover:text-white"
-                  : "bg-[var(--woody-nav)] text-white opacity-45 hover:bg-[var(--woody-nav)]/90 hover:text-white hover:opacity-80",
-                !isExpanded ? "size-10" : "size-11"
+                  ? "bg-[var(--woody-nav)] text-white opacity-100 shadow-md shadow-[color-mix(in_srgb,var(--woody-nav)_28%,transparent)] ring-2 ring-[color-mix(in_srgb,var(--woody-nav)_32%,transparent)] hover:bg-[var(--woody-nav)]/92 hover:text-white"
+                  : "bg-[var(--woody-nav)]/88 text-white opacity-[0.38] hover:bg-[var(--woody-nav)] hover:opacity-55 active:opacity-70",
+                !isExpanded ? "size-10 min-h-10 min-w-10" : "size-11 min-h-11 min-w-11"
               )}
               onClick={() => void submit()}
               disabled={!canSend || blocked}
               aria-label={busy ? "A enviar…" : "Enviar mensagem"}
             >
               {busy ? (
-                <Loader2 className="size-5 animate-spin" aria-hidden />
+                <Loader2 className="size-[1.125rem] animate-spin" aria-hidden strokeWidth={2.25} />
               ) : (
-                <Send className="size-5" />
+                <Send className="size-[1.125rem]" aria-hidden strokeWidth={2.25} />
               )}
             </Button>
           </div>
@@ -738,8 +796,9 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
       <p
         className={cn(
           "mt-1.5 text-[0.65rem] leading-snug text-[var(--woody-muted)] md:block",
-          "transition-opacity duration-200 ease-out",
-          isExpanded ? "max-md:opacity-100" : "max-md:opacity-60"
+          "transition-opacity duration-[220ms] ease-out",
+          "max-md:mt-2 max-md:text-[0.625rem] max-md:tracking-[0.02em]",
+          isExpanded ? "max-md:opacity-90" : "max-md:opacity-42"
         )}
       >
         <span className="hidden md:inline">

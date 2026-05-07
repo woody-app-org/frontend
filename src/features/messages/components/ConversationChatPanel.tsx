@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
@@ -166,9 +166,22 @@ export function ConversationChatPanel({
       ) : messagesLoadError ? (
         <div className="min-h-0 flex-1 bg-[var(--woody-bg)]/50" aria-hidden />
       ) : messages.length === 0 ? (
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-          <p className="text-sm font-medium text-[var(--woody-text)]">Ainda não há mensagens</p>
-          <p className="max-w-xs text-sm text-[var(--woody-muted)]">Envia uma mensagem ou anexa imagem, vídeo ou GIF para iniciar a conversa.</p>
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 pb-6 pt-4 text-center max-md:pb-8">
+          <div
+            className={cn(
+              "flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--woody-nav)]/[0.09] ring-1 ring-[var(--woody-divider)]/60",
+              "shadow-[0_1px_2px_rgba(15,15,15,0.04)]"
+            )}
+            aria-hidden
+          >
+            <MessagesSquare className="size-7 text-[var(--woody-nav)] opacity-90" strokeWidth={1.75} />
+          </div>
+          <div className="flex max-w-sm flex-col gap-2">
+            <p className="text-[0.9375rem] font-semibold tracking-tight text-[var(--woody-text)]">Começa a conversa</p>
+            <p className="text-sm leading-relaxed text-[var(--woody-muted)]">
+              Escreve uma mensagem em baixo ou usa o botão + para foto, vídeo, GIF ou sticker.
+            </p>
+          </div>
         </div>
       ) : (
         <DmMessageList
