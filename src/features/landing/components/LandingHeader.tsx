@@ -75,8 +75,13 @@ export function LandingHeader() {
           </Link>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-          <Button variant="ghost" size="sm" className="hidden text-[var(--woody-muted)] sm:inline-flex" asChild>
+        <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="max-sm:px-2 max-sm:text-[13px] text-[var(--woody-muted)]"
+            asChild
+          >
             <Link to="/auth/login">Entrar</Link>
           </Button>
           <Button

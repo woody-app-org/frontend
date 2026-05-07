@@ -3,7 +3,6 @@ import { mission } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
 import { InstitutionalPrimaryCta } from "../institutional/components/InstitutionalPrimaryCta";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
-import { LANDING_NARRATIVE_IDS } from "../constants";
 import { ScrollReveal } from "../motion/ScrollReveal";
 
 export interface MissionNarrativeSectionProps {
@@ -12,14 +11,6 @@ export interface MissionNarrativeSectionProps {
 
 export function MissionNarrativeSection({ embedInLanding = false }: MissionNarrativeSectionProps) {
   const [expanded, setExpanded] = useState(false);
-
-  const oQueLink = embedInLanding
-    ? ({ href: `#${LANDING_NARRATIVE_IDS.oQueEWoody}` } as const)
-    : ({ to: INSTITUTIONAL_PATHS.oQueE } as const);
-  const extraLink = embedInLanding
-    ? ({ href: `#${LANDING_NARRATIVE_IDS.politicas}` } as const)
-    : ({ to: INSTITUTIONAL_PATHS.hub } as const);
-  const extraLabel = embedInLanding ? "Políticas e QR" : "Voltar ao índice";
 
   const motion = embedInLanding;
 
@@ -63,14 +54,16 @@ export function MissionNarrativeSection({ embedInLanding = false }: MissionNarra
               </InstitutionalPrimaryCta>
             </div>
 
-            <div className="mt-14 flex flex-wrap gap-3 border-t border-black/[0.06] pt-10">
-              <InstitutionalPrimaryCta {...oQueLink} variant="dark">
-                O que é a Woody?
-              </InstitutionalPrimaryCta>
-              <InstitutionalPrimaryCta {...extraLink} variant="ghost">
-                {extraLabel}
-              </InstitutionalPrimaryCta>
-            </div>
+            {!embedInLanding ? (
+              <div className="mt-14 flex flex-wrap gap-3 border-t border-black/[0.06] pt-10">
+                <InstitutionalPrimaryCta to={INSTITUTIONAL_PATHS.oQueE} variant="dark">
+                  O que é a Woody?
+                </InstitutionalPrimaryCta>
+                <InstitutionalPrimaryCta to={INSTITUTIONAL_PATHS.hub} variant="ghost">
+                  Voltar ao índice
+                </InstitutionalPrimaryCta>
+              </div>
+            ) : null}
           </div>
         </ScrollReveal>
       </div>

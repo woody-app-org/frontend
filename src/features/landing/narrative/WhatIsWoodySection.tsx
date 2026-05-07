@@ -4,7 +4,6 @@ import { InstitutionalBackLink } from "../institutional/components/Institutional
 import { InstitutionalPrimaryCta } from "../institutional/components/InstitutionalPrimaryCta";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 import { INSTITUTIONAL_HERO_WHAT_IS_WOODY } from "../institutional/institutionalMedia";
-import { LANDING_NARRATIVE_IDS } from "../constants";
 import { ScrollReveal } from "../motion/ScrollReveal";
 import { usePrefersReducedMotion } from "../motion/usePrefersReducedMotion";
 import { useSectionParallaxY } from "../motion/useSectionParallaxY";
@@ -18,13 +17,6 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
   const sectionRef = useRef<HTMLDivElement>(null);
   const reduce = usePrefersReducedMotion();
   const parallaxY = useSectionParallaxY(sectionRef, reduce || !embedInLanding, embedInLanding ? 12 : 0);
-
-  const missaoLink = embedInLanding
-    ? ({ href: `#${LANDING_NARRATIVE_IDS.missao}` } as const)
-    : ({ to: INSTITUTIONAL_PATHS.missao } as const);
-  const regrasLink = embedInLanding
-    ? ({ href: `#${LANDING_NARRATIVE_IDS.regras}` } as const)
-    : ({ to: INSTITUTIONAL_PATHS.regras } as const);
 
   const motion = embedInLanding;
 
@@ -76,25 +68,23 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
                 </div>
               </ScrollReveal>
 
-              <ScrollReveal enabled={motion} delayMs={180} yOffset={10} className="mt-12">
-                <div className="flex flex-wrap items-center gap-4">
-                  <InstitutionalPrimaryCta
-                    {...missaoLink}
-                    variant="limeSolid"
-                    showChevron={false}
-                  >
-                    Missão principal
-                  </InstitutionalPrimaryCta>
-                  <InstitutionalPrimaryCta
-                    {...regrasLink}
-                    variant="ghost"
-                    showChevron
-                    className="!border-white/30 !bg-white/10 !text-white hover:!border-white/45 hover:!bg-white/18 focus-visible:!ring-offset-black/40"
-                  >
-                    Regras de convívio
-                  </InstitutionalPrimaryCta>
-                </div>
-              </ScrollReveal>
+              {!embedInLanding ? (
+                <ScrollReveal enabled={motion} delayMs={180} yOffset={10} className="mt-12">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <InstitutionalPrimaryCta to={INSTITUTIONAL_PATHS.missao} variant="limeSolid" showChevron={false}>
+                      Missão principal
+                    </InstitutionalPrimaryCta>
+                    <InstitutionalPrimaryCta
+                      to={INSTITUTIONAL_PATHS.regras}
+                      variant="ghost"
+                      showChevron
+                      className="!border-white/30 !bg-white/10 !text-white hover:!border-white/45 hover:!bg-white/18 focus-visible:!ring-offset-black/40"
+                    >
+                      Regras de convívio
+                    </InstitutionalPrimaryCta>
+                  </div>
+                </ScrollReveal>
+              ) : null}
             </div>
           </div>
         </div>
