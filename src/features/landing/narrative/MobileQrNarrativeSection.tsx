@@ -99,8 +99,8 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
             </div>
           </ScrollReveal>
 
-          <ScrollReveal enabled={motion} delayMs={200} yOffset={12} className="text-left lg:text-right">
-            <p className="max-w-[min(100%,17rem)] font-sans text-[clamp(1.02rem,2.28vw,2.2rem)] font-extrabold uppercase leading-[0.98] tracking-[0.1em] text-white md:max-w-[18rem] lg:ml-auto lg:max-w-[18.5rem] xl:max-w-[19.5rem]">
+          <ScrollReveal enabled={motion} delayMs={200} yOffset={12} className="text-center lg:text-right">
+            <p className="mx-auto max-w-[min(100%,19.5rem)] font-sans text-[clamp(1.12rem,2.85vw,2.28rem)] font-extrabold uppercase leading-[1.02] tracking-[0.1em] text-white md:max-w-[19rem] lg:mx-0 lg:ml-auto lg:max-w-[18.5rem] xl:max-w-[19.5rem]">
               {mobileQr.instructions}
             </p>
           </ScrollReveal>
