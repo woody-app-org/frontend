@@ -19,6 +19,7 @@ import {
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
+import { extractVideoPosterJpegBlob } from "@/lib/extractVideoPosterJpeg";
 import {
   POST_COMPOSER_IMAGE_MAX_BYTES,
   POST_COMPOSER_IMAGES_MAX_COUNT,
@@ -341,6 +342,22 @@ export function PostComposerForm({
         const dur = await readVideoDurationSeconds(videoItem.previewUrl);
         if (dur != null && dur > 0) durationSeconds = dur;
 
+        let thumbnailUrl: string | undefined;
+        try {
+          const posterBlob = await extractVideoPosterJpegBlob(videoItem.file);
+          if (posterBlob) {
+            try {
+              const posterFile = new File([posterBlob], "poster.jpg", { type: "image/jpeg" });
+              const thumbUp = await uploadImageMedia(posterFile, uploadCtx);
+              thumbnailUrl = thumbUp.url;
+            } catch {
+              /* publicação continua sem poster */
+            }
+          }
+        } catch {
+          /* falha ao gerar frame — segue sem thumbnailUrl */
+        }
+
         const uploaded = await uploadVideoMedia(videoItem.file, uploadCtx, { durationSeconds });
         const sec =
           uploaded.durationSeconds != null && Number.isFinite(uploaded.durationSeconds)
@@ -354,6 +371,7 @@ export function PostComposerForm({
             mimeType: uploaded.contentType,
             fileSize: uploaded.sizeBytes,
             ...(sec != null && sec > 0 ? { durationSeconds: Math.round(sec) } : {}),
+            ...(thumbnailUrl ? { thumbnailUrl } : {}),
           },
         ];
       } else if (imageItems.length > 0) {

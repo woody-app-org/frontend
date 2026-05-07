@@ -36,6 +36,8 @@ export type CreatePostMediaAttachmentPayload = {
   storageKey?: string;
   mimeType?: string;
   fileSize?: number;
+  /** Poster de vídeo (URL de imagem após upload). */
+  thumbnailUrl?: string;
 };
 
 function normalizeTags(raw: string): string[] {

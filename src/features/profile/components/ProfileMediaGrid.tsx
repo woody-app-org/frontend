@@ -102,7 +102,8 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
         {entries.slice(0, 12).map((entry, i) => {
           const { attachment, postContext } = entry;
           const isVideo = attachment.mediaType === "video";
-          const resolvedUrl = resolvePublicMediaUrl(attachment.thumbnailUrl ?? attachment.url);
+          const thumb = attachment.thumbnailUrl ? resolvePublicMediaUrl(attachment.thumbnailUrl) : null;
+          const videoWithoutThumb = isVideo && !attachment.thumbnailUrl;
           const siblingCount = entry.siblingAttachments.length;
 
           return (
@@ -119,13 +120,20 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
               }
               onClick={() => openLightbox(entry)}
             >
-              <img
-                src={resolvedUrl}
-                alt=""
-                className="absolute inset-0 size-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.04]"
-                loading="lazy"
-                decoding="async"
-              />
+              {videoWithoutThumb ? (
+                <div
+                  className="absolute inset-0 bg-gradient-to-br from-[var(--woody-nav)]/12 via-black/[0.06] to-[var(--woody-accent)]/10"
+                  aria-hidden
+                />
+              ) : (
+                <img
+                  src={thumb ?? resolvePublicMediaUrl(attachment.url)}
+                  alt=""
+                  className="absolute inset-0 size-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.04]"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
               {isVideo ? (
                 <span
                   className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:bg-black/30"
