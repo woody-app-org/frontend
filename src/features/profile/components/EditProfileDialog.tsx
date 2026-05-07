@@ -25,6 +25,14 @@ const inputClass =
 
 const fileMaxBytes = 2_500_000;
 
+/**
+ * Proporção da área de crop da capa, alinhada ao banner do `ProfileHeader` (faixa larga e baixa).
+ * 16:5 ≈ 3,2:1 — ponto médio entre ~3:1 e o strip panorâmico em viewports largas.
+ */
+const PROFILE_BANNER_CROP_ASPECT = 16 / 5;
+const PROFILE_BANNER_OUTPUT_W = 2000;
+const PROFILE_BANNER_OUTPUT_H = Math.round(PROFILE_BANNER_OUTPUT_W / PROFILE_BANNER_CROP_ASPECT);
+
 function getInitials(name: string): string {
   return name
     .split(" ")
@@ -56,15 +64,6 @@ function interestsToField(interests: InterestTag[]): string {
   return interests.map((i) => i.label).join(", ");
 }
 
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
-    r.readAsDataURL(file);
-  });
-}
-
 export interface EditProfileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -88,6 +87,8 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const [bannerUrl, setBannerUrl] = useState<string | null>(profile.bannerUrl);
   const [avatarCropOpen, setAvatarCropOpen] = useState(false);
   const [avatarCropSrc, setAvatarCropSrc] = useState<string | null>(null);
+  const [bannerCropOpen, setBannerCropOpen] = useState(false);
+  const [bannerCropSrc, setBannerCropSrc] = useState<string | null>(null);
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -122,9 +123,20 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     setAvatarCropOpen(false);
   }, []);
 
+  const dismissBannerCrop = useCallback(() => {
+    setBannerCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setBannerCropOpen(false);
+  }, []);
+
   useEffect(() => {
-    if (!open) dismissAvatarCrop();
-  }, [open, dismissAvatarCrop]);
+    if (!open) {
+      dismissAvatarCrop();
+      dismissBannerCrop();
+    }
+  }, [open, dismissAvatarCrop, dismissBannerCrop]);
 
   const handleAvatarFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,10 +150,11 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       return;
     }
     setSubmitError(null);
+    dismissBannerCrop();
     const objectUrl = URL.createObjectURL(file);
     setAvatarCropSrc(objectUrl);
     setAvatarCropOpen(true);
-  }, []);
+  }, [dismissBannerCrop]);
 
   const handleAvatarCropConfirm = useCallback(
     async (file: File) => {
@@ -163,8 +176,28 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     [dismissAvatarCrop]
   );
 
+  const handleBannerCropConfirm = useCallback(
+    async (file: File) => {
+      try {
+        const uploaded = await uploadImageMedia(file, {
+          scope: "post",
+          publicationContext: "profile",
+        });
+        setBannerUrl(uploaded.url);
+        dismissBannerCrop();
+      } catch (err) {
+        showErrorToast(
+          err instanceof Error ? err.message : "Não foi possível enviar a capa. Tente novamente.",
+          { id: "woody-profile-banner-upload" }
+        );
+        throw err;
+      }
+    },
+    [dismissBannerCrop]
+  );
+
   const handleBannerFile = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file || !file.type.startsWith("image/")) {
@@ -172,18 +205,16 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
         return;
       }
       if (file.size > fileMaxBytes) {
-        setSubmitError("Banner muito grande (máx. ~2,5 MB neste mock).");
+        setSubmitError("Banner muito grande (máx. ~2,5 MB).");
         return;
       }
-      try {
-        const url = await readFileAsDataUrl(file);
-        setBannerUrl(url);
-        setSubmitError(null);
-      } catch {
-        setSubmitError("Não foi possível carregar o banner.");
-      }
+      setSubmitError(null);
+      dismissAvatarCrop();
+      const objectUrl = URL.createObjectURL(file);
+      setBannerCropSrc(objectUrl);
+      setBannerCropOpen(true);
     },
-    []
+    [dismissAvatarCrop]
   );
 
   const handleSubmit = useCallback(
@@ -313,6 +344,9 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                   </Button>
                 ) : null}
               </div>
+              <p className="border-t border-[var(--woody-accent)]/5 px-3 pb-3 pt-2 text-xs text-[var(--woody-muted)]">
+                PNG ou JPG até ~2,5 MB. Ajuste o enquadramento panorâmico antes de enviar.
+              </p>
             </div>
           </div>
 
@@ -495,8 +529,26 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       description="Escolha o enquadramento que aparecerá no seu perfil."
       cropShape="round"
       aspect={1}
+      layout="square"
       outputSize={512}
       onConfirm={handleAvatarCropConfirm}
+    />
+
+    <ImageCropDialog
+      open={bannerCropOpen}
+      onOpenChange={(next) => {
+        if (!next) dismissBannerCrop();
+        else setBannerCropOpen(true);
+      }}
+      imageSrc={bannerCropSrc}
+      title="Ajustar capa"
+      description="Veja como a imagem ficará na faixa do seu perfil antes de guardar."
+      cropShape="rect"
+      aspect={PROFILE_BANNER_CROP_ASPECT}
+      layout="wide"
+      outputWidth={PROFILE_BANNER_OUTPUT_W}
+      outputHeight={PROFILE_BANNER_OUTPUT_H}
+      onConfirm={handleBannerCropConfirm}
     />
     </>
   );
