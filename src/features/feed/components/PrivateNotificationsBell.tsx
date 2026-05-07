@@ -86,7 +86,7 @@ export function PrivateNotificationsBell({ variant }: PrivateNotificationsBellPr
           onClick={() => setOpen(true)}
         />
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="fixed bottom-4 left-1/2 top-auto z-50 max-h-[min(88dvh,640px)] w-[calc(100vw-1rem)] max-w-[420px] -translate-x-1/2 translate-y-0 overflow-hidden rounded-2xl border-[var(--woody-divider)] bg-[var(--woody-card)] p-0 shadow-2xl ring-1 ring-black/[0.06] dark:ring-white/[0.08]">
+          <DialogContent className="fixed left-1/2 top-1/2 z-[101] max-h-[min(85dvh,560px)] w-[calc(100vw-1.5rem)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border-[var(--woody-divider)] bg-[var(--woody-card)] p-0 shadow-2xl ring-1 ring-black/[0.06] dark:ring-white/[0.08]">
             <DialogTitle className="sr-only">Notificações</DialogTitle>
             {panel}
           </DialogContent>
