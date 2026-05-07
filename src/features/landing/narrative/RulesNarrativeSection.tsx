@@ -4,7 +4,6 @@ import { InstitutionalBackLink } from "../institutional/components/Institutional
 import { InstitutionalPrimaryCta } from "../institutional/components/InstitutionalPrimaryCta";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 import { INSTITUTIONAL_HERO_NOT_ALLOWED } from "../institutional/institutionalMedia";
-import { LANDING_NARRATIVE_IDS } from "../constants";
 import { RulesHeroTitle } from "./RulesHeroTitle";
 import { ScrollReveal } from "../motion/ScrollReveal";
 import { usePrefersReducedMotion } from "../motion/usePrefersReducedMotion";
@@ -19,14 +18,6 @@ export function RulesNarrativeSection({ embedInLanding = false }: RulesNarrative
   const reduce = usePrefersReducedMotion();
   const parallaxY = useSectionParallaxY(heroRef, reduce || !embedInLanding, embedInLanding ? 14 : 0);
   const motion = embedInLanding;
-
-  const politicasLink = embedInLanding
-    ? ({ href: `#${LANDING_NARRATIVE_IDS.politicas}` } as const)
-    : ({ to: INSTITUTIONAL_PATHS.politicas } as const);
-  const extraLink = embedInLanding
-    ? ({ href: `#${LANDING_NARRATIVE_IDS.oQueEWoody}` } as const)
-    : ({ to: INSTITUTIONAL_PATHS.hub } as const);
-  const extraLabel = embedInLanding ? "Voltar ao início" : "Índice institucional";
 
   return (
     <div className="overflow-x-clip">
@@ -72,18 +63,20 @@ export function RulesNarrativeSection({ embedInLanding = false }: RulesNarrative
                   <RulesHeroTitle />
                 </h2>
               </ScrollReveal>
-              <ScrollReveal enabled={motion} delayMs={140} yOffset={10} className="mt-10 flex flex-wrap items-center justify-center gap-4">
-                <InstitutionalPrimaryCta {...politicasLink} variant="dark">
-                  Ver políticas
-                </InstitutionalPrimaryCta>
-                <InstitutionalPrimaryCta
-                  {...extraLink}
-                  variant="ghost"
-                  className="!border-white/30 !bg-white/10 !text-white hover:!border-white/45 hover:!bg-white/18 focus-visible:!ring-offset-black/40"
-                >
-                  {extraLabel}
-                </InstitutionalPrimaryCta>
-              </ScrollReveal>
+              {!embedInLanding ? (
+                <ScrollReveal enabled={motion} delayMs={140} yOffset={10} className="mt-10 flex flex-wrap items-center justify-center gap-4">
+                  <InstitutionalPrimaryCta to={INSTITUTIONAL_PATHS.politicas} variant="dark">
+                    Ver políticas
+                  </InstitutionalPrimaryCta>
+                  <InstitutionalPrimaryCta
+                    to={INSTITUTIONAL_PATHS.hub}
+                    variant="ghost"
+                    className="!border-white/30 !bg-white/10 !text-white hover:!border-white/45 hover:!bg-white/18 focus-visible:!ring-offset-black/40"
+                  >
+                    Índice institucional
+                  </InstitutionalPrimaryCta>
+                </ScrollReveal>
+              ) : null}
             </div>
           </div>
         </div>
