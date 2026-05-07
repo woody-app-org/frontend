@@ -6,6 +6,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { isBetaClosed } from "@/config/beta";
+import { getStoredBetaInviteCode } from "@/features/beta/betaInvite.storage";
 import type { OnboardingDraft } from "./types";
 import { clearOnboardingDraft, loadOnboardingDraft, saveOnboardingDraft } from "./onboarding.storage";
 
@@ -32,6 +34,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<OnboardingDraft>(() => loadOnboardingDraft());
   const [pendingProfileAvatar, setPendingProfileAvatarState] = useState<File | null>(null);
   const [pendingProfileAvatarPreviewUrl, setPendingProfileAvatarPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isBetaClosed()) return;
+    const code = getStoredBetaInviteCode();
+    if (!code) return;
+    setDraft((prev) => (prev.inviteCode ? prev : { ...prev, inviteCode: code }));
+  }, []);
 
   useEffect(() => {
     saveOnboardingDraft(draft);

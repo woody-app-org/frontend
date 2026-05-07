@@ -34,6 +34,9 @@ import { PrivacyAndCookiesPage } from "@/features/landing/institutional/pages/Pr
 import { PolicyDetailPage } from "@/features/landing/institutional/pages/PolicyDetailPage";
 import { RulesPage } from "@/features/landing/institutional/pages/RulesPage";
 import { WhatIsWoodyPage } from "@/features/landing/institutional/pages/WhatIsWoodyPage";
+import { BetaClosedGate } from "@/features/beta/components/BetaClosedGate";
+import { BetaGatePage } from "@/features/beta/pages/BetaGatePage";
+import { BetaInviteLinkPage } from "@/features/beta/pages/BetaInviteLinkPage";
 
 export const router = createBrowserRouter([
   {
@@ -45,7 +48,17 @@ export const router = createBrowserRouter([
       </AuthProvider>
     ),
     children: [
-      { index: true, element: <IntroPage /> },
+      { path: "beta", element: <BetaGatePage /> },
+      { path: "convite/:code", element: <BetaInviteLinkPage /> },
+      { path: "invite/:code", element: <BetaInviteLinkPage /> },
+      {
+        index: true,
+        element: (
+          <BetaClosedGate>
+            <IntroPage />
+          </BetaClosedGate>
+        ),
+      },
       { path: "landing", element: <LandingPage /> },
       {
         path: "institutional",
@@ -61,15 +74,31 @@ export const router = createBrowserRouter([
           { path: "woody-no-celular", element: <MobileQrPage /> },
         ],
       },
-      { path: "auth", element: <AuthEntryPage /> },
-      { path: "auth/login", element: <LoginPage /> },
+      {
+        path: "auth",
+        element: (
+          <BetaClosedGate>
+            <AuthEntryPage />
+          </BetaClosedGate>
+        ),
+      },
+      {
+        path: "auth/login",
+        element: (
+          <BetaClosedGate>
+            <LoginPage />
+          </BetaClosedGate>
+        ),
+      },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },
       {
         path: "auth/onboarding",
         element: (
-          <OnboardingProvider>
-            <OnboardingFlow />
-          </OnboardingProvider>
+          <BetaClosedGate>
+            <OnboardingProvider>
+              <OnboardingFlow />
+            </OnboardingProvider>
+          </BetaClosedGate>
         ),
         children: [
           { index: true, element: <Navigate to="1" replace /> },

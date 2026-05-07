@@ -16,6 +16,7 @@ import { mockPersistAccountStep } from "../services/onboardingActionsMock";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
+import { isBetaClosed } from "@/config/beta";
 
 /**
  * Etapa 1 — dados iniciais da conta (validação pronta para espelhar no backend).
@@ -45,7 +46,10 @@ export function OnboardingStepAccount() {
     setIsSaving(true);
     try {
       await mockPersistAccountStep(data);
-      updateDraft({ account: data });
+      updateDraft({
+        account: data,
+        ...(isBetaClosed() ? { inviteCode: draft.inviteCode?.trim() || undefined } : {}),
+      });
       goNext();
     } finally {
       setIsSaving(false);
@@ -64,6 +68,28 @@ export function OnboardingStepAccount() {
       />
 
       <form onSubmit={onSubmit} className="space-y-7 sm:space-y-8" noValidate>
+        {isBetaClosed() ? (
+          <div>
+            <p className={onboardingStyles.sectionLabel}>Convite</p>
+            <div className={onboardingStyles.sectionCard}>
+              <AuthInputField
+                label="Código de convite"
+                placeholder="O mesmo código do link ou da página de acesso"
+                type="text"
+                autoComplete="off"
+                variant="maroon"
+                hint="Necessário para criar conta neste período de lançamento."
+                valid={
+                  !!draft.inviteCode?.trim() &&
+                  (draft.inviteCode?.trim().length ?? 0) >= 4
+                }
+                value={draft.inviteCode ?? ""}
+                onChange={(e) => updateDraft({ inviteCode: e.target.value })}
+              />
+            </div>
+          </div>
+        ) : null}
+
         <div>
           <p className={onboardingStyles.sectionLabel}>Como vamos te chamar</p>
           <div className={onboardingStyles.sectionCard}>

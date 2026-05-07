@@ -12,6 +12,8 @@ import type { OnboardingAccountFormData } from "./account.validation";
  * - `joinedCommunityIds` → joins em comunidades
  */
 export type OnboardingDraft = {
+  /** Espelha convite validado (sessionStorage); enviado em POST /Auth/register como inviteCode. */
+  inviteCode?: string;
   account?: OnboardingAccountFormData;
   emailVerified?: boolean;
   /** Usuária optou por pular foto nesta sessão */

@@ -13,13 +13,18 @@ import type { OnboardingDraft } from "../types";
 export function buildRegisterCredentialsFromDraft(draft: OnboardingDraft): RegisterCredentials | null {
   const a = draft.account;
   if (!a) return null;
-  return {
+  const payload: RegisterCredentials = {
     username: a.username,
     email: a.email,
     password: a.password,
     cpf: a.cpf,
     birthDate: a.birthDate,
   };
+  const invite = draft.inviteCode?.trim();
+  if (invite) {
+    payload.inviteCode = invite;
+  }
+  return payload;
 }
 
 /** Dados normalmente sincronizados após o token de sessão existir. */

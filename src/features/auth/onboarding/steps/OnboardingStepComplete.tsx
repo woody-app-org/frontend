@@ -8,6 +8,8 @@ import { persistOnboardingCommunityJoins } from "../services/onboardingCommunity
 import { uploadImageMedia } from "@/lib/mediaUpload";
 import { updateMyAvatarFromUploadedUrl } from "@/features/profile/services/profile.service";
 import { showWarningToast } from "@/lib/toast";
+import { isBetaClosed } from "@/config/beta";
+import { clearBetaInviteSession } from "@/features/beta/betaInvite.storage";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
@@ -15,8 +17,12 @@ import { cn } from "@/lib/utils";
 /**
  * Etapa 6 — boas-vindas e conclusão (register mock + limpeza do draft).
  */
+function looksLikeInviteRejected(message: string): boolean {
+  return /convite|invite|obrigatório|inválid|invalid|expirad|expired|código|codigo/i.test(message);
+}
+
 export function OnboardingStepComplete() {
-  const { draft, resetDraft, pendingProfileAvatar } = useOnboardingDraftContext();
+  const { draft, resetDraft, pendingProfileAvatar, updateDraft } = useOnboardingDraftContext();
   const { register: registerUser, patchUser } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,15 +69,22 @@ export function OnboardingStepComplete() {
         await persistOnboardingCommunityJoins(communityIds);
       }
       resetDraft();
+      if (isBetaClosed()) {
+        clearBetaInviteSession();
+      }
       navigate("/feed", { replace: true });
     } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : "Não foi possível concluir o cadastro. Tente novamente."
-      );
+      const msg =
+        err instanceof Error ? err.message : "Não foi possível concluir o cadastro. Tente novamente.";
+      setErrorMessage(msg);
+      if (isBetaClosed() && draft.inviteCode && looksLikeInviteRejected(msg)) {
+        clearBetaInviteSession();
+        updateDraft({ inviteCode: undefined });
+      }
     } finally {
       setIsSubmitting(false);
     }
-  }, [draft, navigate, patchUser, pendingProfileAvatar, registerUser, resetDraft]);
+  }, [draft, navigate, patchUser, pendingProfileAvatar, registerUser, resetDraft, updateDraft]);
 
   if (!account) {
     return <Navigate to="/auth/onboarding/1" replace />;

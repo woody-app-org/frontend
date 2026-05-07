@@ -98,6 +98,7 @@ export async function registerMock(credentials: RegisterCredentials): Promise<Au
       cpf: credentials.cpf.trim(),
       birthDate: credentials.birthDate,
       ...(credentials.avatarUrl ? { avatarUrl: credentials.avatarUrl } : {}),
+      ...(credentials.inviteCode?.trim() ? { inviteCode: credentials.inviteCode.trim() } : {}),
     });
     setStoredToken(data.token);
     const user = mapAuthUser(data.user as AuthUser);

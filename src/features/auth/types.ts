@@ -29,6 +29,8 @@ export interface RegisterCredentials {
   birthDate: string;
   /** Opcional: URL pública após upload (ex. fluxo fora do onboarding). Não usar data URL. */
   avatarUrl?: string;
+  /** Obrigatório no servidor quando o beta fechado está ativo. */
+  inviteCode?: string;
 }
 
 export interface AuthState {
