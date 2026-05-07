@@ -7,7 +7,10 @@ export function loadOnboardingDraft(): OnboardingDraft {
     if (!raw) return {};
     const parsed = JSON.parse(raw) as unknown;
     if (!parsed || typeof parsed !== "object") return {};
-    return parsed as OnboardingDraft;
+    const d = parsed as OnboardingDraft & { profilePhotoDataUrl?: unknown };
+    const { profilePhotoDataUrl: _legacy, ...clean } = d;
+    void _legacy;
+    return clean;
   } catch {
     return {};
   }

@@ -5,6 +5,9 @@ import { useAuth } from "../../context/AuthContext";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { buildRegisterCredentialsFromDraft } from "../lib/buildOnboardingPayload";
 import { persistOnboardingCommunityJoins } from "../services/onboardingCommunityJoins.service";
+import { uploadImageMedia } from "@/lib/mediaUpload";
+import { updateMyAvatarFromUploadedUrl } from "@/features/profile/services/profile.service";
+import { showWarningToast } from "@/lib/toast";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
@@ -13,8 +16,8 @@ import { cn } from "@/lib/utils";
  * Etapa 6 — boas-vindas e conclusão (register mock + limpeza do draft).
  */
 export function OnboardingStepComplete() {
-  const { draft, resetDraft } = useOnboardingDraftContext();
-  const { register: registerUser } = useAuth();
+  const { draft, resetDraft, pendingProfileAvatar } = useOnboardingDraftContext();
+  const { register: registerUser, patchUser } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -29,7 +32,33 @@ export function OnboardingStepComplete() {
     setIsSubmitting(true);
     try {
       const communityIds = [...(draft.joinedCommunityIds ?? [])];
+      const avatarPending = pendingProfileAvatar;
       await registerUser(credentials);
+
+      if (avatarPending) {
+        try {
+          const uploaded = await uploadImageMedia(avatarPending, {
+            scope: "post",
+            publicationContext: "profile",
+          });
+          const avatarResult = await updateMyAvatarFromUploadedUrl(uploaded.url);
+          if (avatarResult.ok) {
+            const url = avatarResult.profile.avatarUrl ?? uploaded.url;
+            if (url) patchUser({ avatarUrl: url });
+          } else {
+            showWarningToast(
+              `Conta criada! Não foi possível guardar a foto (${avatarResult.error}). Atualize-a em seu perfil quando quiser.`,
+              { id: "woody-onboarding-avatar-patch", duration: 7500 }
+            );
+          }
+        } catch {
+          showWarningToast(
+            "Conta criada! A foto não foi enviada agora — você pode adicioná-la em seu perfil.",
+            { id: "woody-onboarding-avatar-upload", duration: 7500 }
+          );
+        }
+      }
+
       if (communityIds.length > 0) {
         await persistOnboardingCommunityJoins(communityIds);
       }
@@ -42,7 +71,7 @@ export function OnboardingStepComplete() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [draft, navigate, registerUser, resetDraft]);
+  }, [draft, navigate, patchUser, pendingProfileAvatar, registerUser, resetDraft]);
 
   if (!account) {
     return <Navigate to="/auth/onboarding/1" replace />;

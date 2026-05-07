@@ -27,7 +27,7 @@ export interface RegisterCredentials {
   cpf: string;
   /** ISO `YYYY-MM-DD`. */
   birthDate: string;
-  /** Opcional: data URL ou URL pública após upload. */
+  /** Opcional: URL pública após upload (ex. fluxo fora do onboarding). Não usar data URL. */
   avatarUrl?: string;
 }
 

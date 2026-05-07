@@ -89,6 +89,35 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
   }
 }
 
+/**
+ * Define o avatar após upload (`/api/media/images`): lê o perfil atual e envia PATCH completo válido.
+ */
+export async function updateMyAvatarFromUploadedUrl(
+  newAvatarUrl: string
+): Promise<UpdateProfileResult> {
+  const session = getAuthUser();
+  if (!session) {
+    return { ok: false, error: "Sessão não disponível." };
+  }
+  try {
+    const { data } = await api.get("/users/me");
+    const p = mapUserProfileFromApi(data as Record<string, unknown>);
+    return updateProfile(session.id, {
+      name: p.name,
+      username: (p.username ?? session.username).trim(),
+      bio: p.bio,
+      pronouns: p.pronouns,
+      location: p.location,
+      role: p.role,
+      avatarUrl: newAvatarUrl,
+      bannerUrl: p.bannerUrl,
+      interests: p.interests,
+    });
+  } catch (e) {
+    return { ok: false, error: getApiErrorMessage(e, "Falha ao sincronizar o avatar.") };
+  }
+}
+
 export async function getProfilePosts(
   userId: string,
   page: number,

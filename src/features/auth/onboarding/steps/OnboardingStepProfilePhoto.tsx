@@ -1,60 +1,68 @@
 import { useState, useRef, useCallback } from "react";
 import { Navigate } from "react-router-dom";
-import { Camera, ImagePlus, Loader2, X } from "lucide-react";
+import { Camera, ImagePlus, X } from "lucide-react";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
 import { ONBOARDING_MAX_IMAGE_BYTES } from "../constants";
-import { mockProcessProfileImageLocal } from "../services/onboardingActionsMock";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
-
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = () => reject(new Error("Falha ao ler arquivo"));
-    r.readAsDataURL(file);
-  });
-}
+import { ImageCropDialog } from "@/components/media/ImageCropDialog";
 
 /**
- * Etapa 3 — foto de perfil (upload local; futuro: storage + URL assinada).
+ * Etapa 3 — foto de perfil: recorte local; upload após registo com JWT (ver `OnboardingStepComplete`).
  */
 export function OnboardingStepProfilePhoto() {
-  const { draft, updateDraft } = useOnboardingDraftContext();
+  const { draft, updateDraft, pendingProfileAvatarPreviewUrl, setPendingProfileAvatar } =
+    useOnboardingDraftContext();
   const { goNext } = useOnboardingNavigation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
-  const preview = draft.profilePhotoDataUrl ?? null;
+  const preview = pendingProfileAvatarPreviewUrl ?? null;
 
-  const processFile = useCallback(
-    async (file: File | null | undefined) => {
+  const dismissCropSession = useCallback(() => {
+    setCropOpen(false);
+    setCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, []);
+
+  const openCropWithFile = useCallback((file: File) => {
+    setError(null);
+    if (!file.type.startsWith("image/")) {
+      setError("Escolha um arquivo de imagem (JPG, PNG ou WebP).");
+      return;
+    }
+    if (file.size > ONBOARDING_MAX_IMAGE_BYTES) {
+      setError("A imagem deve ter no máximo 5 MB.");
+      return;
+    }
+    dismissCropSession();
+    const url = URL.createObjectURL(file);
+    setCropSrc(url);
+    setCropOpen(true);
+  }, [dismissCropSession]);
+
+  const processPickedFile = useCallback(
+    (file: File | null | undefined) => {
       if (!file) return;
-      setError(null);
-      if (!file.type.startsWith("image/")) {
-        setError("Escolha um arquivo de imagem (JPG, PNG ou WebP).");
-        return;
-      }
-      if (file.size > ONBOARDING_MAX_IMAGE_BYTES) {
-        setError("A imagem deve ter no máximo 5 MB.");
-        return;
-      }
-      setIsLoading(true);
-      try {
-        const url = await readFileAsDataUrl(file);
-        await mockProcessProfileImageLocal(url);
-        updateDraft({ profilePhotoDataUrl: url, skippedProfilePhoto: false });
-      } catch {
-        setError("Não foi possível carregar a imagem. Tente outro arquivo.");
-      } finally {
-        setIsLoading(false);
-      }
+      openCropWithFile(file);
     },
-    [updateDraft]
+    [openCropWithFile]
+  );
+
+  const handleCropConfirm = useCallback(
+    async (croppedFile: File) => {
+      setPendingProfileAvatar(croppedFile);
+      updateDraft({ skippedProfilePhoto: false });
+      dismissCropSession();
+    },
+    [dismissCropSession, setPendingProfileAvatar, updateDraft]
   );
 
   if (!draft.account) {
@@ -63,24 +71,26 @@ export function OnboardingStepProfilePhoto() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    void processFile(f);
     e.target.value = "";
+    processPickedFile(f);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const f = e.dataTransfer.files?.[0];
-    void processFile(f);
+    processPickedFile(f);
   };
 
   const clearPhoto = () => {
-    updateDraft({ profilePhotoDataUrl: null });
+    setPendingProfileAvatar(null);
+    updateDraft({ skippedProfilePhoto: false });
     setError(null);
   };
 
   const skip = () => {
-    updateDraft({ skippedProfilePhoto: true, profilePhotoDataUrl: null });
+    setPendingProfileAvatar(null);
+    updateDraft({ skippedProfilePhoto: true });
     goNext();
   };
 
@@ -95,7 +105,7 @@ export function OnboardingStepProfilePhoto() {
         icon={Camera}
         title="Sua foto de perfil"
         lead="Uma imagem ajuda outras mulheres a te reconhecer com carinho. Você pode pular e adicionar depois."
-        trustNote="Só você escolhe quando e como aparecer. Na versão final, o upload será criptografado em trânsito."
+        trustNote="A foto é enviada com segurança depois que sua conta for criada."
       />
 
       <input
@@ -126,12 +136,7 @@ export function OnboardingStepProfilePhoto() {
           "p-6 sm:p-9 flex flex-col items-center justify-center text-center min-h-[220px] sm:min-h-[240px]"
         )}
       >
-        {isLoading ? (
-          <div className="flex flex-col items-center gap-2">
-            <Loader2 className="size-10 animate-spin text-[var(--auth-text-on-maroon)]/75" aria-hidden />
-            <p className="text-xs text-[var(--auth-text-on-maroon)]/70">Processando imagem…</p>
-          </div>
-        ) : preview ? (
+        {preview ? (
           <div className="relative w-full max-w-[220px]">
             <img
               src={preview}
@@ -187,6 +192,22 @@ export function OnboardingStepProfilePhoto() {
           Continuar
         </button>
       </div>
+
+      <ImageCropDialog
+        open={cropOpen}
+        onOpenChange={(next) => {
+          if (!next) dismissCropSession();
+          else setCropOpen(true);
+        }}
+        imageSrc={cropSrc}
+        title="Ajustar foto"
+        description="Escolha o enquadramento que aparecerá no seu perfil."
+        cropShape="round"
+        aspect={1}
+        layout="square"
+        outputSize={512}
+        onConfirm={handleCropConfirm}
+      />
     </div>
   );
 }

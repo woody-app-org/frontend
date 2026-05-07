@@ -7,7 +7,7 @@ import type { OnboardingDraft } from "../types";
  * Mapeamento sugerido para API real:
  * - Etapa 1 → `POST /auth/register` ou `POST /accounts` (username, email, password, cpf, birthDate)
  * - Etapa 2 → `POST /auth/verify-email` (já refletido em `draft.emailVerified`)
- * - Etapa 3 → `POST /users/me/avatar` (multipart) → URL pública; hoje: data URL opcional
+ * - Etapa 3 → recorte local; após registo: `POST /api/media/images` + `PATCH /users/me` com URL válida
  * - Etapas 4–5 → após sessão: `PATCH /users/me/interests`, `POST /communities/:id/join` (ver `buildDeferredOnboardingSync`)
  */
 export function buildRegisterCredentialsFromDraft(draft: OnboardingDraft): RegisterCredentials | null {
@@ -19,7 +19,6 @@ export function buildRegisterCredentialsFromDraft(draft: OnboardingDraft): Regis
     password: a.password,
     cpf: a.cpf,
     birthDate: a.birthDate,
-    avatarUrl: draft.profilePhotoDataUrl ?? undefined,
   };
 }
 
