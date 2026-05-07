@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { ScrollToTop } from "./ScrollToTop";
 import { WoodyToaster } from "@/components/ui/woody-toaster";
 import { AuthProvider } from "@/features/auth/context/AuthContext";
 import { AuthEntryPage } from "@/features/auth/pages/AuthEntryPage";
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
     element: (
       <AuthProvider>
         <WoodyToaster />
+        <ScrollToTop />
         <Outlet />
       </AuthProvider>
     ),
