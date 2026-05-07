@@ -1,8 +1,10 @@
-import { useLayoutEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2, Send, SmilePlus } from "lucide-react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { ImagePlus, Loader2, Plus, Send, Smile, SmilePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { woodyFocus } from "@/lib/woody-ui";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
@@ -71,13 +73,24 @@ function toPreviewItems(rows: StagedRow[]): MessageMediaPreviewItem[] {
 export function DmComposer({ conversationId, disabled, onSend, onMobileComposerExpand }: DmComposerProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const stickerRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [draft, setDraft] = useState("");
   const [staged, setStaged] = useState<StagedRow[]>([]);
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [stickerPickerOpen, setStickerPickerOpen] = useState(false);
+  const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
   const [textareaFocused, setTextareaFocused] = useState(false);
   const prevExpandedRef = useRef(false);
+
+  const attachmentSlotsFull = staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS;
+
+  const scheduleAfterActionsMenuClose = useCallback((action: () => void) => {
+    setActionsMenuOpen(false);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(action);
+    });
+  }, []);
 
   const hasUploading = staged.some((s) => s.status === "uploading");
   const hasReady = staged.some((s) => s.status === "ready" && s.sendUrl);
@@ -90,6 +103,7 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
       hasUploading ||
       textareaFocused ||
       stickerPickerOpen ||
+      actionsMenuOpen ||
       sendError != null
   );
 
@@ -505,22 +519,20 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
             isExpanded ? "max-md:gap-2.5" : "max-md:gap-1.5"
           )}
         >
-          <MessageMediaPicker
-            fileInputRef={fileRef}
-            accept="image/*,video/mp4,video/webm,video/quicktime"
-            multiple
-            onChange={(e) => void addFiles(e.target.files)}
-            disabled={blocked}
-            buttonDisabled={staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
-            suppressToolbarFocusSteal
-            aria-label="Anexar imagem ou vídeo"
-            buttonClassName={cn(
-              "transition-[width,height,min-height,min-width] duration-200 ease-out",
-              !isExpanded ? "max-md:size-10" : "max-md:size-11"
-            )}
-          >
-            <ImagePlus className="size-5 text-[var(--woody-nav)]" />
-          </MessageMediaPicker>
+          <div className="hidden shrink-0 md:block">
+            <MessageMediaPicker
+              fileInputRef={fileRef}
+              accept="image/*,video/mp4,video/webm,video/quicktime"
+              multiple
+              onChange={(e) => void addFiles(e.target.files)}
+              disabled={blocked}
+              buttonDisabled={attachmentSlotsFull}
+              suppressToolbarFocusSteal
+              aria-label="Anexar imagem ou vídeo"
+            >
+              <ImagePlus className="size-5 text-[var(--woody-nav)]" />
+            </MessageMediaPicker>
+          </div>
           <input
             ref={stickerRef}
             type="file"
@@ -537,17 +549,126 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
               isExpanded ? "max-md:gap-2.5" : "max-md:gap-1.5"
             )}
           >
+            <div className="shrink-0 md:hidden">
+              <Popover open={actionsMenuOpen} onOpenChange={setActionsMenuOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    disabled={blocked || attachmentSlotsFull}
+                    onMouseDown={(e) => e.preventDefault()}
+                    aria-label="Anexos e extras"
+                    aria-haspopup="menu"
+                    aria-expanded={actionsMenuOpen}
+                    className={cn(
+                      "border-[var(--woody-divider)] bg-[var(--woody-card)]",
+                      "transition-[width,height,min-height,min-width] duration-200 ease-out",
+                      !isExpanded ? "size-10" : "size-11"
+                    )}
+                  >
+                    <Plus className="size-5 text-[var(--woody-nav)]" strokeWidth={2.25} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  side="top"
+                  align="start"
+                  sideOffset={10}
+                  collisionPadding={16}
+                  className="z-[90] w-[min(calc(100vw-2rem),17.5rem)] p-1.5 shadow-xl"
+                >
+                  <div role="menu" aria-label="Anexos e extras" className="flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={blocked || attachmentSlotsFull}
+                      className={cn(
+                        woodyFocus.ring,
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-[var(--woody-text)]",
+                        "transition-colors hover:bg-[var(--woody-nav)]/10",
+                        "disabled:pointer-events-none disabled:opacity-45"
+                      )}
+                      onClick={() =>
+                        scheduleAfterActionsMenuClose(() => {
+                          fileRef.current?.click();
+                        })
+                      }
+                    >
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--woody-nav)]/12">
+                        <ImagePlus className="size-[1.15rem] text-[var(--woody-nav)]" aria-hidden />
+                      </span>
+                      <span className="min-w-0 flex-1 leading-snug">
+                        <span className="block">Foto ou vídeo</span>
+                        <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
+                          Da galeria ou câmara
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={busy || disabled || attachmentSlotsFull}
+                      className={cn(
+                        woodyFocus.ring,
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-[var(--woody-text)]",
+                        "transition-colors hover:bg-[var(--woody-nav)]/10",
+                        "disabled:pointer-events-none disabled:opacity-45"
+                      )}
+                      onClick={() =>
+                        scheduleAfterActionsMenuClose(() => {
+                          setStickerPickerOpen(true);
+                        })
+                      }
+                    >
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--woody-nav)]/12">
+                        <SmilePlus className="size-[1.15rem] text-[var(--woody-nav)]" aria-hidden />
+                      </span>
+                      <span className="min-w-0 flex-1 leading-snug">
+                        <span className="block">GIF e stickers</span>
+                        <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
+                          Pesquisar ou ficheiro local
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={blocked}
+                      className={cn(
+                        woodyFocus.ring,
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium text-[var(--woody-text)]",
+                        "transition-colors hover:bg-[var(--woody-nav)]/10",
+                        "disabled:pointer-events-none disabled:opacity-45"
+                      )}
+                      onClick={() =>
+                        scheduleAfterActionsMenuClose(() => {
+                          textareaRef.current?.focus();
+                        })
+                      }
+                    >
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--woody-nav)]/12">
+                        <Smile className="size-[1.15rem] text-[var(--woody-nav)]" aria-hidden />
+                      </span>
+                      <span className="min-w-0 flex-1 leading-snug">
+                        <span className="block">Emoji</span>
+                        <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
+                          Abre o teclado do sistema
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
             <Button
               type="button"
               variant="outline"
               size="icon"
               className={cn(
-                "shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)]",
-                "size-11 md:size-11",
-                "transition-[width,height,min-height,min-width] duration-200 ease-out",
-                !isExpanded ? "max-md:size-10" : "max-md:size-11"
+                "hidden shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)] md:inline-flex",
+                "size-11"
               )}
-              disabled={blocked || staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
+              disabled={blocked || attachmentSlotsFull}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setStickerPickerOpen(true)}
               aria-label="GIF ou sticker"
@@ -555,6 +676,7 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
               <SmilePlus className="size-5 text-[var(--woody-nav)]" />
             </Button>
             <Textarea
+              ref={textareaRef}
               value={draft}
               onChange={(e) => {
                 setDraft(e.target.value);
