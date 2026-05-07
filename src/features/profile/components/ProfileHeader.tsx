@@ -120,7 +120,7 @@ export function ProfileHeader({
                 <Pencil className="size-4 text-[var(--woody-nav)]" />
                 Editar perfil
               </Button>
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     type="button"

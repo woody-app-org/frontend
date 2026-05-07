@@ -30,16 +30,17 @@ const MAIN_GRID =
   "w-full max-w-[var(--layout-max-width)] mx-auto px-[var(--layout-gutter)] grid grid-cols-1 gap-x-0 md:gap-x-[var(--layout-gap-columns)] md:items-start";
 
 /**
- * Mobile: fluxo natural + scroll no documento (body).
- * Desktop (md+): coluna com topnav; scroll na área abaixo do header.
+ * Mobile: scroll no documento (body) — o contentor principal cresce com o conteúdo.
+ * Desktop (md+): scroll na coluna abaixo do header (`overflow-y-auto`), com altura `h-screen` no root.
  */
 const LAYOUT_ROOT =
   "min-h-screen w-full flex flex-col bg-[var(--woody-bg)] md:h-screen md:min-h-0 md:overflow-hidden";
 
 const SCROLL_COLUMN = "flex min-w-0 flex-1 flex-col min-h-0 md:min-h-0 md:bg-[var(--woody-main-surface)]";
 
+/** Desktop: área rolável; mobile: sem overflow para não roubar o gesto de scroll ao documento (Safari/WebView). */
 const SCROLL_WRAPPER =
-  "w-full flex flex-col flex-1 min-h-0 md:flex-1 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden";
+  "w-full flex flex-col flex-1 min-h-0 md:flex-1 md:min-h-0 md:overflow-y-auto md:overflow-x-hidden md:overscroll-y-contain md:[-webkit-overflow-scrolling:touch]";
 
 const SCROLL_KEYS = [" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp"] as const;
 const PAGE_SCROLL = 0.85;

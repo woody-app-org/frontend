@@ -24,6 +24,12 @@ export function ScrollToTop() {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+    /* Mesmo contentor que `FeedLayout` usa para o miolo (mobile + desktop). */
+    document.querySelector<HTMLElement>("[data-feed-scroll-root]")?.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
   }, [pathname, search, hash]);
 
   return null;

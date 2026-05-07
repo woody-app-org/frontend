@@ -62,7 +62,7 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             type="button"
