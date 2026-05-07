@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,6 +52,15 @@ export function ConversationChatPanel({
   const label = peer ? peer.displayName ?? peer.username : "Conversa";
   const [mutationHint, setMutationHint] = useState<string | null>(null);
   const composerBlocked = loadingMessages || Boolean(messagesLoadError);
+  const messagesScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollMessagesToBottom = useCallback(() => {
+    const el = messagesScrollRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    });
+  }, []);
 
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col bg-[var(--woody-bg)]">
@@ -168,10 +177,16 @@ export function ConversationChatPanel({
           onSaveEdit={onEditMessage}
           onDelete={onDeleteMessage}
           onMutationError={(msg) => setMutationHint(msg)}
+          scrollContainerRef={messagesScrollRef}
         />
       )}
 
-      <DmComposer conversationId={conversationId} disabled={composerBlocked} onSend={onSendMessage} />
+      <DmComposer
+        conversationId={conversationId}
+        disabled={composerBlocked}
+        onSend={onSendMessage}
+        onMobileComposerExpand={scrollMessagesToBottom}
+      />
     </div>
   );
 }

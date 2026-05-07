@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, Send, SmilePlus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
@@ -27,6 +28,8 @@ export interface DmComposerProps {
     attachmentUrls?: string[] | null;
     attachments?: OutgoingDmAttachment[] | null;
   }) => Promise<void>;
+  /** Lista de mensagens faz scroll suave para o fim quando o composer expande no mobile. */
+  onMobileComposerExpand?: () => void;
 }
 
 const VIDEO_MIME_OK = new Set(["video/mp4", "video/webm", "video/quicktime"]);
@@ -65,7 +68,7 @@ function toPreviewItems(rows: StagedRow[]): MessageMediaPreviewItem[] {
   }));
 }
 
-export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps) {
+export function DmComposer({ conversationId, disabled, onSend, onMobileComposerExpand }: DmComposerProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const stickerRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState("");
@@ -73,11 +76,32 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [stickerPickerOpen, setStickerPickerOpen] = useState(false);
+  const [textareaFocused, setTextareaFocused] = useState(false);
+  const prevExpandedRef = useRef(false);
 
   const hasUploading = staged.some((s) => s.status === "uploading");
   const hasReady = staged.some((s) => s.status === "ready" && s.sendUrl);
   const canSend = Boolean(draft.trim() || hasReady) && !hasUploading;
   const blocked = disabled || busy || hasUploading;
+
+  const isExpanded = Boolean(
+    draft.trim() ||
+      staged.length > 0 ||
+      hasUploading ||
+      textareaFocused ||
+      stickerPickerOpen ||
+      sendError != null
+  );
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    const wasExpanded = prevExpandedRef.current;
+    const becameExpanded = isExpanded && !wasExpanded;
+    prevExpandedRef.current = isExpanded;
+    if (!mq.matches || !becameExpanded) return;
+    onMobileComposerExpand?.();
+  }, [isExpanded, onMobileComposerExpand]);
 
   const uploadCtx = { scope: "message" as const, conversationId: String(conversationId) };
 
@@ -447,91 +471,155 @@ export function DmComposer({ conversationId, disabled, onSend }: DmComposerProps
   };
 
   return (
-    <div className="shrink-0 border-t border-[var(--woody-divider)] bg-[var(--woody-header)]/40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm md:bg-transparent md:pb-3 md:backdrop-blur-none">
-      {sendError ? <p className="mb-2 text-xs text-red-600">{sendError}</p> : null}
+    <div
+      className={cn(
+        "shrink-0 border-t border-[var(--woody-divider)] bg-[var(--woody-header)]/40 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none",
+        "transition-[padding] duration-200 ease-out",
+        "md:p-3 md:pb-3",
+        "max-md:px-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        isExpanded ? "max-md:pt-3" : "max-md:pt-2"
+      )}
+    >
+      {sendError ? (
+        <p className="mb-2 text-xs text-red-600 transition-opacity duration-200 ease-out">{sendError}</p>
+      ) : null}
 
-      <MessageMediaPreview
-        items={toPreviewItems(staged)}
-        onRemove={removeStaged}
-        disabled={busy || disabled}
-      />
-
-      <div className="flex flex-col gap-2 md:flex-row md:items-end">
-        <MessageMediaPicker
-          fileInputRef={fileRef}
-          accept="image/*,video/mp4,video/webm,video/quicktime"
-          multiple
-          onChange={(e) => void addFiles(e.target.files)}
-          disabled={blocked}
-          buttonDisabled={staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
-          aria-label="Anexar imagem ou vídeo"
-        >
-          <ImagePlus className="size-5 text-[var(--woody-nav)]" />
-        </MessageMediaPicker>
-        <input
-          ref={stickerRef}
-          type="file"
-          accept="image/gif,image/webp,image/png,.gif"
-          multiple
-          className="sr-only"
-          onChange={(e) => void addStickerOrGifFiles(e.target.files)}
+      <div
+        className={cn(
+          "flex flex-col transition-[gap] duration-200 ease-out",
+          "gap-2 md:gap-2",
+          isExpanded ? "max-md:gap-2" : "max-md:gap-1.5"
+        )}
+      >
+        <MessageMediaPreview
+          items={toPreviewItems(staged)}
+          onRemove={removeStaged}
+          disabled={busy || disabled}
         />
-        <div className="flex min-w-0 flex-1 gap-2 max-md:items-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="size-11 shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)]"
-            disabled={blocked || staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
-            onClick={() => setStickerPickerOpen(true)}
-            aria-label="GIF ou sticker"
-          >
-            <SmilePlus className="size-5 text-[var(--woody-nav)]" />
-          </Button>
-          <Textarea
-            value={draft}
-            onChange={(e) => {
-              setDraft(e.target.value);
-              if (sendError) setSendError(null);
-            }}
-            placeholder="Mensagem…"
-            maxLength={DM_MESSAGE_BODY_MAX_LENGTH}
-            rows={2}
+
+        <div
+          className={cn(
+            "flex flex-col md:flex-row md:items-end",
+            "transition-[gap] duration-200 ease-out",
+            "gap-2 md:gap-2",
+            isExpanded ? "max-md:gap-2.5" : "max-md:gap-1.5"
+          )}
+        >
+          <MessageMediaPicker
+            fileInputRef={fileRef}
+            accept="image/*,video/mp4,video/webm,video/quicktime"
+            multiple
+            onChange={(e) => void addFiles(e.target.files)}
             disabled={blocked}
-            className="min-h-[44px] max-md:max-h-32 flex-1 resize-none md:min-h-0"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                if (canSend && !blocked) void submit();
-              }
-            }}
+            buttonDisabled={staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
+            suppressToolbarFocusSteal
+            aria-label="Anexar imagem ou vídeo"
+            buttonClassName={cn(
+              "transition-[width,height,min-height,min-width] duration-200 ease-out",
+              !isExpanded ? "max-md:size-10" : "max-md:size-11"
+            )}
+          >
+            <ImagePlus className="size-5 text-[var(--woody-nav)]" />
+          </MessageMediaPicker>
+          <input
+            ref={stickerRef}
+            type="file"
+            accept="image/gif,image/webp,image/png,.gif"
+            multiple
+            className="sr-only"
+            onChange={(e) => void addStickerOrGifFiles(e.target.files)}
           />
+          <div
+            className={cn(
+              "flex min-w-0 flex-1 max-md:items-end",
+              "transition-[gap] duration-200 ease-out",
+              "gap-2",
+              isExpanded ? "max-md:gap-2.5" : "max-md:gap-1.5"
+            )}
+          >
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className={cn(
+                "shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)]",
+                "size-11 md:size-11",
+                "transition-[width,height,min-height,min-width] duration-200 ease-out",
+                !isExpanded ? "max-md:size-10" : "max-md:size-11"
+              )}
+              disabled={blocked || staged.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setStickerPickerOpen(true)}
+              aria-label="GIF ou sticker"
+            >
+              <SmilePlus className="size-5 text-[var(--woody-nav)]" />
+            </Button>
+            <Textarea
+              value={draft}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                if (sendError) setSendError(null);
+              }}
+              onFocus={() => setTextareaFocused(true)}
+              onBlur={() => setTextareaFocused(false)}
+              placeholder="Mensagem…"
+              maxLength={DM_MESSAGE_BODY_MAX_LENGTH}
+              rows={2}
+              disabled={blocked}
+              className={cn(
+                "flex-1 resize-none touch-manipulation min-h-[44px] md:min-h-0",
+                "transition-[min-height,max-height,padding,border-radius] duration-200 ease-out",
+                isExpanded
+                  ? "max-md:min-h-[5rem] max-md:max-h-32 max-md:rounded-2xl max-md:border max-md:border-[var(--woody-divider)] max-md:bg-[var(--woody-card)] max-md:px-3.5 max-md:py-2.5"
+                  : "max-md:min-h-[2.5rem] max-md:max-h-[2.75rem] max-md:rounded-full max-md:border max-md:border-[var(--woody-divider)] max-md:bg-[var(--woody-card)] max-md:px-4 max-md:py-2 max-md:leading-snug"
+              )}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (canSend && !blocked) void submit();
+                }
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className={cn(
+                "shrink-0 border-[var(--woody-divider)] md:hidden",
+                "transition-[opacity,box-shadow,width,height] duration-200 ease-out",
+                isExpanded && canSend
+                  ? "border-transparent bg-[var(--woody-nav)] text-white opacity-100 shadow-sm ring-2 ring-[var(--woody-nav)]/35 hover:bg-[var(--woody-nav)]/90 hover:text-white"
+                  : "bg-[var(--woody-nav)] text-white opacity-45 hover:bg-[var(--woody-nav)]/90 hover:text-white hover:opacity-80",
+                !isExpanded ? "size-10" : "size-11"
+              )}
+              onClick={() => void submit()}
+              disabled={!canSend || blocked}
+              aria-label={busy ? "A enviar…" : "Enviar mensagem"}
+            >
+              {busy ? (
+                <Loader2 className="size-5 animate-spin" aria-hidden />
+              ) : (
+                <Send className="size-5" />
+              )}
+            </Button>
+          </div>
           <Button
             type="button"
-            variant="outline"
-            size="icon"
-            className="size-11 shrink-0 border-[var(--woody-divider)] bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 hover:text-white md:hidden"
+            className="hidden min-h-11 shrink-0 md:inline-flex md:w-auto"
             onClick={() => void submit()}
             disabled={!canSend || blocked}
-            aria-label={busy ? "A enviar…" : "Enviar mensagem"}
           >
-            {busy ? (
-              <Loader2 className="size-5 animate-spin" aria-hidden />
-            ) : (
-              <Send className="size-5" />
-            )}
+            {busy ? "A enviar…" : "Enviar"}
           </Button>
         </div>
-        <Button
-          type="button"
-          className="hidden min-h-11 shrink-0 md:inline-flex md:w-auto"
-          onClick={() => void submit()}
-          disabled={!canSend || blocked}
-        >
-          {busy ? "A enviar…" : "Enviar"}
-        </Button>
       </div>
-      <p className="mt-1.5 text-[0.65rem] leading-snug text-[var(--woody-muted)] md:block">
+      <p
+        className={cn(
+          "mt-1.5 text-[0.65rem] leading-snug text-[var(--woody-muted)] md:block",
+          "transition-opacity duration-200 ease-out",
+          isExpanded ? "max-md:opacity-100" : "max-md:opacity-60"
+        )}
+      >
         <span className="hidden md:inline">
           Enter envia · Shift+Enter nova linha · até {DM_MESSAGE_MAX_IMAGE_ATTACHMENTS} anexos · vídeo até{" "}
           {DM_MESSAGE_VIDEO_MAX_DURATION_SEC}s / {formatFileSize(DM_MESSAGE_VIDEO_MAX_BYTES)}

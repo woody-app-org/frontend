@@ -11,6 +11,8 @@ export interface MessageMediaPickerProps {
   buttonDisabled?: boolean;
   children: React.ReactNode;
   buttonClassName?: string;
+  /** Evita que o textarea perca foco ao premir o botão (composer não colapsa antes do picker). */
+  suppressToolbarFocusSteal?: boolean;
   "aria-label"?: string;
 }
 
@@ -23,6 +25,7 @@ export function MessageMediaPicker({
   buttonDisabled,
   children,
   buttonClassName,
+  suppressToolbarFocusSteal,
   "aria-label": ariaLabel,
 }: MessageMediaPickerProps) {
   return (
@@ -45,6 +48,9 @@ export function MessageMediaPicker({
           buttonClassName
         )}
         disabled={disabled || buttonDisabled}
+        onMouseDown={(e) => {
+          if (suppressToolbarFocusSteal) e.preventDefault();
+        }}
         onClick={() => fileInputRef.current?.click()}
         aria-label={ariaLabel}
       >
