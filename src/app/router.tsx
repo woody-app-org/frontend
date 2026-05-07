@@ -53,11 +53,7 @@ export const router = createBrowserRouter([
       { path: "invite/:code", element: <BetaInviteLinkPage /> },
       {
         index: true,
-        element: (
-          <BetaClosedGate>
-            <IntroPage />
-          </BetaClosedGate>
-        ),
+        element: <IntroPage />,
       },
       { path: "landing", element: <LandingPage /> },
       {

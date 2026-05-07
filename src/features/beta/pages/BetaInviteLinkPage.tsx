@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Loader2, Leaf } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import woodyCat from "@/assets/cat.svg";
 import { postValidateInvite } from "@/features/beta/betaInvite.api";
 import { setValidatedBetaInvite } from "@/features/beta/betaInvite.storage";
 
@@ -43,19 +44,33 @@ export function BetaInviteLinkPage() {
 
   if (!message) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gradient-to-b from-white to-[var(--woody-sand)] px-6 text-[var(--woody-text)]">
-        <Leaf className="size-10 text-[var(--auth-button)]" aria-hidden />
-        <Loader2 className="size-8 animate-spin text-[var(--woody-muted)]" aria-hidden />
-        <p className="text-center text-sm text-[var(--woody-muted)]">A validar o teu convite…</p>
+      <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-gradient-to-b from-white to-[var(--woody-sand)] px-6 text-[var(--woody-text)] antialiased">
+        <img
+          src={woodyCat}
+          alt=""
+          width={213}
+          height={180}
+          className="h-[4.25rem] w-auto max-w-[min(92vw,12rem)] object-contain object-center select-none sm:h-[5.25rem]"
+          decoding="async"
+          draggable={false}
+        />
+        <Loader2 className="size-8 shrink-0 animate-spin text-[var(--woody-muted)]" aria-hidden />
+        <p className="text-center text-sm font-medium text-[var(--woody-muted)]">Validando o convite…</p>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gradient-to-b from-white to-[var(--woody-sand)] px-6 text-[var(--woody-text)]">
-      <div className="flex size-14 items-center justify-center rounded-2xl bg-[var(--auth-button)]/15 text-[var(--woody-tag-text)]">
-        <Leaf className="size-7" aria-hidden />
-      </div>
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-6 bg-gradient-to-b from-white to-[var(--woody-sand)] px-6 text-[var(--woody-text)] antialiased">
+      <img
+        src={woodyCat}
+        alt=""
+        width={213}
+        height={180}
+        className="h-[4.25rem] w-auto max-w-[min(92vw,12rem)] object-contain object-center select-none sm:h-[5.25rem]"
+        decoding="async"
+        draggable={false}
+      />
       <h1 className="text-center text-xl font-semibold text-[var(--woody-ink)]">Convite não disponível</h1>
       <p className="max-w-md text-center text-[15px] leading-relaxed text-[var(--woody-muted)]">{message}</p>
       <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
