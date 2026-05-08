@@ -4,6 +4,14 @@ import { AUTH_STORAGE_KEY, AUTH_TOKEN_KEY } from "./constants";
 /** O AuthContext escuta isto para `setUser(null)` após limpeza no client HTTP (ex.: 401). */
 export const WOODY_AUTH_LOGOUT_EVENT = "woody:auth:logout";
 
+/** Sinaliza que o status de verificação pode estar desatualizado; AuthContext re-hidrata sessão. */
+export const WOODY_AUTH_REFRESH_USER_EVENT = "woody:auth:refresh-user";
+
+export function dispatchAuthRefreshUserEvent(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(WOODY_AUTH_REFRESH_USER_EVENT));
+}
+
 export function dispatchAuthLogoutEvent(): void {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new Event(WOODY_AUTH_LOGOUT_EVENT));

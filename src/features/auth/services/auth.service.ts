@@ -1,5 +1,11 @@
 import type { AuthUserSubscription } from "@/features/subscription/types";
-import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
+import type {
+  AuthUser,
+  LoginCredentials,
+  RegisterCredentials,
+  UserRole,
+  VerificationStatus,
+} from "../types";
 import { AUTH_STORAGE_KEY } from "../constants";
 import { clearAuthPersistence } from "../authSessionCleanup";
 import { syncAuthUserToDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
@@ -57,6 +63,8 @@ function mapAuthUser(raw: {
   name?: string;
   avatarUrl?: string;
   subscription?: unknown;
+  verificationStatus?: string;
+  role?: string;
 }): AuthUser {
   return {
     id: String(raw.id),
@@ -65,12 +73,18 @@ function mapAuthUser(raw: {
     name: raw.name ?? raw.username,
     avatarUrl: raw.avatarUrl,
     subscription: mapSubscription(raw.subscription),
+    verificationStatus: (raw.verificationStatus as VerificationStatus | undefined) ?? "PendingDocument",
+    role: (raw.role as UserRole | undefined) ?? "User",
   };
 }
 
 function normalizeStoredUser(u: AuthUser): AuthUser {
-  if (u.subscription) return u;
-  return { ...u, subscription: defaultSubscription() };
+  return {
+    ...u,
+    subscription: u.subscription ?? defaultSubscription(),
+    verificationStatus: u.verificationStatus ?? "PendingDocument",
+    role: u.role ?? "User",
+  };
 }
 
 export async function loginMock(credentials: LoginCredentials): Promise<AuthUser> {
@@ -142,6 +156,11 @@ export async function fetchAuthUserFromMe(): Promise<AuthUser> {
     name: raw.name != null ? String(raw.name) : undefined,
     avatarUrl: raw.avatarUrl != null ? String(raw.avatarUrl) : undefined,
     subscription: mapSubscription(raw.subscription),
+    verificationStatus:
+      raw.verificationStatus != null
+        ? (raw.verificationStatus as VerificationStatus)
+        : "PendingDocument",
+    role: raw.role != null ? (raw.role as UserRole) : "User",
   };
   return normalizeStoredUser(user);
 }

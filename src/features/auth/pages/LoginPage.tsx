@@ -8,6 +8,7 @@ import { LoginForm } from "../components/LoginForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/AuthContext";
 import type { LoginFormData } from "../lib/validation";
+import { resolveVerificationRoute } from "@/features/verification/services/verification.service";
 
 /**
  * Login isolado do onboarding — mesma lógica mockada de `login` do contexto.
@@ -23,8 +24,9 @@ export function LoginPage() {
       setErrorMessage(null);
       setIsSubmitting(true);
       try {
-        await login(data);
-        navigate("/feed", { replace: true });
+        const loggedUser = await login(data);
+        const destination = resolveVerificationRoute(loggedUser.verificationStatus);
+        navigate(destination, { replace: true });
       } catch (err) {
         setErrorMessage(
           err instanceof Error ? err.message : "Erro ao entrar. Tente novamente."

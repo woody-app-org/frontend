@@ -1,5 +1,15 @@
 import type { AuthUserSubscription } from "@/features/subscription/types";
 
+/** Status de verificação de identidade da conta. */
+export type VerificationStatus =
+  | "PendingDocument"
+  | "PendingReview"
+  | "Approved"
+  | "Rejected";
+
+/** Papel global da utilizadora (independente de cargos em comunidades). */
+export type UserRole = "User" | "Admin" | "SuperAdmin";
+
 export interface AuthUser {
   id: string;
   username: string;
@@ -8,6 +18,10 @@ export interface AuthUser {
   name?: string;
   /** Presente após login/registo com API ≥ assinaturas; sessões antigas podem omitir até novo login. */
   subscription?: AuthUserSubscription;
+  /** Status do processo de verificação de identidade. */
+  verificationStatus?: VerificationStatus;
+  /** Papel global na plataforma (≠ admin de comunidade). */
+  role?: UserRole;
 }
 
 /** Sessão atual (espelho de `AuthUser` para vocabulário alinhado ao backend). */

@@ -1,6 +1,10 @@
 import axios from "axios";
 import { AUTH_TOKEN_KEY } from "@/features/auth/constants";
-import { clearAuthPersistence, dispatchAuthLogoutEvent } from "@/features/auth/authSessionCleanup";
+import {
+  clearAuthPersistence,
+  dispatchAuthLogoutEvent,
+  dispatchAuthRefreshUserEvent,
+} from "@/features/auth/authSessionCleanup";
 
 /**
  * Base da API: sempre termina em `/api` (prefixo dos controllers ASP.NET).
@@ -105,6 +109,15 @@ api.interceptors.response.use(
   (err) => {
     if (!axios.isAxiosError(err)) return Promise.reject(err);
     const status = err.response?.status;
+
+    if (status === 403) {
+      const data = err.response?.data as Record<string, unknown> | undefined;
+      if (data?.code === "ACCOUNT_PENDING_VERIFICATION") {
+        dispatchAuthRefreshUserEvent();
+      }
+      return Promise.reject(err);
+    }
+
     if (status !== 401) return Promise.reject(err);
     if (isAuthCredentialsRequest(err.config?.url)) return Promise.reject(err);
     if (getStoredToken()) {

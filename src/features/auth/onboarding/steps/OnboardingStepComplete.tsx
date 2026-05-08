@@ -10,6 +10,7 @@ import { updateMyAvatarFromUploadedUrl } from "@/features/profile/services/profi
 import { showWarningToast } from "@/lib/toast";
 import { isBetaClosed } from "@/config/beta";
 import { clearBetaInviteSession } from "@/features/beta/betaInvite.storage";
+import { resolveVerificationRoute } from "@/features/verification/services/verification.service";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
@@ -39,7 +40,7 @@ export function OnboardingStepComplete() {
     try {
       const communityIds = [...(draft.joinedCommunityIds ?? [])];
       const avatarPending = pendingProfileAvatar;
-      await registerUser(credentials);
+      const registeredUser = await registerUser(credentials);
 
       if (avatarPending) {
         try {
@@ -72,7 +73,8 @@ export function OnboardingStepComplete() {
       if (isBetaClosed()) {
         clearBetaInviteSession();
       }
-      navigate("/feed", { replace: true });
+      const destination = resolveVerificationRoute(registeredUser.verificationStatus);
+      navigate(destination, { replace: true });
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Não foi possível concluir o cadastro. Tente novamente.";

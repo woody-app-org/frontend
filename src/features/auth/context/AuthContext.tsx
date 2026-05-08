@@ -2,13 +2,17 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
 import {
   bootstrapAuthSession,
+  fetchAuthUserFromMe,
   loginMock,
   logoutMock,
   logoutSessionMock,
   patchStoredUser,
   registerMock,
 } from "../services/auth.service";
-import { WOODY_AUTH_LOGOUT_EVENT } from "../authSessionCleanup";
+import {
+  WOODY_AUTH_LOGOUT_EVENT,
+  WOODY_AUTH_REFRESH_USER_EVENT,
+} from "../authSessionCleanup";
 import { SessionBootstrapSplash } from "../components/SessionBootstrapSplash";
 
 interface AuthContextValue {
@@ -16,13 +20,15 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   /** `true` apenas até a primeira validação de sessão (`/users/me`) terminar. */
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthUser>;
+  register: (credentials: RegisterCredentials) => Promise<AuthUser>;
   logout: () => void;
-  /** Encerra sessão com latência de API mock; preferir no fluxo “Sair” na UI. */
+  /** Encerra sessão com latência de API mock; preferir no fluxo "Sair" na UI. */
   logoutAsync: () => Promise<void>;
   /** Atualiza dados da sessão e o `localStorage` (ex.: nome após editar perfil). */
   patchUser: (patch: Partial<AuthUser>) => void;
+  /** Re-hidrata o utilizador a partir de `/users/me` (ex.: após aprovação ou 403 de verificação). */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,14 +58,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (credentials: LoginCredentials) => {
-    const u = await loginMock(credentials);
-    setUser(u);
+  const refreshUser = useCallback(async () => {
+    try {
+      const u = await fetchAuthUserFromMe();
+      setUser(u);
+    } catch {
+      /* silencioso; falha de rede não deve deslogar */
+    }
   }, []);
 
-  const register = useCallback(async (credentials: RegisterCredentials) => {
+  useEffect(() => {
+    const onRefresh = () => void refreshUser();
+    window.addEventListener(WOODY_AUTH_REFRESH_USER_EVENT, onRefresh);
+    return () => window.removeEventListener(WOODY_AUTH_REFRESH_USER_EVENT, onRefresh);
+  }, [refreshUser]);
+
+  const login = useCallback(async (credentials: LoginCredentials): Promise<AuthUser> => {
+    const u = await loginMock(credentials);
+    setUser(u);
+    return u;
+  }, []);
+
+  const register = useCallback(async (credentials: RegisterCredentials): Promise<AuthUser> => {
     const u = await registerMock(credentials);
     setUser(u);
+    return u;
   }, []);
 
   const logout = useCallback(() => {
@@ -86,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     logoutAsync,
     patchUser,
+    refreshUser,
   };
 
   return (

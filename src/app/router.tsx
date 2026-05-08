@@ -37,6 +37,9 @@ import { WhatIsWoodyPage } from "@/features/landing/institutional/pages/WhatIsWo
 import { BetaClosedGate } from "@/features/beta/components/BetaClosedGate";
 import { BetaGatePage } from "@/features/beta/pages/BetaGatePage";
 import { BetaInviteLinkPage } from "@/features/beta/pages/BetaInviteLinkPage";
+import { VerificationDocumentPage } from "@/features/verification/pages/VerificationDocumentPage";
+import { VerificationPendingPage } from "@/features/verification/pages/VerificationPendingPage";
+import { VerificationRejectedPage } from "@/features/verification/pages/VerificationRejectedPage";
 
 export const router = createBrowserRouter([
   {
@@ -87,6 +90,30 @@ export const router = createBrowserRouter([
         ),
       },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },
+      {
+        path: "verification/document",
+        element: (
+          <ProtectedRoute requireVerified={false}>
+            <VerificationDocumentPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "verification/pending",
+        element: (
+          <ProtectedRoute requireVerified={false}>
+            <VerificationPendingPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "verification/rejected",
+        element: (
+          <ProtectedRoute requireVerified={false}>
+            <VerificationRejectedPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "auth/onboarding",
         element: (

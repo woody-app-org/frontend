@@ -3,17 +3,23 @@ import { useAuth } from "@/features/auth/context/AuthContext";
 import { SessionBootstrapSplash } from "@/features/auth/components/SessionBootstrapSplash";
 import { isBetaClosed } from "@/config/beta";
 import { hasValidatedBetaInvite } from "@/features/beta/betaInvite.storage";
+import { resolveVerificationRoute } from "@/features/verification/services/verification.service";
 
 export interface ProtectedRouteProps {
   children: React.ReactNode;
+  /**
+   * Se `true` (padrão), redireciona contas não aprovadas para o fluxo de verificação.
+   * Use `false` nas próprias rotas de verificação para evitar loop de redirecionamento.
+   */
+  requireVerified?: boolean;
 }
 
 /**
  * Protege rotas que exigem autenticação.
- * Com beta fechado e sem convite na sessão, envia para `/beta` (antes do login).
+ * Com `requireVerified=true` (padrão), também bloqueia contas pendentes/rejeitadas.
  */
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+export function ProtectedRoute({ children, requireVerified = true }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -26,6 +32,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
     const loginTarget = isBetaClosed() ? "/auth/login" : "/auth";
     return <Navigate to={loginTarget} state={{ from: location }} replace />;
+  }
+
+  if (requireVerified) {
+    const status = user?.verificationStatus;
+    if (status && status !== "Approved") {
+      const target = resolveVerificationRoute(status);
+      if (location.pathname !== target) {
+        return <Navigate to={target} replace />;
+      }
+    }
   }
 
   return <>{children}</>;
