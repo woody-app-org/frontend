@@ -40,6 +40,9 @@ import { BetaInviteLinkPage } from "@/features/beta/pages/BetaInviteLinkPage";
 import { VerificationDocumentPage } from "@/features/verification/pages/VerificationDocumentPage";
 import { VerificationPendingPage } from "@/features/verification/pages/VerificationPendingPage";
 import { VerificationRejectedPage } from "@/features/verification/pages/VerificationRejectedPage";
+import { SuperAdminRoute } from "@/app/SuperAdminRoute";
+import { AdminVerificationListPage } from "@/features/admin/verification/pages/AdminVerificationListPage";
+import { AdminVerificationDetailPage } from "@/features/admin/verification/pages/AdminVerificationDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -236,6 +239,22 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <PlanosPage />
           </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin/verification",
+        element: (
+          <SuperAdminRoute>
+            <AdminVerificationListPage />
+          </SuperAdminRoute>
+        ),
+      },
+      {
+        path: "admin/verification/:id",
+        element: (
+          <SuperAdminRoute>
+            <AdminVerificationDetailPage />
+          </SuperAdminRoute>
         ),
       },
       { path: "*", element: <Navigate to="/" replace /> },
