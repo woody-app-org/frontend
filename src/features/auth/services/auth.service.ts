@@ -144,6 +144,17 @@ export function getAuthUser(): AuthUser | null {
   return getStoredUser();
 }
 
+/**
+ * Re-hidrata a sessão a partir de `/users/me`, persiste no `localStorage` e sincroniza o
+ * display patch. Usar em `AuthContext.refreshUser` para garantir consistência completa.
+ */
+export async function refreshAuthUserFromMe(): Promise<AuthUser> {
+  const user = await fetchAuthUserFromMe();
+  setStoredUser(user);
+  syncAuthUserToDisplayPatch(user);
+  return user;
+}
+
 /** Hidrata `AuthUser` a partir de `GET /users/me` (requer JWT válido). */
 export async function fetchAuthUserFromMe(): Promise<AuthUser> {
   const { data } = await api.get("/users/me");

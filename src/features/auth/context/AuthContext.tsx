@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
 import {
   bootstrapAuthSession,
-  fetchAuthUserFromMe,
+  refreshAuthUserFromMe,
   loginMock,
   logoutMock,
   logoutSessionMock,
@@ -60,10 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const u = await fetchAuthUserFromMe();
+      const u = await refreshAuthUserFromMe();
       setUser(u);
     } catch {
-      /* silencioso; falha de rede não deve deslogar */
+      /* silencioso; falha de rede não deve deslogar nem apagar localStorage */
     }
   }, []);
 

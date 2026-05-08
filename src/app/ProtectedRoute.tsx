@@ -35,8 +35,11 @@ export function ProtectedRoute({ children, requireVerified = true }: ProtectedRo
   }
 
   if (requireVerified) {
-    const status = user?.verificationStatus;
-    if (status && status !== "Approved") {
+    // Se status não está definido (sessão antiga) ou não é Approved, bloquear.
+    // Tratar ausência de status como PendingDocument para evitar acesso indevido
+    // enquanto o bootstrap ainda não completou ou dados estão desatualizados.
+    const status = user?.verificationStatus ?? "PendingDocument";
+    if (status !== "Approved") {
       const target = resolveVerificationRoute(status);
       if (location.pathname !== target) {
         return <Navigate to={target} replace />;
