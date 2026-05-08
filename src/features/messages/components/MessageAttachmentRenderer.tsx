@@ -7,13 +7,19 @@ import { PostMediaItem } from "@/components/media/PostMediaRenderer";
 import type { MessageAttachmentResponseDto } from "../types";
 import { VideoMessageAttachment } from "./VideoMessageAttachment";
 
+/** API Woody expõe `mimeType`; aceita `contentType` como alias legado. */
+function resolveAttachmentMime(a: MessageAttachmentResponseDto): string | null {
+  const m = a.mimeType ?? a.contentType;
+  return m != null && String(m).trim() !== "" ? String(m) : null;
+}
+
 function toBubbleItem(a: MessageAttachmentResponseDto): PostMediaAttachment {
   const raw = (a.mediaType ?? "image").toLowerCase();
   const mediaType = isWoodyMediaType(raw) ? raw : "image";
   return {
     url: a.url,
     mediaType,
-    mimeType: a.contentType,
+    mimeType: resolveAttachmentMime(a),
     thumbnailUrl: a.thumbnailUrl ?? null,
     durationSeconds: a.durationSeconds ?? null,
     storageKey: a.storageKey ?? null,
@@ -28,7 +34,7 @@ export interface MessageAttachmentRendererProps {
 
 /**
  * Renderiza anexos de uma mensagem (imagem, GIF, sticker, vídeo) com layout compacto para bolhas.
- * Imagens reutilizam <code>PostMediaItem</code> variante <code>message</code>; vídeo usa <code>VideoMessageAttachment</code>.
+ * Imagens estáticas podem abrir num novo separador; GIF/sticker/vídeo ficam sem link para não interferir com animação/controles.
  */
 export function MessageAttachmentRenderer({ attachments, className }: MessageAttachmentRendererProps) {
   if (!attachments?.length) return null;

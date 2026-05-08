@@ -142,17 +142,54 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
     );
   }
 
-  // Stickers e mensagens: manter comportamento contido (sem aspect-ratio)
-  if (item.mediaType === "sticker" || variant === "message") {
-    const msgOrStickerClass =
-      variant === "message"
-        ? heroImgMessage
-        : "mx-auto max-h-48 bg-transparent object-contain";
+  // Mensagens diretas: sticker mais compacto que GIF; GIF com área maior para animação; imagem mantém hero compacto.
+  if (variant === "message") {
+    const src = resolvePublicMediaUrl(item.url);
+    if (item.mediaType === "sticker") {
+      return (
+        <img
+          src={src}
+          alt=""
+          className={cn(
+            "mx-auto h-auto w-full max-w-[min(100%,min(11rem,62vw))] max-h-24 object-contain sm:max-h-28",
+            className
+          )}
+          loading="lazy"
+          decoding="async"
+        />
+      );
+    }
+    if (item.mediaType === "gif") {
+      return (
+        <img
+          src={src}
+          alt=""
+          className={cn(
+            "mx-auto h-auto w-full max-w-[min(100%,min(20rem,88vw))] max-h-44 object-contain sm:max-h-48",
+            className
+          )}
+          loading="lazy"
+          decoding="async"
+        />
+      );
+    }
+    return (
+      <img
+        src={src}
+        alt=""
+        className={cn(heroImgMessage, className)}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  if (item.mediaType === "sticker") {
     return (
       <img
         src={resolvePublicMediaUrl(item.url)}
         alt=""
-        className={cn(msgOrStickerClass, className)}
+        className={cn("mx-auto max-h-48 bg-transparent object-contain", className)}
         loading="lazy"
         decoding="async"
       />

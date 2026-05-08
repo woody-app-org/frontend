@@ -44,7 +44,10 @@ export interface MessageAttachmentResponseDto {
   url: string;
   /** `image` | `video` | `gif` | `sticker` — omissão trata-se como imagem (legado). */
   mediaType?: string;
-  contentType: string | null;
+  /** MIME (`MediaAttachmentResponseDto.MimeType` na API; serialização camelCase `mimeType`). */
+  mimeType?: string | null;
+  /** Legado / espelho — preferir `mimeType` se ambos existirem. */
+  contentType?: string | null;
   thumbnailUrl?: string | null;
   durationSeconds?: number | null;
   provider?: string | null;
