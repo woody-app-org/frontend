@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -76,7 +76,6 @@ function InfoRow({ icon, label, value }: InfoRowProps) {
 
 export function AdminVerificationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const verificationId = Number(id);
 
   const [detail, setDetail] = useState<AdminVerificationDetailDto | null>(null);
