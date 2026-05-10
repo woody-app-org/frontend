@@ -1,16 +1,12 @@
-import { forwardRef } from "react";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "./PasswordInput";
 import { cn } from "@/lib/utils";
 
-export interface AuthInputFieldProps
-  extends Omit<React.ComponentProps<typeof Input>, "className"> {
+export interface AuthPasswordFieldProps
+  extends Omit<React.ComponentProps<typeof PasswordInput>, "className"> {
   label: string;
   error?: string;
-  /** Texto de apoio abaixo do label (opcional). */
   hint?: string;
-  /** Destaque sutil quando o campo está válido (ex.: após toque, sem erro). */
   valid?: boolean;
-  /** true = estilos para painel marrom (fundo bege, texto escuro) */
   variant?: "maroon" | "beige";
   className?: string;
   inputClassName?: string;
@@ -18,9 +14,7 @@ export interface AuthInputFieldProps
 
 const styles = {
   label: "block text-sm font-medium mb-1.5",
-  /** Sobre fundo bege / inputs claros (ex.: painel login). */
   hintOnBeige: "text-xs text-[var(--auth-text-on-beige)]/80 md:text-[var(--auth-text-on-beige)]/75 mb-1.5 leading-snug font-medium",
-  /** Sobre fundo bordô / painel marrom — mesma hierarquia dos títulos de bloco (ex.: “Como vamos te chamar”). */
   hintOnMaroon:
     "text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--auth-text-on-maroon)]/80 mb-2 leading-relaxed",
   inputMaroon:
@@ -32,21 +26,17 @@ const styles = {
   error: "text-sm mt-1.5 text-red-600",
 } as const;
 
-export const AuthInputField = forwardRef<HTMLInputElement, AuthInputFieldProps>(
-  (
-    {
-      label,
-      error,
-      hint,
-      valid = false,
-      variant = "maroon",
-      className,
-      inputClassName,
-      id: idProp,
-      ...inputProps
-    },
-    ref
-  ) => {
+export function AuthPasswordField({
+    label,
+    error,
+    hint,
+    valid = false,
+    variant = "maroon",
+    className,
+    inputClassName,
+    id: idProp,
+    ...inputProps
+  }: AuthPasswordFieldProps) {
     const id = idProp ?? `auth-${label.replace(/\s/g, "-").toLowerCase()}`;
     const hintId = hint ? `${id}-hint` : undefined;
     const errorId = error ? `${id}-error` : undefined;
@@ -63,8 +53,7 @@ export const AuthInputField = forwardRef<HTMLInputElement, AuthInputFieldProps>(
             {hint}
           </p>
         ) : null}
-        <Input
-          ref={ref}
+        <PasswordInput
           id={id}
           aria-invalid={!!error}
           aria-describedby={describedBy}
@@ -83,7 +72,4 @@ export const AuthInputField = forwardRef<HTMLInputElement, AuthInputFieldProps>(
         )}
       </div>
     );
-  }
-);
-
-AuthInputField.displayName = "AuthInputField";
+}

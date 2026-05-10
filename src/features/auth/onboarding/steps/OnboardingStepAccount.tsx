@@ -3,6 +3,8 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserRound } from "lucide-react";
 import { AuthInputField } from "../../components/AuthInputField";
+import { AuthPasswordField } from "../../components/AuthPasswordField";
+import { withPasswordAutofillSync } from "../../lib/passwordAutofillRegistration";
 import { PASSWORD_MIN_LENGTH } from "../../constants";
 import {
   onboardingAccountSchema,
@@ -41,6 +43,7 @@ export function OnboardingStepAccount() {
 
   const { errors, touchedFields } = form.formState;
   const w = form.watch();
+  const { register, setValue, trigger } = form;
 
   const onSubmit = form.handleSubmit(async (data) => {
     setIsSaving(true);
@@ -121,10 +124,9 @@ export function OnboardingStepAccount() {
         <div>
           <p className={onboardingStyles.sectionLabel}>Segurança</p>
           <div className={onboardingStyles.sectionCard}>
-            <AuthInputField
+            <AuthPasswordField
               label="Senha"
               placeholder="Ex.: MinhaSenh@1"
-              type="password"
               autoComplete="new-password"
               variant="maroon"
               hint={`NO MÍNIMO ${PASSWORD_MIN_LENGTH} CARACTERES, 1 LETRA MAIÚSCULA E 1 CARACTERE ESPECIAL (!@#…)`}
@@ -135,7 +137,8 @@ export function OnboardingStepAccount() {
                 /[A-Z]/.test(w.password) &&
                 /[^A-Za-z0-9\s]/.test(w.password)
               }
-              {...form.register("password")}
+              {...withPasswordAutofillSync(register("password"), setValue, "password", trigger)}
+              disabled={isSaving}
               error={errors.password?.message}
             />
           </div>

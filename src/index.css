@@ -104,6 +104,11 @@
     --auth-ornament: #8bc34a;
     --auth-text-on-maroon: #0a0a0a;
     --auth-text-on-beige: #0a0a0a;
+    /* Inputs auth — autofill WebKit (texto/fundo/borda em contraste com painéis claros) */
+    --auth-autofill-bg: #ffffff;
+    --auth-autofill-text: var(--auth-text-on-beige);
+    --auth-autofill-caret: var(--auth-text-on-beige);
+    --auth-autofill-border: rgba(10, 10, 10, 0.2);
     --background: #ffffff;
     --foreground: #0a0a0a;
     --card: #ffffff;
@@ -190,6 +195,11 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    /* Autofill em tema escuro (inputs claros raros; fallback legível) */
+    --auth-autofill-bg: #27272a;
+    --auth-autofill-text: #fafafa;
+    --auth-autofill-caret: #fafafa;
+    --auth-autofill-border: rgba(255, 255, 255, 0.18);
 }
 
 @layer base {
@@ -210,6 +220,43 @@
   #root {
     min-height: 100%;
   }
+}
+
+/* Auth (login/onboarding): só inputs com .woody-auth-input — sem autofill o browser usa os estilos Tailwind habituais */
+input.woody-auth-input:-webkit-autofill,
+input.woody-auth-input:-webkit-autofill:hover,
+input.woody-auth-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--auth-autofill-text) !important;
+  color: var(--auth-autofill-text) !important;
+  caret-color: var(--auth-autofill-caret);
+  border-color: var(--auth-autofill-border) !important;
+  /* Cobre o fundo amarelado nativo do Safari */
+  box-shadow: 0 0 0 1000px var(--auth-autofill-bg) inset !important;
+  background-color: var(--auth-autofill-bg) !important;
+  background-image: none !important;
+}
+
+input.woody-auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--auth-autofill-text) !important;
+  color: var(--auth-autofill-text) !important;
+  caret-color: var(--auth-autofill-caret);
+  border-color: var(--auth-autofill-border) !important;
+  box-shadow: 0 0 0 1000px var(--auth-autofill-bg) inset !important;
+  background-color: var(--auth-autofill-bg) !important;
+  /* Atrasa o repaint do fundo nativo do WebKit para manter o fill escolhido visível */
+  transition: background-color 99999s ease-out;
+}
+
+/* Padrão :autofill (Chrome / Firefox recente) */
+input.woody-auth-input:autofill,
+input.woody-auth-input:autofill:hover,
+input.woody-auth-input:autofill:focus {
+  -webkit-text-fill-color: var(--auth-autofill-text) !important;
+  color: var(--auth-autofill-text) !important;
+  caret-color: var(--auth-autofill-caret);
+  border-color: var(--auth-autofill-border) !important;
+  box-shadow: 0 0 0 1000px var(--auth-autofill-bg) inset !important;
+  background-color: var(--auth-autofill-bg) !important;
 }
 
 /* Scroll do feed: oculta a scrollbar; o scroll continua funcional (wheel/teclado).

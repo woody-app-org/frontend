@@ -3,6 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import { AuthInputField } from "./AuthInputField";
+import { AuthPasswordField } from "./AuthPasswordField";
+import { withPasswordAutofillSync } from "../lib/passwordAutofillRegistration";
 import { loginSchema } from "../lib/validation";
 import type { LoginFormData } from "../lib/validation";
 import { cn } from "@/lib/utils";
@@ -42,7 +44,9 @@ export function LoginForm({
     defaultValues: { username: "", password: "" },
   });
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const { register, formState, handleSubmit, setValue } = form;
+
+  const handleSubmitForm = handleSubmit(async (data) => {
     await onSubmit(data);
   });
 
@@ -50,7 +54,7 @@ export function LoginForm({
     <div className={cn("w-full max-w-sm mx-auto md:mx-0 px-0", className)}>
       <h2 className={styles.formTitle}>Entrar</h2>
 
-      <form onSubmit={handleSubmit} className={styles.form} noValidate>
+      <form onSubmit={handleSubmitForm} className={styles.form} noValidate>
         {errorMessage && (
           <p
             className="text-sm text-red-600 md:text-red-200 bg-red-100 md:bg-red-900/30 rounded-lg px-3 py-2"
@@ -66,18 +70,18 @@ export function LoginForm({
           type="text"
           autoComplete="username"
           variant="maroon"
-          {...form.register("username")}
-          error={form.formState.errors.username?.message}
+          {...register("username")}
+          error={formState.errors.username?.message}
         />
         <div className="flex flex-col">
-          <AuthInputField
+          <AuthPasswordField
             label="Senha"
             placeholder="Senha"
-            type="password"
             autoComplete="current-password"
             variant="maroon"
-            {...form.register("password")}
-            error={form.formState.errors.password?.message}
+            {...withPasswordAutofillSync(register("password"), setValue, "password")}
+            disabled={isSubmitting}
+            error={formState.errors.password?.message}
           />
           <button
             type="button"
