@@ -16,7 +16,6 @@ import {
   normalizePostComposerTags,
   type CreatePostMediaAttachmentPayload,
 } from "../services/post.service";
-import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
 import { extractVideoPosterJpegBlob } from "@/lib/extractVideoPosterJpeg";
@@ -379,10 +378,6 @@ export function PostComposerForm({
         const results = await Promise.all(
           imageItems.map(async (item) => {
             const f = item.file;
-            if (f.size <= 450 * 1024 && f.type !== "image/gif") {
-              const dataUrl = await readImageAsDataUrlIfSmall(f);
-              return { url: dataUrl, mediaType: "image" as const };
-            }
             const uploaded = await uploadImageMedia(f, uploadCtx);
             const mt = mediaTypeFromUpload(uploaded);
             return {

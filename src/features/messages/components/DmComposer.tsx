@@ -5,7 +5,6 @@ import { woodyFocus } from "@/lib/woody-ui";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
 import { DM_MESSAGE_BODY_MAX_LENGTH, DM_MESSAGE_MAX_IMAGE_ATTACHMENTS } from "../lib/dmLimits";
@@ -281,28 +280,6 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
 
     if (file.size > DM_MESSAGE_IMAGE_MAX_BYTES) {
       setSendError(`Imagem demasiado grande (máx. ${formatFileSize(DM_MESSAGE_IMAGE_MAX_BYTES)}).`);
-      return;
-    }
-
-    if (file.size <= 450 * 1024 && file.type !== "image/gif") {
-      try {
-        const dataUrl = await readImageAsDataUrlIfSmall(file);
-        setStaged((prev) => {
-          if (prev.length >= DM_MESSAGE_MAX_IMAGE_ATTACHMENTS) return prev;
-          return [
-            ...prev,
-            {
-              id: key,
-              previewUrl: dataUrl,
-              sendUrl: dataUrl,
-              mediaType: "image",
-              status: "ready" as const,
-            },
-          ];
-        });
-      } catch {
-        setSendError("Não foi possível ler a imagem.");
-      }
       return;
     }
 
