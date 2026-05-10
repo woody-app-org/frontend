@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { WoodyLogo } from "@/components/branding/WoodyLogo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LANDING_NARRATIVE_IDS } from "../constants";
@@ -38,17 +39,9 @@ export function LandingHeader() {
       <div className="mx-auto flex h-[4.25rem] max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--layout-gutter)] sm:gap-6">
         <Link
           to="/landing"
-          className="group flex shrink-0 items-baseline gap-0.5 outline-none transition-opacity duration-300 ease-out hover:opacity-[0.88] focus-visible:ring-2 focus-visible:ring-[var(--woody-lime)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f2ec]"
+          className="group flex shrink-0 items-center outline-none transition-opacity duration-300 ease-out hover:opacity-[0.88] focus-visible:ring-2 focus-visible:ring-[var(--woody-lime)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f2ec]"
         >
-          <span className="font-serif text-xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-2xl">
-            Woody
-          </span>
-          <span
-            className="font-serif text-xl font-semibold text-[var(--woody-lime)] md:text-2xl"
-            aria-hidden
-          >
-            .
-          </span>
+          <WoodyLogo className="h-7 w-auto max-w-[min(200px,46vw)] sm:h-8 md:h-9 md:max-w-[min(240px,40vw)]" />
         </Link>
 
         <nav

@@ -1,11 +1,12 @@
 import { type ReactNode } from "react";
+import { WoodyLogo } from "@/components/branding/WoodyLogo";
 import { cn } from "@/lib/utils";
 
 const styles = {
   root:
     "min-h-screen w-full flex flex-col items-center md:justify-center pt-6 pb-8 px-3 md:py-8 md:px-6 bg-[var(--auth-bg)] relative overflow-x-hidden",
   logo:
-    "shrink-0 text-2xl font-bold text-[var(--woody-brand)] select-none mb-2 md:mb-0 md:absolute md:top-5 md:left-8",
+    "shrink-0 mb-2 md:mb-0 md:absolute md:top-5 md:left-8 [&_img]:h-7 [&_img]:w-auto md:[&_img]:h-8",
   ornament:
     "hidden",
   ornamentTopLeft: "top-4 left-4 md:top-6 md:left-6",
@@ -22,9 +23,9 @@ export interface AuthLayoutProps {
 export function AuthLayout({ children, className }: AuthLayoutProps) {
   return (
     <div className={cn(styles.root, className)}>
-      <span className={styles.logo} aria-hidden>
-        Woody.
-      </span>
+      <div className={styles.logo} aria-hidden>
+        <WoodyLogo alt="" />
+      </div>
       {children}
     </div>
   );

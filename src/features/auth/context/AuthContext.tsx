@@ -112,9 +112,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshUser,
   };
 
+  /** Sempre renderizar `children` (com `<Outlet />`) para o router manter a árvore sob o provider.
+   * Bloquear só com overlay — substituir `children` por splash quebrava rotas/hidratação e podia originar
+   * `useAuth` fora do contexto em wrappers como `BetaClosedGate`. */
   return (
     <AuthContext.Provider value={value}>
-      {isLoading ? <SessionBootstrapSplash /> : children}
+      {children}
+      {isLoading ? (
+        <div className="fixed inset-0 z-[9999] min-h-dvh bg-[var(--woody-bg)]">
+          <SessionBootstrapSplash />
+        </div>
+      ) : null}
     </AuthContext.Provider>
   );
 }

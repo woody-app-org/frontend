@@ -1,6 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { SessionBootstrapSplash } from "@/features/auth/components/SessionBootstrapSplash";
 import { isBetaClosed } from "@/config/beta";
 import { hasValidatedBetaInvite } from "@/features/beta/betaInvite.storage";
 import { resolveVerificationRoute } from "@/features/verification/services/verification.service";
@@ -23,7 +22,7 @@ export function ProtectedRoute({ children, requireVerified = true }: ProtectedRo
   const location = useLocation();
 
   if (isLoading) {
-    return <SessionBootstrapSplash />;
+    return null;
   }
 
   if (!isAuthenticated) {

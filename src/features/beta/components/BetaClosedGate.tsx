@@ -1,6 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { SessionBootstrapSplash } from "@/features/auth/components/SessionBootstrapSplash";
 import { isBetaClosed } from "@/config/beta";
 import { hasValidatedBetaInvite } from "@/features/beta/betaInvite.storage";
 
@@ -27,7 +26,7 @@ export function BetaClosedGate({ children }: BetaClosedGateProps) {
   }
 
   if (isLoading) {
-    return <SessionBootstrapSplash />;
+    return null;
   }
 
   if (isAuthenticated) {

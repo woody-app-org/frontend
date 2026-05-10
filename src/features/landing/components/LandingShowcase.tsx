@@ -1,3 +1,4 @@
+import { WoodyLogo } from "@/components/branding/WoodyLogo";
 import { LANDING_IDS } from "../constants";
 
 /**
@@ -44,9 +45,12 @@ export function LandingShowcase() {
               <div className="relative overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#eae8e2] shadow-[0_40px_100px_rgba(0,0,0,0.45)] ring-1 ring-white/10">
                 <div className="flex items-center justify-between gap-3 border-b border-black/[0.06] bg-[var(--woody-ink)] px-4 py-3 md:px-5">
                   <div className="flex items-center gap-2">
-                    <span className="font-serif text-sm font-semibold tracking-tight text-white">
-                      Woody<span className="text-[var(--woody-lime)]">.</span>
-                    </span>
+                    <WoodyLogo
+                      tone="onDark"
+                      alt=""
+                      aria-hidden
+                      className="h-[1.125rem] w-auto max-w-[min(120px,28vw)] sm:h-5"
+                    />
                     <span className="hidden h-4 w-px bg-white/15 sm:block" aria-hidden />
                     <span className="hidden text-[11px] font-medium uppercase tracking-[0.16em] text-white/45 sm:inline">
                       Feed

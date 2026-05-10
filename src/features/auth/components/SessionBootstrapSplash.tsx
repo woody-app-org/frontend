@@ -1,3 +1,5 @@
+import { WoodyLogo } from "@/components/branding/WoodyLogo";
+
 /**
  * Ecrã mínimo enquanto o JWT é validado com `/users/me` — evita flash de avatar/dados em cache.
  */
@@ -8,7 +10,7 @@ export function SessionBootstrapSplash() {
       aria-live="polite"
       aria-busy="true"
     >
-      <div className="text-lg font-semibold tracking-tight text-[var(--woody-text)]">Woody</div>
+      <WoodyLogo className="h-8 w-auto max-w-[200px]" />
       <p className="text-sm text-[var(--woody-muted)]">A verificar sessão…</p>
     </main>
   );

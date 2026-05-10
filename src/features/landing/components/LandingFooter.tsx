@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { WoodyLogo } from "@/components/branding/WoodyLogo";
 import { LANDING_NARRATIVE_IDS } from "../constants";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 
@@ -10,9 +11,7 @@ export function LandingFooter() {
       <div className="mx-auto max-w-[var(--layout-max-width)] px-[var(--layout-gutter)]">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="font-serif text-2xl font-semibold text-[var(--woody-ink)]">
-              Woody<span className="text-[var(--woody-lime)]">.</span>
-            </p>
+            <WoodyLogo className="h-8 w-auto max-w-[min(220px,70vw)] md:h-9" />
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-[var(--woody-muted)]">
               Rede social orientada por comunidades, pensada para mulheres — com conversas mais contextualizadas e
               acolhimento real.

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { PrivateNotificationsBell } from "./PrivateNotificationsBell";
 import { UserAccountMenu } from "./UserAccountMenu";
-import logoBlack from "@/assets/logo-black.svg";
+import { WoodyLogo } from "@/components/branding/WoodyLogo";
 
 export interface AppTopNavProps {
   onOpenSearch: () => void;
@@ -54,14 +54,7 @@ export function AppTopNav({
           className="flex shrink-0 items-center outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-header)]"
           aria-label="Woody — Início"
         >
-          <img
-            src={logoBlack}
-            alt="Woody"
-            width={510}
-            height={112}
-            decoding="async"
-            className="h-8 w-auto max-w-[min(200px,42vw)] object-contain object-left select-none sm:h-9 sm:max-w-[min(220px,36vw)] md:max-w-[min(240px,28vw)]"
-          />
+          <WoodyLogo className="h-8 w-auto max-w-[min(200px,42vw)] sm:h-9 sm:max-w-[min(220px,36vw)] md:max-w-[min(240px,28vw)]" />
         </Link>
 
         <nav

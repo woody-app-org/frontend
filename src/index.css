@@ -320,6 +320,29 @@ input.woody-auth-input:autofill:focus {
   }
 }
 
+/* Landing — faixa preta «regras»: vitrine / ticker horizontal */
+@keyframes woodyRulesMarquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.woody-rules-marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: woodyRulesMarquee 32s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .woody-rules-marquee-track {
+    animation: none;
+  }
+}
+
 /* Toasts (Sonner) — reduzir movimento sem remover feedback */
 @media (prefers-reduced-motion: reduce) {
   [data-sonner-toast],

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
-import logoWoody from "@/assets/logo.svg";
+import { WoodyLogo } from "@/components/branding/WoodyLogo";
 import { mobileQr } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
 import { ScrollReveal } from "../motion/ScrollReveal";
@@ -66,14 +66,11 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
             <h2 className="max-w-[min(100%,22rem)] font-sans text-[clamp(2rem,5.5vw,3.75rem)] font-black leading-[0.95] tracking-[-0.03em] text-[#8dbf43] md:max-w-none">
               {mobileQr.title}
             </h2>
-            <img
-              src={logoWoody}
+            <WoodyLogo
+              tone="onDark"
               alt=""
-              width={399}
-              height={83}
-              className="mt-5 h-auto w-[min(100%,14rem)] object-contain object-left opacity-95 md:mt-6 md:w-[min(100%,17rem)]"
-              decoding="async"
               aria-hidden
+              className="mt-5 h-auto w-[min(100%,14rem)] opacity-95 md:mt-6 md:w-[min(100%,17rem)]"
             />
           </ScrollReveal>
 

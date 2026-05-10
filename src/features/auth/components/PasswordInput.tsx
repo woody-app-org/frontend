@@ -32,7 +32,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           type="button"
           disabled={disabled}
           className={cn(
-            "absolute right-1 top-1/2 z-20 flex h-10 min-h-10 min-w-10 items-center justify-center rounded-lg",
+            "absolute right-1 top-1/2 z-20 flex h-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg",
             "text-[var(--auth-text-on-beige)]/75 hover:bg-black/[0.06] hover:text-[var(--auth-text-on-beige)]",
             "transition-colors touch-manipulation active:bg-black/[0.08]",
             "disabled:pointer-events-none disabled:opacity-40",
