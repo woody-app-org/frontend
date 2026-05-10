@@ -78,7 +78,7 @@ export function VerificationPendingPage() {
                 quando sua conta for aprovada.
               </p>
               <p className="text-xs text-[var(--woody-muted)]">
-                O processo geralmente leva algumas horas. Se demorar mais de 48 horas, entre em
+                O processo geralmente leva algumas horas. Se demorar mais de 72 horas, entre em
                 contato pelo suporte.
               </p>
             </div>
