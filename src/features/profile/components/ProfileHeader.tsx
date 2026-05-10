@@ -33,8 +33,11 @@ const styles = {
   name: "truncate text-2xl font-bold tracking-[-0.03em] text-[var(--woody-text)] sm:text-[1.7rem]",
   pronouns: "text-sm font-medium text-[var(--woody-muted)]",
   details: "mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[var(--woody-muted)]",
-  detailItem: "inline-flex min-w-0 items-center gap-1.5",
-  detailIcon: "size-3.5 shrink-0 text-[var(--woody-muted)]/85",
+  detailItem: "inline-flex min-w-0 max-w-full items-center gap-1",
+  /** Caixa fixa centra ícones Lucide com o texto (evita desalinhamento óptico). */
+  detailIconWrap:
+    "flex size-4 shrink-0 items-center justify-center text-[var(--woody-muted)]/85 [&>svg]:size-3.5 [&>svg]:shrink-0",
+  detailText: "min-w-0 truncate leading-snug",
   tags: "mt-4 flex flex-wrap gap-2",
   tag:
     "inline-flex items-center gap-1.5 rounded-full border border-[var(--woody-accent)]/18 bg-[var(--woody-tag-bg)] px-3 py-1 text-xs font-semibold leading-none text-[var(--woody-tag-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
@@ -200,20 +203,29 @@ export function ProfileHeader({
               <div className={styles.details} aria-label="Informações do perfil">
                 {profile.role ? (
                   <span className={styles.detailItem}>
-                    <BriefcaseBusiness className={styles.detailIcon} aria-hidden />
-                    <span className="truncate">{profile.role}</span>
+                    <span className={styles.detailIconWrap} aria-hidden>
+                      <BriefcaseBusiness />
+                    </span>
+                    <span className={styles.detailText}>{profile.role}</span>
                   </span>
                 ) : null}
                 {profile.location ? (
                   <span className={styles.detailItem}>
-                    <MapPin className={styles.detailIcon} aria-hidden />
-                    <span className="truncate">{profile.location}</span>
+                    <span className={styles.detailIconWrap} aria-hidden>
+                      <MapPin />
+                    </span>
+                    <span className={styles.detailText}>{profile.location}</span>
                   </span>
                 ) : null}
                 {profile.username ? (
-                  <span className={styles.detailItem}>
-                    <AtSign className={styles.detailIcon} aria-hidden />
-                    <span className="truncate">@{profile.username}</span>
+                  <span
+                    className={styles.detailItem}
+                    aria-label={`Nome de utilizador @${profile.username}`}
+                  >
+                    <span className={styles.detailIconWrap} aria-hidden>
+                      <AtSign />
+                    </span>
+                    <span className={styles.detailText}>{profile.username}</span>
                   </span>
                 ) : null}
               </div>
