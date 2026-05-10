@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodySurface } from "@/lib/woody-ui";
+import { resolvePublicMediaUrl } from "@/lib/api";
 import type { ProfileSignal } from "../services/profile-signals.service";
 
 export interface ProfileSignalReceivedCardProps {
@@ -53,7 +54,10 @@ export function ProfileSignalReceivedCard({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 gap-3">
           <Avatar className="size-12">
-            <AvatarImage src={signal.sender.avatarUrl ?? undefined} alt={signal.sender.name} />
+            <AvatarImage
+              src={resolvePublicMediaUrl(signal.sender.avatarUrl) || undefined}
+              alt={signal.sender.name}
+            />
             <AvatarFallback className="bg-[var(--woody-nav)]/10 font-semibold text-[var(--woody-text)]">
               {initials(signal.sender.name)}
             </AvatarFallback>

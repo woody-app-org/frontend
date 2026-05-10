@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ImagePlus, Loader2, Pencil, User } from "lucide-react";
 import {
   Dialog,
@@ -18,6 +18,11 @@ import { updateProfile, validateProfileUpdatePayload } from "../services/profile
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { ImageCropDialog } from "@/components/media/ImageCropDialog";
 import { uploadImageMedia } from "@/lib/mediaUpload";
+import { resolvePublicMediaUrl } from "@/lib/api";
+import {
+  PROFILE_IMAGE_ACCEPT_ATTR,
+  validateProfileImageForCrop,
+} from "../lib/profileImageValidation";
 
 const inputClass =
   "rounded-xl border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] " +
@@ -90,6 +95,20 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const [bannerCropOpen, setBannerCropOpen] = useState(false);
   const [bannerCropSrc, setBannerCropSrc] = useState<string | null>(null);
 
+  const displayBannerUrl = useMemo(
+    () => (bannerUrl ? resolvePublicMediaUrl(bannerUrl) : ""),
+    [bannerUrl]
+  );
+  const displayAvatarUrl = useMemo(
+    () => (avatarUrl ? resolvePublicMediaUrl(avatarUrl) : ""),
+    [avatarUrl]
+  );
+
+  const [bannerPreviewFailed, setBannerPreviewFailed] = useState(false);
+  useEffect(() => {
+    setBannerPreviewFailed(false);
+  }, [bannerUrl]);
+
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -141,8 +160,12 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const handleAvatarFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !file.type.startsWith("image/")) {
-      setSubmitError("Selecione uma imagem válida.");
+    if (!file) {
+      return;
+    }
+    const check = validateProfileImageForCrop(file);
+    if (!check.ok) {
+      showErrorToast(check.message, { id: "woody-profile-avatar-format" });
       return;
     }
     if (file.size > fileMaxBytes) {
@@ -200,8 +223,12 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       e.target.value = "";
-      if (!file || !file.type.startsWith("image/")) {
-        setSubmitError("Selecione uma imagem válida para o banner.");
+      if (!file) {
+        return;
+      }
+      const check = validateProfileImageForCrop(file);
+      if (!check.ok) {
+        showErrorToast(check.message, { id: "woody-profile-banner-format" });
         return;
       }
       if (file.size > fileMaxBytes) {
@@ -303,8 +330,23 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
             </p>
             <div className="relative overflow-hidden rounded-xl border border-[var(--woody-accent)]/15 bg-[var(--woody-nav)]/5">
               <div className="h-24 sm:h-28 w-full">
-                {bannerUrl ? (
-                  <img src={bannerUrl} alt="" className="h-full w-full object-cover" />
+                {bannerUrl && displayBannerUrl && !bannerPreviewFailed ? (
+                  <img
+                    src={displayBannerUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    onError={() => {
+                      if (import.meta.env.DEV) {
+                        console.warn("[Woody] Edit profile banner preview failed to load", displayBannerUrl);
+                      }
+                      setBannerPreviewFailed(true);
+                    }}
+                  />
+                ) : bannerUrl ? (
+                  <div
+                    className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[var(--woody-nav)]/25 via-[var(--woody-accent)]/12 to-[var(--woody-nav)]/20 text-xs text-[var(--woody-muted)]"
+                    aria-hidden
+                  />
                 ) : (
                   <div className="flex h-full items-center justify-center text-xs text-[var(--woody-muted)]">
                     Nenhuma imagem
@@ -315,7 +357,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                 <input
                   ref={bannerInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={PROFILE_IMAGE_ACCEPT_ATTR}
                   className="sr-only"
                   onChange={handleBannerFile}
                 />
@@ -354,13 +396,21 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
             <input
               ref={avatarInputRef}
               type="file"
-              accept="image/*"
+              accept={PROFILE_IMAGE_ACCEPT_ATTR}
               className="sr-only"
               onChange={handleAvatarFile}
             />
             <div className="relative">
               <Avatar className="size-24 border-4 border-[var(--woody-card)] shadow-md ring-2 ring-[var(--woody-accent)]/10">
-                <AvatarImage src={avatarUrl ?? undefined} alt="" />
+                <AvatarImage
+                  src={displayAvatarUrl || undefined}
+                  alt=""
+                  onError={() => {
+                    if (import.meta.env.DEV) {
+                      console.warn("[Woody] Edit profile avatar preview failed to load", displayAvatarUrl);
+                    }
+                  }}
+                />
                 <AvatarFallback className="bg-[var(--woody-nav)]/10 text-lg text-[var(--woody-text)]">
                   {getInitials(name || profile.name)}
                 </AvatarFallback>

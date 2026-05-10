@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodySurface } from "@/lib/woody-ui";
+import { resolvePublicMediaUrl } from "@/lib/api";
 import type { Community, CommunityMemberRole } from "@/domain/types";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
 import { CommunityMemberRoleIndicator } from "@/features/communities/components/CommunityMemberRoleIndicator";
@@ -160,7 +161,11 @@ function ProfileCommunityCompactLink({
       aria-label={`Abrir comunidade ${community.name}`}
     >
       <Avatar className={styles.avatar}>
-        <AvatarImage src={community.avatarUrl ?? undefined} alt="" className="object-cover" />
+        <AvatarImage
+          src={resolvePublicMediaUrl(community.avatarUrl) || undefined}
+          alt=""
+          className="object-cover"
+        />
         <AvatarFallback className="rounded-xl bg-[var(--woody-nav)]/10 text-xs font-bold text-[var(--woody-text)]">
           {initials(community.name)}
         </AvatarFallback>

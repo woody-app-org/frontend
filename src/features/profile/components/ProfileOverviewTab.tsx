@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
+import { resolvePublicMediaUrl } from "@/lib/api";
 import type { UserProfile } from "../types";
 import { ProfileAbout } from "./ProfileAbout";
 
@@ -88,7 +89,7 @@ export function ProfileOverviewTab({ profile, className }: ProfileOverviewTabPro
                     className="flex items-center gap-3 rounded-lg py-2 transition-colors hover:bg-[var(--woody-nav)]/8"
                   >
                     <Avatar className="size-9 shrink-0">
-                      <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
+                      <AvatarImage src={resolvePublicMediaUrl(user.avatarUrl) || undefined} alt="" />
                       <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xs">
                         {getInitials(user.name)}
                       </AvatarFallback>

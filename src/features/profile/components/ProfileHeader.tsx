@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AtSign, BookOpen, BriefcaseBusiness, Heart, Luggage, MapPin, MoreHorizontal, Pencil, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,9 +11,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
-import type { ReactNode } from "react";
 import type { UserProfile } from "../types";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { resolvePublicMediaUrl } from "@/lib/api";
 
 const styles = {
   card:
@@ -85,14 +86,45 @@ export function ProfileHeader({
   followSlot,
   followStats,
 }: ProfileHeaderProps) {
+  const resolvedAvatarUrl = useMemo(
+    () => (profile.avatarUrl ? resolvePublicMediaUrl(profile.avatarUrl) : ""),
+    [profile.avatarUrl]
+  );
+  const resolvedBannerUrl = useMemo(
+    () => (profile.bannerUrl ? resolvePublicMediaUrl(profile.bannerUrl) : ""),
+    [profile.bannerUrl]
+  );
+
+  const [bannerLoadFailed, setBannerLoadFailed] = useState(false);
+  useEffect(() => {
+    setBannerLoadFailed(false);
+  }, [profile.bannerUrl]);
+
+  const showBannerImage =
+    Boolean(profile.bannerUrl && resolvedBannerUrl && !bannerLoadFailed);
+
   return (
     <Card className={cn(styles.card, className)}>
       <div className={styles.bannerWrap}>
-        {profile.bannerUrl ? (
+        {showBannerImage ? (
           <img
-            src={profile.bannerUrl}
+            src={resolvedBannerUrl}
             alt=""
             className={styles.banner}
+            onError={() => {
+              if (import.meta.env.DEV) {
+                console.warn("[Woody] Profile banner failed to load", resolvedBannerUrl);
+              }
+              setBannerLoadFailed(true);
+            }}
+          />
+        ) : profile.bannerUrl ? (
+          <div
+            className={cn(
+              styles.banner,
+              "bg-gradient-to-br from-[var(--woody-nav)]/25 via-[var(--woody-accent)]/12 to-[var(--woody-nav)]/20"
+            )}
+            aria-hidden
           />
         ) : (
           <div className={cn(styles.banner, "bg-[var(--woody-nav)]/15")} />
@@ -102,7 +134,15 @@ export function ProfileHeader({
         <div className={styles.topRow}>
           <div className={styles.avatarWrap}>
             <Avatar className={styles.avatar}>
-              <AvatarImage src={profile.avatarUrl ?? undefined} alt={profile.name} />
+              <AvatarImage
+                src={resolvedAvatarUrl || undefined}
+                alt={profile.name}
+                onError={() => {
+                  if (import.meta.env.DEV) {
+                    console.warn("[Woody] Profile avatar failed to load", resolvedAvatarUrl);
+                  }
+                }}
+              />
               <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xl font-bold text-[var(--woody-text)]">
                 {getInitials(profile.name)}
               </AvatarFallback>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOut, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { useAuth } from "@/features/auth/context/AuthContext";
 import { LogoutConfirmationDialog } from "@/features/auth/components/LogoutConfirmationDialog";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import { resolvePublicMediaUrl } from "@/lib/api";
 
 const triggerClass =
   "size-11 md:size-10 flex items-center justify-center rounded-full hover:bg-[var(--woody-nav)]/10 overflow-hidden ring-1 ring-[var(--woody-divider)] shrink-0";
@@ -35,6 +36,17 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
   const { user, logoutAsync } = useAuth();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);
+  const [menuAvatarFailed, setMenuAvatarFailed] = useState(false);
+
+  useEffect(() => {
+    setMenuAvatarFailed(false);
+  }, [user?.avatarUrl]);
+
+  const resolvedMenuAvatarUrl = user?.avatarUrl
+    ? resolvePublicMediaUrl(user.avatarUrl)
+    : "";
+  const showMenuAvatar =
+    Boolean(user?.avatarUrl && resolvedMenuAvatarUrl && !menuAvatarFailed);
 
   const guestIconClass =
     variant === "inverse"
@@ -77,8 +89,18 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
             aria-label="Menu da conta"
             aria-haspopup="menu"
           >
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt="" className={avatarImgClass} />
+            {showMenuAvatar ? (
+              <img
+                src={resolvedMenuAvatarUrl}
+                alt=""
+                className={avatarImgClass}
+                onError={() => {
+                  if (import.meta.env.DEV) {
+                    console.warn("[Woody] Account menu avatar failed to load", resolvedMenuAvatarUrl);
+                  }
+                  setMenuAvatarFailed(true);
+                }}
+              />
             ) : (
               <span
                 className={cn(

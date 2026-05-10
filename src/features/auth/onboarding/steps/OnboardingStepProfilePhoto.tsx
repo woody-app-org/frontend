@@ -8,6 +8,10 @@ import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 import { ImageCropDialog } from "@/components/media/ImageCropDialog";
+import {
+  PROFILE_IMAGE_ACCEPT_ATTR,
+  validateProfileImageForCrop,
+} from "@/features/profile/lib/profileImageValidation";
 
 /**
  * Etapa 3 — foto de perfil: recorte local; upload após registo com JWT (ver `OnboardingStepComplete`).
@@ -34,8 +38,9 @@ export function OnboardingStepProfilePhoto() {
 
   const openCropWithFile = useCallback((file: File) => {
     setError(null);
-    if (!file.type.startsWith("image/")) {
-      setError("Escolha um arquivo de imagem (JPG, PNG ou WebP).");
+    const check = validateProfileImageForCrop(file);
+    if (!check.ok) {
+      setError(check.message);
       return;
     }
     if (file.size > ONBOARDING_MAX_IMAGE_BYTES) {
@@ -111,7 +116,7 @@ export function OnboardingStepProfilePhoto() {
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept={PROFILE_IMAGE_ACCEPT_ATTR}
         className="sr-only"
         onChange={handleInputChange}
         aria-hidden

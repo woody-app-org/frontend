@@ -40,7 +40,7 @@ function collectMediaEntries(posts: Post[]): MediaEntry[] {
     const postContext: PostLightboxContext = {
       postId: post.id,
       authorName: post.author.name,
-      authorAvatarUrl: post.author.avatarUrl,
+      authorAvatarUrl: resolvePublicMediaUrl(post.author.avatarUrl) || undefined,
       postTitle: post.title ?? undefined,
       postContent: post.content,
       createdAt: post.createdAt,

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import { resolvePublicMediaUrl } from "@/lib/api";
 import type { User } from "@/domain/types";
 
 function initials(name: string): string {
@@ -32,7 +33,7 @@ export function FollowListUserRow({ user, className, onNavigate }: FollowListUse
         )}
       >
         <Avatar className="size-11 shrink-0 border border-[var(--woody-accent)]/12 sm:size-12">
-          <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
+          <AvatarImage src={resolvePublicMediaUrl(user.avatarUrl) || undefined} alt="" />
           <AvatarFallback className="bg-[var(--woody-nav)]/10 text-sm text-[var(--woody-text)]">
             {initials(user.name)}
           </AvatarFallback>

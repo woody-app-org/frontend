@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { resolvePublicMediaUrl } from "@/lib/api";
 import { Link2, Users } from "lucide-react";
 import type { UserProfile } from "../types";
 
@@ -86,7 +87,10 @@ export function ProfileSidebar({ profile, className }: ProfileSidebarProps) {
                     aria-label={`Ver perfil de ${user.name}`}
                   >
                     <Avatar size="default" className={styles.suggestionAvatar}>
-                      <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name} />
+                      <AvatarImage
+                        src={resolvePublicMediaUrl(user.avatarUrl) || undefined}
+                        alt={user.name}
+                      />
                       <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
                         {getInitials(user.name)}
                       </AvatarFallback>
