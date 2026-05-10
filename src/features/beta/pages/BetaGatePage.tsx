@@ -92,9 +92,10 @@ export function BetaGatePage() {
               alt=""
               width={213}
               height={180}
-              className="h-[4.25rem] w-auto max-w-[min(92vw,12rem)] object-contain object-center select-none sm:h-[5.25rem]"
+              className="h-[7rem] w-auto max-w-[min(94vw,22rem)] object-contain object-center select-none sm:h-[8rem] md:h-[8.5rem]"
               decoding="async"
               draggable={false}
+              aria-hidden
             />
           </div>
 

@@ -27,7 +27,7 @@ export function ProtectedRoute({ children, requireVerified = true }: ProtectedRo
 
   if (!isAuthenticated) {
     if (isBetaClosed() && !hasValidatedBetaInvite()) {
-      return <Navigate to="/beta" replace state={{ from: location }} />;
+      return <Navigate to="/invite" replace state={{ from: location }} />;
     }
     const loginTarget = isBetaClosed() ? "/auth/login" : "/auth";
     return <Navigate to={loginTarget} state={{ from: location }} replace />;

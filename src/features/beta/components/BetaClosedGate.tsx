@@ -42,5 +42,5 @@ export function BetaClosedGate({ children }: BetaClosedGateProps) {
     return <>{children}</>;
   }
 
-  return <Navigate to="/beta" replace state={{ from: pathname }} />;
+  return <Navigate to="/invite" replace state={{ from: pathname }} />;
 }

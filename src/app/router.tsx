@@ -54,7 +54,8 @@ export const router = createBrowserRouter([
       </AuthProvider>
     ),
     children: [
-      { path: "beta", element: <BetaGatePage /> },
+      { path: "invite", element: <BetaGatePage /> },
+      { path: "beta", element: <Navigate to="/invite" replace /> },
       { path: "convite/:code", element: <BetaInviteLinkPage /> },
       { path: "invite/:code", element: <BetaInviteLinkPage /> },
       {
