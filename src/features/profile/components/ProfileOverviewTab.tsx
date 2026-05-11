@@ -31,9 +31,9 @@ export function ProfileOverviewTab({ profile, className }: ProfileOverviewTabPro
       <CardContent className="p-4 sm:p-6 space-y-8">
         <ProfileAbout bio={profile.bio} asPlain />
 
-        {profile.location || profile.role ? (
+        {profile.location || profile.profession ? (
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--woody-muted)]">
-            {profile.role ? <span>{profile.role}</span> : null}
+            {profile.profession ? <span>{profile.profession}</span> : null}
             {profile.location ? <span>{profile.location}</span> : null}
           </div>
         ) : null}

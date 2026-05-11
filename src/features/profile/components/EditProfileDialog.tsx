@@ -86,7 +86,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const [bio, setBio] = useState(profile.bio);
   const [pronouns, setPronouns] = useState(profile.pronouns ?? "");
   const [location, setLocation] = useState(profile.location ?? "");
-  const [role, setRole] = useState(profile.role ?? "");
+  const [profession, setProfession] = useState(profile.profession ?? "");
   const [interestsRaw, setInterestsRaw] = useState(interestsToField(profile.interests));
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl);
   const [bannerUrl, setBannerUrl] = useState<string | null>(profile.bannerUrl);
@@ -127,7 +127,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     setBio(p.bio);
     setPronouns(p.pronouns ?? "");
     setLocation(p.location ?? "");
-    setRole(p.role ?? "");
+    setProfession(p.profession ?? "");
     setInterestsRaw(interestsToField(p.interests));
     setAvatarUrl(p.avatarUrl);
     setBannerUrl(p.bannerUrl);
@@ -255,7 +255,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
         bio: bio.trim(),
         pronouns: pronouns.trim() || undefined,
         location: location.trim() || undefined,
-        role: role.trim() || undefined,
+        profession: profession.trim() || undefined,
         avatarUrl,
         bannerUrl,
         interests,
@@ -287,7 +287,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       bio,
       pronouns,
       location,
-      role,
+      profession,
       interestsRaw,
       avatarUrl,
       bannerUrl,
@@ -475,13 +475,13 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor={`${formId}-role`} className="text-sm font-medium text-[var(--woody-text)]">
+              <label htmlFor={`${formId}-profession`} className="text-sm font-medium text-[var(--woody-text)]">
                 Título ou profissão
               </label>
               <Input
-                id={`${formId}-role`}
-                value={role}
-                onChange={(ev) => setRole(ev.target.value)}
+                id={`${formId}-profession`}
+                value={profession}
+                onChange={(ev) => setProfession(ev.target.value)}
                 className={inputClass}
                 placeholder="Educadora"
               />

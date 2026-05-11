@@ -201,12 +201,12 @@ export function ProfileHeader({
                 )}
               </div>
               <div className={styles.details} aria-label="Informações do perfil">
-                {profile.role ? (
+                {profile.profession ? (
                   <span className={styles.detailItem}>
                     <span className={styles.detailIconWrap} aria-hidden>
                       <BriefcaseBusiness />
                     </span>
-                    <span className={styles.detailText}>{profile.role}</span>
+                    <span className={styles.detailText}>{profile.profession}</span>
                   </span>
                 ) : null}
                 {profile.location ? (

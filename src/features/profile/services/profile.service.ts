@@ -26,8 +26,8 @@ export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { o
   const location = payload.location?.trim() ?? "";
   if (location.length > 60) return { ok: false, error: "Localização muito longa." };
 
-  const role = payload.role?.trim() ?? "";
-  if (role.length > 60) return { ok: false, error: "Título ou profissão muito longos." };
+  const profession = payload.profession?.trim() ?? "";
+  if (profession.length > 60) return { ok: false, error: "Título ou profissão muito longos." };
 
   const interestList = (payload.interests ?? []).map((t) => ({ ...t, label: t.label.trim() })).filter((t) => t.label.length > 0);
   if (interestList.length > 24) {
@@ -70,7 +70,7 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
       bio: (payload.bio ?? "").trim(),
       pronouns: payload.pronouns?.trim() || undefined,
       location: payload.location?.trim() || undefined,
-      role: payload.role?.trim() || undefined,
+      profession: payload.profession?.trim() || undefined,
       avatarUrl: payload.avatarUrl,
       bannerUrl: payload.bannerUrl,
       interests: payload.interests?.map((i) => ({ id: i.id, label: i.label.trim() })),
@@ -108,7 +108,7 @@ export async function updateMyAvatarFromUploadedUrl(
       bio: p.bio,
       pronouns: p.pronouns,
       location: p.location,
-      role: p.role,
+      profession: p.profession,
       avatarUrl: newAvatarUrl,
       bannerUrl: p.bannerUrl,
       interests: p.interests,

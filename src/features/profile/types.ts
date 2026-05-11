@@ -33,7 +33,8 @@ export interface UserProfile {
   bannerUrl: string | null;
   bio: string;
   location?: string;
-  role?: string;
+  /** Título ou profissão (campo do perfil; não é o papel da conta na plataforma). */
+  profession?: string;
   socialLinks: SocialLink[];
   interests: InterestTag[];
   suggestions: ProfileSuggestion[];
@@ -52,7 +53,7 @@ export interface ProfileUpdatePayload {
   bio: string;
   pronouns?: string;
   location?: string;
-  role?: string;
+  profession?: string;
   avatarUrl?: string | null;
   bannerUrl?: string | null;
   interests?: InterestTag[];

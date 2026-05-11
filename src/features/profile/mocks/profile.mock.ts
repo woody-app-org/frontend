@@ -40,7 +40,7 @@ export const MOCK_USER_PROFILE: UserProfile = {
   bannerUrl: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=1200&h=400&fit=crop",
   bio: "Professora, facilitadora de grupos e entusiasta de espaços online onde mulheres possam falar com segurança. Na Woody, aprendo tanto quanto compartilho — especialmente sobre trabalho, leitura e cuidado coletivo.",
   location: "Porto Alegre, RS",
-  role: "Educadora",
+  profession: "Educadora",
   socialLinks: MOCK_SOCIAL_LINKS,
   interests: MOCK_INTERESTS,
   suggestions: MOCK_SUGGESTIONS,
