@@ -1,5 +1,5 @@
-import type { ReactNode, RefObject } from "react";
-import { useCallback, useState } from "react";
+import type { MutableRefObject, ReactNode, RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Send, Smile, Sticker, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +8,7 @@ import type { CommentGifDraft } from "@/domain/types";
 import { GifStickerPickerDialog } from "@/features/messages/components/GifStickerPickerDialog";
 import type { StickerGifSearchItemDto } from "@/features/messages/types";
 import { showErrorToast } from "@/lib/toast";
+import { CommentEmojiPicker } from "./CommentEmojiPicker";
 
 export interface CommentFormProps {
   id?: string;
@@ -56,6 +57,70 @@ export function CommentForm({
 }: CommentFormProps) {
   const [draftGif, setDraftGif] = useState<CommentGifDraft | null>(null);
   const [gifPickerOpen, setGifPickerOpen] = useState(false);
+  const [emojiPopoverOpen, setEmojiPopoverOpen] = useState(false);
+
+  const localTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const emojiPopoverWrapRef = useRef<HTMLDivElement | null>(null);
+  const emojiPanelId = `${id}-emoji-panel`;
+
+  const assignTextareaRef = useCallback(
+    (node: HTMLTextAreaElement | null) => {
+      localTextareaRef.current = node;
+      const external = textareaRef;
+      if (external && typeof external === "object" && "current" in external) {
+        (external as MutableRefObject<HTMLTextAreaElement | null>).current = node;
+      }
+    },
+    [textareaRef]
+  );
+
+  const closeEmojiPopover = useCallback(() => setEmojiPopoverOpen(false), []);
+
+  const insertEmojiAtCursor = useCallback(
+    (emoji: string) => {
+      const el = localTextareaRef.current;
+      if (!el || disabled || isSubmitting) return;
+      const start = el.selectionStart ?? 0;
+      const end = el.selectionEnd ?? 0;
+      const next = value.slice(0, start) + emoji + value.slice(end);
+      onChange(next);
+      const pos = start + emoji.length;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.focus();
+          try {
+            el.setSelectionRange(pos, pos);
+          } catch {
+            /* alguns browsers em edge cases */
+          }
+        });
+      });
+    },
+    [value, onChange, disabled, isSubmitting]
+  );
+
+  useEffect(() => {
+    if (!emojiPopoverOpen) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      const wrap = emojiPopoverWrapRef.current;
+      if (wrap && !wrap.contains(e.target as Node)) closeEmojiPopover();
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeEmojiPopover();
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [emojiPopoverOpen, closeEmojiPopover]);
 
   const trimmed = value.trim();
   const hasGif = draftGif != null && draftGif.gifUrl.length > 0;
@@ -81,11 +146,14 @@ export function CommentForm({
           e.preventDefault();
           if (!canSubmit) return;
           const ok = await onSubmit({ text: value, gif: draftGif });
-          if (ok) setDraftGif(null);
+          if (ok) {
+            setDraftGif(null);
+            closeEmojiPopover();
+          }
         }}
       >
         <Textarea
-          ref={textareaRef}
+          ref={assignTextareaRef}
           id={id}
           name="comment"
           placeholder={placeholder}
@@ -155,18 +223,35 @@ export function CommentForm({
               <Sticker className="size-3.5" aria-hidden />
               <span className="hidden text-xs sm:inline">GIF</span>
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={disabled || isSubmitting}
-              onClick={() => textareaRef?.current?.focus()}
-              className="h-8 gap-1 px-2 text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
-              aria-label="Focar campo de comentário (emoji do teclado)"
-            >
-              <Smile className="size-3.5" aria-hidden />
-              <span className="hidden text-xs sm:inline">Emoji</span>
-            </Button>
+            <div className="relative shrink-0" ref={emojiPopoverWrapRef}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={disabled || isSubmitting}
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  setEmojiPopoverOpen((o) => !o);
+                }}
+                aria-label="Abrir seletor de emojis"
+                aria-expanded={emojiPopoverOpen}
+                aria-haspopup="dialog"
+                aria-controls={emojiPanelId}
+                className={cn(
+                  "h-8 gap-1 px-2 text-[var(--woody-muted)] hover:text-[var(--woody-text)]",
+                  emojiPopoverOpen && "bg-[var(--woody-accent)]/12 text-[var(--woody-text)]"
+                )}
+              >
+                <Smile className="size-3.5" aria-hidden />
+                <span className="hidden text-xs sm:inline">Emoji</span>
+              </Button>
+              <CommentEmojiPicker
+                open={emojiPopoverOpen}
+                panelId={emojiPanelId}
+                onSelectEmoji={insertEmojiAtCursor}
+                onClose={closeEmojiPopover}
+              />
+            </div>
             <Button
               type="submit"
               size="sm"
