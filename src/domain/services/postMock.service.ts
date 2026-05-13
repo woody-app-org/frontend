@@ -1,7 +1,7 @@
 /**
  * Leitura e mutação de posts e comentários via API Woody.
  */
-import type { Comment, Post } from "../types";
+import type { Comment, CommentGifDraft, Post } from "../types";
 import { api, getApiErrorMessage } from "@/lib/api";
 import { mapCommentFromApi, mapPostFromApi } from "@/lib/apiMappers";
 import axios from "axios";
@@ -93,15 +93,30 @@ export async function createCommentMock(
   postId: string,
   _viewerId: string,
   content: string,
-  parentCommentId?: string | null
+  parentCommentId?: string | null,
+  gif?: CommentGifDraft | null
 ): Promise<CreateCommentMockResult> {
   const trimmed = content.trim();
-  if (!trimmed) return { ok: false, error: "Escreva uma mensagem antes de enviar." };
+  const hasGif = Boolean(gif?.gifUrl?.trim());
+  if (!trimmed && !hasGif) {
+    return { ok: false, error: "Escreve uma mensagem ou escolhe um GIF." };
+  }
+
+  const body: Record<string, unknown> = {
+    content: trimmed,
+    parentCommentId: parentCommentId ?? undefined,
+  };
+
+  if (hasGif && gif) {
+    body.gifUrl = gif.gifUrl;
+    body.gifThumbnailUrl = gif.gifThumbnailUrl?.trim() || undefined;
+    body.gifProvider = gif.gifProvider;
+    body.gifExternalId = gif.gifExternalId;
+    body.gifTitle = gif.gifTitle?.trim() || undefined;
+  }
+
   try {
-    const { data } = await api.post(`/posts/${encodeURIComponent(postId)}/comments`, {
-      content: trimmed,
-      parentCommentId: parentCommentId ?? undefined,
-    });
+    const { data } = await api.post(`/posts/${encodeURIComponent(postId)}/comments`, body);
     return { ok: true, comment: mapCommentFromApi(data as Record<string, unknown>) };
   } catch (e) {
     return { ok: false, error: getApiErrorMessage(e, "Não foi possível publicar o comentário.") };

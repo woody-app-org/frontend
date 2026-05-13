@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { CommentGifDraft } from "@/domain/types";
 import { CommentForm } from "./CommentForm";
 
 export interface ReplyFormProps {
   parentCommentId: string;
   parentAuthorName: string;
-  onSubmit: (body: string) => Promise<boolean>;
+  onSubmit: (body: string, parentCommentId: string, gif?: CommentGifDraft | null) => Promise<boolean>;
   onCancel: () => void;
   isSubmitting: boolean;
   disabled?: boolean;
@@ -37,11 +38,10 @@ export function ReplyForm({
     return () => window.cancelAnimationFrame(t);
   }, [autoFocus, parentCommentId]);
 
-  const handleSubmit = async () => {
-    const text = body.trim();
-    if (!text) return;
-    const ok = await onSubmit(text);
+  const handleSubmit = async (payload: { text: string; gif: CommentGifDraft | null }) => {
+    const ok = await onSubmit(payload.text, parentCommentId, payload.gif);
     if (ok) setBody("");
+    return ok;
   };
 
   const fieldId = `reply-to-${parentCommentId}`;

@@ -131,6 +131,15 @@ export type PostPublicationContext = "profile" | "community";
  */
 export type CommentContentModerationMask = "hidden_by_post_author";
 
+/** GIF opcional escolhido no composer (alinhado ao pedido da API Woody). */
+export interface CommentGifDraft {
+  gifUrl: string;
+  gifThumbnailUrl?: string;
+  gifProvider: string;
+  gifExternalId: string;
+  gifTitle?: string;
+}
+
 /**
  * Comentário no thread de um post (forma enriquecida para UI).
  * Payload de API típico: ids + texto + timestamps; `author` costuma vir expandido ou via join.
@@ -156,6 +165,12 @@ export interface Comment {
   likesCount: number;
   /** Se a utilizadora atual curtiu este comentário (só fiável com sessão). */
   likedByCurrentUser: boolean;
+  /** GIF externo opcional (API devolve objeto `gif` ou campos omitidos). */
+  gifUrl?: string;
+  gifThumbnailUrl?: string;
+  gifProvider?: string;
+  gifExternalId?: string;
+  gifTitle?: string;
   /**
    * Preenchido em `enrichComment` quando há `viewerId` + contexto do post.
    * UI usa `getCommentContentForViewer` para texto seguro a exibir.

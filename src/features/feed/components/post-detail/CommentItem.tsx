@@ -142,14 +142,30 @@ export function CommentItem({
         {isCommentContentMaskedForViewer(comment) ? (
           <HiddenCommentPlaceholder nested={nested} />
         ) : (
-          <p
-            className={cn(
-              "mt-1.5 whitespace-pre-wrap leading-relaxed text-[var(--woody-text)]/90 [overflow-wrap:anywhere]",
-              nested ? "text-[0.875rem] sm:text-[0.9375rem]" : "text-[0.9375rem]"
-            )}
-          >
-            {comment.content}
-          </p>
+          <div className="mt-1.5 space-y-2">
+            {comment.content.trim() ? (
+              <p
+                className={cn(
+                  "whitespace-pre-wrap leading-relaxed text-[var(--woody-text)]/90 [overflow-wrap:anywhere]",
+                  nested ? "text-[0.875rem] sm:text-[0.9375rem]" : "text-[0.9375rem]"
+                )}
+              >
+                {comment.content}
+              </p>
+            ) : null}
+            {comment.gifUrl ? (
+              <div className="max-w-[min(100%,240px)]">
+                <img
+                  src={comment.gifUrl}
+                  alt={comment.gifTitle ? `GIF: ${comment.gifTitle}` : "GIF do comentário"}
+                  className="max-h-[200px] w-full rounded-lg border border-[var(--woody-accent)]/10 object-contain sm:max-h-[220px]"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
+              </div>
+            ) : null}
+          </div>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
           <button

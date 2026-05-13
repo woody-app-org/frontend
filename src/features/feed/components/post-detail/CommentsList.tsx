@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { Comment, Post } from "@/domain/types";
+import type { Comment, CommentGifDraft, Post } from "@/domain/types";
 import { getRootCommentsByPostId } from "@/domain/lib/commentThreads";
 import { CommentThread } from "./CommentThread";
 import { CommentsEmptyState } from "./CommentsEmptyState";
@@ -32,7 +32,7 @@ export interface CommentsListProps {
   className?: string;
   replyingToCommentId: string | null;
   onReplyingToChange: (commentId: string | null) => void;
-  onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
+  onReplySubmit: (body: string, parentCommentId: string, gif?: CommentGifDraft | null) => Promise<boolean>;
   isCreatingComment: boolean;
   onToggleCommentLike: (commentId: string) => void;
   commentLikePendingIds: ReadonlySet<string>;

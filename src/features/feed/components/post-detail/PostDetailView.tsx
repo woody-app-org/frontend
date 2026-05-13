@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Comment, Post } from "@/domain/types";
+import type { Comment, CommentGifDraft, Post } from "@/domain/types";
 import { Card } from "@/components/ui/card";
 import { CommentComposer } from "./CommentComposer";
 import { CommentsList } from "./CommentsList";
@@ -24,8 +24,8 @@ export interface PostDetailViewProps {
   onToggleCommentLike: (commentId: string) => void;
   commentLikePendingIds: ReadonlySet<string>;
   /** Comentário raiz (`parentCommentId` null). Respostas usam `onReplySubmit` na lista. */
-  onCreateComment: (body: string) => Promise<boolean>;
-  onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
+  onCreateComment: (body: string, gif?: CommentGifDraft | null) => Promise<boolean>;
+  onReplySubmit: (body: string, parentCommentId: string, gif?: CommentGifDraft | null) => Promise<boolean>;
   /** Atualiza comentários após ações da autora (ex.: destaque). */
   onReloadComments?: () => Promise<void>;
 }

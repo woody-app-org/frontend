@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import type { Comment, Post } from "@/domain/types";
+import type { Comment, CommentGifDraft, Post } from "@/domain/types";
 import {
   getPostByIdMock,
   postCommentsMockApi,
@@ -29,8 +29,12 @@ interface UsePostDetailReturn {
   refetchComments: () => Promise<void>;
   toggleLike: () => Promise<void>;
   toggleCommentLike: (commentId: string) => Promise<void>;
-  /** `parentCommentId` opcional para resposta (composer raiz envia `null`). */
-  createComment: (body: string, parentCommentId?: string | null) => Promise<boolean>;
+  /** `parentCommentId` opcional para resposta (composer raiz envia `null`). Terceiro argumento: GIF opcional. */
+  createComment: (
+    body: string,
+    parentCommentId?: string | null,
+    gif?: CommentGifDraft | null
+  ) => Promise<boolean>;
 }
 
 /**
@@ -233,13 +237,20 @@ export function usePostDetail(postId: string | undefined): UsePostDetailReturn {
   );
 
   const createComment = useCallback(
-    async (body: string, parentCommentId?: string | null) => {
+    async (body: string, parentCommentId?: string | null, gif?: CommentGifDraft | null) => {
       if (!postId) return false;
       const trimmed = body.trim();
-      if (!trimmed) return false;
+      const hasGif = Boolean(gif?.gifUrl?.trim());
+      if (!trimmed && !hasGif) return false;
       setIsCreatingComment(true);
       try {
-        const result = await postCommentsMockApi.create(postId, viewerId, trimmed, parentCommentId ?? null);
+        const result = await postCommentsMockApi.create(
+          postId,
+          viewerId,
+          trimmed,
+          parentCommentId ?? null,
+          gif ?? null
+        );
         if (!result.ok) {
           showErrorToast(result.error, { id: `woody-comment-err-${postId}` });
           return false;

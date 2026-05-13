@@ -1,14 +1,20 @@
 import type { ReactNode, RefObject } from "react";
-import { Loader2, Send } from "lucide-react";
+import { useCallback, useState } from "react";
+import { Loader2, Send, Smile, Sticker, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import type { CommentGifDraft } from "@/domain/types";
+import { GifStickerPickerDialog } from "@/features/messages/components/GifStickerPickerDialog";
+import type { StickerGifSearchItemDto } from "@/features/messages/types";
+import { showErrorToast } from "@/lib/toast";
 
 export interface CommentFormProps {
   id?: string;
   value: string;
   onChange: (value: string) => void;
-  onSubmit: () => void;
+  /** Devolve `true` se o comentário foi aceite (limpa GIF interno). */
+  onSubmit: (payload: { text: string; gif: CommentGifDraft | null }) => Promise<boolean>;
   isSubmitting: boolean;
   disabled?: boolean;
   placeholder?: string;
@@ -19,6 +25,18 @@ export interface CommentFormProps {
   onTextareaFocus?: () => void;
   rows?: number;
   className?: string;
+}
+
+function stickerItemToCommentGif(item: StickerGifSearchItemDto): CommentGifDraft | null {
+  const url = item.url.trim();
+  if (!url.toLowerCase().endsWith(".gif")) return null;
+  return {
+    gifUrl: url,
+    gifThumbnailUrl: item.thumbnailUrl?.trim() || undefined,
+    gifProvider: item.provider.trim(),
+    gifExternalId: item.externalId.trim(),
+    gifTitle: item.title.trim() || undefined,
+  };
 }
 
 export function CommentForm({
@@ -36,66 +54,153 @@ export function CommentForm({
   rows = 3,
   className,
 }: CommentFormProps) {
-  const canSubmit = value.trim().length > 0 && !isSubmitting && !disabled;
+  const [draftGif, setDraftGif] = useState<CommentGifDraft | null>(null);
+  const [gifPickerOpen, setGifPickerOpen] = useState(false);
+
+  const trimmed = value.trim();
+  const hasGif = draftGif != null && draftGif.gifUrl.length > 0;
+  const canSubmit = (trimmed.length > 0 || hasGif) && !isSubmitting && !disabled;
+
+  const onGifPick = useCallback((item: StickerGifSearchItemDto) => {
+    const mapped = stickerItemToCommentGif(item);
+    if (!mapped) {
+      showErrorToast("Para comentários só são aceites GIF animados (.gif).", {
+        id: "woody-comment-gif-type",
+      });
+      return;
+    }
+    setDraftGif(mapped);
+  }, []);
 
   return (
-    <form
-      className={cn("space-y-3", className)}
-      aria-busy={isSubmitting}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (canSubmit) onSubmit();
-      }}
-    >
-      <Textarea
-        ref={textareaRef}
-        id={id}
-        name="comment"
-        placeholder={placeholder}
-        value={value}
-        disabled={disabled || isSubmitting}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => onTextareaFocus?.()}
-        rows={rows}
-        className={cn(
-          "min-h-[88px] resize-y rounded-xl border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
-          "text-[var(--woody-text)] placeholder:text-[var(--woody-muted)]/80",
-          "shadow-none transition-[box-shadow,border-color] duration-200",
-          "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20"
-        )}
-        aria-label="Texto do comentário"
-      />
-      <div
-        className={cn(
-          "flex flex-wrap items-center gap-2",
-          footerStart ? "justify-between" : "justify-end"
-        )}
+    <>
+      <form
+        className={cn("space-y-3", className)}
+        aria-busy={isSubmitting}
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!canSubmit) return;
+          const ok = await onSubmit({ text: value, gif: draftGif });
+          if (ok) setDraftGif(null);
+        }}
       >
-        {footerStart ? <div className="flex shrink-0 items-center gap-2">{footerStart}</div> : null}
-        <Button
-          type="submit"
-          size="sm"
-          disabled={!canSubmit}
+        <Textarea
+          ref={textareaRef}
+          id={id}
+          name="comment"
+          placeholder={placeholder}
+          value={value}
+          disabled={disabled || isSubmitting}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => onTextareaFocus?.()}
+          rows={rows}
           className={cn(
-            "gap-1.5 bg-[var(--woody-accent)] text-white shadow-sm",
-            "transition-[transform,opacity,box-shadow] duration-200 hover:bg-[var(--woody-accent)]/92",
-            "active:scale-[0.98] disabled:active:scale-100",
-            "focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35"
+            "min-h-[88px] resize-y rounded-xl border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
+            "text-[var(--woody-text)] placeholder:text-[var(--woody-muted)]/80",
+            "shadow-none transition-[box-shadow,border-color] duration-200",
+            "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20"
           )}
-        >
-          {isSubmitting ? (
-            <span className="inline-flex items-center gap-1.5">
-              <Loader2 className="size-3.5 animate-spin" aria-hidden />
-              Enviando…
-            </span>
-          ) : (
-            <>
-              <Send className="size-3.5" aria-hidden />
-              {submitLabel}
-            </>
-          )}
-        </Button>
-      </div>
-    </form>
+          aria-label="Texto do comentário"
+        />
+
+        {draftGif ? (
+          <div
+            className={cn(
+              "flex max-w-[240px] flex-col gap-1.5 rounded-xl border border-[var(--woody-accent)]/14",
+              "bg-[var(--woody-nav)]/[0.06] p-2"
+            )}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[0.65rem] font-medium uppercase tracking-wide text-[var(--woody-muted)]">
+                GIF selecionado
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-7 shrink-0 text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
+                onClick={() => setDraftGif(null)}
+                disabled={isSubmitting || disabled}
+                aria-label="Remover GIF do comentário"
+              >
+                <X className="size-3.5" aria-hidden />
+              </Button>
+            </div>
+            <img
+              src={draftGif.gifThumbnailUrl || draftGif.gifUrl}
+              alt=""
+              className="max-h-[120px] w-full max-w-[220px] rounded-lg object-contain"
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
+          </div>
+        ) : null}
+
+        <div className={cn("flex flex-wrap items-center gap-2", footerStart ? "justify-between" : "justify-end")}>
+          {footerStart ? <div className="flex shrink-0 items-center gap-2">{footerStart}</div> : null}
+          <div className="flex flex-wrap items-center justify-end gap-1.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={disabled || isSubmitting}
+              onClick={() => setGifPickerOpen(true)}
+              className={cn(
+                "h-8 gap-1 px-2 text-[var(--woody-muted)] hover:text-[var(--woody-text)]",
+                hasGif && "text-[var(--woody-accent)]"
+              )}
+              aria-label="Escolher GIF"
+            >
+              <Sticker className="size-3.5" aria-hidden />
+              <span className="hidden text-xs sm:inline">GIF</span>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={disabled || isSubmitting}
+              onClick={() => textareaRef?.current?.focus()}
+              className="h-8 gap-1 px-2 text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
+              aria-label="Focar campo de comentário (emoji do teclado)"
+            >
+              <Smile className="size-3.5" aria-hidden />
+              <span className="hidden text-xs sm:inline">Emoji</span>
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!canSubmit}
+              className={cn(
+                "gap-1.5 bg-[var(--woody-accent)] text-white shadow-sm",
+                "transition-[transform,opacity,box-shadow] duration-200 hover:bg-[var(--woody-accent)]/92",
+                "active:scale-[0.98] disabled:active:scale-100",
+                "focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35"
+              )}
+            >
+              {isSubmitting ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                  Enviando…
+                </span>
+              ) : (
+                <>
+                  <Send className="size-3.5" aria-hidden />
+                  {submitLabel}
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </form>
+
+      <GifStickerPickerDialog
+        open={gifPickerOpen}
+        onOpenChange={setGifPickerOpen}
+        onPick={onGifPick}
+        onRequestLocalFile={() => setGifPickerOpen(false)}
+        disabled={disabled || isSubmitting}
+      />
+    </>
   );
 }

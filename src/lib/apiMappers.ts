@@ -188,6 +188,28 @@ function mapCommunityPreviewFromApi(raw: ApiRecord): NonNullable<Post["community
   };
 }
 
+function mapCommentGifFromApi(raw: ApiRecord): Pick<
+  Comment,
+  "gifUrl" | "gifThumbnailUrl" | "gifProvider" | "gifExternalId" | "gifTitle"
+> {
+  const g = raw.gif;
+  if (g == null || typeof g !== "object") return {};
+  const rec = g as ApiRecord;
+  const url = rec.url != null ? asString(rec.url).trim() : "";
+  if (!url) return {};
+  return {
+    gifUrl: url,
+    gifThumbnailUrl:
+      rec.thumbnailUrl != null && String(rec.thumbnailUrl).trim() !== ""
+        ? asString(rec.thumbnailUrl)
+        : undefined,
+    gifProvider: rec.provider != null ? asString(rec.provider) : undefined,
+    gifExternalId: rec.externalId != null ? asString(rec.externalId) : undefined,
+    gifTitle:
+      rec.title != null && String(rec.title).trim() !== "" ? asString(rec.title) : undefined,
+  };
+}
+
 export function mapCommentFromApi(raw: ApiRecord): Comment {
   return {
     id: asString(raw.id),
@@ -203,6 +225,7 @@ export function mapCommentFromApi(raw: ApiRecord): Comment {
     pinnedOnPostAt: raw.pinnedOnPostAt != null ? asString(raw.pinnedOnPostAt) : null,
     likesCount: asNonNegativeInt(raw.likesCount, 0),
     likedByCurrentUser: Boolean(raw.likedByCurrentUser),
+    ...mapCommentGifFromApi(raw),
   };
 }
 

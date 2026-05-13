@@ -1,3 +1,4 @@
+import type { CommentGifDraft } from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { COMMENT_THREAD_ACTION_INDENT } from "./commentThreadLayout";
 import { ReplyForm } from "./ReplyForm";
@@ -5,7 +6,7 @@ import { ReplyForm } from "./ReplyForm";
 export interface ReplyComposerProps {
   parentCommentId: string;
   parentAuthorName: string;
-  onSubmit: (body: string) => Promise<boolean>;
+  onSubmit: (body: string, gif?: CommentGifDraft | null) => Promise<boolean>;
   onCancel: () => void;
   isSubmitting: boolean;
   disabled?: boolean;
@@ -50,7 +51,7 @@ export function ReplyComposer({
         <ReplyForm
           parentCommentId={parentCommentId}
           parentAuthorName={parentAuthorName}
-          onSubmit={onSubmit}
+          onSubmit={(body, _pid, gif) => onSubmit(body, gif)}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
           disabled={disabled}

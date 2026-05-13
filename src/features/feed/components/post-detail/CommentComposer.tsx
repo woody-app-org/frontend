@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import type { CommentGifDraft } from "@/domain/types";
 import { CommentForm } from "./CommentForm";
 
 export interface CommentComposerProps {
@@ -7,7 +8,7 @@ export interface CommentComposerProps {
    * Deve chamar `postCommentsMockApi.create` (via hook). Retorna se o envio foi aceito.
    * TODO(backend): trocar por serviço HTTP mantendo a mesma assinatura.
    */
-  onCreateComment: (body: string) => Promise<boolean>;
+  onCreateComment: (body: string, gif?: CommentGifDraft | null) => Promise<boolean>;
   isSubmitting: boolean;
   /** Quando os comentários terminaram de carregar (evita focar em conteúdo inexistente). */
   commentsReady: boolean;
@@ -29,14 +30,6 @@ export function CommentComposer({
   const rootRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [body, setBody] = useState("");
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const statusClearRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (statusClearRef.current) clearTimeout(statusClearRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     if (!emphasizeEntry || !commentsReady) return;
@@ -47,16 +40,12 @@ export function CommentComposer({
     return () => window.clearTimeout(t);
   }, [emphasizeEntry, commentsReady]);
 
-  const handleSubmit = async () => {
-    const text = body.trim();
-    if (!text) return;
-    const ok = await onCreateComment(text);
-    if (!ok) return;
+  const handleSubmit = async (payload: { text: string; gif: CommentGifDraft | null }) => {
+    const ok = await onCreateComment(payload.text, payload.gif);
+    if (!ok) return false;
     setBody("");
-    if (statusClearRef.current) clearTimeout(statusClearRef.current);
-    setStatusMessage("Comentário publicado.");
-    statusClearRef.current = window.setTimeout(() => setStatusMessage(null), 3200);
     textareaRef.current?.focus();
+    return true;
   };
 
   return (
@@ -79,11 +68,6 @@ export function CommentComposer({
         placeholder="O que você acha? Compartilhe com calma e respeito."
         submitLabel="Publicar"
       />
-      <div className="min-h-[1.25rem] mt-2" aria-live="polite">
-        {statusMessage ? (
-          <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400/90">{statusMessage}</p>
-        ) : null}
-      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Post } from "@/domain/types";
+import type { CommentGifDraft, Post } from "@/domain/types";
 import type { CommentThreadNode } from "@/domain/lib/commentThreads";
 import { COMMENT_THREAD_ACTION_INDENT, commentRepliesRegionId } from "./commentThreadLayout";
 import { CommentItem } from "./CommentItem";
@@ -17,7 +17,7 @@ export interface CommentThreadItemProps {
   onToggleExpand: (commentId: string) => void;
   replyingToCommentId: string | null;
   onReplyingToChange: (commentId: string | null) => void;
-  onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
+  onReplySubmit: (body: string, parentCommentId: string, gif?: CommentGifDraft | null) => Promise<boolean>;
   isCreatingComment: boolean;
   ensureRepliesExpanded: (commentId: string) => void;
   onToggleCommentLike: (commentId: string) => void;
@@ -46,8 +46,8 @@ export function CommentThreadItem({
   const expanded = expandedIds.has(comment.id);
   const isReplyOpen = replyingToCommentId === comment.id;
 
-  const handleReplySubmit = async (body: string) => {
-    const ok = await onReplySubmit(body, comment.id);
+  const handleReplySubmit = async (body: string, gif?: CommentGifDraft | null) => {
+    const ok = await onReplySubmit(body, comment.id, gif ?? null);
     if (ok) {
       ensureRepliesExpanded(comment.id);
       onReplyingToChange(null);

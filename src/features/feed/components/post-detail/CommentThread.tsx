@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import type { Comment, Post } from "@/domain/types";
+import type { Comment, CommentGifDraft, Post } from "@/domain/types";
 import { buildCommentThreadTree } from "@/domain/lib/commentThreads";
 import { cn } from "@/lib/utils";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
@@ -13,7 +13,7 @@ export interface CommentThreadProps {
   replyingToCommentId: string | null;
   onReplyingToChange: (commentId: string | null) => void;
   /** Resposta a comentário (`parentCommentId` sempre definido). */
-  onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
+  onReplySubmit: (body: string, parentCommentId: string, gif?: CommentGifDraft | null) => Promise<boolean>;
   isCreatingComment: boolean;
   className?: string;
   onToggleCommentLike: (commentId: string) => void;

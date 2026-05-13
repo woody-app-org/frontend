@@ -88,8 +88,8 @@ export function PostDetailPage() {
               onToggleLike={() => void toggleLike()}
               onToggleCommentLike={(commentId) => void toggleCommentLike(commentId)}
               commentLikePendingIds={commentLikePendingIds}
-              onCreateComment={async (body) => createComment(body, null)}
-              onReplySubmit={(body, parentId) => createComment(body, parentId)}
+              onCreateComment={async (body, gif) => createComment(body, null, gif ?? null)}
+              onReplySubmit={(body, parentId, gif) => createComment(body, parentId, gif ?? null)}
               onReloadComments={() => refetchComments()}
             />
           </>
