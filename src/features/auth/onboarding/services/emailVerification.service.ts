@@ -1,5 +1,9 @@
 import axios from "axios";
 import { api, getMessageFromApiResponseData } from "@/lib/api";
+import {
+  EmailVerificationRateLimitError,
+  type EmailRateLimitCode,
+} from "./emailVerificationRateLimitError";
 
 export interface SendVerificationCodeResponse {
   requestId: string;
@@ -18,7 +22,7 @@ export async function sendEmailVerificationCode(email: string): Promise<SendVeri
     });
     return data;
   } catch (error) {
-    throw new Error(mapSendOrResendError(error));
+    mapSendOrResendError(error);
   }
 }
 
@@ -29,7 +33,7 @@ export async function resendEmailVerificationCode(email: string): Promise<SendVe
     });
     return data;
   } catch (error) {
-    throw new Error(mapSendOrResendError(error));
+    mapSendOrResendError(error);
   }
 }
 
@@ -44,56 +48,97 @@ export async function confirmEmailVerificationCode(
     });
     return data;
   } catch (error) {
-    throw new Error(mapConfirmError(error));
+    mapConfirmError(error);
   }
 }
 
-function mapSendOrResendError(error: unknown): string {
+function parseEmailRateLimitAxiosError(
+  error: import("axios").AxiosError,
+  fallbackCode: EmailRateLimitCode
+): EmailVerificationRateLimitError {
+  const data = error.response?.data;
+  let message =
+    (typeof data === "object" && data !== null && "message" in data && typeof (data as { message: unknown }).message === "string"
+      ? (data as { message: string }).message.trim()
+      : null) ?? "Aguarde um momento antes de tentar novamente.";
+
+  let retryAfterSeconds = 60;
+  if (typeof data === "object" && data !== null && "retryAfterSeconds" in data) {
+    const v = (data as { retryAfterSeconds: unknown }).retryAfterSeconds;
+    if (typeof v === "number" && Number.isFinite(v) && v > 0) retryAfterSeconds = Math.ceil(v);
+  }
+
+  const headerRa = error.response?.headers?.["retry-after"] ?? error.response?.headers?.["Retry-After"];
+  if (typeof headerRa === "string") {
+    const parsed = parseInt(headerRa, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) retryAfterSeconds = parsed;
+  }
+
+  let code: EmailRateLimitCode = fallbackCode;
+  if (typeof data === "object" && data !== null && "code" in data) {
+    const c = (data as { code: unknown }).code;
+    if (c === "EMAIL_RATE_LIMITED" || c === "EMAIL_VERIFY_RATE_LIMITED" || c === "RATE_LIMITED") {
+      code = c;
+    }
+  }
+
+  return new EmailVerificationRateLimitError(message, retryAfterSeconds, code);
+}
+
+function mapSendOrResendError(error: unknown): never {
   if (!axios.isAxiosError(error)) {
-    return error instanceof Error ? error.message : "Não foi possível enviar o código agora.";
+    throw error instanceof Error ? error : new Error("Não foi possível enviar o código agora.");
   }
 
   const status = error.response?.status;
   const apiMessage = getMessageFromApiResponseData(error.response?.data);
   const normalized = apiMessage?.toLowerCase() ?? "";
+
+  if (status === 429) {
+    throw parseEmailRateLimitAxiosError(error, "EMAIL_RATE_LIMITED");
+  }
 
   if (status === 404 || normalized.includes("não encontrada")) {
-    return "Não encontramos esta conta. Revise o e-mail informado na etapa anterior.";
+    throw new Error("Não encontramos esta conta. Revise o e-mail informado na etapa anterior.");
   }
   if (normalized.includes("já verificado")) {
-    return "Este e-mail já foi confirmado.";
+    throw new Error("Este e-mail já foi confirmado.");
   }
 
-  return apiMessage ?? "Não foi possível enviar o código agora. Tente novamente em instantes.";
+  throw new Error(apiMessage ?? "Não foi possível enviar o código agora. Tente novamente em instantes.");
 }
 
-function mapConfirmError(error: unknown): string {
+function mapConfirmError(error: unknown): never {
   if (!axios.isAxiosError(error)) {
-    return error instanceof Error ? error.message : "Não foi possível confirmar o código.";
+    throw error instanceof Error ? error : new Error("Não foi possível confirmar o código.");
   }
 
   const status = error.response?.status;
   const apiMessage = getMessageFromApiResponseData(error.response?.data);
   const normalized = apiMessage?.toLowerCase() ?? "";
+
+  if (status === 429) {
+    throw parseEmailRateLimitAxiosError(error, "EMAIL_VERIFY_RATE_LIMITED");
+  }
 
   if (normalized.includes("código inválido")) {
-    return "Código inválido. Confira os 6 dígitos e tente novamente.";
+    throw new Error("Código inválido. Confira os 6 dígitos e tente novamente.");
   }
   if (normalized.includes("código expirado")) {
-    return "Código expirado. Solicite um novo código para continuar.";
+    throw new Error("Código expirado. Solicite um novo código para continuar.");
   }
   if (normalized.includes("já utilizado")) {
-    return "Este código já foi utilizado. Solicite um novo código.";
+    throw new Error("Este código já foi utilizado. Solicite um novo código.");
   }
   if (normalized.includes("máximo de tentativas") || normalized.includes("numero máximo")) {
-    return "Muitas tentativas. Reenvie o código para continuar.";
+    throw new Error("Muitas tentativas. Reenvie o código para continuar.");
   }
   if (status === 404 || normalized.includes("não encontrada")) {
-    return "Não encontramos esta conta. Volte à etapa anterior e revise o e-mail.";
+    throw new Error("Não encontramos esta conta. Volte à etapa anterior e revise o e-mail.");
   }
   if (normalized.includes("já verificado")) {
-    return "Este e-mail já foi confirmado.";
+    throw new Error("Este e-mail já foi confirmado.");
   }
 
-  return apiMessage ?? "Não foi possível confirmar o código agora. Tente novamente.";
+  throw new Error(apiMessage ?? "Não foi possível confirmar o código agora. Tente novamente.");
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,11 +13,14 @@ import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 
-const RESEND_COOLDOWN_S = 45;
 const ADVANCE_DELAY_MS = 520;
 
 function pause(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+function initialAutoSendStorageKey(emailAddr: string): string {
+  return `woody_email_initial_code_sent:${emailAddr.toLowerCase().trim()}`;
 }
 
 /**
@@ -27,13 +30,11 @@ export function OnboardingStepVerifyEmail() {
   const { draft, updateDraft } = useOnboardingDraftContext();
   const { goNext } = useOnboardingNavigation();
   const email = draft.account?.email;
-  const { isVerifying, verifyError, clearVerifyError, confirmCode } = useConfirmEmailCode(email);
-  const { isSending, sendFeedback, sendError, sendInitialCode, resendCode, clearSendError } =
+  const { isVerifying, verifyError, verifyCooldown, clearVerifyError, confirmCode } = useConfirmEmailCode(email);
+  const { cooldown, isSending, sendFeedback, sendError, sendInitialCode, resendCode, clearSendError } =
     useResendEmailCode(email);
-  const [cooldown, setCooldown] = useState(0);
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
-  const initialSendDone = useRef(false);
 
   const form = useForm<EmailVerificationCodeFormData>({
     resolver: zodResolver(emailVerificationCodeSchema),
@@ -45,25 +46,35 @@ export function OnboardingStepVerifyEmail() {
   const codeValid = code.replace(/\D/g, "").length === 6 && !form.formState.errors.code;
 
   useEffect(() => {
-    if (cooldown <= 0) return;
-    const t = window.setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
-    return () => window.clearInterval(t);
-  }, [cooldown]);
-
-  const runInitialSendCode = useCallback(async () => {
-    const sent = await sendInitialCode();
-    if (sent) {
-      setCooldown(RESEND_COOLDOWN_S);
+    if (!email) return;
+    const key = initialAutoSendStorageKey(email);
+    const raw = sessionStorage.getItem(key);
+    // Já enviámos com sucesso nesta sessão (valor = timestamp).
+    if (raw && !raw.startsWith("pending:")) {
+      const ts = Number(raw);
+      if (!Number.isNaN(ts)) return;
     }
-  }, [sendInitialCode]);
+    // Strict Mode: primeiro mount pôs "pending:ts"; o segundo mount não deve repetir enquanto o pedido estiver ativo.
+    if (raw?.startsWith("pending:")) {
+      const started = Number(raw.slice("pending:".length));
+      if (!Number.isNaN(started) && Date.now() - started < 120_000) return;
+      sessionStorage.removeItem(key);
+    }
 
-  useEffect(() => {
-    if (!email || initialSendDone.current) return;
-    initialSendDone.current = true;
-    queueMicrotask(() => {
-      void runInitialSendCode();
-    });
-  }, [email, runInitialSendCode]);
+    sessionStorage.setItem(key, `pending:${Date.now()}`);
+    void (async () => {
+      try {
+        const sent = await sendInitialCode();
+        if (sent) {
+          sessionStorage.setItem(key, String(Date.now()));
+        } else {
+          sessionStorage.removeItem(key);
+        }
+      } catch {
+        sessionStorage.removeItem(key);
+      }
+    })();
+  }, [email, sendInitialCode]);
 
   if (!draft.account) {
     return <Navigate to="/auth/onboarding/1" replace />;
@@ -76,6 +87,9 @@ export function OnboardingStepVerifyEmail() {
       return;
     }
 
+    if (email) {
+      sessionStorage.removeItem(initialAutoSendStorageKey(email));
+    }
     updateDraft({ emailVerified: true });
     setIsConfirmed(true);
     setIsAdvancing(true);
@@ -86,10 +100,7 @@ export function OnboardingStepVerifyEmail() {
   const handleResend = async () => {
     if (cooldown > 0 || isSending || isVerifying || isAdvancing) return;
     clearVerifyError();
-    const sent = await resendCode();
-    if (sent) {
-      setCooldown(RESEND_COOLDOWN_S);
-    }
+    await resendCode();
   };
 
   return (
@@ -135,6 +146,11 @@ export function OnboardingStepVerifyEmail() {
             {verifyError}
           </p>
         )}
+        {verifyCooldown > 0 && (
+          <p className="text-sm text-amber-900 bg-amber-50 rounded-xl px-3 py-2.5 border border-amber-200" role="status">
+            Aguarde {verifyCooldown}s antes de tentar confirmar novamente.
+          </p>
+        )}
         {sendError && (
           <p
             className="text-sm text-red-700 bg-red-50 rounded-xl px-3 py-2.5 border border-red-200"
@@ -158,7 +174,7 @@ export function OnboardingStepVerifyEmail() {
                   if (verifyError) clearVerifyError();
                   field.onChange(v);
                 }}
-                disabled={isVerifying || isAdvancing}
+                disabled={isVerifying || isAdvancing || verifyCooldown > 0}
                 hasError={!!fieldState.error || !!verifyError}
                 isComplete={codeValid && !verifyError && !isVerifying}
               />
@@ -200,7 +216,7 @@ export function OnboardingStepVerifyEmail() {
           <span />
           <button
             type="submit"
-            disabled={!codeValid || isVerifying || isAdvancing}
+            disabled={!codeValid || isVerifying || isAdvancing || verifyCooldown > 0}
             className={cn(onboardingStyles.primaryBtn, "inline-flex items-center justify-center gap-2")}
           >
             {isVerifying ? (
