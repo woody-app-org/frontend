@@ -8,11 +8,15 @@ import {
   logoutSessionMock,
   patchStoredUser,
   registerMock,
+  getAuthUser,
 } from "../services/auth.service";
 import {
   WOODY_AUTH_LOGOUT_EVENT,
   WOODY_AUTH_REFRESH_USER_EVENT,
+  WOODY_AUTH_SESSION_PERSISTED_EVENT,
 } from "../authSessionCleanup";
+import { AUTH_REFRESH_TOKEN_KEY, AUTH_STORAGE_KEY, AUTH_TOKEN_KEY } from "../constants";
+import { getStoredRefreshToken, getStoredToken } from "@/lib/api";
 import { SessionBootstrapSplash } from "../components/SessionBootstrapSplash";
 
 interface AuthContextValue {
@@ -41,6 +45,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const onRemoteLogout = () => setUser(null);
     window.addEventListener(WOODY_AUTH_LOGOUT_EVENT, onRemoteLogout);
     return () => window.removeEventListener(WOODY_AUTH_LOGOUT_EVENT, onRemoteLogout);
+  }, []);
+
+  useEffect(() => {
+    const onSessionPersisted = () => {
+      setUser(getAuthUser());
+    };
+    window.addEventListener(WOODY_AUTH_SESSION_PERSISTED_EVENT, onSessionPersisted);
+    return () => window.removeEventListener(WOODY_AUTH_SESSION_PERSISTED_EVENT, onSessionPersisted);
+  }, []);
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (
+        e.key !== AUTH_TOKEN_KEY &&
+        e.key !== AUTH_REFRESH_TOKEN_KEY &&
+        e.key !== AUTH_STORAGE_KEY
+      ) {
+        return;
+      }
+      if (!getStoredToken() && !getStoredRefreshToken()) {
+        setUser(null);
+        return;
+      }
+      setUser(getAuthUser());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   useEffect(() => {

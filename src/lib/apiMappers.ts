@@ -11,7 +11,7 @@ import type {
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
 import { isWoodyMediaType } from "@/domain/mediaAttachment";
 import type { SocialLink, UserProfile } from "@/features/profile/types";
-import { mapSubscription } from "@/features/auth/services/auth.service";
+import { mapSubscription } from "@/features/auth/authMapper";
 import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
 
 const PLATFORMS = new Set(["instagram", "facebook", "twitter", "tiktok", "linkedin", "other"]);

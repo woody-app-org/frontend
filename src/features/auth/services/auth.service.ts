@@ -6,10 +6,16 @@ import type {
   UserRole,
   VerificationStatus,
 } from "../types";
+import axios from "axios";
 import { AUTH_STORAGE_KEY } from "../constants";
-import { clearAuthPersistence } from "../authSessionCleanup";
+import { clearAuthPersistence, dispatchAuthLogoutEvent } from "../authSessionCleanup";
 import { syncAuthUserToDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
-import { api, getApiErrorMessage, getStoredToken, setStoredToken } from "@/lib/api";
+import { api, getApiErrorMessage, getStoredRefreshToken, getStoredToken } from "@/lib/api";
+import { getApiBaseUrl } from "@/lib/apiBaseUrl";
+import { showInfoToast } from "@/lib/toast";
+import { ensureFreshAccessToken } from "../authRefresh";
+import { mapAuthUser, mapSubscription, normalizeStoredUser } from "../authMapper";
+import { persistLoginPayload } from "../authSessionPersist";
 
 function getStoredUser(): AuthUser | null {
   try {
@@ -29,74 +35,18 @@ function setStoredUser(user: AuthUser | null): void {
   }
 }
 
-const defaultSubscription = (): AuthUserSubscription => ({
-  effectivePlan: "free",
-  billingPlan: "free",
-  planCode: "free",
-  status: "active",
-  currentPeriodEnd: null,
-  cancelAtPeriodEnd: false,
-  showProBadge: false,
-  canOpenBillingPortal: false,
-});
-
-export function mapSubscription(raw: unknown): AuthUserSubscription {
-  if (!raw || typeof raw !== "object") return defaultSubscription();
-  const o = raw as Record<string, unknown>;
-  return {
-    effectivePlan: o.effectivePlan === "pro" ? "pro" : "free",
-    billingPlan:
-      o.billingPlan === "max" ? "max" : o.billingPlan === "pro" ? "pro" : "free",
-    planCode: o.planCode != null ? String(o.planCode) : null,
-    status: typeof o.status === "string" ? o.status : "active",
-    currentPeriodEnd: o.currentPeriodEnd != null ? String(o.currentPeriodEnd) : null,
-    cancelAtPeriodEnd: Boolean(o.cancelAtPeriodEnd),
-    showProBadge: Boolean(o.showProBadge),
-    canOpenBillingPortal: Boolean(o.canOpenBillingPortal),
-  };
-}
-
-function mapAuthUser(raw: {
-  id: string;
-  username: string;
-  email?: string;
-  name?: string;
-  avatarUrl?: string;
-  subscription?: unknown;
-  verificationStatus?: string;
-  role?: string;
-}): AuthUser {
-  return {
-    id: String(raw.id),
-    username: raw.username,
-    email: raw.email,
-    name: raw.name ?? raw.username,
-    avatarUrl: raw.avatarUrl,
-    subscription: mapSubscription(raw.subscription),
-    verificationStatus: (raw.verificationStatus as VerificationStatus | undefined) ?? "PendingDocument",
-    role: (raw.role as UserRole | undefined) ?? "User",
-  };
-}
-
-function normalizeStoredUser(u: AuthUser): AuthUser {
-  return {
-    ...u,
-    subscription: u.subscription ?? defaultSubscription(),
-    verificationStatus: u.verificationStatus ?? "PendingDocument",
-    role: u.role ?? "User",
-  };
-}
-
 export async function loginMock(credentials: LoginCredentials): Promise<AuthUser> {
   try {
-    const { data } = await api.post<{ token: string; user: AuthUser }>("/Auth/login", {
+    const { data } = await api.post<{
+      token: string;
+      refreshToken: string;
+      user: AuthUser;
+    }>("/Auth/login", {
       username: credentials.username.trim(),
       password: credentials.password,
     });
-    setStoredToken(data.token);
-    const user = mapAuthUser(data.user as AuthUser);
-    setStoredUser(user);
-    syncAuthUserToDisplayPatch(user);
+    persistLoginPayload(data);
+    const user = mapAuthUser(data.user as Parameters<typeof mapAuthUser>[0]);
     return user;
   } catch (e) {
     throw new Error(getApiErrorMessage(e, "Falha no login."));
@@ -105,7 +55,11 @@ export async function loginMock(credentials: LoginCredentials): Promise<AuthUser
 
 export async function registerMock(credentials: RegisterCredentials): Promise<AuthUser> {
   try {
-    const { data } = await api.post<{ token: string; user: AuthUser }>("/Auth/register", {
+    const { data } = await api.post<{
+      token: string;
+      refreshToken: string;
+      user: AuthUser;
+    }>("/Auth/register", {
       username: credentials.username.trim(),
       email: credentials.email.trim(),
       password: credentials.password,
@@ -114,10 +68,8 @@ export async function registerMock(credentials: RegisterCredentials): Promise<Au
       ...(credentials.avatarUrl ? { avatarUrl: credentials.avatarUrl } : {}),
       ...(credentials.inviteCode?.trim() ? { inviteCode: credentials.inviteCode.trim() } : {}),
     });
-    setStoredToken(data.token);
-    const user = mapAuthUser(data.user as AuthUser);
-    setStoredUser(user);
-    syncAuthUserToDisplayPatch(user);
+    persistLoginPayload(data);
+    const user = mapAuthUser(data.user as Parameters<typeof mapAuthUser>[0]);
     return user;
   } catch (e) {
     throw new Error(getApiErrorMessage(e, "Falha no registo."));
@@ -129,13 +81,23 @@ export function logoutMock(): void {
 }
 
 export async function logoutSessionMock(): Promise<void> {
-  const t = getStoredToken();
-  if (t) {
-    try {
-      await api.post("/Auth/logout");
-    } catch {
-      /* stateless JWT: ignorar */
+  const refreshToken = getStoredRefreshToken();
+  const accessToken = getStoredToken();
+  try {
+    if (refreshToken) {
+      await axios.post(
+        `${getApiBaseUrl()}/Auth/logout`,
+        { refreshToken },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+        }
+      );
     }
+  } catch {
+    /* rede / token expirado: revogar melhor esforço; limpar localmente de qualquer modo */
   }
   logoutMock();
 }
@@ -177,21 +139,38 @@ export async function fetchAuthUserFromMe(): Promise<AuthUser> {
 }
 
 /**
- * Valida sessão ao arranque: sem token limpa cache antigo; com token confirma com `/users/me`.
+ * Valida sessão ao arranque: sem credenciais limpa cache; com refresh e/ou access confirma com `/users/me`
+ * (o interceptor renova o access token automaticamente quando expira).
  */
 export async function bootstrapAuthSession(): Promise<AuthUser | null> {
-  const token = getStoredToken();
-  if (!token) {
+  const access = getStoredToken();
+  const refresh = getStoredRefreshToken();
+  if (!access && !refresh) {
     clearAuthPersistence();
     return null;
   }
+
+  if (!access && refresh) {
+    const renewed = await ensureFreshAccessToken();
+    if (!renewed) {
+      showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+      return null;
+    }
+  }
+
   try {
     const user = await fetchAuthUserFromMe();
     setStoredUser(user);
     syncAuthUserToDisplayPatch(user);
     return user;
-  } catch {
-    clearAuthPersistence();
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 401) {
+      if (getStoredToken() || getStoredRefreshToken()) {
+        clearAuthPersistence();
+        dispatchAuthLogoutEvent();
+        showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+      }
+    }
     return null;
   }
 }

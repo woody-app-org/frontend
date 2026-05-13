@@ -1,34 +1,25 @@
-import axios from "axios";
-import { AUTH_TOKEN_KEY } from "@/features/auth/constants";
+import axios, { AxiosHeaders } from "axios";
 import {
   clearAuthPersistence,
   dispatchAuthLogoutEvent,
   dispatchAuthRefreshUserEvent,
 } from "@/features/auth/authSessionCleanup";
+import { ensureFreshAccessToken } from "@/features/auth/authRefresh";
+import {
+  getStoredRefreshToken,
+  getStoredToken,
+} from "@/features/auth/authTokenStorage";
+import { getApiBaseUrl } from "./apiBaseUrl";
+import { showInfoToast } from "./toast";
 
-/**
- * Base da API: sempre termina em `/api` (prefixo dos controllers ASP.NET).
- * Se `VITE_API_BASE_URL` for só o host (ex. Railway sem `/api`), acrescenta `/api`.
- *
- * Em `vite` com modo development, o default é HTTP na porta do Kestrel (5000) para evitar
- * pedidos HTTPS com certificado de dev não confiável a partir de http://localhost:5173.
- */
-function resolveApiBaseUrl(): string {
-  const raw = import.meta.env.VITE_API_BASE_URL?.toString().trim();
-  if (raw) {
-    const noTrail = raw.replace(/\/+$/, "");
-    if (noTrail.endsWith("/api")) return noTrail;
-    return `${noTrail}/api`;
-  }
-  if (import.meta.env.DEV) {
-    return "http://localhost:5000/api";
-  }
-  throw new Error(
-    "VITE_API_BASE_URL não definido. Configure no painel de deploy (build) ou em .env.production."
-  );
-}
+export {
+  getStoredToken,
+  setStoredToken,
+  getStoredRefreshToken,
+  setStoredRefreshToken,
+} from "@/features/auth/authTokenStorage";
 
-const baseURL = resolveApiBaseUrl();
+const baseURL = getApiBaseUrl();
 
 /** Origem da API sem o sufixo `/api` (Kestrel: mesma origem para REST e SignalR). */
 export function getApiOrigin(): string {
@@ -66,19 +57,6 @@ export const api = axios.create({
   baseURL,
 });
 
-export function getStoredToken(): string | null {
-  try {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-
-export function setStoredToken(token: string | null): void {
-  if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
-  else localStorage.removeItem(AUTH_TOKEN_KEY);
-}
-
 function normalizeRequestPath(url: string | undefined): string {
   if (!url) return "";
   return url.split("?")[0].replace(/^\/+/, "").toLowerCase();
@@ -91,8 +69,6 @@ function isAuthCredentialsRequest(url: string | undefined): boolean {
 }
 
 api.interceptors.request.use((config) => {
-  // Caminhos com "/" inicial são tratados como absolutos à raiz do host e removem o `/api` do baseURL.
-  // Usar caminhos relativos ao baseURL garante `.../api/Auth/login`, `.../api/posts/...`, etc.
   if (config.url?.startsWith("/")) {
     config.url = config.url.slice(1);
   }
@@ -106,7 +82,7 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
+  async (err) => {
     if (!axios.isAxiosError(err)) return Promise.reject(err);
     const status = err.response?.status;
 
@@ -120,11 +96,42 @@ api.interceptors.response.use(
 
     if (status !== 401) return Promise.reject(err);
     if (isAuthCredentialsRequest(err.config?.url)) return Promise.reject(err);
-    if (getStoredToken()) {
+
+    const path = normalizeRequestPath(err.config?.url);
+    if (path === "auth/refresh") {
       clearAuthPersistence();
       dispatchAuthLogoutEvent();
+      showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+      return Promise.reject(err);
     }
-    return Promise.reject(err);
+
+    const cfg = err.config as (import("axios").InternalAxiosRequestConfig & { _woodyAuthRetry?: boolean }) | undefined;
+    if (!cfg) return Promise.reject(err);
+    if (cfg._woodyAuthRetry) {
+      clearAuthPersistence();
+      dispatchAuthLogoutEvent();
+      showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+      return Promise.reject(err);
+    }
+
+    const hadSession = getStoredRefreshToken() != null || getStoredToken() != null;
+    if (!hadSession) return Promise.reject(err);
+
+    cfg._woodyAuthRetry = true;
+    const ok = await ensureFreshAccessToken();
+    if (!ok) {
+      clearAuthPersistence();
+      dispatchAuthLogoutEvent();
+      showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+      return Promise.reject(err);
+    }
+
+    const next = getStoredToken();
+    const headers = AxiosHeaders.from(cfg.headers ?? {});
+    if (next) headers.set("Authorization", `Bearer ${next}`);
+    else headers.delete("Authorization");
+    cfg.headers = headers;
+    return api.request(cfg);
   }
 );
 
