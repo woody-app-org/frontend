@@ -34,6 +34,8 @@ export interface CommentsListProps {
   onReplyingToChange: (commentId: string | null) => void;
   onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
   isCreatingComment: boolean;
+  onToggleCommentLike: (commentId: string) => void;
+  commentLikePendingIds: ReadonlySet<string>;
 }
 
 export function CommentsList({
@@ -48,6 +50,8 @@ export function CommentsList({
   onReplyingToChange,
   onReplySubmit,
   isCreatingComment,
+  onToggleCommentLike,
+  commentLikePendingIds,
 }: CommentsListProps) {
   if (error) {
     return (
@@ -88,6 +92,8 @@ export function CommentsList({
       onReplyingToChange={onReplyingToChange}
       onReplySubmit={onReplySubmit}
       isCreatingComment={isCreatingComment}
+      onToggleCommentLike={onToggleCommentLike}
+      commentLikePendingIds={commentLikePendingIds}
       className={className}
     />
   );

@@ -144,6 +144,8 @@ export function enrichComment(raw: SeedComment, options: EnrichCommentOptions): 
     deletedAt: raw.deletedAt,
     hiddenByPostAuthorAt: raw.hiddenByPostAuthorAt,
     contentModerationMask,
+    likesCount: 0,
+    likedByCurrentUser: false,
   };
 }
 

@@ -21,6 +21,8 @@ export interface PostDetailViewProps {
   isMutatingLike: boolean;
   isCreatingComment: boolean;
   onToggleLike: () => void;
+  onToggleCommentLike: (commentId: string) => void;
+  commentLikePendingIds: ReadonlySet<string>;
   /** Comentário raiz (`parentCommentId` null). Respostas usam `onReplySubmit` na lista. */
   onCreateComment: (body: string) => Promise<boolean>;
   onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
@@ -40,6 +42,8 @@ export function PostDetailView({
   isMutatingLike,
   isCreatingComment,
   onToggleLike,
+  onToggleCommentLike,
+  commentLikePendingIds,
   onCreateComment,
   onReplySubmit,
   onReloadComments,
@@ -114,6 +118,8 @@ export function PostDetailView({
             onReplyingToChange={setReplyingToCommentId}
             onReplySubmit={onReplySubmit}
             isCreatingComment={isCreatingComment}
+            onToggleCommentLike={onToggleCommentLike}
+            commentLikePendingIds={commentLikePendingIds}
           />
         </section>
       </div>

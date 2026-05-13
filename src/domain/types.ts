@@ -152,6 +152,10 @@ export interface Comment {
   hiddenByPostAuthorAt?: string | null;
   /** Destaque no post (autora do post); ISO da API ou formatado pelo mapper. */
   pinnedOnPostAt?: string | null;
+  /** Gostos no comentário (API Woody). */
+  likesCount: number;
+  /** Se a utilizadora atual curtiu este comentário (só fiável com sessão). */
+  likedByCurrentUser: boolean;
   /**
    * Preenchido em `enrichComment` quando há `viewerId` + contexto do post.
    * UI usa `getCommentContentForViewer` para texto seguro a exibir.

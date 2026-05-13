@@ -9,6 +9,14 @@ import { formatCommentTimestamp } from "./formatCommentTimestamp";
 import { CommentActionsMenu } from "./CommentActionsMenu";
 import { HiddenCommentPlaceholder } from "./HiddenCommentPlaceholder";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { PostLikeIcon } from "@/features/feed/components/PostLikeIcon";
+import { usePostLikeTapAnimation } from "@/features/feed/hooks/usePostLikeTapAnimation";
+import { useAuth } from "@/features/auth/context/AuthContext";
+
+function formatLikeCount(count: number): string {
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+  return String(count);
+}
 
 export interface CommentItemProps {
   post: Post;
@@ -19,6 +27,8 @@ export interface CommentItemProps {
   /** Resposta na thread: tipografia e densidade levemente mais compactas (mobile-first). */
   nested?: boolean;
   className?: string;
+  onToggleCommentLike: (commentId: string) => void;
+  isCommentLikePending?: boolean;
 }
 
 export function CommentItem({
@@ -28,8 +38,12 @@ export function CommentItem({
   onCommentsReload,
   nested = false,
   className,
+  onToggleCommentLike,
+  isCommentLikePending = false,
 }: CommentItemProps) {
   const { author } = comment;
+  const { isAuthenticated } = useAuth();
+  const { tapPhase, triggerTap } = usePostLikeTapAnimation();
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const initials = author.name
     .split(" ")
@@ -137,6 +151,38 @@ export function CommentItem({
             {comment.content}
           </p>
         )}
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <button
+            type="button"
+            disabled={isCommentLikePending}
+            onClick={() => {
+              const willBecomeLiked = !comment.likedByCurrentUser;
+              triggerTap(willBecomeLiked);
+              onToggleCommentLike(comment.id);
+            }}
+            title={!isAuthenticated ? "Inicia sessão para curtir" : undefined}
+            aria-pressed={comment.likedByCurrentUser}
+            aria-label={
+              comment.likedByCurrentUser ? "Remover curtida do comentário" : "Curtir comentário"
+            }
+            className={cn(
+              "touch-manipulation inline-flex min-h-9 items-center gap-1 rounded-lg px-1.5 py-1 text-xs font-medium sm:min-h-8",
+              "text-[var(--woody-muted)] transition-[color,opacity,transform,background-color] duration-200",
+              comment.likedByCurrentUser && "text-[var(--woody-accent)]",
+              "hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30",
+              "disabled:pointer-events-none disabled:opacity-50",
+              "active:scale-[0.98]"
+            )}
+          >
+            <PostLikeIcon
+              liked={comment.likedByCurrentUser}
+              tapPhase={tapPhase}
+              sizeClassName={nested ? "size-3.5 sm:size-4" : "size-4"}
+            />
+            <span className="tabular-nums text-[var(--woody-muted)]">{formatLikeCount(comment.likesCount)}</span>
+          </button>
+        </div>
       </div>
     </article>
   );

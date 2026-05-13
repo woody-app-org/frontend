@@ -23,11 +23,13 @@ export function PostDetailPage() {
     isCommentsLoading,
     isMutatingLike,
     isCreatingComment,
+    commentLikePendingIds,
     error,
     commentsError,
     refetch,
     refetchComments,
     toggleLike,
+    toggleCommentLike,
     createComment,
   } = usePostDetail(postId);
 
@@ -84,6 +86,8 @@ export function PostDetailPage() {
               isMutatingLike={isMutatingLike}
               isCreatingComment={isCreatingComment}
               onToggleLike={() => void toggleLike()}
+              onToggleCommentLike={(commentId) => void toggleCommentLike(commentId)}
+              commentLikePendingIds={commentLikePendingIds}
               onCreateComment={async (body) => createComment(body, null)}
               onReplySubmit={(body, parentId) => createComment(body, parentId)}
               onReloadComments={() => refetchComments()}

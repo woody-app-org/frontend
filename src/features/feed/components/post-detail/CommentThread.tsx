@@ -16,6 +16,8 @@ export interface CommentThreadProps {
   onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
   isCreatingComment: boolean;
   className?: string;
+  onToggleCommentLike: (commentId: string) => void;
+  commentLikePendingIds: ReadonlySet<string>;
 }
 
 export function CommentThread({
@@ -28,6 +30,8 @@ export function CommentThread({
   onReplySubmit,
   isCreatingComment,
   className,
+  onToggleCommentLike,
+  commentLikePendingIds,
 }: CommentThreadProps) {
   const viewerId = useViewerId();
   const tree = useMemo(() => buildCommentThreadTree(postId, comments), [postId, comments]);
@@ -71,6 +75,8 @@ export function CommentThread({
             onReplySubmit={onReplySubmit}
             isCreatingComment={isCreatingComment}
             ensureRepliesExpanded={ensureRepliesExpanded}
+            onToggleCommentLike={onToggleCommentLike}
+            commentLikePendingIds={commentLikePendingIds}
           />
         </div>
       ))}

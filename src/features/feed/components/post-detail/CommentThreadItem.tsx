@@ -20,6 +20,8 @@ export interface CommentThreadItemProps {
   onReplySubmit: (body: string, parentCommentId: string) => Promise<boolean>;
   isCreatingComment: boolean;
   ensureRepliesExpanded: (commentId: string) => void;
+  onToggleCommentLike: (commentId: string) => void;
+  commentLikePendingIds: ReadonlySet<string>;
 }
 
 export function CommentThreadItem({
@@ -35,6 +37,8 @@ export function CommentThreadItem({
   onReplySubmit,
   isCreatingComment,
   ensureRepliesExpanded,
+  onToggleCommentLike,
+  commentLikePendingIds,
 }: CommentThreadItemProps) {
   const { comment, replies } = node;
   const replyCount = replies.length;
@@ -62,6 +66,8 @@ export function CommentThreadItem({
         onCommentsReload={onCommentsReload}
         nested={depth > 0}
         className="py-0"
+        onToggleCommentLike={onToggleCommentLike}
+        isCommentLikePending={commentLikePendingIds.has(comment.id)}
       />
       <div className={cn("mt-1.5 space-y-2", COMMENT_THREAD_ACTION_INDENT)}>
         <div className="flex flex-wrap items-stretch gap-x-2 gap-y-2 sm:items-center sm:gap-x-3">
@@ -121,6 +127,8 @@ export function CommentThreadItem({
               onReplySubmit={onReplySubmit}
               isCreatingComment={isCreatingComment}
               ensureRepliesExpanded={ensureRepliesExpanded}
+              onToggleCommentLike={onToggleCommentLike}
+              commentLikePendingIds={commentLikePendingIds}
             />
           ))}
         </NestedRepliesList>

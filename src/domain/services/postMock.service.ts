@@ -50,6 +50,41 @@ export async function togglePostLikeMock(
   }
 }
 
+export interface CommentLikeMutationResult {
+  likesCount: number;
+  likedByCurrentUser: boolean;
+}
+
+function mapCommentLikeMutationFromApi(raw: unknown): CommentLikeMutationResult {
+  if (raw == null || typeof raw !== "object") {
+    return { likesCount: 0, likedByCurrentUser: false };
+  }
+  const r = raw as Record<string, unknown>;
+  const n = r.likesCount;
+  const likesCount =
+    typeof n === "number" && Number.isFinite(n)
+      ? Math.max(0, Math.floor(n))
+      : Math.max(0, Math.floor(Number(n)) || 0);
+  return {
+    likesCount,
+    likedByCurrentUser: Boolean(r.likedByCurrentUser),
+  };
+}
+
+export async function likeComment(postId: string, commentId: string): Promise<CommentLikeMutationResult> {
+  const { data } = await api.post(
+    `/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}/like`
+  );
+  return mapCommentLikeMutationFromApi(data);
+}
+
+export async function unlikeComment(postId: string, commentId: string): Promise<CommentLikeMutationResult> {
+  const { data } = await api.delete(
+    `/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}/like`
+  );
+  return mapCommentLikeMutationFromApi(data);
+}
+
 export type CreateCommentMockResult =
   | { ok: true; comment: Comment }
   | { ok: false; error: string };

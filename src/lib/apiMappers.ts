@@ -29,6 +29,13 @@ function asString(v: unknown): string {
   return v == null ? "" : String(v);
 }
 
+function asNonNegativeInt(v: unknown, fallback = 0): number {
+  if (typeof v === "number" && Number.isFinite(v)) return Math.max(0, Math.floor(v));
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.floor(n));
+}
+
 function mapCommunityBillingPlan(v: unknown): CommunityBillingPlan {
   return v === "premium" ? "premium" : "free";
 }
@@ -194,6 +201,8 @@ export function mapCommentFromApi(raw: ApiRecord): Comment {
     hiddenByPostAuthorAt: raw.hiddenByPostAuthorAt ?? null,
     contentModerationMask: raw.contentModerationMask ?? null,
     pinnedOnPostAt: raw.pinnedOnPostAt != null ? asString(raw.pinnedOnPostAt) : null,
+    likesCount: asNonNegativeInt(raw.likesCount, 0),
+    likedByCurrentUser: Boolean(raw.likedByCurrentUser),
   };
 }
 
