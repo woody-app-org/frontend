@@ -47,14 +47,14 @@ export function ProfileFollowStats({
         <span className="flex flex-col leading-tight">
           <span className="tabular-nums font-bold text-[var(--woody-text)]">{fmt(followersCount)}</span>
           <span className="text-xs font-medium text-[var(--woody-muted)]">
-            {followersCount === 1 ? "seguidor" : "seguidores"}
+            {followersCount === 1 ? "Seguidor" : "Seguidores"}
           </span>
         </span>
       </button>
       <button
         type="button"
         onClick={onOpenFollowing}
-        title="Ver lista de contas a seguir"
+        title="Ver contas que segue"
         className={cn(
           woodyFocus.ring,
           "group inline-flex touch-manipulation items-center gap-2 rounded-xl border border-transparent px-1.5 py-1.5 text-left transition-colors hover:border-[var(--woody-accent)]/14 hover:bg-[var(--woody-nav)]/7"
@@ -65,7 +65,7 @@ export function ProfileFollowStats({
         </span>
         <span className="flex flex-col leading-tight">
           <span className="tabular-nums font-bold text-[var(--woody-text)]">{fmt(followingCount)}</span>
-          <span className="text-xs font-medium text-[var(--woody-muted)]">a seguir</span>
+          <span className="text-xs font-medium text-[var(--woody-muted)]">Seguindo</span>
         </span>
       </button>
     </div>

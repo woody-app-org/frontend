@@ -72,7 +72,7 @@ export function ProfileFollowListsDialog({
           <div className="flex items-start justify-between gap-2 pr-8">
             <div className="min-w-0">
               <DialogTitle className="text-left text-base sm:text-lg">
-                {kind === "followers" ? "Seguidores" : "A seguir"}
+                {kind === "followers" ? "Seguidores" : "Seguindo"}
               </DialogTitle>
               <DialogDescription className="mt-1 text-left">
                 {kind === "followers"
@@ -120,7 +120,7 @@ export function ProfileFollowListsDialog({
               onClick={() => onKindChange("following")}
             >
               <span className="block leading-tight">
-                A seguir
+                Seguindo
                 <span className="hidden sm:inline">
                   {" "}
                   ({followingCount.toLocaleString("pt-PT")})
