@@ -101,7 +101,7 @@ export interface CommunityMemberListItem {
 }
 
 /** Status de pedido de entrada (fila moderada por owner/admin). */
-export type JoinRequestStatus = "pending" | "approved" | "rejected";
+export type JoinRequestStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 export interface JoinRequest {
   id: string;

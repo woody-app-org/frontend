@@ -25,6 +25,7 @@ export function OnboardingCommunityToggleCard({
   disabled,
 }: OnboardingCommunityToggleCardProps) {
   const categoryLabel = getCommunityCategoryLabel(community.category);
+  const isPrivate = community.visibility === "private";
   const initials = community.name
     .split(" ")
     .map((w) => w[0])
@@ -77,6 +78,11 @@ export function OnboardingCommunityToggleCard({
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[var(--auth-text-on-maroon)]/65">
               <span className="rounded-full bg-black/6 px-2 py-0.5 font-medium">{categoryLabel}</span>
+              {isPrivate ? (
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-black/6 px-2 py-0.5 font-medium">
+                  Privada — aprovação da equipa
+                </span>
+              ) : null}
               <span className="inline-flex items-center gap-1">
                 <Users className="size-3 opacity-80" aria-hidden />
                 {formatMemberCount(community.memberCount)} membros
@@ -101,8 +107,10 @@ export function OnboardingCommunityToggleCard({
           {joined ? (
             <>
               <Check className="size-4" aria-hidden />
-              Na comunidade
+              {isPrivate ? "Pedido incluído ao concluir" : "Na comunidade"}
             </>
+          ) : isPrivate ? (
+            "Solicitar entrada após cadastro"
           ) : (
             "Entrar nesta comunidade"
           )}

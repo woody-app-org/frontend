@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Lock, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyMotion, woodySurface } from "@/lib/woody-ui";
 import type { Community } from "@/domain/types";
@@ -10,6 +10,11 @@ export interface CommunityCardProps {
   community: Community;
   /** Se a usuária já participa (texto do CTA). */
   isMember?: boolean;
+  /**
+   * Quando a lista já conhece o estado do pedido (evita N+1 na grelha geral).
+   * Se omitido, o CTA de comunidade privada assume navegação neutra (“Ver espaço”).
+   */
+  myJoinStatus?: "none" | "pending" | "rejected" | "cancelled" | "approved";
   /** Cards mais altos e avatares maiores (ex.: grids de descoberta no desktop). */
   visualWeight?: "default" | "emphasis";
   className?: string;
@@ -34,6 +39,10 @@ const styles = {
   coverFallback: "size-full bg-gradient-to-br from-[var(--woody-nav)]/25 to-[var(--woody-accent)]/20",
   coverGradient:
     "pointer-events-none absolute inset-0 bg-gradient-to-t from-[var(--woody-card)]/90 via-transparent to-transparent",
+  privateBadge: cn(
+    "absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+    "bg-[var(--woody-card)]/92 text-[var(--woody-text)]/90 shadow-sm ring-1 ring-[var(--woody-accent)]/15 backdrop-blur-sm sm:text-[11px]"
+  ),
   avatarWrap: "relative -mt-9 ml-4 flex items-end sm:-mt-10 sm:ml-5",
   avatarWrapEmphasis:
     "relative -mt-11 ml-4 flex items-end sm:-mt-12 sm:ml-5 md:-mt-14 md:ml-6",
@@ -58,17 +67,46 @@ const styles = {
   ),
   members: "inline-flex items-center gap-1",
   tagsRow: "mt-3 flex flex-wrap gap-1.5",
-  ctaRow: "mt-4 flex border-t border-[var(--woody-accent)]/12 pt-4",
+  ctaRow: "mt-4 flex flex-col gap-1 border-t border-[var(--woody-accent)]/12 pt-4",
   cta: cn(
     "inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-sm font-semibold sm:w-auto sm:justify-start",
     "bg-[var(--woody-nav)] text-white transition-colors",
     "group-hover:bg-[var(--woody-nav)]/92"
   ),
+  joinHint: "text-center text-[11px] font-medium text-[var(--woody-muted)] sm:text-left",
 } as const;
+
+function resolveCtaLabel(
+  community: Community,
+  isMember: boolean,
+  myJoinStatus: CommunityCardProps["myJoinStatus"]
+): string {
+  if (isMember) return "Ver comunidade";
+  if (community.visibility === "private") {
+    if (myJoinStatus === "pending") return "Ver estado do pedido";
+    if (myJoinStatus === "rejected" || myJoinStatus === "cancelled") return "Ver espaço";
+    if (myJoinStatus === "approved") return "Abrir comunidade";
+    return "Ver espaço";
+  }
+  return "Participar";
+}
+
+function resolveJoinHint(
+  community: Community,
+  isMember: boolean,
+  myJoinStatus: CommunityCardProps["myJoinStatus"]
+): string | null {
+  if (isMember || community.visibility !== "private") return null;
+  if (myJoinStatus === "pending") return "Solicitação enviada";
+  if (myJoinStatus === "rejected") return "Podes solicitar novamente no espaço";
+  if (myJoinStatus === "cancelled") return "Pedido cancelado — podes voltar a pedir";
+  return null;
+}
 
 export function CommunityCard({
   community,
   isMember = false,
+  myJoinStatus,
   visualWeight = "default",
   className,
 }: CommunityCardProps) {
@@ -83,6 +121,9 @@ export function CommunityCard({
     .toUpperCase();
   const visibleTags = community.tags.slice(0, 3);
   const moreTags = community.tags.length - visibleTags.length;
+  const isPrivate = community.visibility === "private";
+  const ctaLabel = resolveCtaLabel(community, isMember, myJoinStatus);
+  const joinHint = resolveJoinHint(community, isMember, myJoinStatus);
 
   return (
     <Link to={to} className={cn(styles.link, "h-full", className)}>
@@ -98,6 +139,12 @@ export function CommunityCard({
           <div className={styles.coverFallback} aria-hidden />
         )}
         <div className={styles.coverGradient} aria-hidden />
+        {isPrivate ? (
+          <span className={styles.privateBadge}>
+            <Lock className="size-3 opacity-80" aria-hidden />
+            Privada
+          </span>
+        ) : null}
       </div>
 
       <div className={emphasis ? styles.avatarWrapEmphasis : styles.avatarWrap}>
@@ -138,9 +185,10 @@ export function CommunityCard({
 
         <div className={styles.ctaRow}>
           <span className={styles.cta}>
-            {isMember ? "Ver comunidade" : "Participar"}
+            {ctaLabel}
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
           </span>
+          {joinHint ? <span className={styles.joinHint}>{joinHint}</span> : null}
         </div>
       </div>
     </Link>

@@ -36,12 +36,19 @@ export {
   joinCommunityPublic,
   leaveCommunity,
   requestJoinCommunity,
+  cancelMyCommunityJoinRequest,
+  fetchMyCommunityJoinRequestStatus,
   approveJoinRequest,
   rejectJoinRequest,
   removeMember,
   banMember,
   setCommunityMemberRole,
 } from "./services/communityMembership.service";
-export type { CommunityMembershipActionResult } from "./services/communityMembership.service";
+export type {
+  CommunityMembershipActionResult,
+  MyCommunityJoinRequestMe,
+  MyCommunityJoinRequestMeStatus,
+} from "./services/communityMembership.service";
+export { DEFAULT_MY_COMMUNITY_JOIN_REQUEST } from "./services/communityMembership.service";
 export { CommunityMembersManagerDialog } from "./components/members-manager/CommunityMembersManagerDialog";
 export type { CommunityUpdatePayload, CommunityUpdateResult } from "./types";

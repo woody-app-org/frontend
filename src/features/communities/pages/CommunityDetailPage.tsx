@@ -8,9 +8,12 @@ import type {
   JoinRequest,
   Post,
 } from "@/domain/types";
+import type { CommunityMembershipStatusResult } from "@/domain/permissions";
 import { cn } from "@/lib/utils";
 import { woodyLayout } from "@/lib/woody-ui";
+import { getStoredToken } from "@/lib/api";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { useAuth } from "@/features/auth/context/AuthContext";
 import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
 import {
   fetchAllCommunityMembers,
@@ -24,11 +27,17 @@ import {
   type JoinRequestWithUser,
 } from "../services/community.service";
 import {
+  cancelMyCommunityJoinRequest,
+  DEFAULT_MY_COMMUNITY_JOIN_REQUEST,
+  fetchMyCommunityJoinRequestStatus,
   joinCommunityPublic,
   leaveCommunity,
   requestJoinCommunity,
 } from "../services/communityMembership.service";
-import type { CommunityMembershipActionResult } from "../services/communityMembership.service";
+import type {
+  CommunityMembershipActionResult,
+  MyCommunityJoinRequestMe,
+} from "../services/communityMembership.service";
 import { CommunityHero } from "../components/CommunityHero";
 import { CommunityFeed } from "../components/CommunityFeed";
 import { useCreatePostComposer } from "@/features/feed/context/CreatePostComposerContext";
@@ -57,8 +66,8 @@ interface CommunityDetailLoadedProps {
   joinRows: JoinRequestWithUser[];
   dataRevision: number;
   onDataChanged: () => void;
-  joinPending: boolean;
-  setJoinPending: (v: boolean) => void;
+  myJoin: MyCommunityJoinRequestMe;
+  isAuthenticated: boolean;
   /** Feed de posts não carregado (ex. 403 em comunidade privada sem acesso). */
   postsFeedAccessDenied: boolean;
   premiumCapabilities?: CommunityPremiumCapabilities;
@@ -76,8 +85,8 @@ function CommunityDetailLoaded({
   joinRows,
   dataRevision,
   onDataChanged,
-  joinPending,
-  setJoinPending,
+  myJoin,
+  isAuthenticated,
   postsFeedAccessDenied,
   premiumCapabilities,
   togglePostLike,
@@ -119,17 +128,24 @@ function CommunityDetailLoaded({
     return () => setPageComposerCommunity(null);
   }, [community, isMember, setPageComposerCommunity]);
 
-  const membershipStatus = joinPending && !isMember ? "pending" : isMember ? "active" : "none";
+  const membershipStatus: CommunityMembershipStatusResult = isMember
+    ? "active"
+    : myJoin.status === "pending"
+      ? "pending"
+      : "none";
 
   const joinRequest: JoinRequest | null = useMemo(() => {
-    if (!joinPending || isMember) return null;
-    return {
-      id: "pending-local",
-      communityId: community.id,
-      userId: viewerId,
-      status: "pending",
-    };
-  }, [joinPending, isMember, community.id, viewerId]);
+    if (isMember) return null;
+    if (myJoin.status === "pending" || myJoin.status === "rejected" || myJoin.status === "cancelled") {
+      return {
+        id: myJoin.requestId ?? "",
+        communityId: community.id,
+        userId: viewerId,
+        status: myJoin.status,
+      };
+    }
+    return null;
+  }, [isMember, myJoin.requestId, myJoin.status, community.id, viewerId]);
 
   const memberCount = community.memberCount;
 
@@ -139,7 +155,7 @@ function CommunityDetailLoaded({
     canEditCommunity: canMod,
     canManageMembers: canMod,
     isAdmin: isAdminRole,
-    hasPendingJoin: joinPending,
+    hasPendingJoin: myJoin.status === "pending",
   });
 
   const runAccess = useCallback(
@@ -159,6 +175,22 @@ function CommunityDetailLoaded({
     },
     [onDataChanged]
   );
+
+  const handleCancelJoinRequest = useCallback(async () => {
+    if (!window.confirm("Cancelar o pedido de entrada nesta comunidade?")) return;
+    setCtaBusy(true);
+    setAccessNotice(null);
+    try {
+      const r = await cancelMyCommunityJoinRequest(viewerId, community.id);
+      if (!r.ok) setAccessNotice(r.error);
+      else {
+        showSuccessToast("Pedido cancelado.", { id: "woody-community-membership" });
+        onDataChanged();
+      }
+    } finally {
+      setCtaBusy(false);
+    }
+  }, [community.id, onDataChanged, viewerId]);
 
   const handleSavedSettings = useCallback(() => {
     onDataChanged();
@@ -218,27 +250,26 @@ function CommunityDetailLoaded({
         membershipStatus={membershipStatus}
         joinRequest={joinRequest}
         memberCount={memberCount}
+        joinRejectionReason={myJoin.status === "rejected" ? myJoin.rejectionReason : null}
         onLeave={() =>
           runAccess(async () => {
             const r = await leaveCommunity(viewerId, community.id);
-            if (r.ok) setJoinPending(false);
             return r;
           }, "Saíste desta comunidade.")
         }
         onJoinPublic={() =>
           runAccess(async () => {
             const r = await joinCommunityPublic(viewerId, community.id);
-            if (r.ok) setJoinPending(false);
             return r;
           }, "Agora participas nesta comunidade.")
         }
         onRequestJoin={() =>
           runAccess(async () => {
             const r = await requestJoinCommunity(viewerId, community.id);
-            if (r.ok) setJoinPending(true);
             return r;
-          }, "Pedido de entrada enviado.")
+          }, "Solicitação enviada.")
         }
+        onCancelJoinRequest={handleCancelJoinRequest}
         ctaBusy={ctaBusy}
         accessNotice={accessNotice}
         canManage={canEditCommunity}
@@ -298,6 +329,20 @@ function CommunityDetailLoaded({
             onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
             onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
             feedAccessRestricted={postsFeedAccessDenied}
+            privateGuestLock={
+              community.visibility === "private" && !isMember && postsFeedAccessDenied
+                ? {
+                    isAuthenticated,
+                    joinStatus: myJoin.status,
+                    ctaBusy,
+                    loginReturnTo: `/communities/${encodeURIComponent(community.slug)}`,
+                    onRequestJoin: async () => {
+                      await runAccess(async () => requestJoinCommunity(viewerId, community.id), "Solicitação enviada.");
+                    },
+                    onCancelJoin: handleCancelJoinRequest,
+                  }
+                : null
+            }
             className="min-w-0"
             premiumCapabilities={premiumCapabilities}
             onBoostPost={premiumCapabilities?.canBoostCommunityPosts ? (id) => setBoostPostId(id) : undefined}
@@ -340,6 +385,7 @@ function CommunityDetailLoaded({
 function CommunityDetailPageContent() {
   const { communitySlug } = useParams<{ communitySlug: string }>();
   const viewerId = useViewerId();
+  const { isAuthenticated } = useAuth();
   const { registerCommunityRefresh } = useCreatePostComposer();
   const [revision, setRevision] = useState(0);
   const [loadState, setLoadState] = useState<"loading" | "ok" | "error">("loading");
@@ -350,7 +396,7 @@ function CommunityDetailPageContent() {
   const [viewerMembershipRole, setViewerMembershipRole] = useState<CommunityMemberListItem["role"] | null>(null);
   const [viewerIsMember, setViewerIsMember] = useState(false);
   const [joinRows, setJoinRows] = useState<JoinRequestWithUser[]>([]);
-  const [joinPending, setJoinPending] = useState(false);
+  const [myJoin, setMyJoin] = useState<MyCommunityJoinRequestMe>(DEFAULT_MY_COMMUNITY_JOIN_REQUEST);
   const [postsFeedAccessDenied, setPostsFeedAccessDenied] = useState(false);
   const [premiumCapabilities, setPremiumCapabilities] = useState<CommunityPremiumCapabilities | undefined>(
     undefined
@@ -401,10 +447,15 @@ function CommunityDetailPageContent() {
           }
         })();
 
-        const [postsResult, previewPage, myMembership] = await Promise.all([
+        const joinMePromise = getStoredToken()
+          ? fetchMyCommunityJoinRequestStatus(c.id)
+          : Promise.resolve(null);
+
+        const [postsResult, previewPage, myMembership, joinMeRaw] = await Promise.all([
           postsPromise,
           fetchCommunityMembersPage(c.id, 1, 8),
           fetchMyCommunityMembership(c.id),
+          joinMePromise,
         ]);
         if (cancelled) return;
 
@@ -422,7 +473,7 @@ function CommunityDetailPageContent() {
         setViewerMembershipRole(myMembership.role);
         setViewerIsMember(myMembership.isMember);
         setJoinRows(jrows);
-        if (myMembership.isMember) setJoinPending(false);
+        setMyJoin(joinMeRaw ?? DEFAULT_MY_COMMUNITY_JOIN_REQUEST);
         setPremiumCapabilities(myMembership.premiumCapabilities);
         setLoadState("ok");
       } catch {
@@ -502,8 +553,8 @@ function CommunityDetailPageContent() {
       joinRows={joinRows}
       dataRevision={revision}
       onDataChanged={bump}
-      joinPending={joinPending}
-      setJoinPending={setJoinPending}
+      myJoin={myJoin}
+      isAuthenticated={isAuthenticated}
       postsFeedAccessDenied={postsFeedAccessDenied}
       premiumCapabilities={premiumCapabilities}
       togglePostLike={togglePostLike}

@@ -23,6 +23,10 @@ export interface CommunityHeroProps {
   onLeave: () => void | Promise<void>;
   onJoinPublic: () => void | Promise<void>;
   onRequestJoin: () => void | Promise<void>;
+  /** Motivo devolvido pelo backend quando o último pedido foi recusado. */
+  joinRejectionReason?: string | null;
+  /** Mostrar ligação para cancelar pedido pendente (comunidade privada). */
+  onCancelJoinRequest?: () => void | Promise<void>;
   ctaBusy?: boolean;
   accessNotice?: string | null;
   canManage?: boolean;
@@ -133,6 +137,9 @@ function resolvePrimaryCta(
   if (pendingJr || pendingMs) {
     return { label: "Solicitação enviada", onClick: () => {}, variant: "muted", disabled: true };
   }
+  if (joinRequest?.status === "cancelled") {
+    return { label: "Solicitar entrada", onClick: onRequestJoin, variant: "join", disabled: false };
+  }
   if (joinRequest?.status === "rejected") {
     return { label: "Solicitar novamente", onClick: onRequestJoin, variant: "join", disabled: false };
   }
@@ -149,6 +156,8 @@ export function CommunityHero({
   onLeave,
   onJoinPublic,
   onRequestJoin,
+  joinRejectionReason,
+  onCancelJoinRequest,
   ctaBusy = false,
   accessNotice,
   canManage = false,
@@ -181,6 +190,11 @@ export function CommunityHero({
 
   const ctaClass =
     cta.variant === "leave" ? styles.ctaLeave : cta.variant === "muted" ? styles.ctaMuted : styles.ctaJoin;
+
+  const showCancelJoin =
+    community.visibility === "private" &&
+    joinRequest?.status === "pending" &&
+    Boolean(onCancelJoinRequest);
 
   const showAdminMenu =
     (canManage && onManageCommunity) ||
@@ -327,6 +341,32 @@ export function CommunityHero({
               </DropdownMenu>
             ) : null}
           </div>
+
+          {showCancelJoin ? (
+            <div className="w-full">
+              <button
+                type="button"
+                className={cn(
+                  woodyFocus.ring,
+                  "text-sm font-medium text-[var(--woody-muted)] underline decoration-[var(--woody-accent)]/25 underline-offset-4",
+                  "hover:text-[var(--woody-text)] disabled:pointer-events-none disabled:opacity-50"
+                )}
+                disabled={ctaBusy}
+                onClick={() => void onCancelJoinRequest?.()}
+              >
+                Cancelar solicitação
+              </button>
+            </div>
+          ) : null}
+
+          {joinRejectionReason?.trim() &&
+          community.visibility === "private" &&
+          joinRequest?.status === "rejected" ? (
+            <p className="max-w-xl text-sm leading-relaxed text-[var(--woody-muted)]">
+              <span className="font-medium text-[var(--woody-text)]/90">Última resposta: </span>
+              {joinRejectionReason.trim()}
+            </p>
+          ) : null}
 
           {accessNotice ? (
             <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
