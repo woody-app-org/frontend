@@ -2,6 +2,7 @@ export { CommunitiesPage } from "./pages/CommunitiesPage";
 export { CreateCommunityPage } from "./pages/CreateCommunityPage";
 export { CommunityDetailPage } from "./pages/CommunityDetailPage";
 export { CommunityCard } from "./components/CommunityCard";
+export { CommunityJoinRequestsTab } from "./components/CommunityJoinRequestsTab";
 export { CommunityTag } from "./components/CommunityTag";
 export { CommunitiesSection } from "./components/CommunitiesSection";
 export { CommunityCarousel } from "./components/CommunityCarousel";
@@ -30,6 +31,7 @@ export {
   validateCommunityUpdatePayload,
   createCommunity,
   ProSubscriptionRequiredError,
+  CommunityJoinRequestsForbiddenError,
   type JoinRequestWithUser,
 } from "./services/community.service";
 export {

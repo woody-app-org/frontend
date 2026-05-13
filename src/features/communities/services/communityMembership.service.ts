@@ -184,12 +184,20 @@ export async function approveJoinRequest(
   }
 }
 
+const JOIN_REJECT_REASON_MAX_LEN = 500;
+
 export async function rejectJoinRequest(
   _actorUserId: string,
-  joinRequestId: string
+  joinRequestId: string,
+  options?: { reason?: string | null }
 ): Promise<CommunityMembershipActionResult> {
   try {
-    await api.post(`/join-requests/${encodeURIComponent(joinRequestId)}/reject`);
+    const raw = options?.reason?.trim() ?? "";
+    const body =
+      raw.length > 0
+        ? { reason: raw.slice(0, JOIN_REJECT_REASON_MAX_LEN) }
+        : undefined;
+    await api.post(`/join-requests/${encodeURIComponent(joinRequestId)}/reject`, body);
     return ok();
   } catch (e) {
     return fail(e, "Não foi possível rejeitar o pedido.");

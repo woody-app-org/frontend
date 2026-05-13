@@ -10,7 +10,7 @@ import type {
 } from "@/domain/types";
 import type { CommunityMembershipStatusResult } from "@/domain/permissions";
 import { cn } from "@/lib/utils";
-import { woodyLayout } from "@/lib/woody-ui";
+import { woodyLayout, woodyFocus } from "@/lib/woody-ui";
 import { getStoredToken } from "@/lib/api";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -24,6 +24,7 @@ import {
   fetchCommunityPosts,
   startCommunityPremiumUpgrade,
   CommunityPostsForbiddenError,
+  CommunityJoinRequestsForbiddenError,
   type JoinRequestWithUser,
 } from "../services/community.service";
 import {
@@ -48,6 +49,7 @@ import { CommunityMembersPreview } from "../components/CommunityMembersPreview";
 import { CommunityNotFound } from "../components/CommunityNotFound";
 import { CommunityEditDialog } from "../components/community-settings/CommunityEditDialog";
 import { CommunityMembersManagerDialog } from "../components/members-manager/CommunityMembersManagerDialog";
+import { CommunityJoinRequestsTab } from "../components/CommunityJoinRequestsTab";
 import { CommunityGrowthDialog } from "../components/CommunityGrowthDialog";
 import { CommunityPostBoostDialog } from "../components/CommunityPostBoostDialog";
 import { CommunityPremiumSidebarCard } from "../components/CommunityPremiumSidebarCard";
@@ -73,6 +75,8 @@ interface CommunityDetailLoadedProps {
   premiumCapabilities?: CommunityPremiumCapabilities;
   togglePostLike: (postId: string) => Promise<void>;
   isPostLikePending: (postId: string) => boolean;
+  /** 403 ao carregar `GET .../join-requests` (mensagem para a aba Solicitações). */
+  joinRequestsForbiddenMessage: string | null;
 }
 
 function CommunityDetailLoaded({
@@ -91,6 +95,7 @@ function CommunityDetailLoaded({
   premiumCapabilities,
   togglePostLike,
   isPostLikePending,
+  joinRequestsForbiddenMessage,
 }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
   const { setPageComposerCommunity } = useCreatePostComposer();
@@ -102,6 +107,7 @@ function CommunityDetailLoaded({
   const [ctaBusy, setCtaBusy] = useState(false);
   const [accessNotice, setAccessNotice] = useState<string | null>(null);
   const [feedPage, setFeedPage] = useState(1);
+  const [detailTab, setDetailTab] = useState<"feed" | "join-requests">("feed");
 
   const isOwner = community.ownerUserId === viewerId;
   const isAdminRole = viewerMembershipRole === "admin";
@@ -157,6 +163,15 @@ function CommunityDetailLoaded({
     isAdmin: isAdminRole,
     hasPendingJoin: myJoin.status === "pending",
   });
+
+  const showJoinRequestsTab =
+    canManageMembers && isMember && membershipStatus === "active";
+
+  useEffect(() => {
+    if (!showJoinRequestsTab && detailTab === "join-requests") {
+      setDetailTab("feed");
+    }
+  }, [showJoinRequestsTab, detailTab]);
 
   const runAccess = useCallback(
     async (fn: () => Promise<CommunityMembershipActionResult>, successMessage?: string) => {
@@ -310,6 +325,40 @@ function CommunityDetailLoaded({
         />
       ) : null}
 
+      {showJoinRequestsTab ? (
+        <nav
+          className="-mt-2 flex w-full max-w-3xl flex-wrap gap-1 border-b border-[var(--woody-accent)]/12"
+          aria-label="Secções da comunidade"
+        >
+          <button
+            type="button"
+            className={cn(
+              woodyFocus.ring,
+              "-mb-px min-h-11 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors sm:px-5",
+              detailTab === "feed"
+                ? "border-[var(--woody-nav)] text-[var(--woody-text)]"
+                : "border-transparent text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
+            )}
+            onClick={() => setDetailTab("feed")}
+          >
+            Discussões
+          </button>
+          <button
+            type="button"
+            className={cn(
+              woodyFocus.ring,
+              "-mb-px min-h-11 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors sm:px-5",
+              detailTab === "join-requests"
+                ? "border-[var(--woody-nav)] text-[var(--woody-text)]"
+                : "border-transparent text-[var(--woody-muted)] hover:text-[var(--woody-text)]"
+            )}
+            onClick={() => setDetailTab("join-requests")}
+          >
+            Solicitações
+          </button>
+        </nav>
+      ) : null}
+
       <div
         className={cn(
           "grid grid-cols-1 gap-8 md:gap-10",
@@ -318,38 +367,49 @@ function CommunityDetailLoaded({
         )}
       >
         <div className="order-2 flex min-w-0 flex-col gap-8 md:gap-10 xl:order-1">
-          <CommunityFeed
-            community={community}
-            posts={paginatedPosts}
-            totalPostCount={totalPosts}
-            postsPerPage={COMMUNITY_FEED_PAGE_SIZE}
-            page={feedPage}
-            hasNextPage={hasNextFeedPage}
-            hasPreviousPage={hasPreviousFeedPage}
-            onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
-            onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
-            feedAccessRestricted={postsFeedAccessDenied}
-            privateGuestLock={
-              community.visibility === "private" && !isMember && postsFeedAccessDenied
-                ? {
-                    isAuthenticated,
-                    joinStatus: myJoin.status,
-                    ctaBusy,
-                    loginReturnTo: `/communities/${encodeURIComponent(community.slug)}`,
-                    onRequestJoin: async () => {
-                      await runAccess(async () => requestJoinCommunity(viewerId, community.id), "Solicitação enviada.");
-                    },
-                    onCancelJoin: handleCancelJoinRequest,
-                  }
-                : null
-            }
-            className="min-w-0"
-            premiumCapabilities={premiumCapabilities}
-            onBoostPost={premiumCapabilities?.canBoostCommunityPosts ? (id) => setBoostPostId(id) : undefined}
-            boostingPostId={null}
-            onLike={togglePostLike}
-            isLikePending={isPostLikePending}
-          />
+          {detailTab === "feed" || !showJoinRequestsTab ? (
+            <CommunityFeed
+              community={community}
+              posts={paginatedPosts}
+              totalPostCount={totalPosts}
+              postsPerPage={COMMUNITY_FEED_PAGE_SIZE}
+              page={feedPage}
+              hasNextPage={hasNextFeedPage}
+              hasPreviousPage={hasPreviousFeedPage}
+              onNextPage={() => setFeedPage((p) => Math.min(feedTotalPages, p + 1))}
+              onPreviousPage={() => setFeedPage((p) => Math.max(1, p - 1))}
+              feedAccessRestricted={postsFeedAccessDenied}
+              privateGuestLock={
+                community.visibility === "private" && !isMember && postsFeedAccessDenied
+                  ? {
+                      isAuthenticated,
+                      joinStatus: myJoin.status,
+                      ctaBusy,
+                      loginReturnTo: `/communities/${encodeURIComponent(community.slug)}`,
+                      onRequestJoin: async () => {
+                        await runAccess(async () => requestJoinCommunity(viewerId, community.id), "Solicitação enviada.");
+                      },
+                      onCancelJoin: handleCancelJoinRequest,
+                    }
+                  : null
+              }
+              className="min-w-0"
+              premiumCapabilities={premiumCapabilities}
+              onBoostPost={premiumCapabilities?.canBoostCommunityPosts ? (id) => setBoostPostId(id) : undefined}
+              boostingPostId={null}
+              onLike={togglePostLike}
+              isLikePending={isPostLikePending}
+            />
+          ) : (
+            <CommunityJoinRequestsTab
+              communityName={community.name}
+              viewerId={viewerId}
+              rows={joinRows}
+              listRevision={dataRevision}
+              onListChanged={onDataChanged}
+              forbiddenMessage={joinRequestsForbiddenMessage}
+            />
+          )}
         </div>
 
         <aside
@@ -396,6 +456,7 @@ function CommunityDetailPageContent() {
   const [viewerMembershipRole, setViewerMembershipRole] = useState<CommunityMemberListItem["role"] | null>(null);
   const [viewerIsMember, setViewerIsMember] = useState(false);
   const [joinRows, setJoinRows] = useState<JoinRequestWithUser[]>([]);
+  const [joinRequestsForbiddenMessage, setJoinRequestsForbiddenMessage] = useState<string | null>(null);
   const [myJoin, setMyJoin] = useState<MyCommunityJoinRequestMe>(DEFAULT_MY_COMMUNITY_JOIN_REQUEST);
   const [postsFeedAccessDenied, setPostsFeedAccessDenied] = useState(false);
   const [premiumCapabilities, setPremiumCapabilities] = useState<CommunityPremiumCapabilities | undefined>(
@@ -432,6 +493,7 @@ function CommunityDetailPageContent() {
           setJoinRows([]);
           setPostsFeedAccessDenied(false);
           setPremiumCapabilities(undefined);
+          setJoinRequestsForbiddenMessage(null);
           setLoadState("ok");
           return;
         }
@@ -462,7 +524,20 @@ function CommunityDetailPageContent() {
         const isOwner = c.ownerUserId === viewerId;
         const isMod = isOwner || myMembership.role === "admin" || myMembership.role === "owner";
         const fullMembers = isMod ? await fetchAllCommunityMembers(c.id) : previewPage.items;
-        const jrows = isMod ? await fetchCommunityJoinRequestRows(c.id) : [];
+        let jrows: JoinRequestWithUser[] = [];
+        let joinForbidden: string | null = null;
+        if (isMod) {
+          try {
+            jrows = await fetchCommunityJoinRequestRows(c.id);
+          } catch (e) {
+            if (e instanceof CommunityJoinRequestsForbiddenError) {
+              joinForbidden =
+                "Não tens permissão para gerir solicitações nesta comunidade. Se achas que deverias, contacta a equipa.";
+            } else {
+              throw e;
+            }
+          }
+        }
         if (cancelled) return;
 
         setCommunity(c);
@@ -473,6 +548,7 @@ function CommunityDetailPageContent() {
         setViewerMembershipRole(myMembership.role);
         setViewerIsMember(myMembership.isMember);
         setJoinRows(jrows);
+        setJoinRequestsForbiddenMessage(joinForbidden);
         setMyJoin(joinMeRaw ?? DEFAULT_MY_COMMUNITY_JOIN_REQUEST);
         setPremiumCapabilities(myMembership.premiumCapabilities);
         setLoadState("ok");
@@ -559,6 +635,7 @@ function CommunityDetailPageContent() {
       premiumCapabilities={premiumCapabilities}
       togglePostLike={togglePostLike}
       isPostLikePending={isPostLikePending}
+      joinRequestsForbiddenMessage={joinRequestsForbiddenMessage}
     />
   );
 }

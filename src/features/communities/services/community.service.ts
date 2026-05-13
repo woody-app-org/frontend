@@ -148,6 +148,14 @@ export class CommunityPostsForbiddenError extends Error {
   }
 }
 
+/** `GET /communities/:id/join-requests` devolveu 403 (sem permissão de moderação). */
+export class CommunityJoinRequestsForbiddenError extends Error {
+  constructor() {
+    super("Community join requests forbidden");
+    this.name = "CommunityJoinRequestsForbiddenError";
+  }
+}
+
 export async function fetchCommunityPosts(
   communityId: string,
   viewerId: string,
@@ -420,7 +428,10 @@ export async function fetchCommunityJoinRequestRows(communityId: string): Promis
       },
       user: mapUserFromApi(r.user),
     }));
-  } catch {
+  } catch (e) {
+    if (isAxiosError(e) && e.response?.status === 403) {
+      throw new CommunityJoinRequestsForbiddenError();
+    }
     return [];
   }
 }
