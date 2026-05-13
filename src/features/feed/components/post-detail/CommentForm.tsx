@@ -122,6 +122,18 @@ export function CommentForm({
     };
   }, [emojiPopoverOpen, closeEmojiPopover]);
 
+  /** Picker de emojis só em desktop (≥768px, Tailwind `md`): no telemóvel o teclado já traz emojis. */
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(min-width: 768px)");
+    const sync = () => {
+      if (!mq.matches) setEmojiPopoverOpen(false);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
   const trimmed = value.trim();
   const hasGif = draftGif != null && draftGif.gifUrl.length > 0;
   const canSubmit = (trimmed.length > 0 || hasGif) && !isSubmitting && !disabled;
@@ -223,7 +235,7 @@ export function CommentForm({
               <Sticker className="size-3.5" aria-hidden />
               <span className="hidden text-xs sm:inline">GIF</span>
             </Button>
-            <div className="relative shrink-0" ref={emojiPopoverWrapRef}>
+            <div className="relative hidden shrink-0 md:block" ref={emojiPopoverWrapRef}>
               <Button
                 type="button"
                 variant="ghost"
