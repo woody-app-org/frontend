@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { woodyFocus, woodySection, woodySurface } from "@/lib/woody-ui";
+import { woodyFocus, woodySurface } from "@/lib/woody-ui";
 import type { Community, CommunityPremiumCapabilities, Post } from "@/domain/types";
 import { PostCard } from "@/features/feed/components/PostCard";
 import { Pagination } from "@/features/feed/components/Pagination";
@@ -162,17 +162,10 @@ export function CommunityFeed({
   const showPrivatePanel = Boolean(privateGuestLock) && posts.length === 0;
 
   return (
-    <section className={cn("w-full min-w-0", className)} aria-labelledby="community-feed-heading">
-      <div className="mb-8 border-b border-[var(--woody-accent)]/10 pb-7 md:mb-10 md:pb-8">
-        <h2 id="community-feed-heading" className={woodySection.title}>
-          Discussões em {community.name}
-        </h2>
-        <p className={cn(woodySection.subtitle, "mt-2 max-w-2xl text-pretty")}>
-          Só entram aqui publicações feitas <span className="font-medium text-[var(--woody-text)]/90">nesta comunidade</span>
-          — o contexto do grupo aparece no cartão.
-        </p>
-      </div>
-
+    <section
+      className={cn("w-full min-w-0", className)}
+      aria-label={`Publicações em ${community.name}`}
+    >
       {posts.length === 0 ? (
         showPrivatePanel && privateGuestLock ? (
           <PrivateCommunityGuestPanel community={community} lock={privateGuestLock} />
