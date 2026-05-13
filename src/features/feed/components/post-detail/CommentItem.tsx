@@ -4,7 +4,7 @@ import { Pin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Comment, Post } from "@/domain/types";
-import { isCommentContentMaskedForViewer } from "@/domain/lib/contentModerationDisplay";
+import { getCommentContentForViewer, isCommentContentMaskedForViewer } from "@/domain/lib/contentModerationDisplay";
 import { formatCommentTimestamp } from "./formatCommentTimestamp";
 import { CommentActionsMenu } from "./CommentActionsMenu";
 import { HiddenCommentPlaceholder } from "./HiddenCommentPlaceholder";
@@ -143,20 +143,20 @@ export function CommentItem({
           <HiddenCommentPlaceholder nested={nested} />
         ) : (
           <div className="mt-1.5 space-y-2">
-            {comment.content.trim() ? (
+            {getCommentContentForViewer(comment).trim() ? (
               <p
                 className={cn(
                   "whitespace-pre-wrap leading-relaxed text-[var(--woody-text)]/90 [overflow-wrap:anywhere]",
                   nested ? "text-[0.875rem] sm:text-[0.9375rem]" : "text-[0.9375rem]"
                 )}
               >
-                {comment.content}
+                {getCommentContentForViewer(comment)}
               </p>
             ) : null}
             {comment.gifUrl ? (
               <div className="max-w-[min(100%,240px)]">
                 <img
-                  src={comment.gifUrl}
+                  src={comment.gifThumbnailUrl || comment.gifUrl}
                   alt={comment.gifTitle ? `GIF: ${comment.gifTitle}` : "GIF do comentário"}
                   className="max-h-[200px] w-full rounded-lg border border-[var(--woody-accent)]/10 object-contain sm:max-h-[220px]"
                   loading="lazy"
