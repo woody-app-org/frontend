@@ -427,7 +427,10 @@ function CommunityDetailLoaded({
             upgradeBusy={upgradeBusy}
           />
           <CommunityTopicsCard tags={community.tags} />
-          <CommunityRulesQuickCard community={community} />
+          <CommunityRulesQuickCard
+            community={community}
+            guestDiscovery={community.visibility === "private" && !isMember}
+          />
           <CommunityMembersPreview
             communityId={community.id}
             memberCount={memberCount}
