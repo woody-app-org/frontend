@@ -34,7 +34,7 @@ export function CreatePostModal() {
               type="button"
               aria-label="Fechar"
               className={cn(
-                "absolute left-2 top-[max(0.35rem,env(safe-area-inset-top))] z-10 size-9 rounded-full sm:left-3 sm:top-3 sm:size-10",
+                "absolute right-2 top-[max(0.35rem,env(safe-area-inset-top))] z-10 size-9 rounded-full sm:right-3 sm:top-3 sm:size-10",
                 "text-[var(--woody-text)]/75 hover:text-[var(--woody-text)]",
                 "hover:bg-black/[0.06] transition-colors",
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/25"

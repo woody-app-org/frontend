@@ -170,14 +170,11 @@ export function PostComposerForm({
     resizeContentArea();
   }, [content, resizeContentArea]);
 
-  const publishingContextLine = useMemo(() => {
-    if (forcedCommunity) return `Publicando em ${forcedCommunity.name}`;
-    if (publishTarget === "profile") return "Publicando no teu perfil";
-    if (loadingCommunities) return "A escolher comunidade…";
-    const name = myCommunities.find((c) => c.id === communityId)?.name;
-    if (name) return `Publicando em ${name}`;
-    return "Publicando numa comunidade";
-  }, [communityId, forcedCommunity, loadingCommunities, myCommunities, publishTarget]);
+  const activeCommunityForToolbar = useMemo((): Community | null => {
+    if (forcedCommunity) return forcedCommunity;
+    if (publishTarget !== "community") return null;
+    return myCommunities.find((c) => c.id === communityId) ?? null;
+  }, [communityId, forcedCommunity, myCommunities, publishTarget]);
 
   useEffect(() => {
     return () => {
@@ -686,15 +683,10 @@ export function PostComposerForm({
               isModalEmbed ? "space-y-2 sm:space-y-3" : "space-y-2.5 sm:space-y-3"
             )}
           >
-            {!isModalEmbed && (
-              <>
-                <p className="text-[0.8125rem] leading-snug text-[var(--woody-muted)]">{publishingContextLine}</p>
-                <span className="sr-only">
-                  {viewerPreview.name}
-                  {viewerPreview.pronouns ? `, ${viewerPreview.pronouns}` : ""} — @{viewerPreview.username}
-                </span>
-              </>
-            )}
+            <span className="sr-only">
+              {viewerPreview.name}
+              {viewerPreview.pronouns ? `, ${viewerPreview.pronouns}` : ""} — @{viewerPreview.username}
+            </span>
 
             {isModalEmbed ? (
               <>
@@ -713,13 +705,6 @@ export function PostComposerForm({
                   rows={1}
                   aria-label="Texto da publicação"
                 />
-                <p className="text-[0.78rem] leading-snug text-[var(--woody-nav)] sm:text-[0.8125rem]">
-                  {publishingContextLine}
-                </p>
-                <span className="sr-only">
-                  {viewerPreview.name}
-                  {viewerPreview.pronouns ? `, ${viewerPreview.pronouns}` : ""} — @{viewerPreview.username}
-                </span>
                 {destinationControls}
               </>
             ) : (
@@ -795,6 +780,20 @@ export function PostComposerForm({
         )}
       >
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+          {activeCommunityForToolbar ? (
+            <span
+              className="inline-flex shrink-0"
+              title={activeCommunityForToolbar.name}
+              aria-label={`Publicação na comunidade ${activeCommunityForToolbar.name}`}
+            >
+              <Avatar className="size-9 ring-1 ring-black/[0.08] sm:size-10">
+                <AvatarImage src={activeCommunityForToolbar.avatarUrl ?? undefined} alt="" />
+                <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[0.65rem] font-semibold text-[var(--woody-text)]">
+                  {getInitials(activeCommunityForToolbar.name)}
+                </AvatarFallback>
+              </Avatar>
+            </span>
+          ) : null}
           <MediaPicker
             fileInputRef={imageInputRef}
             accept="image/*"
