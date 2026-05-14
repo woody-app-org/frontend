@@ -41,7 +41,6 @@ function collectMediaEntries(posts: Post[]): MediaEntry[] {
       postId: post.id,
       authorName: post.author.name,
       authorAvatarUrl: resolvePublicMediaUrl(post.author.avatarUrl) || undefined,
-      postTitle: post.title ?? undefined,
       postContent: post.content,
       createdAt: post.createdAt,
     };

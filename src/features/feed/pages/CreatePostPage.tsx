@@ -32,15 +32,15 @@ function CreatePostPageContent() {
       <div>
         <h1 className={woodySection.title}>Nova publicação</h1>
         <p className={woodySection.subtitle}>
-          Publica no teu perfil ou numa comunidade em que participas; depois escreve o texto e, se quiseres, tags ou
-          uma imagem.
+          Escreve o que quiseres partilhar; podes anexar fotos ou um vídeo e até três hashtags. Não é preciso
+          “título” — é conversa aberta.
         </p>
       </div>
 
       <CreatePostCard
         onPostCreated={(post) => {
           runAfterPostCreated(post, "/criar");
-          navigate("/feed", { replace: true, state: { createdPostTitle: post.title } });
+          navigate("/feed", { replace: true, state: { createdPostFromComposer: true } });
         }}
       />
     </div>

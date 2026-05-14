@@ -314,7 +314,7 @@ export interface CommunityPremiumDashboardPayload {
   engagement: { averageInteractionsPerPost: number; definition: string };
   topPosts: Array<{
     postId: string;
-    title: string;
+    contentPreview: string;
     createdAtUtc: string;
     likesCount: number;
     commentsCount: number;
@@ -358,7 +358,7 @@ export interface CommunityPostBoostResponse {
 export interface CommunityPostBoostListItem {
   id: string;
   postId: string;
-  postTitle: string | null;
+  postContentPreview: string | null;
   startedAtUtc: string;
   endsAtUtc: string;
   active: boolean;

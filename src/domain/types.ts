@@ -196,7 +196,6 @@ export interface Post {
   /** Alinhado ao autor expandido; em DTOs crus costuma vir só `authorId`. */
   authorId: string;
   author: User;
-  title: string;
   content: string;
   imageUrl: string | null;
   /** Galeria quando a API devolve várias URLs (ex.: `post_images`). */

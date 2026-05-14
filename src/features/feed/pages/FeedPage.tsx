@@ -132,8 +132,8 @@ function FeedPageContent() {
   }, [registerFeedIngest, registerNewPostFromComposer]);
 
   useEffect(() => {
-    const st = location.state as { createdPostTitle?: string } | null;
-    if (!st?.createdPostTitle) return;
+    const st = location.state as { createdPostFromComposer?: boolean } | null;
+    if (!st?.createdPostFromComposer) return;
     const path = `${location.pathname}${location.search}`;
     void (async () => {
       await Promise.resolve();

@@ -491,7 +491,7 @@ export function CommunityAdminDashboardPage() {
                           state={buildPostDetailNavState(location)}
                           className={cn(woodyFocus.ring, "text-sm font-medium text-[var(--woody-text)] hover:underline")}
                         >
-                          {post.title || "Sem título"}
+                          {post.contentPreview?.trim() || `Post #${post.postId}`}
                         </Link>
                         <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--woody-muted)]">
                           <span>{post.authorUsername}</span>
@@ -546,7 +546,7 @@ export function CommunityAdminDashboardPage() {
                         state={buildPostDetailNavState(location)}
                         className={cn(woodyFocus.ring, "font-medium text-[var(--woody-text)] hover:underline")}
                       >
-                        {b.postTitle?.trim() || `Post #${b.postId}`}
+                        {b.postContentPreview?.trim() || `Post #${b.postId}`}
                       </Link>
                       <span className="text-xs text-[var(--woody-muted)]">
                         até {new Date(b.endsAtUtc).toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" })}

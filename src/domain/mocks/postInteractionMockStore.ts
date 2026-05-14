@@ -164,17 +164,19 @@ function isPostActiveRow(p: SeedPost): boolean {
 export function updatePostRowForAuthor(
   viewerId: string,
   postId: string,
-  patch: { title: string; content: string }
+  patch: { content: string; tags?: string[] }
 ): SeedPost | null {
   const rows = getMutablePostRows();
   const post = rows.find((p) => p.id === postId);
   if (!post || !isPostActiveRow(post)) return null;
   if (post.authorId !== viewerId) return null;
-  const title = patch.title.trim();
   const content = patch.content.trim();
-  if (!title || !content) return null;
-  post.title = title;
+  const hasImage = post.imageUrl != null && String(post.imageUrl).trim() !== "";
+  if (!content && !hasImage) return null;
   post.content = content;
+  if (patch.tags !== undefined) {
+    post.tags = patch.tags.length > 0 ? [...patch.tags] : undefined;
+  }
   post.updatedAt = new Date().toISOString();
   notify();
   return post;

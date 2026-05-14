@@ -6,6 +6,7 @@ import type { Community, Post, User } from "@/domain/types";
 import { SearchModeSegment, type SearchMode } from "@/features/feed/components/SearchModeSegment";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
 import { useSearch } from "../hooks/useSearch";
+import { firstLineOfPost } from "@/features/feed/lib/postTextPreview";
 
 export interface SharedSearchPanelProps {
   query: string;
@@ -19,7 +20,7 @@ export interface SharedSearchPanelProps {
 }
 
 const placeholders: Record<SearchMode, string> = {
-  posts: "Buscar por título, texto ou comunidade…",
+  posts: "Buscar por texto, hashtags ou comunidade…",
   people: "Nome, @usuária ou bio…",
   communities: "Nome da comunidade, tema ou tag…",
 };
@@ -169,7 +170,7 @@ function PostsResults({ posts }: { posts: Post[] }) {
             )}
           </div>
           <div className="mt-1 text-sm font-semibold text-[var(--woody-text)] line-clamp-2">
-            {p.title || "Discussão"}
+            {firstLineOfPost(p.content, 140)}
           </div>
           <div className="mt-0.5 text-xs text-[var(--woody-muted)] line-clamp-1">
             {p.author?.name ? `por ${p.author.name}` : " "}

@@ -246,7 +246,7 @@ export function PostOverflowMenu({
         <DeletePostConfirmationDialog
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
-          postTitlePreview={post.title || post.content}
+          postContentPreview={post.content?.trim() ? post.content : "Publicação"}
           isDeleting={isDeleting}
           errorMessage={deleteError}
           onConfirm={handleDelete}

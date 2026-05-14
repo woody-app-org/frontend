@@ -2,20 +2,19 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import type { ChangeEvent } from "react";
 import { ImagePlus, Loader2, UserRound, Users, Video } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import type { Community, Post, PostPublicationContext } from "@/domain/types";
+import type { Community, Post, PostPublicationContext, User } from "@/domain/types";
 import { fetchMyCommunitiesForComposer } from "@/features/communities/services/community.service";
 import { postComposerFieldStyles } from "../lib/postComposerFieldStyles";
 import {
-  POST_COMPOSER_TAGS_MAX_COUNT,
-  POST_COMPOSER_TITLE_MAX_LENGTH,
+  POST_COMPOSER_CONTENT_MAX_LENGTH,
   createPost,
-  normalizePostComposerTags,
   type CreatePostMediaAttachmentPayload,
 } from "../services/post.service";
+import { hashtagsToApiTags } from "../lib/postComposerHashtags";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
 import { extractVideoPosterJpegBlob } from "@/lib/extractVideoPosterJpeg";
@@ -29,6 +28,7 @@ import {
 import { MediaPicker } from "@/components/media/MediaPicker";
 import { MediaPreviewGrid, type MediaPreviewItem } from "@/components/media/MediaPreviewGrid";
 import { showSuccessToast, showActionErrorToast } from "@/lib/toast";
+import { HashtagChipsField } from "./HashtagChipsField";
 
 const selectClass = cn(
   postComposerFieldStyles.input,
@@ -47,6 +47,27 @@ function targetOptionClass(selected: boolean) {
   );
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+const toolbarIconBtn = cn(
+  "size-10 shrink-0 rounded-full border-0 bg-[var(--woody-nav)]/8 text-[var(--woody-nav)] shadow-none",
+  "hover:bg-[var(--woody-nav)]/14 active:scale-[0.98] disabled:opacity-40"
+);
+
+const textareaSocial = cn(
+  "min-h-[120px] max-h-[min(42vh,320px)] w-full resize-none rounded-2xl border border-[var(--woody-accent)]/10",
+  "bg-[var(--woody-bg)]/80 px-3.5 py-3 text-[1.05rem] leading-relaxed text-[var(--woody-text)]",
+  "placeholder:text-[var(--woody-muted)]/85 focus-visible:border-[var(--woody-nav)]/25 focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/15",
+  "transition-colors sm:min-h-[132px] sm:px-4"
+);
+
 /** Item de imagem no compositor (antes do upload). */
 interface ComposerImageItem {
   id: string;
@@ -62,6 +83,8 @@ interface ComposerVideoItem {
 
 export interface PostComposerFormProps {
   viewerId: string;
+  /** Cabeçalho compacto estilo rede social (avatar + nome). */
+  viewerPreview: User;
   /** Publicação sempre nesta comunidade (ex.: página da comunidade). */
   forcedCommunity?: Community;
   /**
@@ -77,6 +100,7 @@ export interface PostComposerFormProps {
 
 export function PostComposerForm({
   viewerId,
+  viewerPreview,
   forcedCommunity,
   forceProfilePublication = false,
   initialCommunityId,
@@ -97,11 +121,9 @@ export function PostComposerForm({
   const [myCommunities, setMyCommunities] = useState<Community[]>([]);
   const [loadingCommunities, setLoadingCommunities] = useState(false);
   const [communityId, setCommunityId] = useState(forcedCommunity?.id ?? "");
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [tagsRaw, setTagsRaw] = useState("");
+  const [hashtags, setHashtags] = useState<string[]>([]);
 
-  // Listas de mídia (imagem e vídeo são mutuamente exclusivos)
   const [imageItems, setImageItems] = useState<ComposerImageItem[]>([]);
   const [videoItem, setVideoItem] = useState<ComposerVideoItem | null>(null);
 
@@ -113,7 +135,9 @@ export function PostComposerForm({
   const isCommunityFlow = !!forcedCommunity || publishTarget === "community";
   const canPickTarget = !forcedCommunity && !forceProfilePublication;
 
-  // Limpar Object URLs ao desmontar
+  const hasMediaQueued = imageItems.length > 0 || videoItem !== null;
+  const hasText = content.trim().length > 0;
+
   useEffect(() => {
     return () => {
       imageItems.forEach((it) => URL.revokeObjectURL(it.previewUrl));
@@ -137,7 +161,7 @@ export function PostComposerForm({
     }
 
     let cancelled = false;
-    (async () => {
+    void (async () => {
       setLoadingCommunities(true);
       setCommunityLoadError(false);
       try {
@@ -187,7 +211,6 @@ export function PostComposerForm({
         return;
       }
 
-      // Validar tipo e tamanho
       for (const f of files) {
         if (!f.type.startsWith("image/")) {
           setFormError("Apenas imagens são aceites neste campo.");
@@ -231,8 +254,6 @@ export function PostComposerForm({
     });
     setFormError(null);
   }, []);
-
-  // --- Handlers de vídeo ---
 
   const onVideoFileChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -279,8 +300,6 @@ export function PostComposerForm({
     setFormError(null);
   }, []);
 
-  // --- Preview para MediaPreviewGrid ---
-
   const previewItems = useMemo((): MediaPreviewItem[] => {
     const imgs: MediaPreviewItem[] = imageItems.map((it) => ({
       id: it.id,
@@ -301,8 +320,6 @@ export function PostComposerForm({
     [removeImage, removeVideo]
   );
 
-  // --- Submit ---
-
   const handleSubmit = async () => {
     setFormError(null);
 
@@ -320,14 +337,18 @@ export function PostComposerForm({
       }
     }
 
-    if (!title.trim() || !content.trim()) {
-      setFormError("Preencha o título e o conteúdo.");
+    const text = content.trim();
+    if (!text && !hasMediaQueued) {
+      setFormError("Escreve algo ou anexa uma imagem ou vídeo.");
+      return;
+    }
+    if (text.length > POST_COMPOSER_CONTENT_MAX_LENGTH) {
+      setFormError(`O texto pode ter no máximo ${POST_COMPOSER_CONTENT_MAX_LENGTH} caracteres.`);
       return;
     }
 
     setSubmitting(true);
     try {
-      let imageUrl: string | undefined;
       let mediaAttachments: CreatePostMediaAttachmentPayload[] | undefined;
 
       const cid = forcedCommunity?.id ?? communityId;
@@ -350,11 +371,11 @@ export function PostComposerForm({
               const thumbUp = await uploadImageMedia(posterFile, uploadCtx);
               thumbnailUrl = thumbUp.url;
             } catch {
-              /* publicação continua sem poster */
+              /* continua sem poster */
             }
           }
         } catch {
-          /* falha ao gerar frame — segue sem thumbnailUrl */
+          /* sem thumbnail */
         }
 
         const uploaded = await uploadVideoMedia(videoItem.file, uploadCtx, { durationSeconds });
@@ -374,7 +395,6 @@ export function PostComposerForm({
           },
         ];
       } else if (imageItems.length > 0) {
-        // Upload de todas as imagens em paralelo para melhor performance
         const results = await Promise.all(
           imageItems.map(async (item) => {
             const f = item.file;
@@ -392,25 +412,21 @@ export function PostComposerForm({
         mediaAttachments = results;
       }
 
-      const tags = normalizePostComposerTags(tagsRaw);
+      const tags = hashtagsToApiTags(hashtags);
 
       const post = await createPost(
         {
           publicationContext: context,
           communityId: context === "community" ? (forcedCommunity?.id ?? communityId) : undefined,
-          title: title.trim(),
-          content: content.trim(),
+          content: text,
           tags: tags.length ? tags : undefined,
-          imageUrl: imageUrl ?? null,
           mediaAttachments,
         },
         viewerId
       );
 
-      // Limpar estado de mídia após sucesso
-      setTitle("");
       setContent("");
-      setTagsRaw("");
+      setHashtags([]);
       setImageItems((prev) => {
         prev.forEach((it) => URL.revokeObjectURL(it.previewUrl));
         return [];
@@ -439,14 +455,14 @@ export function PostComposerForm({
 
   const fieldsDisabled = submitting || (isCommunityFlow && !forcedCommunity && loadingCommunities);
 
-  const submitDisabled = submitting || communityBlocking || !title.trim() || !content.trim();
+  const submitDisabled =
+    submitting || communityBlocking || (!hasText && !hasMediaQueued) || content.length > POST_COMPOSER_CONTENT_MAX_LENGTH;
 
-  const contentPlaceholder =
-    publishTarget === "profile" && !forcedCommunity
-      ? "Partilha algo no teu perfil…"
-      : forcedCommunity
-        ? `Partilha algo com ${forcedCommunity.name}…`
-        : "Partilha algo com a comunidade…";
+  const mainPlaceholder = useMemo(() => {
+    if (forcedCommunity) return "Partilha algo com a Woody…";
+    if (publishTarget === "community") return "Partilha algo com a Woody…";
+    return "O que está acontecendo?";
+  }, [forcedCommunity, publishTarget]);
 
   const hasImages = imageItems.length > 0;
   const hasVideo = videoItem !== null;
@@ -454,10 +470,28 @@ export function PostComposerForm({
 
   return (
     <div className={cn("space-y-3", className)} aria-busy={submitting}>
+      <div className="flex items-start gap-3">
+        <Avatar className="size-10 shrink-0 ring-2 ring-[var(--woody-accent)]/10">
+          <AvatarImage src={viewerPreview.avatarUrl ?? undefined} alt={viewerPreview.name} />
+          <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xs font-semibold text-[var(--woody-text)]">
+            {getInitials(viewerPreview.name)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="truncate font-semibold text-[var(--woody-text)]">{viewerPreview.name}</span>
+            {viewerPreview.pronouns ? (
+              <span className="truncate text-xs text-[var(--woody-muted)]">• {viewerPreview.pronouns}</span>
+            ) : null}
+          </div>
+          <p className="text-[0.7rem] text-[var(--woody-muted)]">@{viewerPreview.username}</p>
+        </div>
+      </div>
+
       {canPickTarget && (
         <div className="space-y-2">
-          <span id={`${idBase}-target-legend`} className="text-sm font-medium text-[var(--woody-text)]">
-            Onde queres publicar?
+          <span id={`${idBase}-target-legend`} className="text-xs font-medium text-[var(--woody-muted)]">
+            Onde publicar
           </span>
           <div
             className="grid grid-cols-1 gap-2 sm:grid-cols-2"
@@ -480,7 +514,7 @@ export function PostComposerForm({
               <span className="min-w-0">
                 <span className="block font-semibold leading-tight">No meu perfil</span>
                 <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
-                  Visível no teu perfil; não precisas de comunidade.
+                  Visível no teu perfil.
                 </span>
               </span>
             </label>
@@ -500,7 +534,7 @@ export function PostComposerForm({
               <span className="min-w-0">
                 <span className="block font-semibold leading-tight">Numa comunidade</span>
                 <span className="mt-0.5 block text-xs font-normal text-[var(--woody-muted)]">
-                  Só comunidades em que participas e podes publicar.
+                  Onde és membra activa.
                 </span>
               </span>
             </label>
@@ -510,16 +544,16 @@ export function PostComposerForm({
 
       {isCommunityFlow && !forcedCommunity && (
         <div className="space-y-1.5">
-          <label htmlFor={`${idBase}-community`} className="text-sm font-medium text-[var(--woody-text)]">
+          <label htmlFor={`${idBase}-community`} className="text-xs font-medium text-[var(--woody-muted)]">
             Comunidade
           </label>
           {loadingCommunities ? (
-            <div className="flex h-11 items-center gap-2 rounded-xl border border-[var(--woody-accent)]/15 px-3 text-sm text-[var(--woody-muted)]">
+            <div className="flex h-11 items-center gap-2 rounded-2xl border border-[var(--woody-accent)]/12 px-3 text-sm text-[var(--woody-muted)]">
               <Loader2 className="size-4 animate-spin" aria-hidden />
               A carregar…
             </div>
           ) : communityLoadError ? (
-            <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
+            <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
               <p className="mb-2">Não foi possível carregar as suas comunidades.</p>
               <Button
                 type="button"
@@ -532,7 +566,7 @@ export function PostComposerForm({
               </Button>
             </div>
           ) : noMemberships ? (
-            <p className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
+            <p className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
               Precisas de participar numa comunidade para publicar aqui.{" "}
               <Link
                 to="/communities"
@@ -566,82 +600,39 @@ export function PostComposerForm({
       )}
 
       {forcedCommunity && (
-        <div className="rounded-xl border border-[var(--woody-accent)]/15 bg-[var(--woody-nav)]/5 px-3 py-2 text-sm">
+        <div className="rounded-2xl border border-[var(--woody-accent)]/10 bg-[var(--woody-nav)]/5 px-3 py-2 text-sm">
           <span className="text-[var(--woody-muted)]">A publicar em </span>
           <span className="font-semibold text-[var(--woody-text)]">{forcedCommunity.name}</span>
         </div>
       )}
 
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <label htmlFor={`${idBase}-title`} className="text-sm font-medium text-[var(--woody-text)]">
-            Título
-          </label>
-          <span className="text-xs tabular-nums text-[var(--woody-muted)]">
-            {title.length}/{POST_COMPOSER_TITLE_MAX_LENGTH}
-          </span>
-        </div>
-        <Input
-          id={`${idBase}-title`}
-          placeholder="Título da publicação"
-          value={title}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-          className={postComposerFieldStyles.input}
-          maxLength={POST_COMPOSER_TITLE_MAX_LENGTH}
-          disabled={fieldsDisabled}
-        />
-      </div>
+      <Textarea
+        id={`${idBase}-content`}
+        placeholder={mainPlaceholder}
+        value={content}
+        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
+        disabled={fieldsDisabled}
+        className={textareaSocial}
+        maxLength={POST_COMPOSER_CONTENT_MAX_LENGTH}
+        rows={4}
+        aria-label="Texto da publicação"
+      />
 
-      <div className="space-y-1.5">
-        <label htmlFor={`${idBase}-content`} className="text-sm font-medium text-[var(--woody-text)]">
-          Conteúdo
-        </label>
-        <Textarea
-          id={`${idBase}-content`}
-          placeholder={contentPlaceholder}
-          value={content}
-          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
-          rows={4}
-          disabled={fieldsDisabled}
-          className={cn(postComposerFieldStyles.textarea, "min-h-24 resize-none sm:resize-y")}
-        />
-      </div>
+      <MediaPreviewGrid items={previewItems} onRemove={removePreview} disabled={fieldsDisabled} />
 
-      <div className="space-y-1.5">
-        <label htmlFor={`${idBase}-tags`} className="text-sm font-medium text-[var(--woody-text)]">
-          Tags{" "}
-          <span className="font-normal text-[var(--woody-muted)]">
-            (opcional, até {POST_COMPOSER_TAGS_MAX_COUNT}, separadas por vírgula)
-          </span>
-        </label>
-        <Input
-          id={`${idBase}-tags`}
-          placeholder="ex.: bem-estar, dúvida"
-          value={tagsRaw}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setTagsRaw(e.target.value)}
-          disabled={fieldsDisabled}
-          className={postComposerFieldStyles.input}
-        />
-      </div>
+      <HashtagChipsField hashtags={hashtags} onHashtagsChange={setHashtags} disabled={fieldsDisabled} />
 
-      {/* Secção de mídia */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-[var(--woody-text)]">Fotos ou vídeo</span>
-          {hasImages && (
-            <span
-              className={cn(
-                "text-xs tabular-nums font-medium",
-                imagesFull ? "text-[var(--woody-accent)]" : "text-[var(--woody-muted)]"
-              )}
-            >
-              {imageItems.length}/{POST_COMPOSER_IMAGES_MAX_COUNT}
-            </span>
-          )}
-        </div>
+      {formError && (
+        <p
+          className="rounded-xl border border-red-500/25 bg-red-500/8 px-3 py-2 text-sm text-red-900 dark:text-red-200"
+          role="alert"
+        >
+          {formError}
+        </p>
+      )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Botão de imagem */}
+      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[var(--woody-accent)]/10 pt-3">
+        <div className="flex flex-1 flex-wrap items-center gap-1.5">
           <MediaPicker
             fileInputRef={imageInputRef}
             accept="image/*"
@@ -649,16 +640,12 @@ export function PostComposerForm({
             onChange={onImageFilesChange}
             disabled={fieldsDisabled || hasVideo}
             buttonDisabled={imagesFull || hasVideo}
+            buttonClassName={toolbarIconBtn}
           >
-            <ImagePlus className="size-4" aria-hidden />
-            {hasImages
-              ? imagesFull
-                ? "Máximo atingido"
-                : "Adicionar foto"
-              : "Adicionar foto"}
+            <ImagePlus className="size-5" aria-hidden />
+            <span className="sr-only">Adicionar imagem</span>
           </MediaPicker>
 
-          {/* Botão de vídeo (só quando não há imagens) */}
           {!hasImages && (
             <MediaPicker
               fileInputRef={videoInputRef}
@@ -666,45 +653,28 @@ export function PostComposerForm({
               onChange={onVideoFileChange}
               disabled={fieldsDisabled || hasImages}
               buttonDisabled={hasVideo || hasImages}
+              buttonClassName={toolbarIconBtn}
             >
-              <Video className="size-4" aria-hidden />
-              {hasVideo ? "Vídeo adicionado" : "Adicionar vídeo"}
+              <Video className="size-5" aria-hidden />
+              <span className="sr-only">Adicionar vídeo</span>
             </MediaPicker>
           )}
+          {hasImages ? (
+            <span className="text-[0.65rem] tabular-nums text-[var(--woody-muted)]">
+              {imageItems.length}/{POST_COMPOSER_IMAGES_MAX_COUNT} fotos
+            </span>
+          ) : null}
         </div>
 
-        <p className="text-[0.7rem] leading-snug text-[var(--woody-muted)]">
-          Até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos (máx. {formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} cada) · ou 1
-          vídeo MP4/WebM/MOV até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} e{" "}
-          {POST_COMPOSER_VIDEO_MAX_DURATION_SEC} s
-        </p>
-
-        <MediaPreviewGrid
-          items={previewItems}
-          onRemove={removePreview}
-          disabled={fieldsDisabled}
-        />
-      </div>
-
-      {formError && (
-        <p
-          className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-900 dark:text-red-200"
-          role="alert"
-        >
-          {formError}
-        </p>
-      )}
-
-      <div className="flex justify-end pt-1">
         <Button
           type="button"
           onClick={() => void handleSubmit()}
           disabled={submitDisabled}
-          className="rounded-xl h-9 px-5 bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:bg-[var(--woody-nav)]/80 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+          className="inline-flex items-center justify-center gap-2 rounded-full px-6 font-semibold shadow-sm h-10 bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90 active:bg-[var(--woody-nav)]/80 transition-colors disabled:opacity-45 disabled:pointer-events-none"
         >
           {submitting ? (
             <>
-              <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+              <Loader2 className="size-4 animate-spin shrink-0" aria-hidden />
               A publicar…
             </>
           ) : (
@@ -712,6 +682,11 @@ export function PostComposerForm({
           )}
         </Button>
       </div>
+
+      <p className="text-[0.65rem] leading-snug text-[var(--woody-muted)]/90">
+        Até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos ({formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} cada) ou 1 vídeo até{" "}
+        {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} / {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s
+      </p>
     </div>
   );
 }

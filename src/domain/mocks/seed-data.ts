@@ -13,7 +13,6 @@ export interface SeedPost {
   communityId: string;
   authorId: string;
   author: User;
-  title: string;
   content: string;
   imageUrl: string | null;
   tags?: string[];
@@ -166,19 +165,19 @@ const SNIPPETS_LONG = [
   "Lista rápida do que aprendi em 6 meses de terapia em grupo: (1) nomear o que sinto antes de agir; (2) não competir sofrimento; (3) celebrar microvitórias. O espaço daqui da plataforma tem sido complementar a isso — obrigada às que responderam na thread anterior.",
 ];
 
-const TEMPLATES: { title: string; tagPool: string[] }[] = [
-  { title: "Como vocês fazem pausa digital no trabalho híbrido?", tagPool: ["rotina", "bem-estar", "trabalho"] },
-  { title: "Indicação de curso acessível em UX research", tagPool: ["UX", "carreira", "estudos"] },
-  { title: "Thread de leveza: o que te fez sorrir hoje?", tagPool: ["comunidade", "gentileza"] },
-  { title: "Maternidade e sono: o que funcionou além do óbvio", tagPool: ["maternidade", "saúde"] },
-  { title: "Segurança em apps de relacionamento — checklist", tagPool: ["segurança", "apoio"] },
-  { title: "Vamos montar um grupinho de accountability?", tagPool: ["metas", "apoio"] },
-  { title: "Relato: primeira palestra como mulher trans na empresa", tagPool: ["carreira", "visibilidade"] },
-  { title: "Receitas de 20 min para noites corridas", tagPool: ["rotina", "cuidado"] },
-  { title: "Livros com narrativa indígena ou afro-latina", tagPool: ["literatura", "cultura"] },
-  { title: "Burnout: sinais que ignorei por muito", tagPool: ["saúde mental", "trabalho"] },
-  { title: "Finanças afetivas — conversa difícil com parceira", tagPool: ["relacionamentos"] },
-  { title: "Hackathon interno: times só de mulheres?", tagPool: ["tech", "liderança"] },
+const TEMPLATES: { hook: string; tagPool: string[] }[] = [
+  { hook: "Como vocês fazem pausa digital no trabalho híbrido?", tagPool: ["rotina", "bem-estar", "trabalho"] },
+  { hook: "Indicação de curso acessível em UX research", tagPool: ["UX", "carreira", "estudos"] },
+  { hook: "Thread de leveza: o que te fez sorrir hoje?", tagPool: ["comunidade", "gentileza"] },
+  { hook: "Maternidade e sono: o que funcionou além do óbvio", tagPool: ["maternidade", "saúde"] },
+  { hook: "Segurança em apps de relacionamento — checklist", tagPool: ["segurança", "apoio"] },
+  { hook: "Vamos montar um grupinho de accountability?", tagPool: ["metas", "apoio"] },
+  { hook: "Relato: primeira palestra como mulher trans na empresa", tagPool: ["carreira", "visibilidade"] },
+  { hook: "Receitas de 20 min para noites corridas", tagPool: ["rotina", "cuidado"] },
+  { hook: "Livros com narrativa indígena ou afro-latina", tagPool: ["literatura", "cultura"] },
+  { hook: "Burnout: sinais que ignorei por muito", tagPool: ["saúde mental", "trabalho"] },
+  { hook: "Finanças afetivas — conversa difícil com parceira", tagPool: ["relacionamentos"] },
+  { hook: "Hackathon interno: times só de mulheres?", tagPool: ["tech", "liderança"] },
 ];
 
 const COVER_PHOTOS = [
@@ -724,19 +723,21 @@ export function buildPlatformSeed(): {
     const useImage = i % 3 !== 0;
     const content = useLong
       ? SNIPPETS_LONG[i % SNIPPETS_LONG.length]
-      : `${SNIPPETS_SHORT[i % SNIPPETS_SHORT.length]}\n\n${tpl.title}`;
+      : `${SNIPPETS_SHORT[i % SNIPPETS_SHORT.length]}\n\n${tpl.hook}`;
 
     pid += 1;
     const baseEngagement = 8 + hash(i, 9) * 13 + (i % 5) * 40;
+    const tagA = tpl.tagPool[0];
+    const tagB = tpl.tagPool[hash(i, 2) % tpl.tagPool.length];
+    const postTags = tagA === tagB ? [tagA] : [tagA, tagB];
     posts.push({
       id: `post-${pid}`,
       communityId: c.id,
       authorId: author.id,
       author,
-      title: i % 4 === 0 ? tpl.title : `${tpl.title} · #${i + 1}`,
       content,
       imageUrl: useImage ? postImg(POST_IMAGES[i % POST_IMAGES.length]) : null,
-      tags: [tpl.tagPool[0], tpl.tagPool[hash(i, 2) % tpl.tagPool.length]],
+      tags: postTags,
       createdAt: TIME_LABELS[i % TIME_LABELS.length],
       likesCount: Math.min(4800, baseEngagement + (i % 17) * 111),
       commentsCount: Math.min(420, 2 + hash(i, 1) * 3 + (i % 9) * 7),
@@ -756,11 +757,10 @@ export function buildPlatformSeed(): {
       communityId: cId,
       authorId: "1",
       author: userById.get("1")!,
-      title: j % 2 === 0 ? "Notas da semana na Woody" : "Atualização rápida para quem acompanha",
       content:
         j % 2 === 0
-          ? "Compilando threads que mais me ajudaram — em breve respondo as dúvidas que ficaram pendentes."
-          : "Obrigada pelas mensagens. Este espaço tem sido um dos poucos onde consigo falar com clareza sobre o que estou vivendo.",
+          ? "Notas da semana na Woody — a compilar threads que mais me ajudaram; em breve respondo às dúvidas que ficaram pendentes."
+          : "Atualização rápida: obrigada pelas mensagens. Este espaço tem sido um dos poucos onde consigo falar com clareza sobre o que estou a viver.",
       imageUrl: j % 3 === 0 ? postImg(POST_IMAGES[j % POST_IMAGES.length]) : null,
       tags: ["comunidade", "atualização"],
       createdAt: TIME_LABELS[(j + 3) % TIME_LABELS.length],
@@ -777,9 +777,8 @@ export function buildPlatformSeed(): {
     communityId: demoCommunityId,
     authorId: "1",
     author: userById.get("1")!,
-    title: "Preview · threads de comentários",
     content:
-      "Post de demonstração do mock: comentários raiz, “Ver N respostas” e resposta aninhada. Abra o post para explorar.",
+      "Preview de threads: comentários raiz, “Ver N respostas” e resposta aninhada. Abre o post para explorar o mock.",
     imageUrl: null,
     tags: ["demo", "UI"],
     createdAt: "agora há pouco",

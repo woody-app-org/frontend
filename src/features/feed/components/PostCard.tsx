@@ -51,9 +51,8 @@ const styles = {
   timestamp: "flex items-center gap-1 text-[var(--woody-muted)] text-[0.75rem] mt-0.5",
   menuTrigger:
     "shrink-0 touch-manipulation text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-2 min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 sm:p-1.5",
-  titleRow:
+  metaRow:
     "relative z-[1] mt-3.5 flex flex-wrap content-start items-start gap-x-2 gap-y-2 sm:items-center",
-  title: "font-bold text-[var(--woody-text)] text-[1.125rem] leading-[1.25] tracking-[-0.02em] md:text-[1.1875rem]",
   pill:
     "inline-flex items-center rounded-full px-2.5 py-[0.1875rem] text-[0.75rem] font-semibold tracking-[0.01em] bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] ring-1 ring-[rgba(139,195,74,0.28)]",
   content:
@@ -162,6 +161,11 @@ export function PostCard({
   const showProfileContext =
     post.publicationContext === "profile" && !post.community && postSurface !== "profile";
 
+  const showMetaRow =
+    (post.communityBoostActive && post.publicationContext === "community") ||
+    Boolean(post.pinnedOnProfileAt && postSurface === "profile") ||
+    (post.tags?.length ?? 0) > 0;
+
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     if (ignoreNextCardClickRef.current) {
       ignoreNextCardClickRef.current = false;
@@ -267,29 +271,30 @@ export function PostCard({
         />
       </CardHeader>
       <CardContent className={styles.contentBlock}>
-        <div className={styles.titleRow}>
-          {post.title && <h3 className={styles.title}>{post.title}</h3>}
-          {post.communityBoostActive && post.publicationContext === "community" ? (
-            <span
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
-              title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
-            >
-              <TrendingUp className="size-3" aria-hidden />
-              Impulsionado
-            </span>
-          ) : null}
-          {post.pinnedOnProfileAt && postSurface === "profile" ? (
-            <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
-              Em destaque
-            </span>
-          ) : null}
-          {post.tags?.map((tag) => (
-            <span key={tag} className={styles.pill}>
-              {tag}
-            </span>
-          ))}
-        </div>
-        <p className={cn(styles.content, (post.title || post.tags?.length) && "mt-2")}>
+        {showMetaRow ? (
+          <div className={styles.metaRow}>
+            {post.communityBoostActive && post.publicationContext === "community" ? (
+              <span
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
+                title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
+              >
+                <TrendingUp className="size-3" aria-hidden />
+                Impulsionado
+              </span>
+            ) : null}
+            {post.pinnedOnProfileAt && postSurface === "profile" ? (
+              <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
+                Em destaque
+              </span>
+            ) : null}
+            {post.tags?.map((tag) => (
+              <span key={tag} className={styles.pill}>
+                #{tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <p className={cn(styles.content, showMetaRow && "mt-2")}>
           {post.content}
         </p>
         {galleryItems ? (

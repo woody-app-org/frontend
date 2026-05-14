@@ -13,8 +13,8 @@ import { woodyFocus } from "@/lib/woody-ui";
 export interface DeletePostConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Trecho do título para contextualizar (pode ser truncado). */
-  postTitlePreview: string;
+  /** Trecho do texto para contextualizar (pode ser truncado). */
+  postContentPreview: string;
   isDeleting: boolean;
   onConfirm: () => void | Promise<void>;
   errorMessage?: string | null;
@@ -29,12 +29,12 @@ function truncate(s: string, max: number): string {
 export function DeletePostConfirmationDialog({
   open,
   onOpenChange,
-  postTitlePreview,
+  postContentPreview,
   isDeleting,
   onConfirm,
   errorMessage,
 }: DeletePostConfirmationDialogProps) {
-  const preview = truncate(postTitlePreview, 72);
+  const preview = truncate(postContentPreview, 72);
 
   return (
     <Dialog open={open} onOpenChange={(next) => !isDeleting && onOpenChange(next)}>

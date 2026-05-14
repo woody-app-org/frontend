@@ -96,7 +96,6 @@ export function enrichPost(raw: SeedPost, viewerId?: string): Post {
     communityId,
     authorId,
     author,
-    title: raw.title,
     content: raw.content,
     imageUrl: raw.imageUrl,
     tags: raw.tags ? [...raw.tags] : undefined,

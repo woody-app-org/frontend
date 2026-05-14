@@ -35,13 +35,12 @@ function mapAxiosCode(status: number | undefined): ContentModerationErrorCode {
 export async function updatePostMock(
   postId: string,
   viewerId: string,
-  patch: { title: string; content: string }
+  patch: { content: string; tags?: string[] }
 ): Promise<ContentModerationResult<Post>> {
   try {
-    const { data } = await api.patch(`/posts/${encodeURIComponent(postId)}`, {
-      title: patch.title,
-      content: patch.content,
-    });
+    const body: Record<string, unknown> = { content: patch.content };
+    if (patch.tags !== undefined) body.tags = patch.tags;
+    const { data } = await api.patch(`/posts/${encodeURIComponent(postId)}`, body);
     return { ok: true, data: mapPostFromApi(data as Record<string, unknown>, viewerId) };
   } catch (e) {
     if (axios.isAxiosError(e)) {

@@ -16,7 +16,6 @@ export interface PostLightboxContext {
   postId: string;
   authorName: string;
   authorAvatarUrl?: string | null;
-  postTitle?: string;
   postContent: string;
   createdAt: string;
 }
@@ -85,11 +84,10 @@ export function PostMediaLightbox({
     .toUpperCase();
 
   const contentSnippet = postContext
-    ? [postContext.postTitle, postContext.postContent]
-        .filter(Boolean)
-        .join(" — ")
-        .slice(0, 110)
-        .trimEnd() + (([postContext.postTitle, postContext.postContent].filter(Boolean).join(" — ").length > 110) ? "…" : "")
+    ? (() => {
+        const raw = postContext.postContent.replace(/\s+/g, " ").trim();
+        return raw.length > 110 ? `${raw.slice(0, 109)}…` : raw;
+      })()
     : "";
 
   return (
@@ -101,7 +99,7 @@ export function PostMediaLightbox({
       >
         <DialogTitle className="sr-only">
           {items.length > 1 ? `Foto ${safeIndex + 1} de ${items.length}` : "Foto"}
-          {postContext ? ` — ${postContext.postTitle ?? postContext.postContent.slice(0, 40)}` : ""}
+          {postContext ? ` — ${postContext.postContent.slice(0, 48)}${postContext.postContent.length > 48 ? "…" : ""}` : ""}
         </DialogTitle>
 
         {/* Barra superior: contador + fechar */}

@@ -150,7 +150,6 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
     communityId,
     authorId: asString(raw.authorId),
     author,
-    title: asString(raw.title),
     content: asString(raw.content),
     imageUrl: primaryImage || null,
     imageUrls: imageUrls && imageUrls.length > 0 ? imageUrls : undefined,

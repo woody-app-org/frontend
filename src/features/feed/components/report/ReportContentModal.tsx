@@ -60,7 +60,7 @@ export function ReportContentModal({ open, onOpenChange, target, viewerId }: Rep
   const isComment = target.kind === "comment";
   const preview =
     target.kind === "post"
-      ? truncatePreview(target.post.title || target.post.content, 160)
+      ? truncatePreview(target.post.content, 160)
       : truncatePreview(target.comment.content, 160);
 
   const title = isComment ? "Denunciar comentário" : "Denunciar publicação";

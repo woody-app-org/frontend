@@ -11,6 +11,7 @@ import type { Post } from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { boostCommunityPost, unboostCommunityPost } from "../services/community.service";
+import { firstLineOfPost } from "@/features/feed/lib/postTextPreview";
 
 function formatBoostEnd(iso: string): string {
   const d = new Date(iso);
@@ -96,7 +97,7 @@ export function CommunityPostBoostDialog({
         ) : post ? (
           <div className="space-y-4">
             <p className="rounded-lg border border-[var(--woody-accent)]/12 bg-[var(--woody-bg)] px-3 py-2 text-sm text-[var(--woody-text)]/90">
-              <span className="font-medium">{post.title || "Sem título"}</span>
+              <span className="font-medium">{firstLineOfPost(post.content, 120)}</span>
             </p>
 
             {active ? (

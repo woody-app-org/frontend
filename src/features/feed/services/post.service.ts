@@ -7,9 +7,8 @@ import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 /** @deprecated Preferir `readImageAsDataUrlIfSmall` de `@/lib/readImageAsDataUrlIfSmall`. */
 export const readImageFileAsDataUrlIfSmall = readImageAsDataUrlIfSmall;
 
-/** Alinhado ao `maxLength` do composer e validação no servidor. */
-export const POST_COMPOSER_TITLE_MAX_LENGTH = 200;
-export const POST_COMPOSER_TAGS_MAX_COUNT = 5;
+/** Alinhado a `InputValidationLimits.PostContentMaxLength` no backend. */
+export const POST_COMPOSER_CONTENT_MAX_LENGTH = 20_000;
 
 /**
  * Corpo de `POST /posts`. Campos estáveis para evoluções futuras (rascunhos, edição) sem mudar o contrato base.
@@ -18,7 +17,6 @@ export interface CreatePostPayload {
   publicationContext: PostPublicationContext;
   /** Obrigatório quando `publicationContext` é <code>community</code>. */
   communityId?: string;
-  title: string;
   content: string;
   tags?: string[];
   imageUrl?: string | null;
@@ -40,37 +38,18 @@ export type CreatePostMediaAttachmentPayload = {
   thumbnailUrl?: string;
 };
 
-function normalizeTags(raw: string): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const part of raw.split(/[,;]+/)) {
-    const t = part.trim();
-    if (!t) continue;
-    const key = t.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(t);
-    if (out.length >= POST_COMPOSER_TAGS_MAX_COUNT) break;
-  }
-  return out;
-}
-
-export { normalizeTags as normalizePostComposerTags };
-
 /**
  * Cria post na API (`POST /posts`). Corpo em camelCase (serialização .NET).
  */
 export async function createPost(payload: CreatePostPayload, viewerId: string): Promise<Post> {
-  const title = payload.title.trim();
   const content = payload.content.trim();
-  if (title.length > POST_COMPOSER_TITLE_MAX_LENGTH) {
-    throw new Error(`O título pode ter no máximo ${POST_COMPOSER_TITLE_MAX_LENGTH} caracteres.`);
+  if (content.length > POST_COMPOSER_CONTENT_MAX_LENGTH) {
+    throw new Error(`O texto pode ter no máximo ${POST_COMPOSER_CONTENT_MAX_LENGTH} caracteres.`);
   }
 
   try {
     const body: Record<string, unknown> = {
       publicationContext: payload.publicationContext,
-      title,
       content,
     };
     if (payload.publicationContext === "community") {
@@ -97,7 +76,7 @@ export async function createPost(payload: CreatePostPayload, viewerId: string): 
         throw new Error("Esta comunidade não existe ou já não está disponível.");
       }
       if (status === 400) {
-        throw new Error(getApiErrorMessage(e, "Pedido inválido. Verifica título, conteúdo e imagens."));
+        throw new Error(getApiErrorMessage(e, "Pedido inválido. Verifica o texto, hashtags e mídia."));
       }
     }
     throw new Error(getApiErrorMessage(e, "Não foi possível publicar."));
