@@ -31,6 +31,8 @@ export interface CreatePostCardProps {
   /** Só perfil: esconde escolha de destino (modal a partir do feed). */
   forceProfilePublication?: boolean;
   initialCommunityId?: string;
+  /** Layout do compositor dentro de modais (área a rolar + barra inferior fixa). */
+  embedMode?: "default" | "modal";
   onPostCreated?: (post: Post) => void;
   className?: string;
 }
@@ -39,6 +41,7 @@ export function CreatePostCard({
   forcedCommunity,
   forceProfilePublication,
   initialCommunityId,
+  embedMode = "default",
   onPostCreated,
   className,
 }: CreatePostCardProps) {
@@ -76,21 +79,29 @@ export function CreatePostCard({
     return null;
   }
 
+  const isModalEmbed = embedMode === "modal";
+
   return (
     <Card
       className={cn(
         woodySurface.card,
         "flex flex-col gap-0 border-[var(--woody-accent)]/12 py-0 shadow-[0_2px_12px_rgba(10,10,10,0.04)] transition-shadow duration-200 hover:shadow-[0_4px_18px_rgba(10,10,10,0.07)]",
+        isModalEmbed && "min-h-0 flex-1 rounded-none border-0 shadow-none hover:shadow-none",
         className
       )}
     >
-      <CardContent className="px-4 py-4 sm:px-5 sm:py-5">
+      <CardContent
+        className={cn(
+          isModalEmbed ? "flex min-h-0 flex-1 flex-col p-0" : "px-4 py-4 sm:px-5 sm:py-5"
+        )}
+      >
         <PostComposerForm
           viewerId={viewerId}
           viewerPreview={currentUser}
           forcedCommunity={forcedCommunity}
           forceProfilePublication={forceProfilePublication}
           initialCommunityId={initialCommunityId}
+          embedMode={embedMode}
           onPostCreated={onPostCreated}
         />
       </CardContent>

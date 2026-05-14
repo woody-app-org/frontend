@@ -12,6 +12,8 @@ export interface MediaPickerProps {
   buttonClassName?: string;
   /** Permite selecionar vários ficheiros de uma vez. */
   multiple?: boolean;
+  /** Tooltip nativo (`title`) e contexto extra para leitoras de ecrã. */
+  buttonTitle?: string;
 }
 
 export function MediaPicker({
@@ -23,6 +25,7 @@ export function MediaPicker({
   children,
   buttonClassName,
   multiple = false,
+  buttonTitle,
 }: MediaPickerProps) {
   return (
     <>
@@ -39,6 +42,8 @@ export function MediaPicker({
         type="button"
         variant="outline"
         size="sm"
+        title={buttonTitle}
+        aria-label={buttonTitle || undefined}
         className={cn("rounded-xl border-[var(--woody-accent)]/25", buttonClassName)}
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled || buttonDisabled}

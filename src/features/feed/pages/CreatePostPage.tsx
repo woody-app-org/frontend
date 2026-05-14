@@ -33,7 +33,7 @@ function CreatePostPageContent() {
         <h1 className={woodySection.title}>Nova publicação</h1>
         <p className={woodySection.subtitle}>
           Escreve o que quiseres partilhar; podes anexar fotos ou um vídeo e até três hashtags. Não é preciso
-          “título” — é conversa aberta.
+          cabeçalho nem formato de artigo — é conversa aberta.
         </p>
       </div>
 
