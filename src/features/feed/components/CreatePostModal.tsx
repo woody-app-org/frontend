@@ -16,8 +16,11 @@ export function CreatePostModal() {
     <Dialog open={createPostOpen} onOpenChange={setCreatePostOpen}>
       <DialogContent
         className={cn(
-          "flex max-h-[100dvh] min-h-0 flex-col gap-0 overflow-hidden p-0",
-          "w-full max-w-none rounded-none sm:max-h-[min(90dvh,880px)] sm:max-w-[min(100vw-1rem,28rem)] sm:rounded-2xl"
+          "flex min-h-0 flex-col gap-0 overflow-hidden p-0",
+          // Telemóvel: cartão centrado, margens e altura limitada (evita “ecrã inteiro” desproporcionado)
+          "mx-auto max-h-[min(82dvh,28rem)] w-[calc(100vw-1.25rem)] max-w-md rounded-2xl border border-black/10",
+          // Tablet/desktop: modal largo como antes
+          "sm:max-h-[min(92dvh,900px)] sm:w-[min(100vw-2rem,44rem)] sm:max-w-[min(100vw-2rem,44rem)]"
         )}
         aria-label={community ? `Nova publicação em ${community.name}` : "Nova publicação no perfil"}
       >
@@ -25,34 +28,34 @@ export function CreatePostModal() {
           {community ? `Nova publicação em ${community.name}` : "Nova publicação"}
         </DialogTitle>
 
-        <div className="flex shrink-0 items-center justify-end border-b border-black/[0.06] px-2 py-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-3">
+        <div className="relative flex min-h-0 flex-1 flex-col">
           <DialogClose asChild>
             <button
               type="button"
               aria-label="Fechar"
               className={cn(
-                "size-10 shrink-0 rounded-full",
-                "text-[var(--woody-text)]/80 hover:text-[var(--woody-text)]",
-                "hover:bg-black/5 transition-colors",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
+                "absolute left-2 top-[max(0.35rem,env(safe-area-inset-top))] z-10 size-9 rounded-full sm:left-3 sm:top-3 sm:size-10",
+                "text-[var(--woody-text)]/75 hover:text-[var(--woody-text)]",
+                "hover:bg-black/[0.06] transition-colors",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/25"
               )}
             >
-              <X className="mx-auto size-5" aria-hidden />
+              <X className="mx-auto size-[1.15rem] sm:size-5" aria-hidden />
             </button>
           </DialogClose>
-        </div>
 
-        <div className="flex min-h-0 flex-1 flex-col">
-          <CreatePostCard
-            embedMode="modal"
-            forceProfilePublication={!community}
-            forcedCommunity={community ?? undefined}
-            className="border-0 bg-transparent"
-            onPostCreated={(post) => {
-              setCreatePostOpen(false);
-              runAfterPostCreated(post, location.pathname);
-            }}
-          />
+          <div className="flex min-h-0 flex-1 flex-col pt-[max(2.35rem,env(safe-area-inset-top))] sm:pt-[max(2.75rem,env(safe-area-inset-top))]">
+            <CreatePostCard
+              embedMode="modal"
+              forceProfilePublication={!community}
+              forcedCommunity={community ?? undefined}
+              className="border-0 bg-transparent"
+              onPostCreated={(post) => {
+                setCreatePostOpen(false);
+                runAfterPostCreated(post, location.pathname);
+              }}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

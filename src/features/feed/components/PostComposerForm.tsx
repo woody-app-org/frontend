@@ -62,12 +62,18 @@ const toolbarIconBtn = cn(
 );
 
 const textareaSocial = cn(
-  "min-h-[5.5rem] w-full resize-none rounded-2xl border-0 bg-transparent px-0 py-1.5",
+  "field-sizing-auto min-h-[5.5rem] w-full resize-none rounded-2xl border-0 bg-transparent py-1.5 pl-1 pr-0.5 sm:pl-1.5 sm:pr-1",
   "text-[1.125rem] leading-[1.5] text-[var(--woody-text)] sm:text-[1.2rem] sm:leading-[1.45]",
   "placeholder:text-[var(--woody-muted)]/75",
   "shadow-none outline-none ring-0 transition-[box-shadow] duration-150",
   "focus-visible:ring-0 focus-visible:outline-none",
   "max-h-[min(42dvh,20rem)] overflow-y-auto"
+);
+
+/** Tipografia maior no compositor em modal (referência Twitter/X); telemóvel ligeiramente menor. */
+const textareaSocialModal = cn(
+  "min-h-[4.25rem] max-h-[min(34dvh,13rem)] text-[1.08rem] leading-snug",
+  "sm:min-h-[6.5rem] sm:max-h-[min(50dvh,26rem)] sm:text-[1.38rem] sm:leading-snug"
 );
 
 /** Item de imagem no compositor (antes do upload). */
@@ -150,9 +156,15 @@ export function PostComposerForm({
     const el = contentTextareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    const cap = typeof window !== "undefined" ? Math.min(window.innerHeight * 0.42, 320) : 320;
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 88), cap)}px`;
-  }, []);
+    if (typeof window === "undefined") return;
+    const narrowMobile = window.innerWidth < 640;
+    const cap = Math.min(
+      window.innerHeight * (isModalEmbed ? (narrowMobile ? 0.34 : 0.5) : 0.42),
+      isModalEmbed ? (narrowMobile ? 220 : 420) : 320
+    );
+    const minPx = isModalEmbed ? (narrowMobile ? 72 : 96) : 88;
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, minPx), cap)}px`;
+  }, [isModalEmbed]);
 
   useLayoutEffect(() => {
     resizeContentArea();
@@ -531,6 +543,119 @@ export function PostComposerForm({
   const hasVideo = videoItem !== null;
   const imagesFull = imageItems.length >= POST_COMPOSER_IMAGES_MAX_COUNT;
 
+  const destinationControls = (
+    <>
+      {canPickTarget && (
+        <div className="space-y-1.5">
+          <span id={`${idBase}-target-legend`} className="sr-only">
+            Onde publicar
+          </span>
+          <div
+            className="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
+            role="radiogroup"
+            aria-labelledby={`${idBase}-target-legend`}
+          >
+            <label className={targetOptionClass(publishTarget === "profile")}>
+              <input
+                type="radio"
+                className="sr-only"
+                name={`${idBase}-publish-target`}
+                checked={publishTarget === "profile"}
+                onChange={() => {
+                  setPublishTarget("profile");
+                  setFormError(null);
+                }}
+                disabled={submitting}
+              />
+              <UserRound className="mt-0.5 size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+              <span className="min-w-0">
+                <span className="block font-medium leading-tight">Perfil</span>
+                <span className="mt-0.5 block text-[0.7rem] font-normal text-[var(--woody-muted)]">No teu espaço</span>
+              </span>
+            </label>
+            <label className={targetOptionClass(publishTarget === "community")}>
+              <input
+                type="radio"
+                className="sr-only"
+                name={`${idBase}-publish-target`}
+                checked={publishTarget === "community"}
+                onChange={() => {
+                  setPublishTarget("community");
+                  setFormError(null);
+                }}
+                disabled={submitting}
+              />
+              <Users className="mt-0.5 size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+              <span className="min-w-0">
+                <span className="block font-medium leading-tight">Comunidade</span>
+                <span className="mt-0.5 block text-[0.7rem] font-normal text-[var(--woody-muted)]">
+                  Onde participas
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {isCommunityFlow && !forcedCommunity && (
+        <div className="space-y-1">
+          {loadingCommunities ? (
+            <div className="flex h-10 items-center gap-2 rounded-2xl border border-black/[0.06] bg-black/[0.02] px-3 text-sm text-[var(--woody-muted)]">
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+              A carregar…
+            </div>
+          ) : communityLoadError ? (
+            <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
+              <p className="mb-2">Não foi possível carregar as suas comunidades.</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-lg border-amber-600/30"
+                onClick={() => setCommunityReloadKey((k) => k + 1)}
+              >
+                Tentar novamente
+              </Button>
+            </div>
+          ) : noMemberships ? (
+            <p className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
+              Precisas de participar numa comunidade para publicar aqui.{" "}
+              <Link
+                to="/communities"
+                className="font-semibold text-[var(--woody-nav)] underline-offset-2 hover:underline"
+              >
+                Explorar comunidades
+              </Link>
+            </p>
+          ) : (
+            <div className="relative">
+              <label htmlFor={`${idBase}-community`} className="sr-only">
+                Escolher comunidade
+              </label>
+              <select
+                id={`${idBase}-community`}
+                className={selectClass}
+                value={communityId}
+                onChange={(e) => setCommunityId(e.target.value)}
+                disabled={fieldsDisabled}
+                aria-required
+              >
+                {myCommunities.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--woody-muted)] text-xs">
+                ▼
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div
       className={cn(isModalEmbed ? "flex min-h-0 flex-1 flex-col" : "flex flex-col gap-3", className)}
@@ -538,163 +663,99 @@ export function PostComposerForm({
     >
       <div
         className={cn(
-          isModalEmbed && "min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-1 sm:px-4",
+          isModalEmbed &&
+            "min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-1 pt-0 sm:px-5 sm:pb-2",
           !isModalEmbed && "space-y-3"
         )}
       >
-        <div className="flex items-start gap-2.5 sm:gap-3">
-          <Avatar className="mt-0.5 size-10 shrink-0 ring-1 ring-black/[0.06] sm:size-11">
+        <div className="flex items-start gap-2.5 sm:gap-3.5">
+          <Avatar
+            className={cn(
+              "mt-0.5 shrink-0 ring-1 ring-black/[0.06]",
+              isModalEmbed ? "size-10 sm:size-11 lg:size-12" : "size-10 sm:size-11"
+            )}
+          >
             <AvatarImage src={viewerPreview.avatarUrl ?? undefined} alt="" />
             <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xs font-semibold text-[var(--woody-text)]">
               {getInitials(viewerPreview.name)}
             </AvatarFallback>
           </Avatar>
-          <div className="min-w-0 flex-1 space-y-2.5 sm:space-y-3">
-            <p className="text-[0.8125rem] leading-snug text-[var(--woody-muted)]">{publishingContextLine}</p>
-            <span className="sr-only">
-              {viewerPreview.name}
-              {viewerPreview.pronouns ? `, ${viewerPreview.pronouns}` : ""} — @{viewerPreview.username}
-            </span>
-
-            {canPickTarget && (
-              <div className="space-y-1.5">
-                <span id={`${idBase}-target-legend`} className="sr-only">
-                  Onde publicar
+          <div
+            className={cn(
+              "min-w-0 flex-1",
+              isModalEmbed ? "space-y-2 sm:space-y-3" : "space-y-2.5 sm:space-y-3"
+            )}
+          >
+            {!isModalEmbed && (
+              <>
+                <p className="text-[0.8125rem] leading-snug text-[var(--woody-muted)]">{publishingContextLine}</p>
+                <span className="sr-only">
+                  {viewerPreview.name}
+                  {viewerPreview.pronouns ? `, ${viewerPreview.pronouns}` : ""} — @{viewerPreview.username}
                 </span>
-                <div
-                  className="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
-                  role="radiogroup"
-                  aria-labelledby={`${idBase}-target-legend`}
-                >
-                  <label className={targetOptionClass(publishTarget === "profile")}>
-                    <input
-                      type="radio"
-                      className="sr-only"
-                      name={`${idBase}-publish-target`}
-                      checked={publishTarget === "profile"}
-                      onChange={() => {
-                        setPublishTarget("profile");
-                        setFormError(null);
-                      }}
-                      disabled={submitting}
-                    />
-                    <UserRound className="mt-0.5 size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
-                    <span className="min-w-0">
-                      <span className="block font-medium leading-tight">Perfil</span>
-                      <span className="mt-0.5 block text-[0.7rem] font-normal text-[var(--woody-muted)]">
-                        No teu espaço
-                      </span>
-                    </span>
-                  </label>
-                  <label className={targetOptionClass(publishTarget === "community")}>
-                    <input
-                      type="radio"
-                      className="sr-only"
-                      name={`${idBase}-publish-target`}
-                      checked={publishTarget === "community"}
-                      onChange={() => {
-                        setPublishTarget("community");
-                        setFormError(null);
-                      }}
-                      disabled={submitting}
-                    />
-                    <Users className="mt-0.5 size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
-                    <span className="min-w-0">
-                      <span className="block font-medium leading-tight">Comunidade</span>
-                      <span className="mt-0.5 block text-[0.7rem] font-normal text-[var(--woody-muted)]">
-                        Onde participas
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </div>
+              </>
             )}
 
-            {isCommunityFlow && !forcedCommunity && (
-              <div className="space-y-1">
-                {loadingCommunities ? (
-                  <div className="flex h-10 items-center gap-2 rounded-2xl border border-black/[0.06] bg-black/[0.02] px-3 text-sm text-[var(--woody-muted)]">
-                    <Loader2 className="size-4 animate-spin" aria-hidden />
-                    A carregar…
-                  </div>
-                ) : communityLoadError ? (
-                  <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
-                    <p className="mb-2">Não foi possível carregar as suas comunidades.</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="rounded-lg border-amber-600/30"
-                      onClick={() => setCommunityReloadKey((k) => k + 1)}
-                    >
-                      Tentar novamente
-                    </Button>
-                  </div>
-                ) : noMemberships ? (
-                  <p className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
-                    Precisas de participar numa comunidade para publicar aqui.{" "}
-                    <Link
-                      to="/communities"
-                      className="font-semibold text-[var(--woody-nav)] underline-offset-2 hover:underline"
-                    >
-                      Explorar comunidades
-                    </Link>
-                  </p>
-                ) : (
-                  <div className="relative">
-                    <label htmlFor={`${idBase}-community`} className="sr-only">
-                      Escolher comunidade
-                    </label>
-                    <select
-                      id={`${idBase}-community`}
-                      className={selectClass}
-                      value={communityId}
-                      onChange={(e) => setCommunityId(e.target.value)}
-                      disabled={fieldsDisabled}
-                      aria-required
-                    >
-                      {myCommunities.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--woody-muted)] text-xs">
-                      ▼
-                    </span>
-                  </div>
-                )}
-              </div>
+            {isModalEmbed ? (
+              <>
+                <Textarea
+                  ref={contentTextareaRef}
+                  id={`${idBase}-content`}
+                  placeholder={mainPlaceholder}
+                  value={content}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                    setContent(e.target.value);
+                    requestAnimationFrame(() => resizeContentArea());
+                  }}
+                  disabled={fieldsDisabled}
+                  className={cn(textareaSocial, textareaSocialModal)}
+                  maxLength={POST_COMPOSER_CONTENT_MAX_LENGTH}
+                  rows={1}
+                  aria-label="Texto da publicação"
+                />
+                <p className="text-[0.78rem] leading-snug text-[var(--woody-nav)] sm:text-[0.8125rem]">
+                  {publishingContextLine}
+                </p>
+                <span className="sr-only">
+                  {viewerPreview.name}
+                  {viewerPreview.pronouns ? `, ${viewerPreview.pronouns}` : ""} — @{viewerPreview.username}
+                </span>
+                {destinationControls}
+              </>
+            ) : (
+              <>
+                {destinationControls}
+                <Textarea
+                  ref={contentTextareaRef}
+                  id={`${idBase}-content`}
+                  placeholder={mainPlaceholder}
+                  value={content}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                    setContent(e.target.value);
+                    requestAnimationFrame(() => resizeContentArea());
+                  }}
+                  disabled={fieldsDisabled}
+                  className={textareaSocial}
+                  maxLength={POST_COMPOSER_CONTENT_MAX_LENGTH}
+                  rows={1}
+                  aria-label="Texto da publicação"
+                />
+              </>
             )}
-
-            <Textarea
-              ref={contentTextareaRef}
-              id={`${idBase}-content`}
-              placeholder={mainPlaceholder}
-              value={content}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
-                setContent(e.target.value);
-                requestAnimationFrame(() => resizeContentArea());
-              }}
-              disabled={fieldsDisabled}
-              className={textareaSocial}
-              maxLength={POST_COMPOSER_CONTENT_MAX_LENGTH}
-              rows={1}
-              aria-label="Texto da publicação"
-            />
 
             <HashtagChipsField
               hashtags={hashtags}
               onHashtagsChange={setHashtags}
               disabled={fieldsDisabled}
               compact
+              composerBare={isModalEmbed}
             />
 
             <MediaPreviewGrid
               items={previewItems}
               onRemove={removePreview}
               disabled={fieldsDisabled}
-              variant="composer"
+              variant={isModalEmbed ? "composer" : "default"}
             />
 
             {formError && (
@@ -706,21 +767,31 @@ export function PostComposerForm({
               </p>
             )}
 
-            <p className="text-[0.65rem] leading-snug text-[var(--woody-muted)]/85">
-              Até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos ({formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} cada) ou 1
-              vídeo até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} / {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s ·{" "}
-              {content.length}/{POST_COMPOSER_CONTENT_MAX_LENGTH}
-            </p>
+            {!isModalEmbed && (
+              <p className="text-[0.65rem] leading-snug text-[var(--woody-muted)]/85">
+                Até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos ({formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} cada) ou 1
+                vídeo até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} / {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s ·{" "}
+                {content.length}/{POST_COMPOSER_CONTENT_MAX_LENGTH}
+              </p>
+            )}
+            {isModalEmbed ? (
+              <p className="sr-only">
+                Limite: até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos ({formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)}{" "}
+                cada) ou 1 vídeo até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} /{" "}
+                {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s. Caracteres: {content.length} de{" "}
+                {POST_COMPOSER_CONTENT_MAX_LENGTH}.
+              </p>
+            ) : null}
           </div>
         </div>
       </div>
 
       <div
         className={cn(
-          "flex shrink-0 items-center justify-between gap-2 border-t border-black/[0.06] bg-[var(--woody-card)]/92 backdrop-blur-md",
+          "flex shrink-0 items-center justify-between gap-2 backdrop-blur-md",
           isModalEmbed
-            ? "px-3 py-2.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4"
-            : "rounded-b-[inherit] pt-3"
+            ? "border-t border-black/[0.05] bg-transparent px-3 py-2 pb-[max(0.45rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-2.5 sm:pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+            : "border-t border-black/[0.06] bg-[var(--woody-card)]/92 pt-3"
         )}
       >
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
@@ -762,11 +833,18 @@ export function PostComposerForm({
           onClick={() => void handleSubmit()}
           disabled={submitDisabled}
           className={cn(
-            "h-9 shrink-0 rounded-full border px-4 text-sm font-semibold shadow-none transition-colors sm:h-9",
-            "border-[var(--woody-nav)]/35 bg-transparent text-[var(--woody-nav)]",
-            "hover:bg-[var(--woody-nav)]/10 hover:border-[var(--woody-nav)]/45",
-            "disabled:pointer-events-none disabled:opacity-40",
-            submitDisabled && "opacity-40"
+            "h-9 shrink-0 rounded-full shadow-none transition-colors sm:h-9",
+            isModalEmbed
+              ? submitDisabled
+                ? "border-0 bg-black/[0.07] px-4 text-[0.8125rem] font-bold text-[var(--woody-muted)] hover:bg-black/[0.07] sm:px-5 sm:text-sm"
+                : "border-0 bg-[var(--woody-nav)] px-4 text-[0.8125rem] font-bold text-white hover:bg-[var(--woody-nav)]/90 sm:h-10 sm:px-6 sm:text-sm"
+              : cn(
+                  "border px-4 text-sm font-semibold",
+                  "border-[var(--woody-nav)]/35 bg-transparent text-[var(--woody-nav)]",
+                  "hover:bg-[var(--woody-nav)]/10 hover:border-[var(--woody-nav)]/45",
+                  "disabled:pointer-events-none disabled:opacity-40",
+                  submitDisabled && "opacity-40"
+                )
           )}
         >
           {submitting ? (

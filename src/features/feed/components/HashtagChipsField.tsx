@@ -17,6 +17,8 @@ export interface HashtagChipsFieldProps {
   className?: string;
   /** Estilo leve para compositores estilo rede social (menos “formulário”). */
   compact?: boolean;
+  /** Sem caixa cinzenta nem botão “Adicionar”: campo de hashtag minimalista (ex.: modal). */
+  composerBare?: boolean;
 }
 
 export function HashtagChipsField({
@@ -25,6 +27,7 @@ export function HashtagChipsField({
   disabled,
   className,
   compact = false,
+  composerBare = false,
 }: HashtagChipsFieldProps) {
   const baseId = useId();
   const [draft, setDraft] = useState("");
@@ -77,21 +80,21 @@ export function HashtagChipsField({
   };
 
   return (
-    <div className={cn(compact ? "space-y-1.5" : "space-y-2", className)}>
-      <div className={cn("flex items-center justify-between gap-2", compact && "sr-only")}>
+    <div className={cn(composerBare ? "space-y-1" : compact ? "space-y-1.5" : "space-y-2", className)}>
+      <div className={cn("flex items-center justify-between gap-2", (compact || composerBare) && "sr-only")}>
         <span className="text-xs font-medium text-[var(--woody-muted)]">Hashtags</span>
         <span className="text-[0.65rem] tabular-nums text-[var(--woody-muted)]">
           {hashtags.length}/{POST_COMPOSER_HASHTAGS_MAX}
         </span>
       </div>
       {hashtags.length > 0 ? (
-        <div className={cn("flex flex-wrap", compact ? "gap-1" : "gap-1.5")}>
+        <div className={cn("flex flex-wrap", compact || composerBare ? "gap-1" : "gap-1.5")}>
           {hashtags.map((t) => (
             <span
               key={t}
               className={cn(
                 "inline-flex max-w-full items-center gap-0.5 rounded-full font-medium",
-                compact
+                compact || composerBare
                   ? "bg-black/[0.04] px-2 py-0.5 text-[0.72rem] text-[var(--woody-text)]/90 ring-1 ring-black/[0.07]"
                   : "gap-1 bg-[var(--woody-nav)]/10 px-2.5 py-0.5 text-xs text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/15"
               )}
@@ -103,13 +106,13 @@ export function HashtagChipsField({
                 onClick={() => remove(t)}
                 className={cn(
                   "rounded-full p-0.5 disabled:opacity-40",
-                  compact
+                  compact || composerBare
                     ? "text-[var(--woody-muted)] hover:bg-black/[0.06] hover:text-[var(--woody-text)]"
                     : "text-[var(--woody-nav)]/70 hover:bg-[var(--woody-nav)]/15 hover:text-[var(--woody-text)]"
                 )}
                 aria-label={`Remover hashtag ${t}`}
               >
-                <X className={compact ? "size-3" : "size-3.5"} aria-hidden />
+                <X className={compact || composerBare ? "size-3" : "size-3.5"} aria-hidden />
               </button>
             </span>
           ))}
@@ -117,6 +120,24 @@ export function HashtagChipsField({
       ) : null}
 
       {hashtags.length < POST_COMPOSER_HASHTAGS_MAX ? (
+        composerBare ? (
+          <div className="flex min-h-[1.75rem] flex-wrap items-center gap-x-2 gap-y-1">
+            <Input
+              id={`${baseId}-hashtag-draft`}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              onBlur={() => {
+                if (draft.trim()) commitDraft();
+              }}
+              disabled={disabled}
+              placeholder="Adicionar hashtag"
+              aria-label="Adicionar hashtag (Enter para confirmar)"
+              className="h-8 min-w-[10rem] flex-1 border-0 bg-transparent px-0 py-0 text-[0.8125rem] text-[var(--woody-text)] shadow-none ring-0 placeholder:text-[var(--woody-muted)]/75 outline-none focus-visible:ring-0"
+              autoComplete="off"
+            />
+          </div>
+        ) : (
         <div
           className={cn(
             "flex flex-col gap-1.5",
@@ -166,6 +187,7 @@ export function HashtagChipsField({
             Adicionar
           </Button>
         </div>
+        )
       ) : null}
     </div>
   );
