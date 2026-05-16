@@ -1,0 +1,103 @@
+import type { Post, User } from "@/domain/types";
+import type { AuthUserSubscription } from "@/features/subscription/types";
+
+/** Link de rede social / conexão do perfil */
+export interface SocialLink {
+  id: string;
+  platform: "instagram" | "facebook" | "twitter" | "tiktok" | "linkedin" | "other";
+  label: string;
+  url: string;
+  handle?: string;
+}
+
+/** Tag de interesse do usuário */
+export interface InterestTag {
+  id: string;
+  label: string;
+}
+
+/** Sugestão de usuário (talvez você conheça) */
+export interface ProfileSuggestion {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+/** Dados completos do perfil do usuário (para futura API) */
+export interface UserProfile {
+  id: string;
+  name: string;
+  username?: string;
+  avatarUrl: string | null;
+  pronouns?: string;
+  bannerUrl: string | null;
+  bio: string;
+  location?: string;
+  /** Título ou profissão (campo do perfil; não é o papel da conta na plataforma). */
+  profession?: string;
+  socialLinks: SocialLink[];
+  interests: InterestTag[];
+  suggestions: ProfileSuggestion[];
+  isFollowing?: boolean;
+  followersCount?: number;
+  followingCount?: number;
+  showProBadge?: boolean;
+  /** Presente em `GET /users/me` quando a API envia o estado de assinatura. */
+  subscription?: AuthUserSubscription;
+}
+
+/** Payload para `updateProfile` / futura API REST. */
+export interface ProfileUpdatePayload {
+  name: string;
+  username: string;
+  bio: string;
+  pronouns?: string;
+  location?: string;
+  profession?: string;
+  avatarUrl?: string | null;
+  bannerUrl?: string | null;
+  interests?: InterestTag[];
+}
+
+/** Resposta de posts do perfil: destaques fixos + lista paginada (sem fixos). */
+export interface ProfilePostsResponse {
+  pinned: Post[];
+  items: Post[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  /** Total de publicações não fixas (paginação de <code>items</code>). */
+  unpinnedTotalCount: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+/** Retorno do hook useUserProfile – preparado para troca por API */
+export interface UseUserProfileReturn {
+  profile: UserProfile | null;
+  /** Publicações fixadas no perfil (até o limite da API). */
+  pinnedPosts: Post[];
+  posts: Post[];
+  isLoading: boolean;
+  error: Error | null;
+  page: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  nextPage: () => void;
+  previousPage: () => void;
+  refetch: () => void;
+  /** Atualiza um post na lista local (edição mock). */
+  updatePostInList: (post: Post) => void;
+  removePostFromList: (postId: string) => void;
+  /** Insere no topo após criar publicação no perfil (evita F5). */
+  prependCreatedProfilePost: (post: Post) => void;
+  /** Alterna fixação no perfil (só para a própria autora no próprio perfil). */
+  toggleProfilePin: (post: Post) => Promise<void>;
+  pinningPostId: string | null;
+  /** Após seguir/deixar de seguir, mantém o perfil alinhado à API sem refetch completo. */
+  applyFollowPatch: (patch: { isFollowing: boolean; followersCount: number }) => void;
+  togglePostLike: (postId: string) => Promise<void>;
+  isPostLikePending: (postId: string) => boolean;
+}
+
+export type { Post, User };

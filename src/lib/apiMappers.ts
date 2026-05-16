@@ -1,0 +1,274 @@
+import type {
+  Comment,
+  Community,
+  CommunityBillingPlan,
+  CommunityBillingState,
+  CommunityCategory,
+  Post,
+  PostPublicationContext,
+  User,
+} from "@/domain/types";
+import type { PostMediaAttachment } from "@/domain/mediaAttachment";
+import { isWoodyMediaType } from "@/domain/mediaAttachment";
+import type { SocialLink, UserProfile } from "@/features/profile/types";
+import { mapSubscription } from "@/features/auth/authMapper";
+import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
+
+const PLATFORMS = new Set(["instagram", "facebook", "twitter", "tiktok", "linkedin", "other"]);
+
+function mapSocialPlatform(raw: string): SocialLink["platform"] {
+  const p = raw.toLowerCase();
+  return PLATFORMS.has(p) ? (p as SocialLink["platform"]) : "other";
+}
+
+/** Respostas camelCase da API Woody (.NET). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ApiRecord = Record<string, any>;
+
+function asString(v: unknown): string {
+  return v == null ? "" : String(v);
+}
+
+function asNonNegativeInt(v: unknown, fallback = 0): number {
+  if (typeof v === "number" && Number.isFinite(v)) return Math.max(0, Math.floor(v));
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.floor(n));
+}
+
+function mapCommunityBillingPlan(v: unknown): CommunityBillingPlan {
+  return v === "premium" ? "premium" : "free";
+}
+
+function mapCommunityBillingFromApi(raw: ApiRecord): CommunityBillingState | undefined {
+  const b = raw.billing;
+  if (b == null || typeof b !== "object") return undefined;
+  const rec = b as ApiRecord;
+  return {
+    billingPlan: mapCommunityBillingPlan(rec.billingPlan),
+    effectivePlan: mapCommunityBillingPlan(rec.effectivePlan),
+    status: asString(rec.status ?? "active"),
+    planCode: rec.planCode ?? null,
+    currentPeriodEnd: rec.currentPeriodEnd != null ? asString(rec.currentPeriodEnd) : null,
+    cancelAtPeriodEnd: Boolean(rec.cancelAtPeriodEnd),
+    providerCustomerId: rec.providerCustomerId != null ? asString(rec.providerCustomerId) : null,
+    providerSubscriptionId: rec.providerSubscriptionId != null ? asString(rec.providerSubscriptionId) : null,
+  };
+}
+
+export function mapUserFromApi(raw: ApiRecord): User {
+  return {
+    id: asString(raw.id),
+    name: asString(raw.name ?? raw.username),
+    username: asString(raw.username),
+    avatarUrl: raw.avatarUrl ?? null,
+    bio: raw.bio ?? undefined,
+    pronouns: raw.pronouns ?? undefined,
+    showProBadge: Boolean(raw.showProBadge),
+  };
+}
+
+export function mapCommunityFromApi(raw: ApiRecord): Community {
+  const cat = asString(raw.category) as CommunityCategory;
+  const safeCategory: CommunityCategory =
+    cat === "bemestar" || cat === "carreira" || cat === "cultura" || cat === "seguranca" || cat === "outro"
+      ? cat
+      : "outro";
+
+  return {
+    id: asString(raw.id),
+    slug: asString(raw.slug),
+    name: asString(raw.name),
+    description: asString(raw.description ?? ""),
+    category: safeCategory,
+    tags: Array.isArray(raw.tags) ? raw.tags.map((t: unknown) => String(t)) : [],
+    rules: asString(raw.rules ?? ""),
+    avatarUrl: raw.avatarUrl ?? null,
+    coverUrl: raw.coverUrl ?? null,
+    ownerUserId: asString(raw.ownerUserId),
+    visibility: raw.visibility === "private" ? "private" : "public",
+    memberCount: Number(raw.memberCount ?? 0),
+    billing: mapCommunityBillingFromApi(raw),
+  };
+}
+
+function mapPublicationContextFromApi(raw: ApiRecord): PostPublicationContext {
+  const v = raw.publicationContext;
+  if (v === "profile" || v === "community") return v;
+  const cid = raw.communityId;
+  if (cid != null && String(cid).length > 0) return "community";
+  return "profile";
+}
+
+export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
+  const author = mapUserFromApi(raw.author ?? {});
+  const publicationContext = mapPublicationContextFromApi(raw);
+  const comm = raw.community ? mapCommunityPreviewFromApi(raw.community) : undefined;
+  const imageUrls = Array.isArray(raw.imageUrls) ? raw.imageUrls.map((u: unknown) => String(u)) : undefined;
+  const primaryImage =
+    imageUrls && imageUrls.length > 0 ? imageUrls[0] : (raw.imageUrl != null ? String(raw.imageUrl) : null);
+  let mediaAttachments: PostMediaAttachment[] | undefined;
+  if (Array.isArray(raw.mediaAttachments)) {
+    const list: PostMediaAttachment[] = [];
+    for (const item of raw.mediaAttachments) {
+      if (!item || typeof item !== "object") continue;
+      const o = item as ApiRecord;
+      const mt = String(o.mediaType ?? "image");
+      if (!isWoodyMediaType(mt)) continue;
+      const u = String(o.url ?? "");
+      if (!u) continue;
+      let durationSeconds: number | null = null;
+      if (o.durationSeconds != null) {
+        const n = Number(o.durationSeconds);
+        if (Number.isFinite(n)) durationSeconds = Math.round(n);
+      } else if (o.durationMs != null) {
+        const ms = Number(o.durationMs);
+        if (Number.isFinite(ms)) durationSeconds = Math.round(ms / 1000);
+      }
+      list.push({
+        url: u,
+        mediaType: mt,
+        storageKey: o.storageKey != null ? String(o.storageKey) : null,
+        mimeType: o.mimeType != null ? String(o.mimeType) : null,
+        thumbnailUrl: o.thumbnailUrl != null ? String(o.thumbnailUrl) : null,
+        durationSeconds,
+        durationMs:
+          o.durationMs != null && Number.isFinite(Number(o.durationMs)) ? Number(o.durationMs) : null,
+      });
+    }
+    if (list.length > 0) mediaAttachments = list;
+  }
+  const communityId =
+    publicationContext === "profile"
+      ? null
+      : raw.communityId != null && String(raw.communityId).length > 0
+        ? String(raw.communityId)
+        : null;
+  return {
+    id: asString(raw.id),
+    publicationContext,
+    communityId,
+    authorId: asString(raw.authorId),
+    author,
+    content: asString(raw.content),
+    imageUrl: primaryImage || null,
+    imageUrls: imageUrls && imageUrls.length > 0 ? imageUrls : undefined,
+    mediaAttachments,
+    tags: Array.isArray(raw.tags) ? raw.tags.map((t: unknown) => String(t)) : undefined,
+    createdAt: formatDisplayDateTimeFromIso(asString(raw.createdAt)),
+    updatedAt: raw.updatedAt ?? null,
+    deletedAt: raw.deletedAt ?? null,
+    likesCount: Number(raw.likesCount ?? 0),
+    commentsCount: Number(raw.commentsCount ?? 0),
+    likedByCurrentUser: Boolean(raw.likedByCurrentUser),
+    community: comm,
+    pinnedOnProfileAt: raw.pinnedOnProfileAt != null ? asString(raw.pinnedOnProfileAt) : null,
+    communityBoostActive: Boolean(raw.communityBoostActive),
+    communityBoostEndsAt:
+      raw.communityBoostEndsAt != null && String(raw.communityBoostEndsAt).length > 0
+        ? asString(raw.communityBoostEndsAt)
+        : null,
+  };
+}
+
+function mapCommunityPreviewFromApi(raw: ApiRecord): NonNullable<Post["community"]> {
+  const cat = asString(raw.category) as CommunityCategory;
+  const safeCategory: CommunityCategory =
+    cat === "bemestar" || cat === "carreira" || cat === "cultura" || cat === "seguranca" || cat === "outro"
+      ? cat
+      : "outro";
+  return {
+    id: asString(raw.id),
+    slug: asString(raw.slug),
+    name: asString(raw.name),
+    avatarUrl: raw.avatarUrl ?? null,
+    category: safeCategory,
+    communityPlan: mapCommunityBillingPlan(raw.communityPlan ?? "free"),
+  };
+}
+
+function mapCommentGifFromApi(raw: ApiRecord): Pick<
+  Comment,
+  "gifUrl" | "gifThumbnailUrl" | "gifProvider" | "gifExternalId" | "gifTitle"
+> {
+  const g = raw.gif;
+  if (g == null || typeof g !== "object") return {};
+  const rec = g as ApiRecord;
+  const url = rec.url != null ? asString(rec.url).trim() : "";
+  if (!url) return {};
+  return {
+    gifUrl: url,
+    gifThumbnailUrl:
+      rec.thumbnailUrl != null && String(rec.thumbnailUrl).trim() !== ""
+        ? asString(rec.thumbnailUrl)
+        : undefined,
+    gifProvider: rec.provider != null ? asString(rec.provider) : undefined,
+    gifExternalId: rec.externalId != null ? asString(rec.externalId) : undefined,
+    gifTitle:
+      rec.title != null && String(rec.title).trim() !== "" ? asString(rec.title) : undefined,
+  };
+}
+
+export function mapCommentFromApi(raw: ApiRecord): Comment {
+  return {
+    id: asString(raw.id),
+    postId: asString(raw.postId),
+    parentCommentId: raw.parentCommentId != null ? asString(raw.parentCommentId) : null,
+    authorId: asString(raw.authorId),
+    author: mapUserFromApi(raw.author ?? {}),
+    content: asString(raw.content),
+    createdAt: formatDisplayDateTimeFromIso(asString(raw.createdAt)),
+    deletedAt: raw.deletedAt ?? null,
+    hiddenByPostAuthorAt: raw.hiddenByPostAuthorAt ?? null,
+    contentModerationMask: raw.contentModerationMask ?? null,
+    pinnedOnPostAt: raw.pinnedOnPostAt != null ? asString(raw.pinnedOnPostAt) : null,
+    likesCount: asNonNegativeInt(raw.likesCount, 0),
+    likedByCurrentUser: Boolean(raw.likedByCurrentUser),
+    ...mapCommentGifFromApi(raw),
+  };
+}
+
+export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
+  const socialLinks: SocialLink[] = Array.isArray(raw.socialLinks)
+    ? raw.socialLinks.map((s: ApiRecord) => ({
+        id: asString(s.id),
+        platform: mapSocialPlatform(asString(s.platform)),
+        label: asString(s.label),
+        url: asString(s.url),
+        handle: s.handle ?? undefined,
+      }))
+    : [];
+
+  const interests = Array.isArray(raw.interests)
+    ? raw.interests.map((i: ApiRecord) => ({
+        id: asString(i.id),
+        label: asString(i.label),
+      }))
+    : [];
+
+  return {
+    id: asString(raw.id),
+    name: asString(raw.name),
+    username: raw.username ?? undefined,
+    avatarUrl: raw.avatarUrl ?? null,
+    pronouns: raw.pronouns ?? undefined,
+    bannerUrl: raw.bannerUrl ?? null,
+    bio: asString(raw.bio ?? ""),
+    location: raw.location ?? undefined,
+    profession: raw.profession ?? undefined,
+    socialLinks,
+    interests,
+    suggestions: Array.isArray(raw.suggestions) ? raw.suggestions : [],
+    isFollowing: raw.isFollowing ?? undefined,
+    followersCount:
+      raw.followersCount !== undefined && raw.followersCount !== null
+        ? Number(raw.followersCount)
+        : undefined,
+    followingCount:
+      raw.followingCount !== undefined && raw.followingCount !== null
+        ? Number(raw.followingCount)
+        : undefined,
+    showProBadge: Boolean(raw.showProBadge),
+    subscription: raw.subscription != null ? mapSubscription(raw.subscription) : undefined,
+  };
+}

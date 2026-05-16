@@ -1,0 +1,130 @@
+/**
+ * Leitura e mutação de posts e comentários via API Woody.
+ */
+import type { Comment, CommentGifDraft, Post } from "../types";
+import { api, getApiErrorMessage } from "@/lib/api";
+import { mapCommentFromApi, mapPostFromApi } from "@/lib/apiMappers";
+import axios from "axios";
+
+export async function getPostByIdMock(postId: string, viewerId: string): Promise<Post | null> {
+  try {
+    const { data } = await api.get(`/posts/${encodeURIComponent(postId)}`);
+    return mapPostFromApi(data as Record<string, unknown>, viewerId);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) return null;
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar o post."));
+  }
+}
+
+export async function getCommentsByPostIdMock(postId: string, _viewerId?: string): Promise<Comment[]> {
+  const { data } = await api.get(`/posts/${encodeURIComponent(postId)}/comments`);
+  const list = data as unknown[];
+  return list.map((c) => mapCommentFromApi(c as Record<string, unknown>));
+}
+
+export async function getRepliesByCommentIdMock(
+  _parentCommentId: string,
+  _viewerId?: string
+): Promise<Comment[]> {
+  // A API atual devolve a lista completa em GET /posts/:id/comments; a UI monta a árvore localmente.
+  return [];
+}
+
+export async function togglePostLikeMock(
+  postId: string,
+  viewerId: string
+): Promise<{ likedByCurrentUser: boolean; likesCount: number } | null> {
+  const post = await getPostByIdMock(postId, viewerId);
+  if (!post) return null;
+  try {
+    if (post.likedByCurrentUser) {
+      await api.delete(`/posts/${encodeURIComponent(postId)}/like`);
+    } else {
+      await api.post(`/posts/${encodeURIComponent(postId)}/like`);
+    }
+    const next = await getPostByIdMock(postId, viewerId);
+    if (!next) return null;
+    return { likedByCurrentUser: next.likedByCurrentUser, likesCount: next.likesCount };
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Falha ao atualizar gosto."));
+  }
+}
+
+export interface CommentLikeMutationResult {
+  likesCount: number;
+  likedByCurrentUser: boolean;
+}
+
+function mapCommentLikeMutationFromApi(raw: unknown): CommentLikeMutationResult {
+  if (raw == null || typeof raw !== "object") {
+    return { likesCount: 0, likedByCurrentUser: false };
+  }
+  const r = raw as Record<string, unknown>;
+  const n = r.likesCount;
+  const likesCount =
+    typeof n === "number" && Number.isFinite(n)
+      ? Math.max(0, Math.floor(n))
+      : Math.max(0, Math.floor(Number(n)) || 0);
+  return {
+    likesCount,
+    likedByCurrentUser: Boolean(r.likedByCurrentUser),
+  };
+}
+
+export async function likeComment(postId: string, commentId: string): Promise<CommentLikeMutationResult> {
+  const { data } = await api.post(
+    `/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}/like`
+  );
+  return mapCommentLikeMutationFromApi(data);
+}
+
+export async function unlikeComment(postId: string, commentId: string): Promise<CommentLikeMutationResult> {
+  const { data } = await api.delete(
+    `/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}/like`
+  );
+  return mapCommentLikeMutationFromApi(data);
+}
+
+export type CreateCommentMockResult =
+  | { ok: true; comment: Comment }
+  | { ok: false; error: string };
+
+export async function createCommentMock(
+  postId: string,
+  _viewerId: string,
+  content: string,
+  parentCommentId?: string | null,
+  gif?: CommentGifDraft | null
+): Promise<CreateCommentMockResult> {
+  const trimmed = content.trim();
+  const hasGif = Boolean(gif?.gifUrl?.trim());
+  if (!trimmed && !hasGif) {
+    return { ok: false, error: "Escreve uma mensagem ou escolhe um GIF." };
+  }
+
+  const body: Record<string, unknown> = {
+    content: trimmed,
+    parentCommentId: parentCommentId ?? undefined,
+  };
+
+  if (hasGif && gif) {
+    body.gifUrl = gif.gifUrl;
+    body.gifThumbnailUrl = gif.gifThumbnailUrl?.trim() || undefined;
+    body.gifProvider = gif.gifProvider;
+    body.gifExternalId = gif.gifExternalId;
+    body.gifTitle = gif.gifTitle?.trim() || undefined;
+  }
+
+  try {
+    const { data } = await api.post(`/posts/${encodeURIComponent(postId)}/comments`, body);
+    return { ok: true, comment: mapCommentFromApi(data as Record<string, unknown>) };
+  } catch (e) {
+    return { ok: false, error: getApiErrorMessage(e, "Não foi possível publicar o comentário.") };
+  }
+}
+
+export const postCommentsMockApi = {
+  listByPostId: getCommentsByPostIdMock,
+  listRepliesByParentId: getRepliesByCommentIdMock,
+  create: createCommentMock,
+} as const;

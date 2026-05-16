@@ -1,0 +1,203 @@
+import { resolvePublicMediaUrl } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import type { PostMediaAttachment } from "@/domain/mediaAttachment";
+import { PostAdaptiveStill } from "./PostAdaptiveStill";
+import { VideoPostPlayer } from "./VideoPostPlayer";
+
+export type PostMediaRenderVariant = "feed" | "detail" | "message";
+
+/** `hero` · `grid` · `lightbox` · `carouselSlide` (= slide no viewport do carrossel). */
+export type PostMediaDisplayMode = "hero" | "grid" | "lightbox" | "carouselSlide";
+
+export interface PostMediaItemProps {
+  item: PostMediaAttachment;
+  variant: PostMediaRenderVariant;
+  displayMode?: PostMediaDisplayMode;
+  className?: string;
+}
+
+const heroImgMessage = cn(
+  "mx-auto h-auto w-full max-w-[min(100%,min(18rem,85vw))] max-h-36 object-contain sm:max-h-40"
+);
+
+const gridMedia = "absolute inset-0 h-full w-full object-cover";
+const lightboxImg =
+  "mx-auto block h-auto max-h-[min(82vh,52rem)] w-auto max-w-[min(96vw,56rem)] object-contain";
+
+function GridVideoThumb({
+  src,
+  poster,
+  className,
+}: {
+  src: string;
+  poster?: string;
+  className?: string;
+}) {
+  const resolvedSrc = resolvePublicMediaUrl(src);
+  const resolvedPoster = poster ? resolvePublicMediaUrl(poster) : undefined;
+  return (
+    <video
+      src={resolvedSrc}
+      poster={resolvedPoster}
+      className={cn(gridMedia, className)}
+      muted
+      playsInline
+      preload="metadata"
+      aria-hidden
+      tabIndex={-1}
+    />
+  );
+}
+
+/** Um único anexo de publicação (imagem/GIF/sticker ou vídeo). */
+export function PostMediaItem({ item, variant, displayMode = "hero", className }: PostMediaItemProps) {
+  const mode = displayMode;
+
+  if (mode === "carouselSlide") {
+    const url = resolvePublicMediaUrl(item.url);
+    if (item.mediaType === "video") {
+      const v = variant === "detail" ? "detail" : "feed";
+      return (
+        <VideoPostPlayer
+          src={item.url}
+          poster={item.thumbnailUrl ?? undefined}
+          variant={v}
+          carouselFillParent
+          className={className}
+        />
+      );
+    }
+    if (item.mediaType === "sticker") {
+      return (
+        <img
+          src={url}
+          alt=""
+          className={cn("absolute inset-0 m-auto max-h-[85%] max-w-[85%] object-contain", className)}
+          loading="lazy"
+          decoding="async"
+        />
+      );
+    }
+    return (
+      <img
+        src={url}
+        alt=""
+        className={cn("absolute inset-0 size-full object-cover object-center", className)}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  if (item.mediaType === "video") {
+    if (mode === "grid") {
+      return <GridVideoThumb src={item.url} poster={item.thumbnailUrl ?? undefined} className={className} />;
+    }
+    if (mode === "lightbox") {
+      return (
+        <VideoPostPlayer
+          src={item.url}
+          poster={item.thumbnailUrl ?? undefined}
+          variant={variant === "message" ? "message" : "detail"}
+          presentation="lightbox"
+          className={cn("mx-auto max-h-[min(82vh,52rem)] w-full max-w-[min(96vw,56rem)]", className)}
+        />
+      );
+    }
+    return (
+      <VideoPostPlayer
+        src={item.url}
+        poster={item.thumbnailUrl ?? undefined}
+        variant={variant}
+        className={className}
+      />
+    );
+  }
+
+  if (mode === "grid") {
+    return (
+      <img
+        src={resolvePublicMediaUrl(item.url)}
+        alt=""
+        className={cn(
+          gridMedia,
+          item.mediaType === "sticker" && "object-contain p-1.5",
+          className
+        )}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  if (mode === "lightbox") {
+    return (
+      <img
+        src={resolvePublicMediaUrl(item.url)}
+        alt=""
+        className={cn(lightboxImg, item.mediaType === "sticker" && "object-contain p-4", className)}
+        loading="eager"
+        decoding="async"
+      />
+    );
+  }
+
+  // Mensagens diretas: sticker mais compacto que GIF; GIF com área maior para animação; imagem mantém hero compacto.
+  if (variant === "message") {
+    const src = resolvePublicMediaUrl(item.url);
+    if (item.mediaType === "sticker") {
+      return (
+        <img
+          src={src}
+          alt=""
+          className={cn(
+            "mx-auto h-auto w-full max-w-[min(100%,min(11rem,62vw))] max-h-24 object-contain sm:max-h-28",
+            className
+          )}
+          loading="lazy"
+          decoding="async"
+        />
+      );
+    }
+    if (item.mediaType === "gif") {
+      return (
+        <img
+          src={src}
+          alt=""
+          className={cn(
+            "mx-auto h-auto w-full max-w-[min(100%,min(20rem,88vw))] max-h-44 object-contain sm:max-h-48",
+            className
+          )}
+          loading="lazy"
+          decoding="async"
+        />
+      );
+    }
+    return (
+      <img
+        src={src}
+        alt=""
+        className={cn(heroImgMessage, className)}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  if (item.mediaType === "sticker") {
+    return (
+      <img
+        src={resolvePublicMediaUrl(item.url)}
+        alt=""
+        className={cn("mx-auto max-h-48 bg-transparent object-contain", className)}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  const v = variant === "detail" ? "detail" : "feed";
+  return (
+    <PostAdaptiveStill src={item.url} variant={v} className={className} />
+  );
+}
