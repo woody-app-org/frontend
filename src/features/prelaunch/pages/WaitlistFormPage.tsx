@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -65,17 +65,15 @@ function getOption(value: SocialNetwork | null) {
 }
 
 const WAITLIST_INTRO_SEGMENTS = [
-  "Oi, futura Woody! Bem-vinda à lista de intenção para integrar nossa comunidade.",
+  "Oi, futura Woody! Bem-vinda à lista de interesse para fazer parte da nossa comunidade.",
   "Por enquanto, esta inscrição serve apenas para mapear o interesse inicial pela plataforma.",
   "O lançamento oficial será anunciado em breve pelas redes da Woody e da Sapatone_.",
-  "Neste formulário, pedimos somente seu nome e o username de uma rede social da sua escolha: X, Instagram, Threads ou Facebook.",
-  "Siga nossos perfis no Instagram para ficar por dentro das novidades.",
+  "Neste formulário, pedimos somente seu nome e o username de uma rede social da sua escolha. A validação de perfis reais, alinhados ao nosso público-alvo, é uma premissa importante para a Woody.",
+  "Siga nossos perfis no Instagram para ficar por dentro da data em que a Woody — sua nova rede social sáfica — será lançada.",
 ] as const;
 
-function waitlistIntroUpToFirstPeriod(full: string): string {
-  const i = full.indexOf(".");
-  return i >= 0 ? full.slice(0, i + 1).trimEnd() : full;
-}
+const WAITLIST_INTRO_FORM = WAITLIST_INTRO_SEGMENTS[0];
+const WAITLIST_INTRO_SUCCESS_BODY = WAITLIST_INTRO_SEGMENTS.slice(1);
 
 const schema = z.object({
   name: z
@@ -97,7 +95,6 @@ type FormData = z.infer<typeof schema>;
 export function WaitlistFormPage() {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [introExpanded, setIntroExpanded] = useState(false);
 
   const {
     register,
@@ -115,10 +112,6 @@ export function WaitlistFormPage() {
 
   const selectedNetwork = useWatch({ control, name: "socialNetwork" });
   const currentOption = getOption(selectedNetwork ?? null);
-
-  const introFullText = WAITLIST_INTRO_SEGMENTS.join(" ");
-  const introPreview = waitlistIntroUpToFirstPeriod(introFullText);
-  const introHasMore = introPreview.length < introFullText.length;
 
   async function onSubmit(data: FormData) {
     setServerError(null);
@@ -146,42 +139,16 @@ export function WaitlistFormPage() {
 
   return (
     <div className="min-h-screen bg-[var(--woody-sand)] flex flex-col">
-      <header className="pt-6 pb-2 flex justify-center">
+      <header className="pt-12 pb-2 flex justify-center sm:pt-14">
         <WoodyCatLogo />
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-10">
         <div className="w-full max-w-[480px]">
           <div className="mb-5 px-1 text-left">
-            <p className="text-sm text-[var(--woody-ink)]/75 leading-snug">
-              {introExpanded ? (
-                WAITLIST_INTRO_SEGMENTS.map((segment, i) => (
-                  <Fragment key={i}>
-                    {i > 0 ? <br /> : null}
-                    {segment}
-                  </Fragment>
-                ))
-              ) : (
-                introPreview
-              )}
+            <p className="text-base font-bold text-[var(--woody-ink)]/75 leading-snug">
+              {WAITLIST_INTRO_FORM}
             </p>
-            {introHasMore ? (
-              <div className="mt-3 flex justify-start">
-                <button
-                  type="button"
-                  onClick={() => setIntroExpanded((v) => !v)}
-                  className={cn(
-                    "min-h-11 rounded-lg px-1 py-2 text-left text-sm leading-snug text-[var(--woody-ink)]/75",
-                    "underline decoration-[var(--woody-ink)]/25 underline-offset-[5px]",
-                    "transition-colors hover:text-[var(--woody-ink)] hover:decoration-[var(--woody-ink)]/45",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-lime)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-sand)]"
-                  )}
-                  aria-expanded={introExpanded}
-                >
-                  {introExpanded ? "Ler menos" : "Ler mais"}
-                </button>
-              </div>
-            ) : null}
           </div>
 
           <div className="mb-8 text-center px-2">
@@ -227,7 +194,7 @@ export function WaitlistFormPage() {
                               </span>
                             </div>
                           ) : (
-                            <div className="text-sm text-[var(--woody-ink)]/40">
+                            <div className="text-sm text-muted-foreground font-normal">
                               Selecione uma rede
                             </div>
                           )}
@@ -337,13 +304,15 @@ function SuccessScreen() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-[var(--woody-ink)] tracking-tight">
-              Pronto. Você está na lista.
-            </h2>
-            <p className="text-[var(--woody-ink)]/60 text-sm leading-relaxed">
-              Recebemos seus dados! Obrigada pela participação!
-            </p>
+          <div className="space-y-2.5 text-left">
+            {WAITLIST_INTRO_SUCCESS_BODY.map((segment, i) => (
+              <p
+                key={i}
+                className="text-[var(--woody-ink)]/70 text-sm leading-[1.5]"
+              >
+                {segment}
+              </p>
+            ))}
           </div>
 
           <div className="pt-2 flex items-center justify-center gap-1.5">
