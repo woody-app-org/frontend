@@ -81,7 +81,6 @@ export function OnboardingStepAccount() {
                 type="text"
                 autoComplete="off"
                 variant="maroon"
-                hint="Necessário para criar conta neste período de lançamento."
                 valid={
                   !!draft.inviteCode?.trim() &&
                   (draft.inviteCode?.trim().length ?? 0) >= 4
@@ -98,11 +97,10 @@ export function OnboardingStepAccount() {
           <div className={onboardingStyles.sectionCard}>
             <AuthInputField
               label="Nome de usuário"
-              placeholder="ex.: maria.silva"
+              placeholder="ex: maria_silva"
               type="text"
               autoComplete="username"
               variant="maroon"
-              hint="Público na Woody — evite dados muito pessoais."
               valid={!!touchedFields.username && !errors.username && w.username.length > 0}
               {...form.register("username")}
               error={errors.username?.message}
@@ -113,7 +111,6 @@ export function OnboardingStepAccount() {
               type="email"
               autoComplete="email"
               variant="maroon"
-              hint="Usaremos para login e avisos importantes."
               valid={!!touchedFields.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(w.email)}
               {...form.register("email")}
               error={errors.email?.message}
@@ -126,7 +123,7 @@ export function OnboardingStepAccount() {
           <div className={onboardingStyles.sectionCard}>
             <AuthPasswordField
               label="Senha"
-              placeholder="Ex.: MinhaSenh@1"
+              placeholder="ex: MinhaSenh@1"
               autoComplete="new-password"
               variant="maroon"
               hint={`NO MÍNIMO ${PASSWORD_MIN_LENGTH} CARACTERES, 1 LETRA MAIÚSCULA E 1 CARACTERE ESPECIAL (!@#…)`}

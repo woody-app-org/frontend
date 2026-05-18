@@ -173,10 +173,10 @@ export function PlanosPage() {
       >
         <header className="space-y-2 text-center sm:text-left sm:space-y-2.5">
           <h1 className="text-balance text-xl font-bold tracking-tight text-[var(--woody-text)] sm:text-2xl md:text-[1.75rem] md:leading-tight">
-            Escolha a modalidade ideal para o seu perfil
+            Planos sem TABU
           </h1>
           <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[var(--woody-muted)] sm:mx-0">
-            Planos pensados para começar, crescer e escalar sua presença na Woody.
+            3 modalidades de planos para 3 objetivos.
           </p>
         </header>
 
@@ -224,7 +224,7 @@ export function PlanosPage() {
               </div>
               {isEssencialCurrent ? <CurrentPlanPill /> : null}
             </div>
-            <p className="text-[0.8125rem] leading-snug text-[var(--woody-muted)] sm:text-sm">Para começar na plataforma</p>
+            <p className="text-[0.8125rem] leading-snug text-[var(--woody-muted)] sm:text-sm">Presença sem compromisso financeiro</p>
 
             <ExpandableBenefits
               sectionId="plan-essencial"
@@ -286,7 +286,7 @@ export function PlanosPage() {
               {isProTierCurrent ? <CurrentPlanPill /> : null}
             </div>
             <p className="relative text-[0.8125rem] leading-snug text-[var(--woody-muted)] sm:text-sm">
-              Para quem quer presença profissional
+              Para quem busca criar autoridade profissional
             </p>
 
             <div className="relative mt-2">
@@ -346,7 +346,7 @@ export function PlanosPage() {
               {isMaxPlanCurrent ? <CurrentPlanPill /> : null}
             </div>
             <p className="text-[0.8125rem] leading-snug text-[var(--woody-muted)] sm:text-sm">
-              Para expandir com mais gestão e alcance
+              Ideal para quem quer expandir seu alcance com mais gestão
             </p>
 
             <div className="mt-2">
@@ -403,7 +403,7 @@ export function PlanosPage() {
         </div>
 
         <footer className="flex flex-col gap-3 rounded-2xl border border-[var(--woody-accent)]/12 bg-[var(--woody-bg)]/60 px-4 py-3.5 text-sm text-[var(--woody-muted)] sm:flex-row sm:items-center sm:justify-between sm:px-5">
-          <p>Pagamentos processados com segurança. O estado da conta atualiza após confirmação no servidor.</p>
+          <p> Os pagamentos são processados com segurança e o status da conta atualiza automaticamente após processo finalizado.</p>
           <Button asChild variant="ghost" size="sm" className={cn(woodyFocus.ring, "shrink-0 text-[var(--woody-nav)]")}>
             <Link to="/feed">Voltar ao feed</Link>
           </Button>

@@ -77,10 +77,9 @@ export function PoliciesNarrativeSection({ embedInLanding = false }: PoliciesNar
 
         <ScrollReveal enabled={motion} delayMs={450} yOffset={12} className="mt-14 max-w-3xl">
           <div className="rounded-[1.5rem] border border-black/[0.08] bg-white/70 px-6 py-6 shadow-sm md:px-8 md:py-7">
-            <p className="font-sans text-sm font-bold uppercase tracking-[0.12em] text-[#6b7280]">Privacidade</p>
+            <p className="font-sans text-sm font-bold uppercase tracking-[0.12em] text-[#6b7280]">Política de Cookies e Tecnologias Locais</p>
             <p className="mt-3 font-serif text-[1.02rem] leading-relaxed text-[var(--woody-ink)]/88 md:text-[1.05rem]">
-              Como usamos o armazenamento do navegador (login, onboarding) e o que não fazemos hoje em matéria de cookies de
-              rastreamento — explicado com transparência, sem juridiquês pesado.
+            Um resumo simples de como a Woody trata dados no seu navegador neste momento - sem juridiquês excessivo, mas com honestidade. Esta política explica o uso de cookies, armazenamento local, sessão, recursos técnicos e terceiros necessários para a aplicação funcionar de forma segura e transparente.
             </p>
             <Link
               to={INSTITUTIONAL_PATHS.privacidadeCookies}

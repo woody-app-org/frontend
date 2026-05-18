@@ -13,8 +13,7 @@ export function LandingFooter() {
           <div>
             <WoodyLogo className="h-8 w-auto max-w-[min(220px,70vw)] md:h-9" />
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-[var(--woody-muted)]">
-              Rede social orientada por comunidades, pensada para mulheres — com conversas mais contextualizadas e
-              acolhimento real.
+            Menos ruído, mais troca. Woody é uma rede para mulheres se reconhecerem do próprio jeito.
             </p>
           </div>
           <div className="grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 md:max-w-xl">

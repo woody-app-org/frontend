@@ -80,19 +80,19 @@ export const policyBan = {
   title: "Como evitar banimento na Woody",
   badge: "#03",
   excerpt:
-    "Respeita a proposta da plataforma e utiliza a Woody apenas se fizeres parte do público permitido. Não partilhes conta, palavra-passe, convite ou acesso com terceiros — trata o login como um bem pessoal.",
+    "Um dos pilares da Woody é proteger a proposta da plataforma e garantir que ela seja utilizada apenas por quem faz parte do público autorizado. Por isso, não compartilhe sua conta, senha, convite ou qualquer forma de acesso com outras pessoas. Seu login é pessoal, intransferível e merece ser tratado com cuidado.",
   sections: [
     {
       heading: "1. Boas práticas diárias",
-      body: "Lê as notificações da equipa, responde a pedidos de esclarecimento e mantém o perfil verídico. Erros honestos corrigem-se; má fé acumula strikes.",
+      body: "Acompanhe as notificações da equipe, responda a eventuais pedidos de esclarecimento e mantenha seu perfil com informações verdadeiras. Entendemos que erros podem acontecer e, quando há colaboração e boa-fé, eles podem ser corrigidos. Já condutas intencionais ou recorrentes podem gerar medidas progressivas.",
     },
     {
-      heading: "2. Denúncias e contexto",
-      body: "Se fores denunciada, explica o contexto com calma. Ocultar provas relevantes ou assediar quem denunciou agrava a situação.",
+      heading: "2. Denúncias e análise de contexto",
+      body: "Caso receba uma denúncia, apresente o contexto com tranquilidade e transparência. A omissão de informações relevantes, a tentativa de ocultar provas ou qualquer forma de intimidação contra quem realizou a denúncia poderá agravar a situação.",
     },
     {
-      heading: "3. Escalação",
-      body: "Banimentos temporários permitem arrefecer conflitos. Banimentos permanentes ocorrem por violações graves, reincidência ou risco imediato à comunidade.",
+      heading: "3. Medidas e escalonamento",
+      body: "Banimentos temporários podem ser aplicados para reduzir conflitos e preservar a segurança da comunidade. Banimentos permanentes são reservados para violações graves, reincidência ou situações que representem risco imediato às usuárias e ao ambiente da plataforma.",
     },
   ],
 };

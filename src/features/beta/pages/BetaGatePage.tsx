@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import woodyCat from "@/assets/cat.svg";
+import woodyCat from "@/assets/new-cat.png";
 import { postValidateInvite } from "@/features/beta/betaInvite.api";
 import { setValidatedBetaInvite } from "@/features/beta/betaInvite.storage";
 
@@ -89,13 +89,12 @@ export function BetaGatePage() {
           <div className="mb-6 flex justify-center">
             <img
               src={woodyCat}
-              alt=""
-              width={213}
-              height={180}
+              alt="Woody"
+              width={1598}
+              height={1443}
               className="h-[7rem] w-auto max-w-[min(94vw,22rem)] object-contain object-center select-none sm:h-[8rem] md:h-[8.5rem]"
               decoding="async"
               draggable={false}
-              aria-hidden
             />
           </div>
 

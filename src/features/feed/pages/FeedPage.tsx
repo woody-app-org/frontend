@@ -32,13 +32,13 @@ const FEED_HEADLINES: Record<
   forYou: {
     title: "Para você",
     subtitle:
-      "Mistura exploratória: comunidades públicas, contas que segues e grupos dos quais participas — a ordem vem do servidor, diferente de “Em destaque”.",
+      "Você verá por aqui conteúdos de criadoras que ainda não segue, baseada nas suas preferências, interesses e histórico de interações dentro da Woody.",
     icon: Compass,
   },
   following: {
     title: "Seguindo",
     subtitle:
-      "Só posts de pessoas que segues ou de comunidades em que és membra — o mais recente primeiro.",
+      "Fique por dentro do que está rolando agora entre as pessoas que você segue e as comunidades que fazem parte da sua Woody",
     icon: UserRoundCheck,
   },
 };

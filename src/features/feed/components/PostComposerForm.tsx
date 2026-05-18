@@ -534,7 +534,7 @@ export function PostComposerForm({
   const submitDisabled =
     submitting || communityBlocking || (!hasText && !hasMediaQueued) || content.length > POST_COMPOSER_CONTENT_MAX_LENGTH;
 
-  const mainPlaceholder = "O que está acontecendo?";
+  const mainPlaceholder = "Uma foto, um pensamento, um caos compartilhado";
 
   const hasImages = imageItems.length > 0;
   const hasVideo = videoItem !== null;
