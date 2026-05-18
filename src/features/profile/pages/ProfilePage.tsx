@@ -21,7 +21,7 @@ import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
-import { showInfoToast } from "@/lib/toast/woodyToast";
+import { StoryViewerModal, useStoryViewerState } from "@/features/stories";
 import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
 import { ProfileSignalButton } from "../components/ProfileSignalButton";
 import { ProfileSignalsTab } from "../components/ProfileSignalsTab";
@@ -94,6 +94,7 @@ function ProfilePageInner() {
   } = useUserProfile(userId);
   const { registerProfilePostIngest } = useCreatePostComposer();
   const { isOwnProfile } = useProfilePermissions(userId);
+  const storyViewer = useStoryViewerState();
 
   useEffect(() => {
     registerProfilePostIngest(prependCreatedProfilePost);
@@ -191,14 +192,7 @@ function ProfilePageInner() {
               className="mb-6"
               isOwnProfile={isOwnProfile}
               onViewStories={
-                profile.hasActiveStories
-                  ? () => {
-                      // TODO(stories-ui): abrir StoryViewerModal
-                      if (import.meta.env.DEV) {
-                        showInfoToast("Visualizador de stories em breve.");
-                      }
-                    }
-                  : undefined
+                profile.hasActiveStories ? () => storyViewer.open(profile.id) : undefined
               }
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
               followStats={
@@ -324,6 +318,7 @@ function ProfilePageInner() {
                   pinningPostId={pinningPostId}
                   onLike={togglePostLike}
                   isLikePending={isPostLikePending}
+                  onViewAuthorStories={(authorId) => storyViewer.open(authorId)}
                 />
               ) : null}
 
@@ -375,6 +370,11 @@ function ProfilePageInner() {
             </button>
           </div>
         )}
+
+        <StoryViewerModal
+          {...storyViewer.modalProps}
+          onStoriesConsumed={() => void refetch()}
+        />
       </div>
   );
 }

@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { FeedFilter } from "../types";
 import { useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { StoryViewerModal, useStoryViewerState } from "@/features/stories";
 
 const linkClass = "font-semibold text-[var(--woody-nav)] underline-offset-2 hover:underline";
 
@@ -105,6 +106,7 @@ function FeedPageContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const storyViewer = useStoryViewerState();
 
   const {
     posts,
@@ -205,6 +207,7 @@ function FeedPageContent() {
                     onLike={togglePostLike}
                     isLikePending={isPostLikePending(post.id)}
                     onPin={(id) => console.log("Pin", id)}
+                    onViewAuthorStories={(authorId) => storyViewer.open(authorId)}
                   />
                 </li>
               ))}
@@ -258,6 +261,8 @@ function FeedPageContent() {
       </section>
 
       <FeedCommunityContextStrip className="mt-2" />
+
+      <StoryViewerModal {...storyViewer.modalProps} />
     </div>
   );
 }
