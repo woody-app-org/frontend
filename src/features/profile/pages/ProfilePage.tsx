@@ -21,7 +21,11 @@ import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
-import { StoryViewerModal, useStoryViewerState } from "@/features/stories";
+import {
+  StoryComposerModal,
+  StoryViewerModal,
+  useStoryViewerState,
+} from "@/features/stories";
 import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
 import { ProfileSignalButton } from "../components/ProfileSignalButton";
 import { ProfileSignalsTab } from "../components/ProfileSignalsTab";
@@ -95,6 +99,7 @@ function ProfilePageInner() {
   const { registerProfilePostIngest } = useCreatePostComposer();
   const { isOwnProfile } = useProfilePermissions(userId);
   const storyViewer = useStoryViewerState();
+  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
 
   useEffect(() => {
     registerProfilePostIngest(prependCreatedProfilePost);
@@ -194,6 +199,7 @@ function ProfilePageInner() {
               onViewStories={
                 profile.hasActiveStories ? () => storyViewer.open(profile.id) : undefined
               }
+              onAddStory={isOwnProfile ? () => setStoryComposerOpen(true) : undefined}
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
               followStats={
                 <ProfileFollowStats
@@ -375,6 +381,16 @@ function ProfilePageInner() {
           {...storyViewer.modalProps}
           onStoriesConsumed={() => void refetch()}
         />
+        {isOwnProfile && profile ? (
+          <StoryComposerModal
+            open={storyComposerOpen}
+            onOpenChange={setStoryComposerOpen}
+            onPublished={() => {
+              void refetch();
+              storyViewer.open(profile.id);
+            }}
+          />
+        ) : null}
       </div>
   );
 }

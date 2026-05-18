@@ -1,5 +1,16 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { AtSign, BookOpen, BriefcaseBusiness, Heart, Luggage, MapPin, MoreHorizontal, Pencil, Sparkles } from "lucide-react";
+import {
+  AtSign,
+  BookOpen,
+  BriefcaseBusiness,
+  Heart,
+  Luggage,
+  MapPin,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Sparkles,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { StoryRing } from "@/components/ui/StoryRing";
 import { Button } from "@/components/ui/button";
@@ -72,6 +83,8 @@ export interface ProfileHeaderProps {
   followStats?: ReactNode;
   /** Abrir visualizador de stories (quando `profile.hasActiveStories`). */
   onViewStories?: () => void;
+  /** Abrir compositor de story (próprio perfil). */
+  onAddStory?: () => void;
 }
 
 export function ProfileHeader({
@@ -82,6 +95,7 @@ export function ProfileHeader({
   followSlot,
   followStats,
   onViewStories,
+  onAddStory,
 }: ProfileHeaderProps) {
   const resolvedBannerUrl = useMemo(
     () => (profile.bannerUrl ? resolvePublicMediaUrl(profile.bannerUrl) : ""),
@@ -125,24 +139,61 @@ export function ProfileHeader({
       <CardContent className={styles.content}>
         <div className={styles.topRow}>
           <div className={styles.avatarWrap}>
-            <StoryRing
-              avatarUrl={profile.avatarUrl}
-              displayName={profile.name}
-              hasActiveStories={profile.hasActiveStories ?? false}
-              size="lg"
-              avatarClassName={styles.avatar}
-              onClick={
-                profile.hasActiveStories && onViewStories
-                  ? (event) => {
-                      event.preventDefault();
-                      onViewStories();
-                    }
-                  : undefined
-              }
-            />
+            <div className="relative inline-flex">
+              <StoryRing
+                avatarUrl={profile.avatarUrl}
+                displayName={profile.name}
+                hasActiveStories={profile.hasActiveStories ?? false}
+                size="lg"
+                avatarClassName={styles.avatar}
+                onClick={
+                  profile.hasActiveStories && onViewStories
+                    ? (event) => {
+                        event.preventDefault();
+                        onViewStories();
+                      }
+                    : undefined
+                }
+              />
+              {isOwnProfile && onAddStory ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onAddStory();
+                  }}
+                  className={cn(
+                    "absolute -bottom-0.5 -right-0.5 flex size-9 items-center justify-center rounded-full",
+                    "border-[3px] border-[var(--woody-card)] bg-[var(--woody-nav)] text-white shadow-[0_4px_12px_rgba(10,10,10,0.2)]",
+                    "transition-transform hover:scale-105 active:scale-95",
+                    woodyFocus.ring
+                  )}
+                  aria-label="Adicionar story"
+                >
+                  <Plus className="size-4 stroke-[2.5]" aria-hidden />
+                </button>
+              ) : null}
+            </div>
           </div>
           {isOwnProfile && onEditProfile ? (
             <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>
+              {onAddStory ? (
+                <Button
+                  type="button"
+                  className={cn(
+                    styles.editBtn,
+                    woodyFocus.ring,
+                    "touch-manipulation min-h-10 border-[var(--woody-nav)]/28 bg-[var(--woody-nav)]/10"
+                  )}
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddStory}
+                >
+                  <Plus className="size-4 text-[var(--woody-nav)]" aria-hidden />
+                  Adicionar story
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 className={cn(styles.editBtn, woodyFocus.ring, "touch-manipulation min-h-10")}

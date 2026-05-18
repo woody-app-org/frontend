@@ -1,8 +1,30 @@
+import axios from "axios";
 import { mapUserFromApi } from "@/lib/apiMappers";
 import { api, getApiErrorMessage } from "@/lib/api";
 import { getStoredToken } from "@/features/auth/authTokenStorage";
-import type { Story } from "../types";
+import type { Story, StoryMediaType } from "../types";
 import { filterActiveStories, parseStoryMediaType } from "../lib/storyUtils";
+
+const STORY_LIMIT_REACHED_CODE = "STORY_LIMIT_REACHED";
+
+export class StoryLimitReachedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "StoryLimitReachedError";
+  }
+}
+
+export interface CreateStoryPayload {
+  mediaType: StoryMediaType;
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+  storageKey?: string;
+  text?: string;
+  backgroundColor?: string;
+}
+
+const STORY_LIMIT_MESSAGE =
+  "Você já tem 3 stories ativos. Quando um expirar, você pode publicar outro.";
 
 type ApiRecord = Record<string, unknown>;
 
@@ -36,6 +58,21 @@ export async function fetchUserStories(userId: string): Promise<Story[]> {
     return filterActiveStories(mapped);
   } catch (e) {
     throw new Error(getApiErrorMessage(e, "Não foi possível carregar os stories."));
+  }
+}
+
+export async function createStory(payload: CreateStoryPayload): Promise<Story> {
+  try {
+    const { data } = await api.post("/stories", payload);
+    return mapStoryFromApi(data as ApiRecord);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 409) {
+      const body = e.response.data as { code?: string; error?: string } | undefined;
+      if (body?.code === STORY_LIMIT_REACHED_CODE) {
+        throw new StoryLimitReachedError(body.error?.trim() || STORY_LIMIT_MESSAGE);
+      }
+    }
+    throw new Error(getApiErrorMessage(e, "Não foi possível publicar o story."));
   }
 }
 
