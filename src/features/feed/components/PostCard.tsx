@@ -6,7 +6,7 @@ import {
   CardContent,
   CardHeader,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StoryRing } from "@/components/ui/StoryRing";
 import { cn } from "@/lib/utils";
 import { woodyMotion, woodyPinPill } from "@/lib/woody-ui";
 import type { Post } from "../types";
@@ -96,6 +96,8 @@ export interface PostCardProps {
     isBoosting?: boolean;
     onBoost?: () => void | Promise<void>;
   };
+  /** Abre stories da autora quando `post.author.hasActiveStories`. */
+  onViewAuthorStories?: (authorId: string) => void;
 }
 
 export function PostCard({
@@ -111,6 +113,7 @@ export function PostCard({
   postListingContext = "feed",
   postSurface = "feed",
   communityBoost,
+  onViewAuthorStories,
 }: PostCardProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -121,13 +124,6 @@ export function PostCard({
   const suppressNextCardOpenFromMenu = () => {
     ignoreNextCardClickRef.current = true;
   };
-  const initials = post.author.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   const openPost = () => navigate(`/posts/${post.id}`, { state: buildPostDetailNavState(location) });
   const openPostComments = () =>
     navigate(`/posts/${post.id}?focus=comments`, { state: buildPostDetailNavState(location) });
@@ -223,19 +219,32 @@ export function PostCard({
       ) : null}
       <CardHeader className={cn(styles.header, hasContextBar && "pt-1 sm:pt-2")}>
         <div className={styles.headerLeft}>
-          <Link
-            to={`/profile/${post.author.id}`}
+          <div
             data-post-ignore-open="true"
-            className="flex min-w-0 flex-1 items-start gap-3 rounded-md -m-1.5 p-1.5 hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
-            aria-label={`Ver perfil de ${post.author.name}`}
+            className="flex min-w-0 flex-1 items-start gap-3 rounded-md -m-1.5 p-1.5"
             onClick={(event) => event.stopPropagation()}
           >
-            <Avatar size="default" className={styles.avatar}>
-              <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} />
-              <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            {/* TODO(stories-feed-dto): enriquecer author no feed com hasActiveStories quando a API expuser o campo. */}
+            <StoryRing
+              avatarUrl={post.author.avatarUrl}
+              displayName={post.author.name}
+              hasActiveStories={post.author.hasActiveStories ?? false}
+              size="md"
+              onClick={
+                post.author.hasActiveStories
+                  ? (event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onViewAuthorStories?.(post.author.id);
+                    }
+                  : undefined
+              }
+            />
+            <Link
+              to={`/profile/${post.author.id}`}
+              className="flex min-w-0 flex-1 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
+              aria-label={`Ver perfil de ${post.author.name}`}
+            >
             <div className={styles.headerMeta}>
               <div className="flex flex-wrap items-baseline gap-1">
                 <span className={styles.authorName}>{post.author.name}</span>
@@ -257,7 +266,8 @@ export function PostCard({
                 </span>
               </div>
             </div>
-          </Link>
+            </Link>
+          </div>
         </div>
         <PostOverflowMenu
           post={post}

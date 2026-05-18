@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { AtSign, BookOpen, BriefcaseBusiness, Heart, Luggage, MapPin, MoreHorizontal, Pencil, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StoryRing } from "@/components/ui/StoryRing";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -48,15 +48,6 @@ const styles = {
   bio: "mt-5 max-w-3xl whitespace-pre-wrap break-words text-[0.95rem] leading-7 text-[var(--woody-text)]/92",
 };
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 function InterestIcon({ label }: { label: string }) {
   const normalized = label.toLocaleLowerCase("pt-PT");
   const Icon = normalized.includes("leitur") || normalized.includes("livro")
@@ -79,6 +70,8 @@ export interface ProfileHeaderProps {
   followSlot?: ReactNode;
   /** Contadores seguidores / a seguir (clicáveis). */
   followStats?: ReactNode;
+  /** Abrir visualizador de stories (quando `profile.hasActiveStories`). */
+  onViewStories?: () => void;
 }
 
 export function ProfileHeader({
@@ -88,11 +81,8 @@ export function ProfileHeader({
   onEditProfile,
   followSlot,
   followStats,
+  onViewStories,
 }: ProfileHeaderProps) {
-  const resolvedAvatarUrl = useMemo(
-    () => (profile.avatarUrl ? resolvePublicMediaUrl(profile.avatarUrl) : ""),
-    [profile.avatarUrl]
-  );
   const resolvedBannerUrl = useMemo(
     () => (profile.bannerUrl ? resolvePublicMediaUrl(profile.bannerUrl) : ""),
     [profile.bannerUrl]
@@ -135,20 +125,21 @@ export function ProfileHeader({
       <CardContent className={styles.content}>
         <div className={styles.topRow}>
           <div className={styles.avatarWrap}>
-            <Avatar className={styles.avatar}>
-              <AvatarImage
-                src={resolvedAvatarUrl || undefined}
-                alt={profile.name}
-                onError={() => {
-                  if (import.meta.env.DEV) {
-                    console.warn("[Woody] Profile avatar failed to load", resolvedAvatarUrl);
-                  }
-                }}
-              />
-              <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xl font-bold text-[var(--woody-text)]">
-                {getInitials(profile.name)}
-              </AvatarFallback>
-            </Avatar>
+            <StoryRing
+              avatarUrl={profile.avatarUrl}
+              displayName={profile.name}
+              hasActiveStories={profile.hasActiveStories ?? false}
+              size="lg"
+              avatarClassName={styles.avatar}
+              onClick={
+                profile.hasActiveStories && onViewStories
+                  ? (event) => {
+                      event.preventDefault();
+                      onViewStories();
+                    }
+                  : undefined
+              }
+            />
           </div>
           {isOwnProfile && onEditProfile ? (
             <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StoryRing } from "@/components/ui/StoryRing";
 import { cn } from "@/lib/utils";
 import { Heart, UserPlus, Users } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -43,15 +43,6 @@ export interface RightPanelProps {
   className?: string;
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 const styles = {
   panel: "hidden md:flex min-h-0 w-full min-w-0 flex-col bg-transparent overflow-y-auto overflow-x-hidden",
   panelInner: "flex min-h-0 flex-col gap-3 pb-3",
@@ -66,7 +57,6 @@ const styles = {
   item: "flex min-w-0 items-center gap-2 px-3 py-2",
   itemLink:
     "flex min-w-0 min-h-0 flex-1 items-center gap-2.5 rounded-xl py-0.5 transition-colors hover:bg-black/[0.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--woody-card)]",
-  itemAvatar: "size-8 shrink-0 rounded-full ring-1 ring-black/[0.06]",
   itemName:
     "min-w-0 flex-1 text-[13px] font-semibold leading-tight text-[var(--woody-text)] break-words [overflow-wrap:anywhere]",
   emptyState: "flex items-center gap-2 px-3 py-2.5 text-xs text-[var(--woody-muted)]",
@@ -75,7 +65,12 @@ const styles = {
     "flex size-8 shrink-0 items-center justify-center rounded-lg text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/12 transition-colors",
 } as const;
 
-type UserItem = { id: string; name: string; avatarUrl: string | null };
+type UserItem = {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  hasActiveStories?: boolean;
+};
 
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -90,12 +85,12 @@ function SuggestionUserRow({ user }: { user: UserItem }) {
   return (
     <li className={styles.item}>
       <Link to={`/profile/${user.id}`} className={styles.itemLink} aria-label={`Ver perfil de ${user.name}`}>
-        <Avatar className={styles.itemAvatar}>
-          <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name} />
-          <AvatarFallback className="bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] text-[10px] leading-none">
-            {getInitials(user.name)}
-          </AvatarFallback>
-        </Avatar>
+        <StoryRing
+          avatarUrl={user.avatarUrl}
+          displayName={user.name}
+          hasActiveStories={user.hasActiveStories ?? false}
+          size="sm"
+        />
         <span className={styles.itemName}>{user.name}</span>
       </Link>
       <Link
@@ -116,12 +111,12 @@ function FollowingUserRow({ user }: { user: UserItem }) {
   return (
     <li className={styles.item}>
       <Link to={`/profile/${user.id}`} className={styles.itemLink} aria-label={`Ver perfil de ${user.name}`}>
-        <Avatar className={styles.itemAvatar}>
-          <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name} />
-          <AvatarFallback className="bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] text-[10px] leading-none">
-            {getInitials(user.name)}
-          </AvatarFallback>
-        </Avatar>
+        <StoryRing
+          avatarUrl={user.avatarUrl}
+          displayName={user.name}
+          hasActiveStories={user.hasActiveStories ?? false}
+          size="sm"
+        />
         <span className={styles.itemName}>{user.name}</span>
       </Link>
       {canDm ? (
@@ -132,7 +127,12 @@ function FollowingUserRow({ user }: { user: UserItem }) {
 }
 
 function toRow(u: User): UserItem {
-  return { id: u.id, name: u.name, avatarUrl: u.avatarUrl };
+  return {
+    id: u.id,
+    name: u.name,
+    avatarUrl: u.avatarUrl,
+    hasActiveStories: u.hasActiveStories,
+  };
 }
 
 export function RightPanel({ className }: RightPanelProps) {

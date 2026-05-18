@@ -65,6 +65,7 @@ export function mapUserFromApi(raw: ApiRecord): User {
     bio: raw.bio ?? undefined,
     pronouns: raw.pronouns ?? undefined,
     showProBadge: Boolean(raw.showProBadge),
+    hasActiveStories: Boolean(raw.hasActiveStories),
   };
 }
 
@@ -269,6 +270,7 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
         ? Number(raw.followingCount)
         : undefined,
     showProBadge: Boolean(raw.showProBadge),
+    hasActiveStories: Boolean(raw.hasActiveStories),
     subscription: raw.subscription != null ? mapSubscription(raw.subscription) : undefined,
   };
 }

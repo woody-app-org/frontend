@@ -63,6 +63,8 @@ export interface User {
   pronouns?: string;
   /** Benefício Pro visível em posts/comentários (API `showProBadge`). */
   showProBadge?: boolean;
+  /** Stories ativos nas últimas 24h (API `hasActiveStories`). */
+  hasActiveStories?: boolean;
 }
 
 export interface Community {

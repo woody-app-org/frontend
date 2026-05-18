@@ -21,6 +21,7 @@ import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
 import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
+import { showInfoToast } from "@/lib/toast/woodyToast";
 import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
 import { ProfileSignalButton } from "../components/ProfileSignalButton";
 import { ProfileSignalsTab } from "../components/ProfileSignalsTab";
@@ -189,6 +190,16 @@ function ProfilePageInner() {
               profile={profile}
               className="mb-6"
               isOwnProfile={isOwnProfile}
+              onViewStories={
+                profile.hasActiveStories
+                  ? () => {
+                      // TODO(stories-ui): abrir StoryViewerModal
+                      if (import.meta.env.DEV) {
+                        showInfoToast("Visualizador de stories em breve.");
+                      }
+                    }
+                  : undefined
+              }
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
               followStats={
                 <ProfileFollowStats
