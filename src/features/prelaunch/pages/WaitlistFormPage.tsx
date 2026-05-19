@@ -165,6 +165,9 @@ export function WaitlistFormPage() {
                   placeholder="Seu nome completo"
                   maxLength={120}
                   {...register("name")}
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  spellCheck
                   className={inputCls(!!errors.name)}
                 />
               </Field>
@@ -244,6 +247,12 @@ export function WaitlistFormPage() {
                     placeholder={currentOption?.placeholder ?? "seuusuario"}
                     maxLength={80}
                     {...register("socialUsername")}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    inputMode="text"
+                    translate="no"
                     className="h-11 min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
