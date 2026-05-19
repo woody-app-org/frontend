@@ -80,9 +80,29 @@ export function StoryViewerModal({
     storiesRef.current = stories;
   }, [stories]);
 
+  const resetViewerState = useCallback(() => {
+    setLoadState("idle");
+    setStories([]);
+    setCurrentIndex(0);
+    setSegmentProgress(0);
+    setPaused(false);
+    setHolding(false);
+    setMenuBlocked(false);
+    markedViewRef.current.clear();
+  }, []);
+
   const closeViewer = useCallback(() => {
+    resetViewerState();
     onOpenChange(false);
-  }, [onOpenChange]);
+  }, [onOpenChange, resetViewerState]);
+
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) resetViewerState();
+      onOpenChange(next);
+    },
+    [onOpenChange, resetViewerState]
+  );
 
   const handleCurrentStoryDeleted = useCallback(() => {
     if (!currentStory) return;
@@ -133,29 +153,25 @@ export function StoryViewerModal({
   }, [closeViewer, onStoriesConsumed]);
 
   const advanceStoryRef = useRef(advanceStory);
-  advanceStoryRef.current = advanceStory;
+  useEffect(() => {
+    advanceStoryRef.current = advanceStory;
+  }, [advanceStory]);
 
   useEffect(() => {
-    if (!open || !userId) {
-      setLoadState("idle");
-      setStories([]);
-      setCurrentIndex(0);
-      setSegmentProgress(0);
-      setPaused(false);
-      setHolding(false);
-      setMenuBlocked(false);
-      markedViewRef.current.clear();
-      return;
-    }
+    if (!open || !userId) return;
 
     let cancelled = false;
-    setLoadState("loading");
-    setStories([]);
-    setCurrentIndex(0);
-    setSegmentProgress(0);
-    markedViewRef.current.clear();
 
-    void fetchUserStories(userId)
+    void Promise.resolve()
+      .then(() => {
+        if (cancelled) return;
+        setLoadState("loading");
+        setStories([]);
+        setCurrentIndex(0);
+        setSegmentProgress(0);
+        markedViewRef.current.clear();
+      })
+      .then(() => fetchUserStories(userId))
       .then((list) => {
         if (cancelled) return;
         if (list.length === 0) {
@@ -184,14 +200,14 @@ export function StoryViewerModal({
     if (markedViewRef.current.has(currentStory.id)) return;
     markedViewRef.current.add(currentStory.id);
     void markStoryViewed(currentStory.id);
-  }, [open, currentStory?.id, currentStory]);
+  }, [open, currentStory]);
 
   useEffect(() => {
     if (!open || loadState !== "ready" || !currentStory) return;
     if (!isStoryNotExpired(currentStory)) {
       advanceStory();
     }
-  }, [open, loadState, currentStory?.id, currentStory?.expiresAt, advanceStory]);
+  }, [open, loadState, currentStory, advanceStory]);
 
   useEffect(() => {
     if (staticTimerRef.current) {
@@ -213,7 +229,7 @@ export function StoryViewerModal({
     return () => {
       if (staticTimerRef.current) clearInterval(staticTimerRef.current);
     };
-  }, [open, currentStory?.id, currentStory?.mediaType, isPaused, reduceMotion]);
+  }, [open, currentStory, isPaused, reduceMotion]);
 
   useEffect(() => {
     if (!open) return;
@@ -255,7 +271,7 @@ export function StoryViewerModal({
   const username = author?.username ? `@${author.username}` : "";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         overlayClassName="bg-black/90 backdrop-blur-sm"
         className={cn(

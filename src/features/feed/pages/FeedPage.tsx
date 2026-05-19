@@ -165,12 +165,12 @@ function FeedPageContent() {
   const selfFeedItem = useMemo(() => {
     if (!authUser?.id) return null;
     return storiesFeed.items.find((item) => item.userId === authUser.id || item.isSelf) ?? null;
-  }, [authUser?.id, storiesFeed.items]);
+  }, [authUser, storiesFeed.items]);
 
   const othersFeedItems = useMemo(() => {
     if (!authUser?.id) return storiesFeed.items;
     return storiesFeed.items.filter((item) => item.userId !== authUser.id && !item.isSelf);
-  }, [authUser?.id, storiesFeed.items]);
+  }, [authUser, storiesFeed.items]);
 
   const selfUserForBar = authUser
     ? {

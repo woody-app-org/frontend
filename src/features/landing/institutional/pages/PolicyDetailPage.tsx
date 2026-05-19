@@ -5,7 +5,7 @@ import {
   policyConfidentiality,
 } from "../content";
 import { InstitutionalBackLink } from "../components/InstitutionalBackLink";
-import { formatPolicyBadge } from "../components/InstitutionalPolicyCard";
+import { formatPolicyBadge } from "../formatPolicyBadge";
 import { InstitutionalPrimaryCta } from "../components/InstitutionalPrimaryCta";
 import { InstitutionalProse } from "../components/InstitutionalProse";
 import { INSTITUTIONAL_PATHS } from "../routes";

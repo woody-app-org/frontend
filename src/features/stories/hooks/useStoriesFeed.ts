@@ -11,8 +11,6 @@ export function useStoriesFeed(enabled: boolean) {
 
   const refresh = useCallback(async () => {
     if (!enabled) {
-      setItems([]);
-      setState("idle");
       return;
     }
 
@@ -31,8 +29,29 @@ export function useStoriesFeed(enabled: boolean) {
   }, [enabled]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    if (!enabled) return;
+
+    let cancelled = false;
+
+    void fetchStoriesFeed()
+      .then((next) => {
+        if (cancelled) return;
+        setItems(next);
+        setState("ready");
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        if (import.meta.env.DEV) {
+          console.warn("[Woody] stories feed failed", e);
+        }
+        setItems([]);
+        setState("error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled || typeof window === "undefined") return;
@@ -41,10 +60,13 @@ export function useStoriesFeed(enabled: boolean) {
     return () => window.removeEventListener(STORIES_CHANGED_EVENT, onChanged);
   }, [enabled, refresh]);
 
+  const activeState = enabled ? state : "idle";
+  const activeItems = enabled ? items : [];
+
   return {
-    items,
-    isLoading: state === "loading" || state === "idle",
-    isError: state === "error",
+    items: activeItems,
+    isLoading: enabled && (activeState === "loading" || activeState === "idle"),
+    isError: enabled && activeState === "error",
     refresh,
   };
 }
