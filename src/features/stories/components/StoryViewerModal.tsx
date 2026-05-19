@@ -6,7 +6,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { Link } from "react-router-dom";
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -51,12 +51,18 @@ export function StoryViewerModal({
   const [holding, setHolding] = useState(false);
 
   const slideRef = useRef<StoryViewerSlideHandle>(null);
+  const storiesRef = useRef<Story[]>([]);
   const markedViewRef = useRef<Set<string>>(new Set());
   const staticTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const staticStartedRef = useRef(0);
 
   const currentStory = stories[currentIndex] ?? null;
   const isPaused = paused || holding;
+  const hasPrev = currentIndex > 0;
+
+  useEffect(() => {
+    storiesRef.current = stories;
+  }, [stories]);
 
   const closeViewer = useCallback(() => {
     onOpenChange(false);
@@ -68,22 +74,24 @@ export function StoryViewerModal({
   }, []);
 
   const advanceStory = useCallback(() => {
-    setStories((prev) => {
-      const active = filterActiveStories(prev);
-      setCurrentIndex((idx) => {
-        const next = idx + 1;
-        if (next >= active.length) {
-          queueMicrotask(() => {
-            onStoriesConsumed?.();
-            closeViewer();
-          });
-          return idx;
-        }
-        return next;
-      });
-      return active;
-    });
+    const active = filterActiveStories(storiesRef.current);
+    if (active.length !== storiesRef.current.length) {
+      setStories(active);
+      storiesRef.current = active;
+    }
+
     setSegmentProgress(0);
+    setCurrentIndex((idx) => {
+      const next = idx + 1;
+      if (next >= active.length) {
+        queueMicrotask(() => {
+          onStoriesConsumed?.();
+          closeViewer();
+        });
+        return idx;
+      }
+      return next;
+    });
   }, [closeViewer, onStoriesConsumed]);
 
   const advanceStoryRef = useRef(advanceStory);
@@ -194,9 +202,13 @@ export function StoryViewerModal({
   }, [open]);
 
   const handleTapZone = (side: "left" | "right") => (e: ReactMouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    if (side === "left") goPrev();
-    else advanceStory();
+    if (side === "left") {
+      if (hasPrev) goPrev();
+    } else {
+      advanceStory();
+    }
   };
 
   const author = currentStory?.author;
@@ -292,29 +304,8 @@ export function StoryViewerModal({
               </button>
             </header>
 
-            <div
-              className="relative flex min-h-0 flex-1 flex-col"
-              onPointerDown={() => setHolding(true)}
-              onPointerUp={() => setHolding(false)}
-              onPointerCancel={() => setHolding(false)}
-              onPointerLeave={() => setHolding(false)}
-            >
-              <button
-                type="button"
-                className="absolute inset-y-0 left-0 z-10 w-[28%] max-w-[120px] cursor-default border-0 bg-transparent p-0"
-                aria-label="Story anterior"
-                onClick={handleTapZone("left")}
-                onPointerDown={(e) => e.stopPropagation()}
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 z-10 w-[38%] max-w-[160px] cursor-default border-0 bg-transparent p-0"
-                aria-label="Próximo story"
-                onClick={handleTapZone("right")}
-                onPointerDown={(e) => e.stopPropagation()}
-              />
-
-              <div className="relative min-h-0 flex-1">
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              <div className="relative z-0 min-h-0 flex-1">
                 {stories.map((story, i) => (
                   <div
                     key={story.id}
@@ -335,6 +326,67 @@ export function StoryViewerModal({
                   </div>
                 ))}
               </div>
+
+              <div className="absolute inset-0 z-20 flex">
+                <button
+                  type="button"
+                  className="h-full w-[30%] max-w-[140px] shrink-0 cursor-pointer border-0 bg-transparent p-0"
+                  aria-label="Story anterior"
+                  onClick={handleTapZone("left")}
+                  disabled={!hasPrev}
+                />
+                <div
+                  className="min-w-0 flex-1 touch-none"
+                  onPointerDown={() => setHolding(true)}
+                  onPointerUp={() => setHolding(false)}
+                  onPointerCancel={() => setHolding(false)}
+                  onPointerLeave={() => setHolding(false)}
+                />
+                <button
+                  type="button"
+                  className="h-full w-[30%] max-w-[140px] shrink-0 cursor-pointer border-0 bg-transparent p-0"
+                  aria-label="Próximo story"
+                  onClick={handleTapZone("right")}
+                />
+              </div>
+
+              {hasPrev ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goPrev();
+                  }}
+                  className={cn(
+                    "absolute left-1 top-1/2 z-30 flex -translate-y-1/2",
+                    "size-9 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm sm:left-2 sm:size-10",
+                    "transition-colors hover:bg-black/60",
+                    woodyFocus.ring
+                  )}
+                  aria-label="Story anterior"
+                >
+                  <ChevronLeft className="size-5 sm:size-6" aria-hidden />
+                </button>
+              ) : null}
+
+              {stories.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    advanceStory();
+                  }}
+                  className={cn(
+                    "absolute right-1 top-1/2 z-30 flex -translate-y-1/2",
+                    "size-9 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm sm:right-2 sm:size-10",
+                    "transition-colors hover:bg-black/60",
+                    woodyFocus.ring
+                  )}
+                  aria-label="Próximo story"
+                >
+                  <ChevronRight className="size-5 sm:size-6" aria-hidden />
+                </button>
+              ) : null}
             </div>
 
             <div className="pointer-events-none h-[max(0.5rem,env(safe-area-inset-bottom))] shrink-0" />
