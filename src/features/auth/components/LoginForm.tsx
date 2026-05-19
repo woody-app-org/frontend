@@ -8,6 +8,7 @@ import { withPasswordAutofillSync } from "../lib/passwordAutofillRegistration";
 import { loginSchema } from "../lib/validation";
 import type { LoginFormData } from "../lib/validation";
 import { cn } from "@/lib/utils";
+import { identifierInputProps } from "@/components/forms";
 
 const styles = {
   formTitle: "text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center md:text-left",
@@ -67,9 +68,8 @@ export function LoginForm({
         <AuthInputField
           label="Usuário"
           placeholder="Usuário ou e-mail"
-          type="text"
-          autoComplete="username"
           variant="maroon"
+          {...identifierInputProps}
           {...register("username")}
           error={formState.errors.username?.message}
         />

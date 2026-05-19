@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { IdentifierInput } from "@/components/forms";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -452,12 +453,11 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
               <label htmlFor={`${formId}-username`} className="text-sm font-medium text-[var(--woody-text)]">
                 Nome de usuário
               </label>
-              <Input
+              <IdentifierInput
                 id={`${formId}-username`}
                 value={username}
                 onChange={(ev) => setUsername(ev.target.value)}
                 className={inputClass}
-                autoComplete="username"
                 required
               />
               <p className="text-xs text-[var(--woody-muted)]">Apenas letras minúsculas, números, . e _</p>

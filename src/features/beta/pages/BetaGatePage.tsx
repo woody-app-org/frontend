@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { codeInputProps } from "@/components/forms";
 import woodyCat from "@/assets/new-cat.png";
 import { postValidateInvite } from "@/features/beta/betaInvite.api";
 import { setValidatedBetaInvite } from "@/features/beta/betaInvite.storage";
@@ -123,9 +124,7 @@ export function BetaGatePage() {
             </label>
             <input
               id="beta-invite-code"
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
+              {...codeInputProps}
               disabled={isBusy}
               value={code}
               onChange={(ev) => {

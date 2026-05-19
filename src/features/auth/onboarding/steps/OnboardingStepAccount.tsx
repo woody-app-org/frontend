@@ -19,6 +19,7 @@ import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 import { isBetaClosed } from "@/config/beta";
+import { codeInputProps, cpfInputProps, identifierInputProps } from "@/components/forms";
 
 /**
  * Etapa 1 — dados iniciais da conta (validação pronta para espelhar no backend).
@@ -78,9 +79,8 @@ export function OnboardingStepAccount() {
               <AuthInputField
                 label="Código de convite"
                 placeholder="O mesmo código do link ou da página de acesso"
-                type="text"
-                autoComplete="off"
                 variant="maroon"
+                {...codeInputProps}
                 valid={
                   !!draft.inviteCode?.trim() &&
                   (draft.inviteCode?.trim().length ?? 0) >= 4
@@ -98,10 +98,9 @@ export function OnboardingStepAccount() {
             <AuthInputField
               label="Nome de usuário"
               placeholder="ex: maria_silva"
-              type="text"
-              autoComplete="username"
               variant="maroon"
               valid={!!touchedFields.username && !errors.username && w.username.length > 0}
+              {...identifierInputProps}
               {...form.register("username")}
               error={errors.username?.message}
             />
@@ -152,10 +151,8 @@ export function OnboardingStepAccount() {
                   <AuthInputField
                     label="CPF"
                     placeholder="000.000.000-00"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
                     variant="maroon"
+                    {...cpfInputProps}
                     valid={
                       !!touchedFields.cpf && !fieldState.error && stripCpfDigits(field.value).length === 11
                     }

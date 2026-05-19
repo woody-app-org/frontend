@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import woodyCat from "@/assets/new-cat.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { HandleInput } from "@/components/forms";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -242,17 +243,11 @@ export function WaitlistFormPage() {
                   >
                     @
                   </span>
-                  <Input
+                  <HandleInput
                     id="socialUsername"
                     placeholder={currentOption?.placeholder ?? "seuusuario"}
                     maxLength={80}
                     {...register("socialUsername")}
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    inputMode="text"
-                    translate="no"
                     className="h-11 min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
