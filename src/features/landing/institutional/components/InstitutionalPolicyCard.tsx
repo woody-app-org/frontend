@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+/** Ex.: `01` → `# 0 1` (como no layout de referência). */
+export function formatPolicyBadge(badge: string): string {
+  const digits = badge.replace(/\D/g, "").padStart(2, "0").slice(-2);
+  return `# ${digits[0]} ${digits[1]}`;
+}
+
 export interface InstitutionalPolicyCardProps {
   badge: string;
   title: string;
@@ -23,11 +29,13 @@ export function InstitutionalPolicyCard({ badge, title, excerpt, to, className }
       <h2 className="text-center font-sans text-[0.72rem] font-extrabold uppercase leading-snug tracking-[0.06em] text-[var(--woody-ink)] sm:text-[0.78rem] md:text-[0.82rem]">
         {title}
       </h2>
-      <span className="mt-3 text-center text-[11px] font-semibold tracking-[0.18em] text-[#8a6f4a]">{badge}</span>
-      <p className="mt-6 flex-1 text-left font-serif text-[0.95rem] leading-[1.75] text-[var(--woody-ink)] md:text-[1rem]">
+      <span className="mt-3 text-center font-sans text-[11px] font-semibold tracking-[0.22em] text-[#8a6f4a]">
+        {formatPolicyBadge(badge)}
+      </span>
+      <p className="mt-6 flex-1 text-left font-serif text-[0.94rem] leading-[1.72] text-[var(--woody-ink)] md:text-[1rem] md:leading-[1.75]">
         {excerpt}
       </p>
-      <span className="mt-9 inline-flex w-fit items-center self-center rounded-md bg-[#556b2f] px-6 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition-[background-color,transform,box-shadow] duration-300 ease-out group-hover:bg-[#627836] group-hover:shadow-[0_8px_24px_-12px_rgba(61,79,47,0.45)]">
+      <span className="mt-8 inline-flex w-fit items-center self-center rounded-lg bg-[#556b2f] px-7 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_6px_20px_-10px_rgba(61,79,47,0.5)] transition-[background-color,transform,box-shadow] duration-300 ease-out group-hover:bg-[#627836] group-hover:shadow-[0_10px_28px_-12px_rgba(61,79,47,0.55)]">
         LER MAIS
       </span>
     </Link>

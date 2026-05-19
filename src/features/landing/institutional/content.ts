@@ -5,19 +5,24 @@
 
 export const mission = {
   title: "Nossa Missão Principal",
+  /** Primeiro parágrafo — visível antes de «LER MAIS». */
   lead:
-    "Esse não é um lugar para caber em caixas; é para quebrá-las. Um espaço propício para olhar umas às outras, sem manual, sem rótulo e sem medo — longe o bastante do controle masculino e perto o suficiente para entender que, se a sociedade nos quer fragmentadas, na Woody nos reconstruímos...",
+    "Esse não é um lugar para caber em caixas; é para quebrá-las. Um espaço propício para olhar umas às outras, sem manual, sem rótulo e sem medo — longe o bastante do controle masculino e perto o suficiente para entender que, se a sociedade nos quer fragmentadas, na Woody nos reconstruímos.",
   body: [
-    "Queremos que cada pessoa sinta ritmo, coragem e cuidado ao compartilhar voz, corpo e ideias. A curadoria não é sobre filtrar quem você é, mas sobre proteger o território comum onde a intimidade floresce sem violência.",
-    "Missão, para nós, é também prática diária: ferramentas claras, equipe atenta e comunidades que honram limites — para que a Woody continue a ser um lugar onde «sim» e «não» sejam ouvidos com a mesma seriedade.",
+    "Queremos que cada pessoa se sinta motivada, no seu ritmo, ao compartilhar ideias, memórias, registros. A curadoria Woody não é sobre filtrar quem você é, mas sobre proteger o território comum onde a intimidade é exposta sem violência.",
+    "Comprometimento, para nós, é prática diária: ferramentas claras, equipe atenta e trocas que honram limites — para que a Woody continue a ser um lugar onde «sim» e «não» sejam ouvidos com a mesma seriedade.",
   ],
 };
 
 export const whatIsWoody = {
   title: "O que é Woody?",
+  /** Trecho curto no hero mobile — o restante fica atrás de «Ler mais». */
+  mobilePreview:
+    'O nome Woody é alusivo ao "olhar amadeirado", expressão utilizada no meio lésbico. Em inglês, Woody significa "amadeirado".',
   paragraphs: [
-    'Woody é uma plataforma voltada para mulheres LBP (lésbicas, bissexuais, pansexuais) cis, e pessoas alinhadas ao feminino. O nome Woody é alusivo ao "olhar amadeirado", expressão utilizada no meio lésbico. Em inglês, woody significa "amadeirado". Para nós, Woody é também centelha, início de jornada, possibilidade de conexão e expansão, é green flag — pessoal e profissional.',
-    "Aqui, você encontra curadoria, gestão, suporte e espaço aberto para trocas sinceras, desafiadoras, reais, íntimas, leves, profundas. Diversidade é palavra-chave, que busca criar um ambiente sem barreiras, onde pessoas dispostas se atraem.",
+    'O nome Woody é alusivo ao "olhar amadeirado", expressão utilizada no meio lésbico. Em inglês, Woody significa "amadeirado". Para nós, Woody é também centelha, início de jornada, possibilidade de conexão e expansão, é green flag — pessoal e profissional.',
+    'Woody é uma plataforma voltada para mulheres LBP (lésbicas, bissexuais, pansexuais) cis, e pessoas alinhadas ao feminino.',
+    'Aqui, você encontra curadoria, gestão, suporte e espaço aberto para trocas sinceras, desafiadoras, reais, íntimas, leves, profundas. Diversidade é palavra-chave, que busca criar um ambiente sem barreiras, onde pessoas dispostas se atraem.',
   ],
 };
 
@@ -32,53 +37,61 @@ export const policiesIndexIntro =
 
 export const policyConfidentiality = {
   title: "POLITICA DE CONFIDENCIALIDADE",
-  badge: "#01",
+  badge: "01",
   excerpt:
     "Ao participar da Woody, você concorda que mensagens, imagens, áudios, arquivos e informações compartilhadas neste espaço são confidenciais e restritas às pessoas envolvidas. É proibido copiar, gravar, divulgar, encaminhar ou fazer capturas de tela para terceiros ou redes sociais.",
   sections: [
     {
       heading: "1. Princípio geral",
-      body: "Tratamos dados pessoais com finalidade limitada, transparência e medidas técnicas razoáveis. Só pedimos o necessário para criar conta, moderar, faturar (quando aplicável) e melhorar o produto.",
+      body: "Tratamos dados pessoais com finalidade limitada, transparência e medidas técnicas razoáveis. Solicitamos apenas o necessário para criar a conta, moderar a plataforma, processar pagamentos, quando aplicável, e melhorar o serviço.",
     },
     {
       heading: "2. Mensagens e anexos",
-      body: "O conteúdo que envias em conversas e publicações destina-se a ser visível apenas aos destinatários e contextos que escolheres. A equipa pode aceder a metadados e, em caso de denúncia fundamentada, a excertos para investigação e cumprimento legal.",
+      body: "Conteúdos enviados em conversas e publicações ficam visíveis apenas aos destinatários e nos contextos escolhidos pelas usuárias. A equipe poderá acessar metadados e, em caso de denúncia fundamentada, trechos necessários para apuração e cumprimento legal.",
     },
     {
       heading: "3. Retenção e apagamento",
-      body: "Guardamos informação pelo tempo necessário a prestar o serviço, resolver litígios e cumprir obrigações legais. Podes solicitar apagamento da conta; alguns registos mínimos podem manter-se anonimizados por motivos legais ou de segurança.",
+      body: "Mantemos informações pelo tempo necessário para prestar o serviço, resolver conflitos e cumprir obrigações legais. Você pode solicitar o apagamento da conta; alguns registros mínimos poderão ser mantidos de forma anonimizada por razões legais ou de segurança.",
     },
     {
-      heading: "4. Os teus direitos",
-      body: "Dependendo da jurisdição, podes ter direito de acesso, retificação, oposição ou portabilidade. Contacta o suporte indicando o email da conta — respondemos no prazo legal aplicável.",
+      heading: "4. Seus direitos",
+      body: "Você pode solicitar acesso, correção, exclusão, portabilidade ou outras informações sobre o uso dos seus dados, conforme previsto na legislação aplicável. Para exercer esses direitos, entre em contato com o suporte usando o e-mail vinculado à sua conta. A Woody responderá dentro do prazo legal.",
     },
   ],
 };
 
 export const policyAccess = {
-  title: "POLITICA RESTRITIVA DE ACESSO",
-  badge: "#02",
+  title: "POLÍTICA RESTRITIVA DE ACESSO",
+  badge: "02",
   excerpt:
-    "A Woody é um espaço reservado para mulheres LBP e pessoas alinhadas ao feminino, conforme a proposta, os valores e as regras da plataforma Não é permitido o acesso, a permanência ou a utilização da Woody por pessoas fora desse público,",
+    "A Woody é uma plataforma criada para mulheres lésbicas, bissexuais e pansexuais, bem como para pessoas alinhadas ao feminino que se reconheçam dentro da proposta da comunidade. O acesso, a permanência e o uso da plataforma são permitidos apenas ao público autorizado pelas regras da Woody. Pessoas fora desse público não devem criar conta, utilizar perfis de terceiros, acessar comunidades internas ou participar indiretamente da plataforma.",
   sections: [
     {
-      heading: "1. Público-alvo",
-      body: "A definição de público existe para proteger quem aqui se sente a ver — não para dividir com violência. Contas que falsifiquem identidade ou motivem ódio contra o público permitido serão removidas.",
+      heading: "1. Público permitido",
+      body: "A Woody existe para oferecer um espaço mais seguro, direcionado e coerente com as necessidades do seu público. A definição de público-alvo não tem como finalidade promover ataques, humilhações ou discriminação contra pessoas externas à comunidade, mas preservar a proposta da plataforma e a segurança de quem participa dela. Contas que apresentem falsidade de identidade, uso indevido de acesso, tentativa de burlar as regras ou comportamento incompatível com a proposta da Woody poderão ser suspensas ou removidas.",
     },
     {
-      heading: "2. Verificação e limites",
-      body: "Podemos pedir verificações adicionais quando houver risco de fraude, segurança da comunidade ou pedidos legais. Recusas injustificadas podem impedir o uso de certas funcionalidades.",
+      heading: "2. Acesso indevido",
+      body: "É proibido ceder, emprestar, vender, compartilhar ou facilitar o acesso à conta para pessoas que não façam parte do público autorizado. Também é proibido criar conta com informações falsas, utilizar perfil de outra pessoa ou participar da plataforma com a intenção de observar, expor, constranger, provocar, assediar ou coletar informações sobre usuárias.",
     },
     {
-      heading: "3. Convites e comunidades",
-      body: "Comunidades privadas podem definir critérios extra, desde que não contradizam a lei nem a dignidade humana. Moderadoras e anfitriãs são responsáveis por aplicar regras de forma consistente.",
+      heading: "3. Verificação e segurança",
+      body: "A Woody poderá solicitar informações ou verificações adicionais quando houver indícios de fraude, denúncia, risco à segurança da comunidade, uso indevido da conta ou necessidade de cumprimento legal. A recusa injustificada em colaborar com verificações necessárias poderá limitar funcionalidades, suspender o acesso ou resultar na remoção da conta.",
+    },
+    {
+      heading: "4. Comunidades privadas",
+      body: "Comunidades privadas poderão adotar critérios próprios de entrada e permanência, desde que respeitem as regras gerais da Woody, a legislação aplicável e a dignidade das pessoas envolvidas. Moderadoras e anfitriãs devem aplicar as regras de forma coerente, responsável e sem abuso de autoridade.",
+    },
+    {
+      heading: "5. Medidas aplicáveis",
+      body: "O descumprimento desta política poderá resultar em advertência, limitação de funcionalidades, suspensão temporária, remoção da conta ou outras medidas necessárias para proteger a comunidade. A Woody poderá analisar cada caso conforme sua gravidade, contexto e impacto sobre a segurança da plataforma.",
     },
   ],
 };
 
 export const policyBan = {
   title: "Como evitar banimento na Woody",
-  badge: "#03",
+  badge: "03",
   excerpt:
     "Um dos pilares da Woody é proteger a proposta da plataforma e garantir que ela seja utilizada apenas por quem faz parte do público autorizado. Por isso, não compartilhe sua conta, senha, convite ou qualquer forma de acesso com outras pessoas. Seu login é pessoal, intransferível e merece ser tratado com cuidado.",
   sections: [

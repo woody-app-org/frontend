@@ -49,6 +49,7 @@ export function MissionNarrativeSection({ embedInLanding = false }: MissionNarra
                 variant="limeSolid"
                 showChevron={false}
                 onClick={() => setExpanded((e) => !e)}
+                className="border border-[#6a9a38]/90 bg-gradient-to-b from-[#a5d45c] to-[#8dbf43] hover:from-[#b0dc65] hover:to-[#9ad154]"
               >
                 {expanded ? "LER MENOS" : "LER MAIS"}
               </InstitutionalPrimaryCta>

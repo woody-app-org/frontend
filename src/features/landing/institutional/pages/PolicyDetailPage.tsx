@@ -5,6 +5,7 @@ import {
   policyConfidentiality,
 } from "../content";
 import { InstitutionalBackLink } from "../components/InstitutionalBackLink";
+import { formatPolicyBadge } from "../components/InstitutionalPolicyCard";
 import { InstitutionalPrimaryCta } from "../components/InstitutionalPrimaryCta";
 import { InstitutionalProse } from "../components/InstitutionalProse";
 import { INSTITUTIONAL_PATHS } from "../routes";
@@ -28,7 +29,7 @@ export function PolicyDetailPage() {
         <InstitutionalBackLink />
 
         <article className="mx-auto max-w-3xl rounded-[2rem] bg-white px-8 py-12 md:px-12 md:py-14">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#8a6f4a]">{doc.badge}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#8a6f4a]">{formatPolicyBadge(doc.badge)}</p>
           <h1 className="mt-3 font-sans text-[clamp(1.35rem,3vw,2rem)] font-extrabold uppercase leading-snug tracking-[0.04em] text-[var(--woody-ink)]">
             {doc.title}
           </h1>
