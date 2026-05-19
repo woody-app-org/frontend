@@ -7,12 +7,20 @@ import { woodyFocus } from "@/lib/woody-ui";
 
 export type StoryRingSize = "sm" | "md" | "bar" | "lg" | "xl";
 
+/** Altura/largura do círculo externo no tamanho `bar` (foto + margens + aro). */
+export const STORY_RING_BAR_OUTER_CLASS = "size-[4.3125rem]";
+
 export interface StoryRingProps {
   avatarUrl?: string | null;
   displayName: string;
   hasActiveStories?: boolean;
   /** Quando omitido e há stories ativos, trata-se como não visualizado (aro mais vivo). */
   hasUnviewedStories?: boolean;
+  /**
+   * Mesmo diâmetro do aro ativo, com borda neutra — alinha “Adicionar” na StoriesBar.
+   * Só faz efeito quando `hasActiveStories` é false.
+   */
+  placeholderRing?: boolean;
   size?: StoryRingSize;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   className?: string;
@@ -82,6 +90,7 @@ export function StoryRing({
   displayName,
   hasActiveStories = false,
   hasUnviewedStories,
+  placeholderRing = false,
   size = "md",
   onClick,
   className,
@@ -89,6 +98,7 @@ export function StoryRing({
 }: StoryRingProps) {
   const reduceMotion = usePrefersReducedMotion();
   const sizeStyle = SIZE_STYLES[size];
+  const useBarOuter = size === "bar";
 
   const resolvedAvatarUrl = useMemo(
     () => (avatarUrl ? resolvePublicMediaUrl(avatarUrl) : ""),
@@ -99,7 +109,7 @@ export function StoryRing({
     <Avatar
       className={cn(
         "size-full rounded-full bg-[var(--woody-card)]",
-        !hasActiveStories && "ring-2 ring-[var(--woody-card)]",
+        !hasActiveStories && !placeholderRing && "ring-2 ring-[var(--woody-card)]",
         avatarClassName
       )}
     >
@@ -146,6 +156,29 @@ export function StoryRing({
       sizedClip(avatarFace)
     );
 
+    if (placeholderRing) {
+      return (
+        <div
+          className={cn(
+            "inline-flex shrink-0 items-center justify-center rounded-full",
+            sizeStyle.ringPad,
+            "bg-[var(--woody-nav)]/22",
+            useBarOuter && STORY_RING_BAR_OUTER_CLASS,
+            className
+          )}
+        >
+          <div
+            className={cn(
+              "flex items-center justify-center overflow-hidden rounded-full bg-[var(--woody-card)]",
+              sizeStyle.innerPad
+            )}
+          >
+            {idle}
+          </div>
+        </div>
+      );
+    }
+
     return <div className={cn("inline-flex shrink-0", className)}>{idle}</div>;
   }
 
@@ -173,6 +206,7 @@ export function StoryRing({
         "inline-flex shrink-0 items-center justify-center rounded-full",
         sizeStyle.ringPad,
         ringToneClass(hasUnviewedStories),
+        useBarOuter && STORY_RING_BAR_OUTER_CLASS,
         className
       )}
       data-has-active-stories="true"

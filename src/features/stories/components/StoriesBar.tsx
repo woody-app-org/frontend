@@ -1,21 +1,10 @@
 import { Plus } from "lucide-react";
 import type { MouseEvent, ReactNode } from "react";
-import { StoryRing } from "@/components/ui/StoryRing";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StoryRing, STORY_RING_BAR_OUTER_CLASS } from "@/components/ui/StoryRing";
 import { Skeleton } from "@/components/ui/skeleton";
-import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import type { StoryFeedItem } from "../types";
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 function truncateLabel(value: string, max = 10): string {
   if (value.length <= max) return value;
@@ -23,16 +12,14 @@ function truncateLabel(value: string, max = 10): string {
 }
 
 const scrollClass = cn(
-  "flex gap-3 overflow-x-auto overscroll-x-contain py-1",
+  "flex items-start gap-3 overflow-x-auto overscroll-x-contain py-1",
   "scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
   "snap-x snap-mandatory"
 );
 
-/** Alinhado ao tamanho `bar` do StoryRing (foto + anéis). */
-const AVATAR_SIZE_CLASS = "size-[3.625rem]";
 const itemShellClass = "flex w-[5.25rem] shrink-0 snap-start flex-col items-center";
 const addBadgeClass =
-  "absolute -bottom-0.5 -right-0.5 flex size-7 items-center justify-center rounded-full border-2 border-[var(--woody-bg)] bg-[var(--woody-nav)] text-white shadow-sm";
+  "absolute -bottom-0.5 -right-0.5 z-10 flex size-7 items-center justify-center rounded-full border-2 border-[var(--woody-bg)] bg-[var(--woody-nav)] text-white shadow-sm";
 
 export interface StoriesBarProps {
   className?: string;
@@ -70,7 +57,7 @@ export function StoriesBar({
         <div className={scrollClass}>
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className={itemShellClass}>
-              <Skeleton className={cn(AVATAR_SIZE_CLASS, "rounded-full bg-[var(--woody-nav)]/12")} />
+              <Skeleton className={cn(STORY_RING_BAR_OUTER_CLASS, "rounded-full bg-[var(--woody-nav)]/12")} />
               <Skeleton className="mt-2 h-2.5 w-14 rounded bg-[var(--woody-nav)]/10" />
             </div>
           ))}
@@ -137,9 +124,9 @@ function StoriesBarItem({
       <button
         type="button"
         onClick={onActivate}
-        className={cn("group flex flex-col items-center gap-1.5", woodyFocus.ring)}
+        className={cn("group flex w-full flex-col items-center gap-1.5", woodyFocus.ring)}
       >
-        {children}
+        <div className={cn("flex items-center justify-center", STORY_RING_BAR_OUTER_CLASS)}>{children}</div>
         <span className="max-w-[5.25rem] truncate text-center text-xs font-medium leading-tight text-[var(--woody-muted)] group-hover:text-[var(--woody-text)]">
           {label}
         </span>
@@ -163,55 +150,36 @@ function SelfStoryAvatar({
   onAddStory: () => void;
   onViewStories: () => void;
 }) {
-  if (hasActiveStories) {
-    return (
-      <div className="relative inline-flex">
-        <StoryRing
-          avatarUrl={avatarUrl}
-          displayName={displayName}
-          hasActiveStories
-          hasUnviewedStories={hasUnviewedStories}
-          size="bar"
-          onClick={(e: MouseEvent<HTMLButtonElement>) => {
-            e.preventDefault();
-            onViewStories();
-          }}
-        />
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onAddStory();
-          }}
-          className={cn(addBadgeClass, "transition-transform hover:scale-105 active:scale-95", woodyFocus.ring)}
-          aria-label="Adicionar story"
-        >
-          <Plus className="size-4 stroke-[2.5]" aria-hidden />
-        </button>
-      </div>
-    );
-  }
-
-  const resolved = avatarUrl ? resolvePublicMediaUrl(avatarUrl) : undefined;
   return (
-    <div className="relative inline-flex">
-      <Avatar
-        className={cn(
-          AVATAR_SIZE_CLASS,
-          "overflow-hidden rounded-full border border-black/[0.06] bg-[var(--woody-card)]"
-        )}
+    <div className={cn("relative flex items-center justify-center", STORY_RING_BAR_OUTER_CLASS)}>
+      <StoryRing
+        avatarUrl={avatarUrl}
+        displayName={displayName}
+        hasActiveStories={hasActiveStories}
+        hasUnviewedStories={hasUnviewedStories}
+        placeholderRing={!hasActiveStories}
+        size="bar"
+        onClick={
+          hasActiveStories
+            ? (e: MouseEvent<HTMLButtonElement>) => {
+                e.preventDefault();
+                onViewStories();
+              }
+            : undefined
+        }
+      />
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onAddStory();
+        }}
+        className={cn(addBadgeClass, "transition-transform hover:scale-105 active:scale-95", woodyFocus.ring)}
+        aria-label="Adicionar story"
       >
-        {resolved ? (
-          <AvatarImage src={resolved} alt="" className="size-full object-cover object-center" />
-        ) : null}
-        <AvatarFallback className="bg-[var(--woody-nav)]/12 text-sm font-semibold text-[var(--woody-nav)]">
-          {getInitials(displayName)}
-        </AvatarFallback>
-      </Avatar>
-      <span className={addBadgeClass} aria-hidden>
-        <Plus className="size-4 stroke-[2.5]" />
-      </span>
+        <Plus className="size-4 stroke-[2.5]" aria-hidden />
+      </button>
     </div>
   );
 }
