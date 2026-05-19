@@ -21,6 +21,7 @@ import { usePrefersReducedMotion } from "@/features/landing/motion/usePrefersRed
 import type { Story } from "../types";
 import {
   filterActiveStories,
+  isSameUserId,
   isStoryNotExpired,
   STORY_STATIC_DURATION_MS,
 } from "../lib/storyUtils";
@@ -56,6 +57,7 @@ export function StoryViewerModal({
   const [segmentProgress, setSegmentProgress] = useState(0);
   const [paused, setPaused] = useState(false);
   const [holding, setHolding] = useState(false);
+  const [menuBlocked, setMenuBlocked] = useState(false);
 
   const slideRef = useRef<StoryViewerSlideHandle>(null);
   const storiesRef = useRef<Story[]>([]);
@@ -64,13 +66,14 @@ export function StoryViewerModal({
   const staticStartedRef = useRef(0);
 
   const currentStory = stories[currentIndex] ?? null;
-  const isPaused = paused || holding;
+  const isPaused = paused || holding || menuBlocked;
   const hasPrev = currentIndex > 0;
 
   const canDeleteCurrent = Boolean(
     authUser?.id &&
       currentStory &&
-      (currentStory.authorUserId === authUser.id || currentStory.author.id === authUser.id)
+      (isSameUserId(currentStory.authorUserId, authUser.id) ||
+        isSameUserId(currentStory.author.id, authUser.id))
   );
 
   useEffect(() => {
@@ -140,6 +143,7 @@ export function StoryViewerModal({
       setSegmentProgress(0);
       setPaused(false);
       setHolding(false);
+      setMenuBlocked(false);
       markedViewRef.current.clear();
       return;
     }
@@ -331,6 +335,7 @@ export function StoryViewerModal({
                   <StoryViewerMoreMenu
                     storyId={currentStory.id}
                     onDeleted={handleCurrentStoryDeleted}
+                    onInteractionChange={setMenuBlocked}
                   />
                 ) : null}
                 <button

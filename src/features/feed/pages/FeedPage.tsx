@@ -172,11 +172,6 @@ function FeedPageContent() {
     return storiesFeed.items.filter((item) => item.userId !== authUser.id && !item.isSelf);
   }, [authUser?.id, storiesFeed.items]);
 
-  const showStoriesBar =
-    isAuthenticated &&
-    !storiesFeed.isError &&
-    (storiesFeed.isLoading || authUser != null || othersFeedItems.length > 0);
-
   const selfUserForBar = authUser
     ? {
         id: authUser.id,
@@ -185,6 +180,9 @@ function FeedPageContent() {
         avatarUrl: authUser.avatarUrl ?? null,
       }
     : null;
+
+  const showStoriesBar =
+    isAuthenticated && !storiesFeed.isError && (storiesFeed.isLoading || Boolean(selfUserForBar));
 
   return (
     <div

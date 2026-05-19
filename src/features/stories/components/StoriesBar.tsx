@@ -55,7 +55,7 @@ export function StoriesBar({
     return (
       <div className={cn("w-full min-w-0", className)} aria-busy aria-label="A carregar stories">
         <div className={scrollClass}>
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className={itemShellClass}>
               <Skeleton className={cn(STORY_RING_BAR_OUTER_CLASS, "rounded-full bg-[var(--woody-nav)]/12")} />
               <Skeleton className="mt-2 h-2.5 w-14 rounded bg-[var(--woody-nav)]/10" />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,11 +17,22 @@ export interface StoryViewerMoreMenuProps {
   storyId: string;
   disabled?: boolean;
   onDeleted: () => void;
+  /** Pausa o progresso do story enquanto o menu/confirmação está aberto. */
+  onInteractionChange?: (blocked: boolean) => void;
 }
 
-export function StoryViewerMoreMenu({ storyId, disabled = false, onDeleted }: StoryViewerMoreMenuProps) {
+export function StoryViewerMoreMenu({
+  storyId,
+  disabled = false,
+  onDeleted,
+  onInteractionChange,
+}: StoryViewerMoreMenuProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    onInteractionChange?.(confirmOpen || isDeleting);
+  }, [confirmOpen, isDeleting, onInteractionChange]);
 
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
@@ -41,7 +52,7 @@ export function StoryViewerMoreMenu({ storyId, disabled = false, onDeleted }: St
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             type="button"

@@ -26,9 +26,10 @@ export function DeleteStoryConfirmationDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => !isDeleting && onOpenChange(next)}>
       <DialogContent
+        overlayClassName="z-[115] bg-black/65 backdrop-blur-[2px]"
         className={cn(
           "z-[120] border-[var(--woody-accent)]/15 sm:max-w-md",
-          "gap-0 p-0 overflow-hidden"
+          "gap-0 p-0 overflow-hidden mx-4 w-[calc(100vw-2rem)] max-w-md"
         )}
       >
         <DialogHeader className="px-4 pt-5 pb-2 sm:px-6 sm:pt-6">
