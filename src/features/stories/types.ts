@@ -2,6 +2,18 @@ import type { User } from "@/domain/types";
 
 export type StoryMediaType = "image" | "video" | "text";
 
+/** Entrada da barra horizontal de stories no feed (`GET /stories/feed`). */
+export interface StoryFeedItem {
+  userId: string;
+  displayName: string;
+  username: string;
+  avatarUrl?: string | null;
+  hasActiveStories: boolean;
+  hasUnviewedStories: boolean;
+  lastStoryCreatedAt?: string | null;
+  isSelf?: boolean;
+}
+
 export interface Story {
   id: string;
   authorUserId: string;

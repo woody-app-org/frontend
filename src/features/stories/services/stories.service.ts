@@ -2,7 +2,7 @@ import axios from "axios";
 import { mapUserFromApi } from "@/lib/apiMappers";
 import { api, getApiErrorMessage } from "@/lib/api";
 import { getStoredToken } from "@/features/auth/authTokenStorage";
-import type { Story, StoryMediaType } from "../types";
+import type { Story, StoryFeedItem, StoryMediaType } from "../types";
 import { filterActiveStories, parseStoryMediaType } from "../lib/storyUtils";
 
 const STORY_LIMIT_REACHED_CODE = "STORY_LIMIT_REACHED";
@@ -48,6 +48,29 @@ export function mapStoryFromApi(raw: ApiRecord): Story {
     viewCount: Number(raw.viewCount ?? 0),
     hasViewedByMe: Boolean(raw.hasViewedByMe),
   };
+}
+
+export function mapStoryFeedItemFromApi(raw: ApiRecord): StoryFeedItem {
+  return {
+    userId: asString(raw.userId),
+    displayName: asString(raw.displayName),
+    username: asString(raw.username),
+    avatarUrl: raw.avatarUrl != null ? asString(raw.avatarUrl) : null,
+    hasActiveStories: raw.hasActiveStories !== false,
+    hasUnviewedStories: Boolean(raw.hasUnviewedStories),
+    lastStoryCreatedAt: raw.lastStoryCreatedAt != null ? asString(raw.lastStoryCreatedAt) : null,
+    isSelf: Boolean(raw.isSelf),
+  };
+}
+
+export async function fetchStoriesFeed(): Promise<StoryFeedItem[]> {
+  try {
+    const { data } = await api.get("/stories/feed");
+    const list = Array.isArray(data) ? data : [];
+    return list.map((row) => mapStoryFeedItemFromApi(row as ApiRecord));
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível carregar os stories."));
+  }
 }
 
 export async function fetchUserStories(userId: string): Promise<Story[]> {

@@ -36,6 +36,7 @@ import {
   STORY_VIDEO_MAX_DURATION_SEC,
   STORY_VIDEO_MIME_OK,
 } from "../lib/storyMediaLimits";
+import { dispatchStoriesChanged } from "../lib/storyEvents";
 import type { Story } from "../types";
 
 type ComposerKind = "image" | "video" | "text";
@@ -224,6 +225,7 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
         });
       }
       showSuccessToast("Story publicado.");
+      dispatchStoriesChanged();
       onPublished?.(story);
       handleClose();
     } catch (e) {

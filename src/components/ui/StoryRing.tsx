@@ -1,11 +1,11 @@
-import { useMemo, type MouseEvent } from "react";
+import { useMemo, type MouseEvent, type ReactNode } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { usePrefersReducedMotion } from "@/features/landing/motion/usePrefersReducedMotion";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 
-export type StoryRingSize = "sm" | "md" | "lg" | "xl";
+export type StoryRingSize = "sm" | "md" | "bar" | "lg" | "xl";
 
 export interface StoryRingProps {
   avatarUrl?: string | null;
@@ -35,6 +35,13 @@ const SIZE_STYLES: Record<
     fallback: "text-xs",
     ringPad: "p-[2px]",
     innerPad: "p-[1.5px]",
+  },
+  /** Barra horizontal de stories no feed (estilo rede social). */
+  bar: {
+    avatar: "size-[3.625rem]",
+    fallback: "text-sm font-semibold",
+    ringPad: "p-[3px]",
+    innerPad: "p-[2.5px]",
   },
   lg: {
     avatar: "size-24 sm:size-28",
@@ -66,6 +73,10 @@ function ringToneClass(hasUnviewedStories: boolean | undefined): string {
     : "bg-gradient-to-tr from-[var(--woody-nav)]/50 via-[var(--woody-nav)]/38 to-[var(--woody-nav)]/50 shadow-[0_0_0_1px_rgba(139,195,74,0.18)]";
 }
 
+function AvatarClip({ className, children }: { className?: string; children: ReactNode }) {
+  return <div className={className}>{children}</div>;
+}
+
 export function StoryRing({
   avatarUrl,
   displayName,
@@ -84,15 +95,19 @@ export function StoryRing({
     [avatarUrl]
   );
 
-  const avatarNode = (
+  const avatarFace = (
     <Avatar
       className={cn(
-        sizeStyle.avatar,
-        "rounded-full bg-[var(--woody-card)] ring-2 ring-[var(--woody-card)]",
+        "size-full rounded-full bg-[var(--woody-card)]",
+        !hasActiveStories && "ring-2 ring-[var(--woody-card)]",
         avatarClassName
       )}
     >
-      <AvatarImage src={resolvedAvatarUrl || undefined} alt={displayName} />
+      <AvatarImage
+        src={resolvedAvatarUrl || undefined}
+        alt={displayName}
+        className="size-full object-cover object-center"
+      />
       <AvatarFallback
         className={cn(
           "rounded-full bg-[var(--woody-nav)]/10 font-semibold text-[var(--woody-text)]",
@@ -104,41 +119,72 @@ export function StoryRing({
     </Avatar>
   );
 
-  const content = onClick ? (
+  const clickMotion =
+    !reduceMotion && hasActiveStories && hasUnviewedStories !== false
+      ? "transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+      : undefined;
+
+  const sizedClip = (child: ReactNode) => (
+    <AvatarClip className={cn(sizeStyle.avatar, "overflow-hidden rounded-full")}>{child}</AvatarClip>
+  );
+
+  if (!hasActiveStories) {
+    const idle = onClick ? (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "block shrink-0 rounded-full border-0 bg-transparent p-0 leading-none touch-manipulation",
+          sizeStyle.avatar,
+          woodyFocus.ring
+        )}
+        aria-label={`Ver stories de ${displayName}`}
+      >
+        {avatarFace}
+      </button>
+    ) : (
+      sizedClip(avatarFace)
+    );
+
+    return <div className={cn("inline-flex shrink-0", className)}>{idle}</div>;
+  }
+
+  const ringedInteractive = onClick ? (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full touch-manipulation",
+        "block shrink-0 rounded-full border-0 bg-transparent p-0 leading-none touch-manipulation",
+        sizeStyle.avatar,
         woodyFocus.ring,
-        !reduceMotion &&
-          hasActiveStories &&
-          hasUnviewedStories !== false &&
-          "transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+        clickMotion
       )}
       aria-label={`Ver stories de ${displayName}`}
     >
-      {avatarNode}
+      {avatarFace}
     </button>
   ) : (
-    avatarNode
+    sizedClip(avatarFace)
   );
-
-  if (!hasActiveStories) {
-    return <div className={cn("inline-flex shrink-0", className)}>{content}</div>;
-  }
 
   return (
     <div
       className={cn(
-        "inline-flex shrink-0 rounded-full",
+        "inline-flex shrink-0 items-center justify-center rounded-full",
         sizeStyle.ringPad,
         ringToneClass(hasUnviewedStories),
         className
       )}
       data-has-active-stories="true"
     >
-      <div className={cn("rounded-full bg-[var(--woody-card)]", sizeStyle.innerPad)}>{content}</div>
+      <div
+        className={cn(
+          "flex items-center justify-center overflow-hidden rounded-full bg-[var(--woody-card)]",
+          sizeStyle.innerPad
+        )}
+      >
+        {ringedInteractive}
+      </div>
     </div>
   );
 }

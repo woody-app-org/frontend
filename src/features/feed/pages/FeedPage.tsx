@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FeedLayout } from "../components/FeedLayout";
 import { FeedTabs } from "../components/FeedTabs";
@@ -16,7 +16,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { FeedFilter } from "../types";
 import { useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { StoryViewerModal, useStoryViewerState } from "@/features/stories";
+import {
+  StoriesBar,
+  StoryComposerModal,
+  StoryViewerModal,
+  dispatchStoriesChanged,
+  useStoriesFeed,
+  useStoryViewerState,
+} from "@/features/stories";
 
 const linkClass = "font-semibold text-[var(--woody-nav)] underline-offset-2 hover:underline";
 
@@ -105,8 +112,10 @@ function feedEmptyState(filter: FeedFilter, isAuthenticated: boolean): { title: 
 function FeedPageContent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user: authUser } = useAuth();
   const storyViewer = useStoryViewerState();
+  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
+  const storiesFeed = useStoriesFeed(isAuthenticated);
 
   const {
     posts,
@@ -153,6 +162,30 @@ function FeedPageContent() {
 
   const emptyState = useMemo(() => feedEmptyState(filter, isAuthenticated), [filter, isAuthenticated]);
 
+  const selfFeedItem = useMemo(() => {
+    if (!authUser?.id) return null;
+    return storiesFeed.items.find((item) => item.userId === authUser.id || item.isSelf) ?? null;
+  }, [authUser?.id, storiesFeed.items]);
+
+  const othersFeedItems = useMemo(() => {
+    if (!authUser?.id) return storiesFeed.items;
+    return storiesFeed.items.filter((item) => item.userId !== authUser.id && !item.isSelf);
+  }, [authUser?.id, storiesFeed.items]);
+
+  const showStoriesBar =
+    isAuthenticated &&
+    !storiesFeed.isError &&
+    (storiesFeed.isLoading || authUser != null || othersFeedItems.length > 0);
+
+  const selfUserForBar = authUser
+    ? {
+        id: authUser.id,
+        displayName: authUser.name?.trim() || authUser.username,
+        username: authUser.username,
+        avatarUrl: authUser.avatarUrl ?? null,
+      }
+    : null;
+
   return (
     <div
       className={cn(
@@ -165,6 +198,18 @@ function FeedPageContent() {
       <div className="overflow-hidden rounded-[1.5rem] border border-black/[0.07] bg-[#ebebed] shadow-[0_1px_4px_rgba(10,10,10,0.05)]">
         <FeedTabs activeFilter={filter} onFilterChange={setFilter} className="w-full min-w-0 rounded-[inherit]" />
       </div>
+
+      {showStoriesBar ? (
+        <StoriesBar
+          className="-mt-2 md:-mt-1"
+          isLoading={storiesFeed.isLoading}
+          selfUser={selfUserForBar}
+          selfFeedItem={selfFeedItem}
+          others={othersFeedItems}
+          onOpenUserStories={(userId) => storyViewer.open(userId)}
+          onAddStory={() => setStoryComposerOpen(true)}
+        />
+      ) : null}
 
       <div className="pt-1">
         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-[var(--woody-text)] md:text-[1.25rem]">
@@ -262,7 +307,23 @@ function FeedPageContent() {
 
       <FeedCommunityContextStrip className="mt-2" />
 
-      <StoryViewerModal {...storyViewer.modalProps} />
+      <StoryViewerModal
+        {...storyViewer.modalProps}
+        onStoriesConsumed={() => {
+          dispatchStoriesChanged();
+        }}
+      />
+
+      {isAuthenticated ? (
+        <StoryComposerModal
+          open={storyComposerOpen}
+          onOpenChange={setStoryComposerOpen}
+          onPublished={() => {
+            dispatchStoriesChanged();
+            if (authUser?.id) storyViewer.open(authUser.id);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

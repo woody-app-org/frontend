@@ -24,6 +24,7 @@ import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
 import {
   StoryComposerModal,
   StoryViewerModal,
+  dispatchStoriesChanged,
   useStoryViewerState,
 } from "@/features/stories";
 import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
@@ -379,7 +380,10 @@ function ProfilePageInner() {
 
         <StoryViewerModal
           {...storyViewer.modalProps}
-          onStoriesConsumed={() => void refetch()}
+          onStoriesConsumed={() => {
+            dispatchStoriesChanged();
+            void refetch();
+          }}
         />
         {isOwnProfile && profile ? (
           <StoryComposerModal
