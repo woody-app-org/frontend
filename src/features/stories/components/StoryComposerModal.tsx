@@ -518,6 +518,7 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
           setImageFile(file);
           setImagePreviewUrl(URL.createObjectURL(file));
           setError(null);
+          setCropOpen(false);
         }}
       />
     </>

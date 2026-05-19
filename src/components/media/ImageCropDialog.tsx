@@ -107,6 +107,7 @@ export function ImageCropDialog({
 
       const file = blobToImageFile(blob, fileName);
       await onConfirm(file);
+      onOpenChange(false);
     } finally {
       setConfirming(false);
     }
@@ -115,6 +116,7 @@ export function ImageCropDialog({
     imageSrc,
     isRectExport,
     onConfirm,
+    onOpenChange,
     outputHeight,
     outputSize,
     outputWidth,
