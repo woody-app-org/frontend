@@ -24,8 +24,11 @@ import {
   isStoryNotExpired,
   STORY_STATIC_DURATION_MS,
 } from "../lib/storyUtils";
+import { useAuth } from "@/features/auth/context/AuthContext";
 import { fetchUserStories, markStoryViewed } from "../services/stories.service";
+import { dispatchStoriesChanged } from "../lib/storyEvents";
 import { StoryViewerSlide, type StoryViewerSlideHandle } from "./StoryViewerSlide";
+import { StoryViewerMoreMenu } from "./StoryViewerMoreMenu";
 
 export interface StoryViewerModalProps {
   open: boolean;
@@ -33,6 +36,8 @@ export interface StoryViewerModalProps {
   userId: string;
   initialStoryIndex?: number;
   onStoriesConsumed?: () => void;
+  /** Após excluir um story (ex.: refetch do perfil). */
+  onStoryDeleted?: () => void;
 }
 
 export function StoryViewerModal({
@@ -41,7 +46,9 @@ export function StoryViewerModal({
   userId,
   initialStoryIndex = 0,
   onStoriesConsumed,
+  onStoryDeleted,
 }: StoryViewerModalProps) {
+  const { user: authUser } = useAuth();
   const reduceMotion = usePrefersReducedMotion();
   const [stories, setStories] = useState<Story[]>([]);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -60,6 +67,12 @@ export function StoryViewerModal({
   const isPaused = paused || holding;
   const hasPrev = currentIndex > 0;
 
+  const canDeleteCurrent = Boolean(
+    authUser?.id &&
+      currentStory &&
+      (currentStory.authorUserId === authUser.id || currentStory.author.id === authUser.id)
+  );
+
   useEffect(() => {
     storiesRef.current = stories;
   }, [stories]);
@@ -67,6 +80,28 @@ export function StoryViewerModal({
   const closeViewer = useCallback(() => {
     onOpenChange(false);
   }, [onOpenChange]);
+
+  const handleCurrentStoryDeleted = useCallback(() => {
+    if (!currentStory) return;
+
+    const deletedId = currentStory.id;
+    const remaining = storiesRef.current.filter((s) => s.id !== deletedId);
+    markedViewRef.current.delete(deletedId);
+
+    dispatchStoriesChanged();
+    onStoryDeleted?.();
+
+    if (remaining.length === 0) {
+      onStoriesConsumed?.();
+      closeViewer();
+      return;
+    }
+
+    setStories(remaining);
+    storiesRef.current = remaining;
+    setSegmentProgress(0);
+    setCurrentIndex((idx) => Math.min(idx, remaining.length - 1));
+  }, [currentStory, closeViewer, onStoriesConsumed, onStoryDeleted]);
 
   const goPrev = useCallback(() => {
     setSegmentProgress(0);
@@ -291,17 +326,25 @@ export function StoryViewerModal({
                   </div>
                 </Link>
               ) : null}
-              <button
-                type="button"
-                onClick={closeViewer}
-                className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm",
-                  woodyFocus.ring
-                )}
-                aria-label="Fechar stories"
-              >
-                <X className="size-5" aria-hidden />
-              </button>
+              <div className="flex shrink-0 items-center gap-1">
+                {canDeleteCurrent && currentStory ? (
+                  <StoryViewerMoreMenu
+                    storyId={currentStory.id}
+                    onDeleted={handleCurrentStoryDeleted}
+                  />
+                ) : null}
+                <button
+                  type="button"
+                  onClick={closeViewer}
+                  className={cn(
+                    "flex size-10 shrink-0 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm",
+                    woodyFocus.ring
+                  )}
+                  aria-label="Fechar stories"
+                >
+                  <X className="size-5" aria-hidden />
+                </button>
+              </div>
             </header>
 
             <div className="relative flex min-h-0 flex-1 flex-col">

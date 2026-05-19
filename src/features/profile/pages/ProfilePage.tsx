@@ -384,6 +384,10 @@ function ProfilePageInner() {
             dispatchStoriesChanged();
             void refetch();
           }}
+          onStoryDeleted={() => {
+            dispatchStoriesChanged();
+            void refetch();
+          }}
         />
         {isOwnProfile && profile ? (
           <StoryComposerModal

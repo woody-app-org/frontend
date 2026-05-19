@@ -1,6 +1,7 @@
 export type { Story, StoryFeedItem, StoryMediaType } from "./types";
 export {
   createStory,
+  deleteStory,
   fetchStoriesFeed,
   fetchUserStories,
   markStoryViewed,

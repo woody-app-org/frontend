@@ -99,6 +99,18 @@ export async function createStory(payload: CreateStoryPayload): Promise<Story> {
   }
 }
 
+/** Remove story (apenas autora; validação no servidor). */
+export async function deleteStory(storyId: string): Promise<void> {
+  try {
+    await api.delete(`/stories/${encodeURIComponent(storyId)}`);
+  } catch (e) {
+    if (axios.isAxiosError(e) && (e.response?.status === 403 || e.response?.status === 404)) {
+      throw new Error("Não foi possível excluir este story.");
+    }
+    throw new Error(getApiErrorMessage(e, "Não foi possível excluir este story."));
+  }
+}
+
 /** Regista visualização (requer sessão). Falhas são ignoradas. */
 export async function markStoryViewed(storyId: string): Promise<void> {
   if (!getStoredToken()) return;

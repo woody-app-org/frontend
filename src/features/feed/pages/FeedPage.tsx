@@ -312,6 +312,9 @@ function FeedPageContent() {
         onStoriesConsumed={() => {
           dispatchStoriesChanged();
         }}
+        onStoryDeleted={() => {
+          dispatchStoriesChanged();
+        }}
       />
 
       {isAuthenticated ? (
