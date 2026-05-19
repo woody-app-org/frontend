@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PASSWORD_MIN_LENGTH } from "../constants";
+import { PASSWORD_NO_WHITESPACE_MESSAGE, passwordHasWhitespace } from "../lib/passwordPolicy";
 
 /** Remove formatação para validar dígitos. */
 export function stripCpfDigits(value: string): string {
@@ -53,6 +54,7 @@ export const onboardingAccountSchema = z.object({
   password: z
     .string()
     .min(1, "Senha é obrigatória")
+    .refine((s) => !passwordHasWhitespace(s), PASSWORD_NO_WHITESPACE_MESSAGE)
     .min(PASSWORD_MIN_LENGTH, `Senha deve ter no mínimo ${PASSWORD_MIN_LENGTH} caracteres`)
     .regex(/[A-Z]/, "Inclua pelo menos uma letra maiúscula")
     .regex(

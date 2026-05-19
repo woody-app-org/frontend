@@ -16,6 +16,7 @@ import { showInfoToast } from "@/lib/toast";
 import { ensureFreshAccessToken } from "../authRefresh";
 import { mapAuthUser, mapSubscription, normalizeStoredUser } from "../authMapper";
 import { persistLoginPayload } from "../authSessionPersist";
+import { stripPasswordWhitespace } from "../lib/passwordPolicy";
 
 function getStoredUser(): AuthUser | null {
   try {
@@ -43,7 +44,7 @@ export async function loginMock(credentials: LoginCredentials): Promise<AuthUser
       user: AuthUser;
     }>("/Auth/login", {
       username: credentials.username.trim(),
-      password: credentials.password,
+      password: stripPasswordWhitespace(credentials.password),
     });
     persistLoginPayload(data);
     const user = mapAuthUser(data.user as Parameters<typeof mapAuthUser>[0]);
