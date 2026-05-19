@@ -65,7 +65,11 @@ function normalizeRequestPath(url: string | undefined): string {
 /** Não disparar limpeza global em falhas de credenciais no formulário de login/registo. */
 function isAuthCredentialsRequest(url: string | undefined): boolean {
   const path = normalizeRequestPath(url);
-  return path === "auth/login" || path === "auth/register";
+  return (
+    path === "auth/login" ||
+    path === "auth/register" ||
+    path === "auth/check-availability"
+  );
 }
 
 api.interceptors.request.use((config) => {
@@ -164,6 +168,9 @@ export function getApiErrorMessage(err: unknown, fallback = "Algo deu errado."):
     if (err.response?.status === 401) return "Sessão inválida ou credenciais incorretas.";
     if (err.response?.status === 403) return "Sem permissão para esta ação.";
     if (err.response?.status === 404) return "Recurso não encontrado.";
+    if (err.response?.status === 409) {
+      return fromBody ?? "Estes dados já estão em uso por outra conta.";
+    }
     if (err.response?.status === 400) return "Pedido inválido. Verifica os dados enviados.";
   }
   if (err instanceof Error) return err.message;

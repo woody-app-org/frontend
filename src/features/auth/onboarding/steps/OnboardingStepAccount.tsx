@@ -14,7 +14,15 @@ import {
 } from "../account.validation";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
-import { mockPersistAccountStep } from "../services/onboardingActionsMock";
+import {
+  persistAccountStep,
+  RegistrationAvailabilityConflictError,
+} from "../services/onboardingAccountStep.service";
+import {
+  checkRegistrationAvailability,
+  collectUnavailableFields,
+  type RegistrationField,
+} from "../services/registrationAvailability.service";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
@@ -44,17 +52,43 @@ export function OnboardingStepAccount() {
 
   const { errors, touchedFields } = form.formState;
   const w = form.watch();
-  const { register, setValue, trigger } = form;
+  const { register, setValue, trigger, setError, clearErrors, getValues } = form;
+
+  const verifyFieldAvailability = async (field: RegistrationField) => {
+    const valid = await trigger(field);
+    if (!valid) return;
+    const value = getValues(field);
+    try {
+      const result = await checkRegistrationAvailability({ [field]: value });
+      const conflicts = collectUnavailableFields(result);
+      if (conflicts[field]) {
+        setError(field, { type: "server", message: conflicts[field] });
+      } else {
+        clearErrors(field);
+      }
+    } catch {
+      /* falha de rede no blur: o submit principal tenta de novo */
+    }
+  };
 
   const onSubmit = form.handleSubmit(async (data) => {
     setIsSaving(true);
     try {
-      await mockPersistAccountStep(data);
+      await persistAccountStep(data);
       updateDraft({
         account: data,
         ...(isBetaClosed() ? { inviteCode: draft.inviteCode?.trim() || undefined } : {}),
       });
       goNext();
+    } catch (err) {
+      if (err instanceof RegistrationAvailabilityConflictError) {
+        for (const [field, message] of Object.entries(err.fieldErrors) as [
+          RegistrationField,
+          string,
+        ][]) {
+          setError(field, { type: "server", message });
+        }
+      }
     } finally {
       setIsSaving(false);
     }
@@ -101,7 +135,9 @@ export function OnboardingStepAccount() {
               variant="maroon"
               valid={!!touchedFields.username && !errors.username && w.username.length > 0}
               {...identifierInputProps}
-              {...form.register("username")}
+              {...form.register("username", {
+                onBlur: () => void verifyFieldAvailability("username"),
+              })}
               error={errors.username?.message}
             />
             <AuthInputField
@@ -111,7 +147,9 @@ export function OnboardingStepAccount() {
               autoComplete="email"
               variant="maroon"
               valid={!!touchedFields.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(w.email)}
-              {...form.register("email")}
+              {...form.register("email", {
+                onBlur: () => void verifyFieldAvailability("email"),
+              })}
               error={errors.email?.message}
             />
           </div>
@@ -158,7 +196,10 @@ export function OnboardingStepAccount() {
                     }
                     value={formatCpfDisplay(field.value)}
                     onChange={(e) => field.onChange(stripCpfDigits(e.target.value))}
-                    onBlur={field.onBlur}
+                    onBlur={() => {
+                      field.onBlur();
+                      void verifyFieldAvailability("cpf");
+                    }}
                     name={field.name}
                     ref={field.ref}
                     error={fieldState.error?.message}

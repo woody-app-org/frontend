@@ -7,7 +7,7 @@ function delay(ms: number): Promise<void> {
 const DEFAULT_MS = 160;
 
 /**
- * Simula persistência da etapa 1 no servidor. Substituir por `POST /accounts` ou equivalente.
+ * @deprecated Use `persistAccountStep` em `onboardingAccountStep.service.ts`.
  */
 export async function mockPersistAccountStep(
   _data: OnboardingAccountFormData,
