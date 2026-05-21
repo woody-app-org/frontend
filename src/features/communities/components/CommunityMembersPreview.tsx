@@ -12,7 +12,7 @@ import { CommunityMemberRoleIndicator } from "@/features/communities/components/
 import { fetchCommunityMembersPage } from "../services/community.service";
 
 export interface CommunityMembersPreviewProps {
-  communityId: string;
+  communitySlug: string;
   memberCount: number;
   /** Ordem esperada: criadora, admins, membros (ex.: `getCommunityMemberListItems`). */
   members: CommunityMemberListItem[];
@@ -33,7 +33,7 @@ function initials(name: string): string {
 }
 
 export function CommunityMembersPreview({
-  communityId,
+  communitySlug,
   memberCount,
   members,
   maxVisible = 6,
@@ -53,7 +53,7 @@ export function CommunityMembersPreview({
     setModalError(null);
     try {
       const nextPage = modalPage + 1;
-      const chunk = await fetchCommunityMembersPage(communityId, nextPage, 30);
+      const chunk = await fetchCommunityMembersPage(communitySlug, nextPage, 30);
       setModalMembers((prev) => (nextPage === 1 ? chunk.items : [...prev, ...chunk.items]));
       setModalPage(nextPage);
       setModalHasNext(chunk.hasNextPage);
@@ -62,7 +62,7 @@ export function CommunityMembersPreview({
     } finally {
       setModalLoading(false);
     }
-  }, [communityId, modalHasNext, modalLoading, modalPage]);
+  }, [communitySlug, modalHasNext, modalLoading, modalPage]);
 
   useEffect(() => {
     if (!allMembersOpen) return;
@@ -70,7 +70,7 @@ export function CommunityMembersPreview({
     setModalPage(0);
     setModalHasNext(true);
     setModalError(null);
-  }, [allMembersOpen, communityId]);
+  }, [allMembersOpen, communitySlug]);
 
   useEffect(() => {
     if (!allMembersOpen || modalPage > 0) return;

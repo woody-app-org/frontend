@@ -196,7 +196,7 @@ function CommunityDetailLoaded({
     setCtaBusy(true);
     setAccessNotice(null);
     try {
-      const r = await cancelMyCommunityJoinRequest(viewerId, community.id);
+      const r = await cancelMyCommunityJoinRequest(viewerId, community.slug);
       if (!r.ok) setAccessNotice(r.error);
       else {
         showSuccessToast("Pedido cancelado.", { id: "woody-community-membership" });
@@ -253,7 +253,7 @@ function CommunityDetailLoaded({
         onOpenChange={(o) => {
           if (!o) setBoostPostId(null);
         }}
-        communityId={community.id}
+        communitySlug={community.slug}
         post={boostTargetPost}
         onApplied={onDataChanged}
       />
@@ -268,19 +268,19 @@ function CommunityDetailLoaded({
         joinRejectionReason={myJoin.status === "rejected" ? myJoin.rejectionReason : null}
         onLeave={() =>
           runAccess(async () => {
-            const r = await leaveCommunity(viewerId, community.id);
+            const r = await leaveCommunity(viewerId, community.slug);
             return r;
           }, "Saíste desta comunidade.")
         }
         onJoinPublic={() =>
           runAccess(async () => {
-            const r = await joinCommunityPublic(viewerId, community.id);
+            const r = await joinCommunityPublic(viewerId, community.slug);
             return r;
           }, "Agora participas nesta comunidade.")
         }
         onRequestJoin={() =>
           runAccess(async () => {
-            const r = await requestJoinCommunity(viewerId, community.id);
+            const r = await requestJoinCommunity(viewerId, community.slug);
             return r;
           }, "Solicitação enviada.")
         }
@@ -387,7 +387,7 @@ function CommunityDetailLoaded({
                       ctaBusy,
                       loginReturnTo: `/communities/${encodeURIComponent(community.slug)}`,
                       onRequestJoin: async () => {
-                        await runAccess(async () => requestJoinCommunity(viewerId, community.id), "Solicitação enviada.");
+                        await runAccess(async () => requestJoinCommunity(viewerId, community.slug), "Solicitação enviada.");
                       },
                       onCancelJoin: handleCancelJoinRequest,
                     }
@@ -432,7 +432,7 @@ function CommunityDetailLoaded({
             guestDiscovery={community.visibility === "private" && !isMember}
           />
           <CommunityMembersPreview
-            communityId={community.id}
+            communitySlug={community.slug}
             memberCount={memberCount}
             members={previewMembers}
           />
@@ -503,7 +503,7 @@ function CommunityDetailPageContent() {
 
         const postsPromise = (async () => {
           try {
-            return { posts: await fetchCommunityPosts(c.id, viewerId, 1, 200), denied: false as const };
+            return { posts: await fetchCommunityPosts(c.slug, viewerId, 1, 200), denied: false as const };
           } catch (e) {
             if (e instanceof CommunityPostsForbiddenError) {
               return { posts: [] as Post[], denied: true as const };
@@ -513,25 +513,25 @@ function CommunityDetailPageContent() {
         })();
 
         const joinMePromise = getStoredToken()
-          ? fetchMyCommunityJoinRequestStatus(c.id)
+          ? fetchMyCommunityJoinRequestStatus(c.slug)
           : Promise.resolve(null);
 
         const [postsResult, previewPage, myMembership, joinMeRaw] = await Promise.all([
           postsPromise,
-          fetchCommunityMembersPage(c.id, 1, 8),
-          fetchMyCommunityMembership(c.id),
+          fetchCommunityMembersPage(c.slug, 1, 8),
+          fetchMyCommunityMembership(c.slug),
           joinMePromise,
         ]);
         if (cancelled) return;
 
         const isOwner = c.ownerUserId === viewerId;
         const isMod = isOwner || myMembership.role === "admin" || myMembership.role === "owner";
-        const fullMembers = isMod ? await fetchAllCommunityMembers(c.id) : previewPage.items;
+        const fullMembers = isMod ? await fetchAllCommunityMembers(c.slug) : previewPage.items;
         let jrows: JoinRequestWithUser[] = [];
         let joinForbidden: string | null = null;
         if (isMod) {
           try {
-            jrows = await fetchCommunityJoinRequestRows(c.id);
+            jrows = await fetchCommunityJoinRequestRows(c.slug);
           } catch (e) {
             if (e instanceof CommunityJoinRequestsForbiddenError) {
               joinForbidden =

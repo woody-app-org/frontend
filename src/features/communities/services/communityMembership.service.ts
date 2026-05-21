@@ -4,6 +4,7 @@
 import type { CommunityMemberRole } from "@/domain/types";
 import axios from "axios";
 import { api, getApiErrorMessage, getMessageFromApiResponseData } from "@/lib/api";
+import { communityApiBaseBySlug } from "./community.service";
 
 export type CommunityMembershipActionResult = { ok: true } | { ok: false; error: string };
 
@@ -72,11 +73,11 @@ function parseMyCommunityJoinRequestMe(raw: unknown): MyCommunityJoinRequestMe {
  * Sem sessão ou em erro de rede devolve `null` — tratar como `DEFAULT_MY_COMMUNITY_JOIN_REQUEST`.
  */
 export async function fetchMyCommunityJoinRequestStatus(
-  communityId: string
+  communitySlug: string
 ): Promise<MyCommunityJoinRequestMe | null> {
   try {
     const { data } = await api.get<unknown>(
-      `/communities/${encodeURIComponent(communityId)}/join-requests/me`
+      `${communityApiBaseBySlug(communitySlug)}/join-requests/me`
     );
     return parseMyCommunityJoinRequestMe(data);
   } catch (e) {
@@ -117,10 +118,10 @@ function mapRequestJoinCommunityError(e: unknown): string {
 
 export async function joinCommunityPublic(
   _userId: string,
-  communityId: string
+  communitySlug: string
 ): Promise<CommunityMembershipActionResult> {
   try {
-    await api.post(`/communities/${encodeURIComponent(communityId)}/members`);
+    await api.post(`${communityApiBaseBySlug(communitySlug)}/members`);
     return ok();
   } catch (e) {
     if (!axios.isAxiosError(e)) return fail(e, "Não foi possível entrar na comunidade.");
@@ -138,10 +139,10 @@ export async function joinCommunityPublic(
 
 export async function requestJoinCommunity(
   _userId: string,
-  communityId: string
+  communitySlug: string
 ): Promise<CommunityMembershipActionResult> {
   try {
-    await api.post(`/communities/${encodeURIComponent(communityId)}/join-requests`);
+    await api.post(`${communityApiBaseBySlug(communitySlug)}/join-requests`);
     return ok();
   } catch (e) {
     return { ok: false, error: mapRequestJoinCommunityError(e) };
@@ -150,10 +151,10 @@ export async function requestJoinCommunity(
 
 export async function cancelMyCommunityJoinRequest(
   _userId: string,
-  communityId: string
+  communitySlug: string
 ): Promise<CommunityMembershipActionResult> {
   try {
-    await api.post(`/communities/${encodeURIComponent(communityId)}/join-requests/me/cancel`);
+    await api.post(`${communityApiBaseBySlug(communitySlug)}/join-requests/me/cancel`);
     return ok();
   } catch (e) {
     return fail(e, "Não foi possível cancelar o pedido.");
@@ -162,10 +163,10 @@ export async function cancelMyCommunityJoinRequest(
 
 export async function leaveCommunity(
   _userId: string,
-  communityId: string
+  communitySlug: string
 ): Promise<CommunityMembershipActionResult> {
   try {
-    await api.delete(`/communities/${encodeURIComponent(communityId)}/members/me`);
+    await api.delete(`${communityApiBaseBySlug(communitySlug)}/members/me`);
     return ok();
   } catch (e) {
     return fail(e, "Não foi possível sair da comunidade.");
@@ -206,12 +207,12 @@ export async function rejectJoinRequest(
 
 export async function removeMember(
   _actorUserId: string,
-  communityId: string,
+  communitySlug: string,
   targetUserId: string
 ): Promise<CommunityMembershipActionResult> {
   try {
     await api.delete(
-      `/communities/${encodeURIComponent(communityId)}/members/${encodeURIComponent(targetUserId)}`
+      `${communityApiBaseBySlug(communitySlug)}/members/${encodeURIComponent(targetUserId)}`
     );
     return ok();
   } catch (e) {
@@ -221,12 +222,12 @@ export async function removeMember(
 
 export async function banMember(
   _actorUserId: string,
-  communityId: string,
+  communitySlug: string,
   targetUserId: string
 ): Promise<CommunityMembershipActionResult> {
   try {
     await api.patch(
-      `/communities/${encodeURIComponent(communityId)}/members/${encodeURIComponent(targetUserId)}`,
+      `${communityApiBaseBySlug(communitySlug)}/members/${encodeURIComponent(targetUserId)}`,
       { status: "banned" }
     );
     return ok();
@@ -237,13 +238,13 @@ export async function banMember(
 
 export async function setCommunityMemberRole(
   _actorUserId: string,
-  communityId: string,
+  communitySlug: string,
   targetUserId: string,
   role: Exclude<CommunityMemberRole, "owner">
 ): Promise<CommunityMembershipActionResult> {
   try {
     await api.patch(
-      `/communities/${encodeURIComponent(communityId)}/members/${encodeURIComponent(targetUserId)}`,
+      `${communityApiBaseBySlug(communitySlug)}/members/${encodeURIComponent(targetUserId)}`,
       { role }
     );
     return ok();

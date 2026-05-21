@@ -49,7 +49,7 @@ export function CommunityGrowthDialog({
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchCommunityPremiumAnalytics(communityId);
+      const data = await fetchCommunityPremiumAnalytics(communitySlug);
       setAnalytics(data);
     } catch (e) {
       setAnalytics(null);
@@ -57,7 +57,7 @@ export function CommunityGrowthDialog({
     } finally {
       setLoading(false);
     }
-  }, [canSeeAnalytics, communityId]);
+  }, [canSeeAnalytics, communitySlug]);
 
   useEffect(() => {
     if (!open) return;

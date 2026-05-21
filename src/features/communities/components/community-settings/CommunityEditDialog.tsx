@@ -111,7 +111,7 @@ export function CommunityEditDialog({
 
       setIsSubmitting(true);
       try {
-        const result = await updateCommunity(viewerId, community.id, payload);
+        const result = await updateCommunity(viewerId, community.slug, payload);
         if (!result.ok) {
           setSubmitError(result.error);
           return;

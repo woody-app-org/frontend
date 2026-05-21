@@ -6,7 +6,7 @@ import { woodyFocus } from "@/lib/woody-ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { CreateCommunityEntry } from "@/features/subscription/components/CreateCommunityEntry";
-import { fetchAllCommunities, fetchMyCommunityIdSet } from "@/features/communities/services/community.service";
+import { fetchAllCommunities, fetchMyCommunities } from "@/features/communities/services/community.service";
 import type { Community } from "@/domain/types";
 
 const MAX_ITEMS = 8;
@@ -29,8 +29,9 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
         return;
       }
 
-      const mineIds = await fetchMyCommunityIdSet();
-      const mine = sorted.filter((c) => mineIds.has(c.id));
+      const mineRows = await fetchMyCommunities();
+      const mineIdSet = new Set(mineRows.map((r) => r.id));
+      const mine = sorted.filter((c) => mineIdSet.has(c.id));
       setItems(mine.slice(0, MAX_ITEMS));
       setMode(mine.length ? "mine" : "empty");
     } catch {

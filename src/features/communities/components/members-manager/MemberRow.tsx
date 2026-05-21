@@ -137,8 +137,8 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
                   void run(async () => {
                     const r =
                       kind === "remove"
-                        ? await removeMember(viewerId, community.id, user.id)
-                        : await banMember(viewerId, community.id, user.id);
+                        ? await removeMember(viewerId, community.slug, user.id)
+                        : await banMember(viewerId, community.slug, user.id);
                     if (r.ok) setConfirmDestructive(null);
                     return r;
                   });
@@ -158,7 +158,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
                 disabled={busy}
                 className="min-h-10 rounded-lg text-xs"
                 onClick={() =>
-                  run(() => setCommunityMemberRole(viewerId, community.id, user.id, "admin"))
+                  run(() => setCommunityMemberRole(viewerId, community.slug, user.id, "admin"))
                 }
               >
                 Promover a admin
@@ -172,7 +172,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
                 disabled={busy}
                 className="min-h-10 rounded-lg text-xs"
                 onClick={() =>
-                  run(() => setCommunityMemberRole(viewerId, community.id, user.id, "member"))
+                  run(() => setCommunityMemberRole(viewerId, community.slug, user.id, "member"))
                 }
               >
                 Rebaixar para membro
