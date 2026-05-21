@@ -170,7 +170,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "posts/:postId",
+        path: "posts/:publicId",
         element: (
           <ProtectedRoute>
             <PostDetailPage />

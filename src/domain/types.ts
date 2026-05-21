@@ -192,6 +192,8 @@ export interface PostInteractionState {
 
 export interface Post {
   id: string;
+  /** Identificador público opaco para URLs (`pst_…`). */
+  publicId?: string;
   publicationContext: PostPublicationContext;
   /** Comunidade quando o post é de comunidade; `null` no perfil. */
   communityId: string | null;

@@ -5,6 +5,7 @@ import {
   buildPostDetailNavState,
   routeTargetsPostDetail,
 } from "@/features/feed/lib/postDetailNavState";
+import { postPath } from "@/features/feed/lib/postPaths";
 import { isLegacyNumericProfileParam, profilePath, profilePathForUser } from "@/features/profile/lib/profilePaths";
 
 export type ViewerProfileNav = {
@@ -76,10 +77,23 @@ export function buildNotificationNavigationContext(item: NotificationItem): Reco
   return ctx;
 }
 
-function postWithCommentsFocus(postId: number, commentId?: number): string {
+function postRouteFromMetadata(ctx: Record<string, unknown>): string | null {
+  const postPublicId = str(ctx.postPublicId);
+  if (postPublicId) return postPath(postPublicId);
+  const postId = num(ctx.postId);
+  if (postId != null) return postPath(String(postId));
+  return null;
+}
+
+function postWithCommentsFocusFromMetadata(ctx: Record<string, unknown>, commentId?: number): string | null {
+  const postPublicId = str(ctx.postPublicId);
+  const postId = num(ctx.postId);
+  const handle = postPublicId ?? (postId != null ? String(postId) : null);
+  if (!handle) return null;
+
   const q = new URLSearchParams();
   q.set("focus", "comments");
-  const base = `/posts/${postId}?${q.toString()}`;
+  const base = `${postPath(handle)}?${q.toString()}`;
   return commentId != null ? `${base}#comment-${commentId}` : base;
 }
 
@@ -93,20 +107,19 @@ export function getNotificationTargetRoute(
 ): string | null {
   const viewerCtx = normalizeViewer(viewer);
   const ctx = buildNotificationNavigationContext(item);
-  const postId = num(ctx.postId);
   const commentId = num(ctx.commentId);
   const conversationId = num(ctx.conversationId);
   const communitySlug = str(ctx.communitySlug);
 
   switch (item.type) {
     case "post_like":
-      return postId != null ? `/posts/${postId}` : null;
+      return postRouteFromMetadata(ctx);
 
     case "post_comment":
-      return postId != null ? postWithCommentsFocus(postId, commentId) : null;
+      return postWithCommentsFocusFromMetadata(ctx, commentId);
 
     case "comment_reply":
-      return postId != null ? postWithCommentsFocus(postId, commentId) : null;
+      return postWithCommentsFocusFromMetadata(ctx, commentId);
 
     case "new_follower":
       return profileRouteFromMetadata(ctx, item.actor);
@@ -127,7 +140,8 @@ export function getNotificationTargetRoute(
       return "/communities";
 
     default: {
-      if (postId != null) return `/posts/${postId}`;
+      const postRoute = postRouteFromMetadata(ctx);
+      if (postRoute) return postRoute;
       if (conversationId != null) return `/messages/${conversationId}`;
       if (communitySlug) return `/communities/${encodeURIComponent(communitySlug)}`;
       return profileRouteFromMetadata(ctx, item.actor);

@@ -147,6 +147,10 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
         : null;
   return {
     id: asString(raw.id),
+    publicId:
+      typeof raw.publicId === "string" && raw.publicId.trim()
+        ? raw.publicId.trim()
+        : undefined,
     publicationContext,
     communityId,
     authorId: asString(raw.authorId),

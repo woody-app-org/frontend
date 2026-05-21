@@ -16,6 +16,22 @@ export async function getPostByIdMock(postId: string, viewerId: string): Promise
   }
 }
 
+/** Leitura pública por identificador opaco (preferido). */
+export async function getPostByPublicId(publicId: string, viewerId: string): Promise<Post | null> {
+  try {
+    const { data } = await api.get(`/posts/by-public-id/${encodeURIComponent(publicId)}`);
+    return mapPostFromApi(data as Record<string, unknown>, viewerId);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) return null;
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar o post."));
+  }
+}
+
+/** API interna de mutação (likes, comentários) continua a usar o id numérico. */
+export function postInternalApiId(post: Post): string {
+  return post.id;
+}
+
 export async function getCommentsByPostIdMock(postId: string, _viewerId?: string): Promise<Comment[]> {
   const { data } = await api.get(`/posts/${encodeURIComponent(postId)}/comments`);
   const list = data as unknown[];
@@ -31,18 +47,18 @@ export async function getRepliesByCommentIdMock(
 }
 
 export async function togglePostLikeMock(
-  postId: string,
+  internalPostId: string,
   viewerId: string
 ): Promise<{ likedByCurrentUser: boolean; likesCount: number } | null> {
-  const post = await getPostByIdMock(postId, viewerId);
+  const post = await getPostByIdMock(internalPostId, viewerId);
   if (!post) return null;
   try {
     if (post.likedByCurrentUser) {
-      await api.delete(`/posts/${encodeURIComponent(postId)}/like`);
+      await api.delete(`/posts/${encodeURIComponent(internalPostId)}/like`);
     } else {
-      await api.post(`/posts/${encodeURIComponent(postId)}/like`);
+      await api.post(`/posts/${encodeURIComponent(internalPostId)}/like`);
     }
-    const next = await getPostByIdMock(postId, viewerId);
+    const next = await getPostByIdMock(internalPostId, viewerId);
     if (!next) return null;
     return { likedByCurrentUser: next.likedByCurrentUser, likesCount: next.likesCount };
   } catch (e) {

@@ -21,6 +21,7 @@ import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { PostLikeIcon } from "./PostLikeIcon";
 import { usePostLikeTapAnimation } from "../hooks/usePostLikeTapAnimation";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
+import { postPathForPost, postCommentsFocusPath } from "@/features/feed/lib/postPaths";
 import { buildPostDetailNavState } from "../lib/postDetailNavState";
 import {
   isBackgroundNavigationSuppressed,
@@ -125,9 +126,9 @@ export function PostCard({
   const suppressNextCardOpenFromMenu = () => {
     ignoreNextCardClickRef.current = true;
   };
-  const openPost = () => navigate(`/posts/${post.id}`, { state: buildPostDetailNavState(location) });
+  const openPost = () => navigate(postPathForPost(post), { state: buildPostDetailNavState(location) });
   const openPostComments = () =>
-    navigate(`/posts/${post.id}?focus=comments`, { state: buildPostDetailNavState(location) });
+    navigate(postCommentsFocusPath(post), { state: buildPostDetailNavState(location) });
 
   const imageGalleryRaw =
     post.imageUrls && post.imageUrls.length > 0

@@ -4,6 +4,7 @@ import { useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Clock, ExternalLink, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
+import { postPath } from "@/features/feed/lib/postPaths";
 import type { PostDetailNavState } from "@/features/feed/lib/postDetailNavState";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -13,7 +14,8 @@ import { PostMediaItem } from "./PostMediaRenderer";
 
 /** Contexto mínimo do post de origem — renderizado na barra inferior do lightbox. */
 export interface PostLightboxContext {
-  postId: string;
+  /** Identificador público para URL (`/posts/{publicId}`). */
+  publicId: string;
   authorName: string;
   authorAvatarUrl?: string | null;
   postContent: string;
@@ -109,7 +111,7 @@ export function PostMediaLightbox({
           </span>
           {postContext && (
             <Link
-              to={`/posts/${postContext.postId}`}
+              to={postPath(postContext.publicId)}
               state={postDetailLinkState}
               className="flex items-center gap-1 text-xs text-white/60 hover:text-white/90 transition-colors"
               onClick={() => onOpenChange(false)}
