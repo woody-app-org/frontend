@@ -17,6 +17,7 @@ import { ensureFreshAccessToken } from "../authRefresh";
 import { mapAuthUser, mapSubscription, normalizeStoredUser } from "../authMapper";
 import { persistLoginPayload } from "../authSessionPersist";
 import { stripPasswordWhitespace } from "../lib/passwordPolicy";
+import { normalizeUsername } from "../lib/usernamePolicy";
 
 function getStoredUser(): AuthUser | null {
   try {
@@ -43,7 +44,7 @@ export async function loginMock(credentials: LoginCredentials): Promise<AuthUser
       refreshToken: string;
       user: AuthUser;
     }>("/Auth/login", {
-      username: credentials.username.trim(),
+      username: normalizeUsername(credentials.username),
       password: stripPasswordWhitespace(credentials.password),
     });
     persistLoginPayload(data);
@@ -61,7 +62,7 @@ export async function registerMock(credentials: RegisterCredentials): Promise<Au
       refreshToken: string;
       user: AuthUser;
     }>("/Auth/register", {
-      username: credentials.username.trim(),
+      username: normalizeUsername(credentials.username),
       email: credentials.email.trim(),
       password: credentials.password,
       cpf: credentials.cpf.trim(),

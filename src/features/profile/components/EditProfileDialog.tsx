@@ -10,6 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IdentifierInput } from "@/components/forms";
+import {
+  USERNAME_MAX_LENGTH,
+  filterUsernameInput,
+  normalizeUsername,
+} from "@/features/auth/lib/usernamePolicy";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -325,7 +330,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       const interests = parseInterestsField(interestsRaw, profile.interests);
       const payload = {
         name: name.trim(),
-        username: username.trim(),
+        username: normalizeUsername(username),
         bio: bio.trim(),
         pronouns: pronouns.trim() || undefined,
         location: location.trim() || undefined,
@@ -563,11 +568,14 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
               <IdentifierInput
                 id={`${formId}-username`}
                 value={username}
-                onChange={(ev) => setUsername(ev.target.value)}
+                maxLength={USERNAME_MAX_LENGTH}
+                onChange={(ev) => setUsername(filterUsernameInput(ev.target.value))}
                 className={inputClass}
                 required
               />
-              <p className="text-xs text-[var(--woody-muted)]">Apenas letras minúsculas, números, . e _</p>
+              <p className="text-xs text-[var(--woody-muted)]">
+                3–30 caracteres: letras minúsculas, números, ponto (.) e sublinhado (_)
+              </p>
             </div>
             <div className="space-y-1.5">
               <label htmlFor={`${formId}-pronouns`} className="text-sm font-medium text-[var(--woody-text)]">

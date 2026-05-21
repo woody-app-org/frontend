@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { PASSWORD_MIN_LENGTH } from "../constants";
 import { PASSWORD_NO_WHITESPACE_MESSAGE, passwordHasWhitespace } from "../lib/passwordPolicy";
+import {
+  USERNAME_INVALID_CHARS_MESSAGE,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_TOO_SHORT_MESSAGE,
+  normalizeUsername,
+} from "../lib/usernamePolicy";
 
 /** Remove formatação para validar dígitos. */
 export function stripCpfDigits(value: string): string {
@@ -48,8 +55,14 @@ export const onboardingAccountSchema = z.object({
   username: z
     .string()
     .min(1, "Nome de usuário é obrigatório")
-    .max(60, "Máximo 60 caracteres")
-    .regex(/^[a-zA-Z0-9_.-]+$/, "Use apenas letras, números, _ . -"),
+    .transform(normalizeUsername)
+    .pipe(
+      z
+        .string()
+        .min(USERNAME_MIN_LENGTH, USERNAME_TOO_SHORT_MESSAGE)
+        .max(USERNAME_MAX_LENGTH, "Máximo 30 caracteres")
+        .regex(/^[a-z0-9_.]+$/, USERNAME_INVALID_CHARS_MESSAGE)
+    ),
   email: z.string().min(1, "E-mail é obrigatório").email("E-mail inválido"),
   password: z
     .string()

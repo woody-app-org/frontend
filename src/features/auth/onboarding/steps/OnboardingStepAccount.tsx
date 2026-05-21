@@ -28,6 +28,7 @@ import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 import { isBetaClosed } from "@/config/beta";
 import { codeInputProps, cpfInputProps, identifierInputProps } from "@/components/forms";
+import { USERNAME_MAX_LENGTH, filterUsernameInput } from "@/features/auth/lib/usernamePolicy";
 
 /**
  * Etapa 1 — dados iniciais da conta (validação pronta para espelhar no backend).
@@ -53,6 +54,9 @@ export function OnboardingStepAccount() {
   const { errors, touchedFields } = form.formState;
   const w = form.watch();
   const { register, setValue, trigger, setError, clearErrors, getValues } = form;
+  const usernameField = register("username", {
+    onBlur: () => void verifyFieldAvailability("username"),
+  });
 
   const verifyFieldAvailability = async (field: RegistrationField) => {
     const valid = await trigger(field);
@@ -134,10 +138,18 @@ export function OnboardingStepAccount() {
               placeholder="ex: maria_silva"
               variant="maroon"
               valid={!!touchedFields.username && !errors.username && w.username.length > 0}
+              maxLength={USERNAME_MAX_LENGTH}
               {...identifierInputProps}
-              {...form.register("username", {
-                onBlur: () => void verifyFieldAvailability("username"),
-              })}
+              name={usernameField.name}
+              ref={usernameField.ref}
+              onBlur={usernameField.onBlur}
+              value={w.username}
+              onChange={(e) =>
+                setValue("username", filterUsernameInput(e.target.value), {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
               error={errors.username?.message}
             />
             <AuthInputField

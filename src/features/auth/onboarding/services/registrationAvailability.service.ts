@@ -1,6 +1,7 @@
 import { api, getApiErrorMessage } from "@/lib/api";
 import type { OnboardingAccountFormData } from "../account.validation";
 import { stripCpfDigits } from "../account.validation";
+import { normalizeUsername } from "@/features/auth/lib/usernamePolicy";
 
 export type RegistrationField = "username" | "email" | "cpf";
 
@@ -39,7 +40,7 @@ export async function checkRegistrationAvailability(
 ): Promise<RegistrationAvailabilityResult> {
   try {
     const { data } = await api.post<ApiAvailabilityResponse>("Auth/check-availability", {
-      ...(fields.username != null ? { username: fields.username.trim() } : {}),
+      ...(fields.username != null ? { username: normalizeUsername(fields.username) } : {}),
       ...(fields.email != null ? { email: fields.email.trim() } : {}),
       ...(fields.cpf != null ? { cpf: stripCpfDigits(fields.cpf) } : {}),
     });
