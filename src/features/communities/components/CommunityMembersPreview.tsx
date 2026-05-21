@@ -4,6 +4,7 @@ import { Loader2, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { cn } from "@/lib/utils";
 import { woodyDialogScroll, woodyFocus, woodySurface } from "@/lib/woody-ui";
 import type { CommunityMemberListItem } from "@/domain/types";
@@ -105,7 +106,7 @@ export function CommunityMembersPreview({
           {visible.map(({ user, role }) => (
             <li key={user.id}>
               <Link
-                to={`/profile/${user.id}`}
+                to={profilePathForUser(user)}
                 className="flex min-w-0 items-center gap-3 rounded-xl p-1.5 -m-1.5 transition-colors hover:bg-[var(--woody-nav)]/6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
               >
                 <Avatar className="size-9 shrink-0">
@@ -157,7 +158,7 @@ export function CommunityMembersPreview({
             {modalMembers.map(({ user, role }) => (
               <li key={user.id}>
                 <Link
-                  to={`/profile/${user.id}`}
+                  to={profilePathForUser(user)}
                   className="flex min-w-0 items-center gap-3 rounded-xl p-2 transition-colors hover:bg-[var(--woody-nav)]/6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
                   onClick={() => setAllMembersOpen(false)}
                 >

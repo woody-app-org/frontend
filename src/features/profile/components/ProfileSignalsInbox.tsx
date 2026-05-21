@@ -4,6 +4,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
 import { startOrGetConversation } from "@/features/messages/services/messages.service";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { useReceivedProfileSignals } from "../hooks/useReceivedProfileSignals";
 import type { ProfileSignal } from "../services/profile-signals.service";
 import { ProfileSignalReceivedCard } from "./ProfileSignalReceivedCard";
@@ -18,7 +19,7 @@ export function ProfileSignalsInbox() {
   const openProfile = async (signal: ProfileSignal) => {
     setActionError(null);
     await markRead(signal.id);
-    navigate(`/profile/${signal.sender.id}`);
+    navigate(profilePathForUser(signal.sender));
   };
 
   const reply = async (signal: ProfileSignal) => {

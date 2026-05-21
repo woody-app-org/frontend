@@ -20,6 +20,7 @@ import { PostOverflowMenu, type PostProfilePinMenuProps } from "./PostOverflowMe
 import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { PostLikeIcon } from "./PostLikeIcon";
 import { usePostLikeTapAnimation } from "../hooks/usePostLikeTapAnimation";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { buildPostDetailNavState } from "../lib/postDetailNavState";
 import {
   isBackgroundNavigationSuppressed,
@@ -213,6 +214,7 @@ export function PostCard({
       ) : showProfileContext ? (
         <PostProfileContextBar
           authorId={post.author.id}
+          authorUsername={post.author.username}
           authorDisplayName={post.author.name}
           variant={postListingContext}
         />
@@ -241,7 +243,7 @@ export function PostCard({
               }
             />
             <Link
-              to={`/profile/${post.author.id}`}
+              to={profilePathForUser(post.author)}
               className="flex min-w-0 flex-1 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
               aria-label={`Ver perfil de ${post.author.name}`}
             >

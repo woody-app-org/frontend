@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Inbox } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import {
   Dialog,
   DialogContent,
@@ -98,7 +99,7 @@ function JoinRequestModerationCard({ row, viewerId, onChanged }: JoinRequestCard
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <Link
-          to={`/profile/${user.id}`}
+          to={profilePathForUser(user)}
           className={cn(
             "flex min-w-0 items-center gap-3 rounded-xl transition-colors hover:bg-[var(--woody-nav)]/6",
             woodyFocus.ring

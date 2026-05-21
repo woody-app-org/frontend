@@ -8,6 +8,7 @@ import { PostCommunityContextBar } from "../PostCommunityContextBar";
 import { PostProfileContextBar } from "../PostProfileContextBar";
 import { PostOverflowMenu } from "../PostOverflowMenu";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { resolvePostDetailBackTarget } from "../../lib/postDetailNavState";
 
 export interface PostDetailHeaderProps {
@@ -67,6 +68,7 @@ export function PostDetailHeader({
       ) : post.publicationContext === "profile" ? (
         <PostProfileContextBar
           authorId={post.author.id}
+          authorUsername={post.author.username}
           authorDisplayName={post.author.name}
           variant="community"
         />
@@ -74,7 +76,7 @@ export function PostDetailHeader({
 
       <div className="flex items-start gap-3">
         <Link
-          to={`/profile/${post.author.id}`}
+          to={profilePathForUser(post.author)}
           className="shrink-0 overflow-hidden rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]"
         >
           <Avatar size="default" className="size-10 ring-0">

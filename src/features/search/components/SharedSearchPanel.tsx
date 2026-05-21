@@ -6,6 +6,7 @@ import type { Community, Post, User } from "@/domain/types";
 import { SearchModeSegment, type SearchMode } from "@/features/feed/components/SearchModeSegment";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
 import { useSearch } from "../hooks/useSearch";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { firstLineOfPost } from "@/features/feed/lib/postTextPreview";
 
 export interface SharedSearchPanelProps {
@@ -190,7 +191,7 @@ function PeopleResults({ people }: { people: User[] }) {
       {people.slice(0, 14).map((u) => (
         <li key={u.id}>
           <Link
-            to={`/profile/${u.id}`}
+            to={profilePathForUser(u)}
             className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/55 px-4 py-3 transition-colors hover:bg-white/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
           >
             <div className="size-9 rounded-full bg-black/10 overflow-hidden shrink-0">

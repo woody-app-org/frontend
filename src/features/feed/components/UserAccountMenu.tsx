@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { LogoutConfirmationDialog } from "@/features/auth/components/LogoutConfirmationDialog";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { resolvePublicMediaUrl } from "@/lib/api";
@@ -132,7 +133,7 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           <DropdownMenuItem asChild className="cursor-pointer focus:bg-[var(--woody-nav)]/10">
-            <Link to={`/profile/${user.id}`} className="flex items-center gap-2">
+            <Link to={profilePathForUser(user)} className="flex items-center gap-2">
               <User className="size-4 opacity-80" aria-hidden />
               Meu perfil
             </Link>

@@ -4,6 +4,7 @@ import { ChevronLeft, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import type { ConversationPeerPreviewDto, MessageResponseDto, OutgoingMessageAttachment } from "../types";
 import { DmComposer } from "./DmComposer";
 import { DmMessageList } from "./DmMessageList";
@@ -83,7 +84,7 @@ export function ConversationChatPanel({
         </button>
         {peer ? (
           <Link
-            to={`/profile/${peer.id}`}
+            to={profilePathForUser(peer)}
             aria-label={`Perfil de ${label}`}
             className={cn(
               woodyFocus.ring,
@@ -115,7 +116,7 @@ export function ConversationChatPanel({
           <p className="truncate font-semibold text-[var(--woody-text)]">{label}</p>
           {peer ? (
             <Link
-              to={`/profile/${peer.id}`}
+              to={profilePathForUser(peer)}
               className="text-xs font-medium text-[var(--woody-nav)] underline-offset-2 hover:underline"
             >
               Ver perfil

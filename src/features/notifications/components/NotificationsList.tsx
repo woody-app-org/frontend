@@ -20,6 +20,7 @@ export interface NotificationsListProps {
   markingAll: boolean;
   onMarkAll: () => void | Promise<void>;
   viewerUserId: string;
+  viewerUsername?: string;
   onActivateRow: (n: NotificationItem) => void | Promise<void>;
 }
 
@@ -40,6 +41,7 @@ export function NotificationsList({
   markingAll,
   onMarkAll,
   viewerUserId,
+  viewerUsername,
   onActivateRow,
 }: NotificationsListProps) {
   const hasAny = items.length > 0;
@@ -144,7 +146,7 @@ export function NotificationsList({
         {!loading && !error && filteredItems.length > 0 ? (
           <ul className="divide-y divide-[var(--woody-divider)]">
             {filteredItems.map((n) => {
-              const route = getNotificationTargetRoute(n, viewerUserId);
+              const route = getNotificationTargetRoute(n, { userId: viewerUserId, username: viewerUsername });
               const summary = notificationSummaryFromItem(n);
               return (
                 <NotificationListItem

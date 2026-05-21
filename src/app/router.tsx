@@ -179,7 +179,7 @@ export const router = createBrowserRouter([
       },
       { path: "home", element: <Navigate to="/feed" replace /> },
       {
-        path: "profile/:userId",
+        path: "profile/:username",
         element: (
           <ProtectedRoute>
             <ProfilePage />

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import type { User } from "@/domain/types";
 
@@ -24,7 +25,7 @@ export function FollowListUserRow({ user, className, onNavigate }: FollowListUse
   return (
     <li className={cn("list-none", className)}>
       <Link
-        to={`/profile/${user.id}`}
+        to={profilePathForUser(user)}
         onClick={onNavigate}
         className={cn(
           woodyFocus.ring,

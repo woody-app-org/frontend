@@ -6,6 +6,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { Link } from "react-router-dom";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import {
   Dialog,
@@ -321,7 +322,7 @@ export function StoryViewerModal({
             <header className="relative z-20 flex items-center gap-3 px-3 pb-2 pt-10 sm:px-4 sm:pt-11">
               {author ? (
                 <Link
-                  to={`/profile/${author.id}`}
+                  to={profilePathForUser(author)}
                   className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl py-1 pr-2 transition-colors hover:bg-white/8"
                   onClick={closeViewer}
                 >

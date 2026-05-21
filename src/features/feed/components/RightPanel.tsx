@@ -11,6 +11,7 @@ import {
 } from "@/features/users/services/userSocial.service";
 import type { User } from "@/domain/types";
 import { SOCIAL_GRAPH_CHANGED_EVENT } from "@/lib/socialGraphEvents";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { FeedDecorWaves } from "./FeedDecorWaves";
 
 /** Quantas linhas de utilizadora mostrar em cada cartão do painel — sem scroll interno; adapta ao ecrã. */
@@ -84,7 +85,7 @@ function SectionHeader({ title }: { title: string }) {
 function SuggestionUserRow({ user }: { user: UserItem }) {
   return (
     <li className={styles.item}>
-      <Link to={`/profile/${user.id}`} className={styles.itemLink} aria-label={`Ver perfil de ${user.name}`}>
+      <Link to={profilePathForUser(user)} className={styles.itemLink} aria-label={`Ver perfil de ${user.name}`}>
         <StoryRing
           avatarUrl={user.avatarUrl}
           displayName={user.name}
@@ -94,7 +95,7 @@ function SuggestionUserRow({ user }: { user: UserItem }) {
         <span className={styles.itemName}>{user.name}</span>
       </Link>
       <Link
-        to={`/profile/${user.id}`}
+        to={profilePathForUser(user)}
         className={styles.iconBtn}
         aria-label={`Seguir ou ver ${user.name}`}
       >
@@ -110,7 +111,7 @@ function FollowingUserRow({ user }: { user: UserItem }) {
 
   return (
     <li className={styles.item}>
-      <Link to={`/profile/${user.id}`} className={styles.itemLink} aria-label={`Ver perfil de ${user.name}`}>
+      <Link to={profilePathForUser(user)} className={styles.itemLink} aria-label={`Ver perfil de ${user.name}`}>
         <StoryRing
           avatarUrl={user.avatarUrl}
           displayName={user.name}

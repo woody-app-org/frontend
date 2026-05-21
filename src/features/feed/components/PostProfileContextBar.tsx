@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 
 const rowClassFeed = cn(
   "flex w-full min-w-0 items-center gap-2.5 rounded-t-2xl -mx-4 -mt-3 mb-1 border-b border-[var(--woody-accent)]/12",
@@ -14,6 +15,7 @@ const rowClassCommunity = cn(
 
 export interface PostProfileContextBarProps {
   authorId: string;
+  authorUsername?: string;
   authorDisplayName: string;
   variant: "feed" | "community";
   className?: string;
@@ -24,6 +26,7 @@ export interface PostProfileContextBarProps {
  */
 export function PostProfileContextBar({
   authorId,
+  authorUsername,
   authorDisplayName,
   variant,
   className,
@@ -35,7 +38,7 @@ export function PostProfileContextBar({
         <span className="font-semibold text-[var(--woody-text)]">Publicação no perfil</span>
         <span className="text-[var(--woody-muted)]"> · </span>
         <Link
-          to={`/profile/${authorId}`}
+          to={profilePathForUser({ id: authorId, username: authorUsername })}
           data-post-ignore-open="true"
           className="font-medium text-[var(--woody-nav)] underline-offset-2 hover:underline"
           onClick={(e) => e.stopPropagation()}

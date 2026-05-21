@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodySection } from "@/lib/woody-ui";
 import type { User } from "@/domain/types";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { fetchMyFollowing } from "@/features/users/services/userSocial.service";
 import { StartConversationButton } from "./StartConversationButton";
 
@@ -87,7 +88,7 @@ function ConversationStartHintsLoaded() {
                 className="flex items-center gap-2 rounded-xl border border-transparent px-1 py-1.5 transition-colors hover:border-[var(--woody-divider)]/80 hover:bg-[var(--woody-card)]/60"
               >
                 <Link
-                  to={`/profile/${u.id}`}
+                  to={profilePathForUser(u)}
                   className="flex min-w-0 flex-1 items-center gap-2 rounded-lg py-0.5 pr-1 text-left"
                   aria-label={`Ver perfil de ${u.name}`}
                 >

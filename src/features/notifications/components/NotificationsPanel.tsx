@@ -9,6 +9,7 @@ export interface NotificationsPanelProps {
   /** Painel visível (popover/modal aberto). */
   isOpen: boolean;
   viewerUserId: string;
+  viewerUsername?: string;
   onAfterRead?: () => void;
   onRequestClose: () => void;
   signalsHref: string;
@@ -21,6 +22,7 @@ export interface NotificationsPanelProps {
 export function NotificationsPanel({
   isOpen,
   viewerUserId,
+  viewerUsername,
   onAfterRead,
   onRequestClose,
   signalsHref,
@@ -49,7 +51,7 @@ export function NotificationsPanel({
   const onActivateRow = async (n: NotificationItem) => {
     await handleNotificationClick({
       notification: n,
-      viewerUserId,
+      viewer: { userId: viewerUserId, username: viewerUsername },
       navigate,
       currentLocation: location,
       markReadIfNeeded: markOneRead,
@@ -71,6 +73,7 @@ export function NotificationsPanel({
         markingAll={markingAll}
         onMarkAll={onMarkAll}
         viewerUserId={viewerUserId}
+        viewerUsername={viewerUsername}
         onActivateRow={onActivateRow}
       />
 

@@ -1,5 +1,5 @@
 import { startTransition, useCallback, useEffect, useState, type ReactNode } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Activity, Bookmark } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { useCreatePostComposer } from "@/features/feed/context/CreatePostComposerContext";
@@ -68,8 +68,9 @@ function ProfileEmptyTab({
 }
 
 function ProfilePageInner() {
-  const { userId } = useParams<{ userId: string }>();
+  const { username: routeHandle } = useParams<{ username: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user: authUser, patchUser, isAuthenticated } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("posts");
@@ -96,9 +97,10 @@ function ProfilePageInner() {
     applyFollowPatch,
     togglePostLike,
     isPostLikePending,
-  } = useUserProfile(userId);
+    profileUrlRedirect,
+  } = useUserProfile(routeHandle);
   const { registerProfilePostIngest } = useCreatePostComposer();
-  const { isOwnProfile } = useProfilePermissions(userId);
+  const { isOwnProfile } = useProfilePermissions(profile?.id);
   const storyViewer = useStoryViewerState();
   const [storyComposerOpen, setStoryComposerOpen] = useState(false);
 
@@ -110,6 +112,13 @@ function ProfilePageInner() {
   const { unreadCount: unreadSignalsCount } = useProfileSignalsUnreadCount(
     Boolean(isOwnProfile && authUser?.id)
   );
+
+  useEffect(() => {
+    if (!profileUrlRedirect) return;
+    const next = `${profileUrlRedirect}${location.search}${location.hash ?? ""}`;
+    if (`${location.pathname}${location.search}${location.hash ?? ""}` === next) return;
+    navigate(next, { replace: true });
+  }, [profileUrlRedirect, navigate, location.pathname, location.search, location.hash]);
 
   useEffect(() => {
     if (!isOwnProfile) return;
@@ -169,7 +178,7 @@ function ProfilePageInner() {
     [authUser?.id, patchUser, refetch]
   );
 
-  if (!userId) {
+  if (!routeHandle) {
     navigate("/feed", { replace: true });
     return null;
   }

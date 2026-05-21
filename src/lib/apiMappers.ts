@@ -272,5 +272,9 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
     showProBadge: Boolean(raw.showProBadge),
     hasActiveStories: Boolean(raw.hasActiveStories),
     subscription: raw.subscription != null ? mapSubscription(raw.subscription) : undefined,
+    canonicalUsername:
+      typeof raw.canonicalUsername === "string" && raw.canonicalUsername.trim()
+        ? raw.canonicalUsername.trim()
+        : undefined,
   };
 }

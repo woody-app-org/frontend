@@ -46,6 +46,8 @@ export interface UserProfile {
   hasActiveStories?: boolean;
   /** Presente em `GET /users/me` quando a API envia o estado de assinatura. */
   subscription?: AuthUserSubscription;
+  /** Username actual quando o handle pedido era um username antigo (histórico). */
+  canonicalUsername?: string;
 }
 
 /** Payload para `updateProfile` / futura API REST. */

@@ -47,6 +47,17 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
   }
 }
 
+/** Perfil público por username (preferido). Suporta username antigo via `canonicalUsername`. */
+export async function getProfileByUsername(username: string): Promise<UserProfile | null> {
+  try {
+    const { data } = await api.get(`/users/by-username/${encodeURIComponent(username)}`);
+    return mapUserProfileFromApi(data);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) return null;
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar perfil."));
+  }
+}
+
 export type UpdateProfileResult =
   | { ok: true; profile: UserProfile }
   | { ok: false; error: string };
