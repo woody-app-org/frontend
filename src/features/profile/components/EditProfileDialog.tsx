@@ -3,7 +3,6 @@ import { AlertCircle, ImagePlus, Loader2, Pencil, User } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
