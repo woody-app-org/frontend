@@ -397,10 +397,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
             <Pencil className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
             Ajustar meu perfil
           </DialogTitle>
-          <DialogDescription>
-            Só o seu perfil pessoal — não altera comunidades. No demo os dados ficam neste navegador; ao ligar a API,
-            substitua a função em profile.service (mapa de rotas em lib/backendIntegrationHints).
-          </DialogDescription>
         </DialogHeader>
 
         <form id={formId} onSubmit={handleSubmit} className="mt-2 space-y-5" aria-busy={isSubmitting}>
@@ -485,7 +481,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                   </Button>
                 ) : null}
               </div>
-              <p className="border-t border-[var(--woody-accent)]/5 px-3 pt-2 text-xs text-[var(--woody-muted)]">
+              <p className="border-t border-[var(--woody-accent)]/5 px-3 pt-2 pb-3 text-xs leading-relaxed text-[var(--woody-muted)]">
                 PNG ou JPG até ~2,5 MB. Ajuste o enquadramento panorâmico antes de enviar.
               </p>
               {bannerError ? (
