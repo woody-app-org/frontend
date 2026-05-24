@@ -1,29 +1,83 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
-import { resolveBadgeIconSrc } from "../badges/badgeAssets";
+import { formatDisplayDateFromIso } from "@/lib/formatIsoDate";
+import { badgeCriteriaBySlug, profileBadgeImageClass, profileBadgeSizeClass } from "../badges/badgeAssets";
 import type { UserBadge } from "../types";
 import { BadgeDetailDialog, BadgeIcon } from "./BadgeDetailDialog";
+import { BadgeStack } from "./BadgeStack";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export interface ProfileBadgesSectionProps {
   badges: UserBadge[];
   className?: string;
 }
 
+function BadgePopoverCard({ badge }: { badge: UserBadge }) {
+  const criteria = badgeCriteriaBySlug[badge.slug];
+  const earnedLabel =
+    badge.earnedAt && !Number.isNaN(new Date(badge.earnedAt).getTime())
+      ? formatDisplayDateFromIso(badge.earnedAt)
+      : null;
+
+  return (
+    <div className="flex flex-col items-center px-5 pb-5 pt-6 text-center w-64 sm:w-72">
+      <BadgeIcon
+        badge={badge}
+        className="size-24 sm:size-28 rounded-full"
+        imageClassName="size-24 sm:size-28 h-full w-full rounded-full object-cover"
+      />
+      <p className="mt-4 text-base font-bold text-[var(--woody-text)] leading-tight">
+        {badge.name}
+      </p>
+      <p className="mt-1.5 text-xs leading-relaxed text-[var(--woody-text)]/80">
+        {badge.description}
+      </p>
+      {criteria ? (
+        <p className="mt-2 text-xs leading-relaxed text-[var(--woody-muted)]">
+          {criteria}
+        </p>
+      ) : null}
+      {earnedLabel ? (
+        <p className="mt-2 text-[10px] font-medium text-[var(--woody-muted)]">
+          Conquistada em {earnedLabel}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function ProfileBadgesSection({ badges, className }: ProfileBadgesSectionProps) {
-  const [selectedBadge, setSelectedBadge] = useState<UserBadge | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogInitialIndex, setDialogInitialIndex] = useState(0);
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
+  const hoverIntentRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (badges.length === 0) return null;
 
-  const openBadge = (badge: UserBadge) => {
-    setSelectedBadge(badge);
+  const openDialog = (index: number) => {
+    setHoveredSlug(null);
+    setDialogInitialIndex(index);
     setDialogOpen(true);
   };
 
   const handleDialogOpenChange = (open: boolean) => {
     setDialogOpen(open);
-    if (!open) setSelectedBadge(null);
+  };
+
+  const scheduleClose = () => {
+    hoverIntentRef.current = setTimeout(() => setHoveredSlug(null), 120);
+  };
+
+  const cancelClose = () => {
+    if (hoverIntentRef.current) {
+      clearTimeout(hoverIntentRef.current);
+      hoverIntentRef.current = null;
+    }
   };
 
   return (
@@ -36,61 +90,67 @@ export function ProfileBadgesSection({ badges, className }: ProfileBadgesSection
           Insígnias
         </h2>
 
-        <ul
-          className="mt-3 flex flex-wrap gap-2 sm:gap-2.5"
-          role="list"
-        >
-          {badges.map((badge) => {
-            const hasImage = Boolean(resolveBadgeIconSrc(badge.iconAssetKey));
+        {/* Mobile: empilhadas estilo GitHub */}
+        <div className="mt-3 sm:hidden">
+          <BadgeStack badges={badges} onOpen={openDialog} />
+        </div>
 
-            return (
-              <li key={badge.slug} className="min-w-0 max-w-full sm:max-w-none">
-                <button
-                  type="button"
-                  onClick={() => openBadge(badge)}
-                  className={cn(
-                    woodyFocus.ring,
-                    "group flex w-full min-w-0 cursor-pointer items-center gap-2.5 rounded-xl border border-[var(--woody-divider)]",
-                    "bg-[var(--woody-card)] px-2.5 py-2 text-left shadow-[0_1px_2px_rgba(10,10,10,0.03)]",
-                    "transition-colors hover:border-[var(--woody-accent)]/25 hover:bg-[var(--woody-nav)]/[0.04]",
-                    "sm:w-auto sm:max-w-[14rem]"
-                  )}
-                  aria-label={`Ver detalhes da insígnia ${badge.name}`}
-                >
-                  <span
+        {/* Desktop: ícones lado a lado + popover no hover */}
+        <ul className="mt-3 hidden flex-wrap gap-3 sm:flex" role="list">
+          {badges.map((badge, index) => (
+            <li key={badge.slug}>
+              <Popover
+                open={hoveredSlug === badge.slug}
+                onOpenChange={(open) => {
+                  if (!open) setHoveredSlug(null);
+                }}
+              >
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={`Ver detalhes da insígnia ${badge.name}`}
+                    onClick={() => openDialog(index)}
+                    onMouseEnter={() => {
+                      cancelClose();
+                      setHoveredSlug(badge.slug);
+                    }}
+                    onMouseLeave={scheduleClose}
                     className={cn(
-                      "flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg",
-                      hasImage
-                        ? "bg-[var(--woody-nav)]/[0.06]"
-                        : "bg-[var(--woody-nav)]/10"
+                      woodyFocus.ring,
+                      "group cursor-pointer overflow-hidden rounded-full p-0",
+                      profileBadgeSizeClass,
+                      "transition-transform duration-150 hover:scale-110 active:scale-100"
                     )}
                   >
                     <BadgeIcon
                       badge={badge}
-                      className="size-9"
-                      imageClassName="size-9 max-h-9 w-auto"
+                      className={cn(profileBadgeSizeClass, "rounded-full")}
+                      imageClassName={profileBadgeImageClass}
                     />
-                  </span>
+                  </button>
+                </PopoverTrigger>
 
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-[var(--woody-text)]">
-                      {badge.name}
-                    </span>
-                    {badge.description ? (
-                      <span className="mt-0.5 line-clamp-1 text-xs leading-snug text-[var(--woody-muted)]">
-                        {badge.description}
-                      </span>
-                    ) : null}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
+                <PopoverContent
+                  side="top"
+                  align="center"
+                  sideOffset={8}
+                  className="hidden sm:block w-auto max-w-none p-0 rounded-2xl border border-[var(--woody-divider)] bg-[var(--woody-card)] shadow-xl"
+                  onMouseEnter={cancelClose}
+                  onMouseLeave={scheduleClose}
+                  onPointerDownOutside={(e) => e.preventDefault()}
+                  onInteractOutside={(e) => e.preventDefault()}
+                >
+                  <BadgePopoverCard badge={badge} />
+                </PopoverContent>
+              </Popover>
+            </li>
+          ))}
         </ul>
       </section>
 
       <BadgeDetailDialog
-        badge={selectedBadge}
+        badges={badges}
+        initialIndex={dialogInitialIndex}
         open={dialogOpen}
         onOpenChange={handleDialogOpenChange}
       />

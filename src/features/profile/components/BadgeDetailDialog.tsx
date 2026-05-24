@@ -1,4 +1,5 @@
 import { Award } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -11,11 +12,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDisplayDateFromIso } from "@/lib/formatIsoDate";
 import { woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
+import { useMatchMedia } from "@/lib/useMatchMedia";
 import { badgeCriteriaBySlug, resolveBadgeIconSrc } from "../badges/badgeAssets";
 import type { UserBadge } from "../types";
+import { BadgeFlipCarousel } from "./BadgeFlipCarousel";
 
 export interface BadgeDetailDialogProps {
-  badge: UserBadge | null;
+  badges: UserBadge[];
+  initialIndex?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -35,8 +39,8 @@ function BadgeIcon({
     return (
       <img
         src={src}
-        alt=""
-        className={cn("object-contain", imageClassName, className)}
+        alt={badge.name}
+        className={cn("object-contain", className, imageClassName)}
       />
     );
   }
@@ -54,14 +58,60 @@ function BadgeIcon({
   );
 }
 
-export function BadgeDetailDialog({ badge, open, onOpenChange }: BadgeDetailDialogProps) {
-  if (!badge) return null;
-
+function BadgeDetailText({ badge }: { badge: UserBadge }) {
   const criteria = badgeCriteriaBySlug[badge.slug];
   const earnedLabel =
     badge.earnedAt && !Number.isNaN(new Date(badge.earnedAt).getTime())
       ? formatDisplayDateFromIso(badge.earnedAt)
       : null;
+
+  return (
+    <>
+      <h2 className="text-lg font-bold tracking-tight text-[var(--woody-text)] sm:text-xl">
+        {badge.name}
+      </h2>
+
+      <p className="mt-2 max-w-sm text-sm leading-relaxed text-[var(--woody-text)]/88">
+        {badge.description}
+      </p>
+
+      {criteria ? (
+        <p className="mt-4 max-w-sm text-xs leading-relaxed text-[var(--woody-muted)]">
+          {criteria}
+        </p>
+      ) : null}
+
+      {earnedLabel ? (
+        <p className="mt-3 text-xs font-medium text-[var(--woody-muted)]">
+          Conquistada em {earnedLabel}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+export function BadgeDetailDialog({
+  badges,
+  initialIndex = 0,
+  open,
+  onOpenChange,
+}: BadgeDetailDialogProps) {
+  const isMobile = useMatchMedia("(max-width: 767px)");
+  const safeInitialIndex =
+    badges.length === 0 ? 0 : Math.min(Math.max(initialIndex, 0), badges.length - 1);
+  const [activeIndex, setActiveIndex] = useState(safeInitialIndex);
+
+  useEffect(() => {
+    if (open) setActiveIndex(safeInitialIndex);
+  }, [open, safeInitialIndex]);
+
+  const badge = badges[activeIndex] ?? badges[safeInitialIndex] ?? badges[0];
+  const useCarousel = isMobile && badges.length > 1;
+  const displayBadge = useCarousel
+    ? (badges[activeIndex] ?? badge)
+    : (badges[safeInitialIndex] ?? badge);
+
+  if (!badge) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,31 +127,24 @@ export function BadgeDetailDialog({ badge, open, onOpenChange }: BadgeDetailDial
         </DialogHeader>
 
         <div className="flex flex-col items-center px-6 pb-6 pt-8 text-center">
-          <BadgeIcon
-            badge={badge}
-            className="size-28 sm:size-32"
-            imageClassName="size-full max-h-32 w-auto"
-          />
+          {useCarousel ? (
+            <BadgeFlipCarousel
+              key={`${open}-${safeInitialIndex}`}
+              badges={badges}
+              initialIndex={safeInitialIndex}
+              onIndexChange={setActiveIndex}
+            />
+          ) : (
+            <BadgeIcon
+              badge={displayBadge}
+              className="size-32 rounded-full sm:size-40"
+              imageClassName="size-32 h-full w-full rounded-full object-cover sm:size-40"
+            />
+          )}
 
-          <h2 className="mt-5 text-lg font-bold tracking-tight text-[var(--woody-text)]">
-            {badge.name}
-          </h2>
-
-          <p className="mt-2 max-w-sm text-sm leading-relaxed text-[var(--woody-text)]/88">
-            {badge.description}
-          </p>
-
-          {criteria ? (
-            <p className="mt-4 max-w-sm text-xs leading-relaxed text-[var(--woody-muted)]">
-              {criteria}
-            </p>
-          ) : null}
-
-          {earnedLabel ? (
-            <p className="mt-3 text-xs font-medium text-[var(--woody-muted)]">
-              Conquistada em {earnedLabel}
-            </p>
-          ) : null}
+          <div className={cn(useCarousel ? "mt-4 w-full" : "mt-6 w-full")}>
+            <BadgeDetailText badge={displayBadge} />
+          </div>
 
           <DialogClose asChild>
             <Button
