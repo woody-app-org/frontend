@@ -49,4 +49,5 @@ export const MOCK_USER_PROFILE: UserProfile = {
   followersCount: 42,
   followingCount: 18,
   showProBadge: false,
+  badges: [],
 };

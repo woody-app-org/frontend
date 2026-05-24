@@ -25,6 +25,7 @@ import { woodyFocus } from "@/lib/woody-ui";
 import type { UserProfile } from "../types";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { resolvePublicMediaUrl } from "@/lib/api";
+import { ProfileBadgesSection } from "./ProfileBadgesSection";
 
 const styles = {
   card:
@@ -285,6 +286,7 @@ export function ProfileHeader({
           </div>
         </div>
         {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
+        <ProfileBadgesSection badges={profile.badges} />
       </CardContent>
     </Card>
   );

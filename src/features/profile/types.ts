@@ -23,6 +23,17 @@ export interface ProfileSuggestion {
   avatarUrl: string | null;
 }
 
+/** Insígnia/conquista exibida no perfil (distinta de plano Pro/Max). */
+export interface UserBadge {
+  slug: string;
+  name: string;
+  description: string;
+  iconAssetKey?: string | null;
+  category?: string | null;
+  rarity?: string | null;
+  earnedAt?: string | null;
+}
+
 /** Dados completos do perfil do usuário (para futura API) */
 export interface UserProfile {
   id: string;
@@ -48,6 +59,8 @@ export interface UserProfile {
   subscription?: AuthUserSubscription;
   /** Username actual quando o handle pedido era um username antigo (histórico). */
   canonicalUsername?: string;
+  /** Insígnias conquistadas (API `badges`). */
+  badges: UserBadge[];
 }
 
 /** Payload para `updateProfile` / futura API REST. */

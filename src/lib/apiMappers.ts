@@ -10,7 +10,7 @@ import type {
 } from "@/domain/types";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
 import { isWoodyMediaType } from "@/domain/mediaAttachment";
-import type { SocialLink, UserProfile } from "@/features/profile/types";
+import type { SocialLink, UserBadge, UserProfile } from "@/features/profile/types";
 import { mapSubscription } from "@/features/auth/authMapper";
 import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
 
@@ -233,6 +233,18 @@ export function mapCommentFromApi(raw: ApiRecord): Comment {
   };
 }
 
+function mapUserBadgeFromApi(raw: ApiRecord): UserBadge {
+  return {
+    slug: asString(raw.slug),
+    name: asString(raw.name),
+    description: asString(raw.description),
+    iconAssetKey: raw.iconAssetKey ?? null,
+    category: raw.category ?? null,
+    rarity: raw.rarity ?? null,
+    earnedAt: raw.earnedAt != null ? asString(raw.earnedAt) : null,
+  };
+}
+
 export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
   const socialLinks: SocialLink[] = Array.isArray(raw.socialLinks)
     ? raw.socialLinks.map((s: ApiRecord) => ({
@@ -280,5 +292,6 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
       typeof raw.canonicalUsername === "string" && raw.canonicalUsername.trim()
         ? raw.canonicalUsername.trim()
         : undefined,
+    badges: Array.isArray(raw.badges) ? raw.badges.map(mapUserBadgeFromApi) : [],
   };
 }
