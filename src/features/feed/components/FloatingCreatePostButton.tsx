@@ -33,7 +33,7 @@ export function FloatingCreatePostButton({ hidden, className }: FloatingCreatePo
       className={cn(
         woodyFocus.ring,
         "group fixed z-[50] flex size-14 items-center justify-center rounded-full",
-        "border-2 border-[var(--woody-text)]/15 bg-[var(--woody-card)] text-[var(--woody-text)]",
+        "border-2 border-[var(--woody-nav)]/25 bg-[var(--woody-card)] text-[var(--woody-nav)]",
         "shadow-[0_4px_20px_rgba(10,10,10,0.1),0_2px_6px_rgba(10,10,10,0.05)]",
         "transition-[transform,box-shadow,border-color] duration-200 ease-out",
         "motion-reduce:transition-colors motion-reduce:duration-150",
