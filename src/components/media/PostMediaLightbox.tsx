@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Clock, ExternalLink, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
 import { postPath } from "@/features/feed/lib/postPaths";
@@ -191,10 +191,7 @@ export function PostMediaLightbox({
                   <span className="text-sm font-semibold text-white leading-tight">
                     {postContext.authorName}
                   </span>
-                  <span className="flex items-center gap-1 text-xs text-white/50">
-                    <Clock className="size-3" aria-hidden />
-                    {postContext.createdAt}
-                  </span>
+                  <span className="text-xs text-white/50">{postContext.createdAt}</span>
                 </div>
                 {contentSnippet && (
                   <p className="mt-0.5 text-xs leading-relaxed text-white/65 line-clamp-2">

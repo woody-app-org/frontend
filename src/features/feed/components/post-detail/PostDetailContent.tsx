@@ -45,6 +45,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
       {galleryItems.length > 0 ? (
         <PostMediaGallery items={galleryItems} className="mt-2 sm:mt-3" variant="detail" />
       ) : null}
+      <p className="text-[0.8125rem] leading-snug text-[var(--woody-muted)]">{post.createdAt}</p>
     </article>
   );
 }

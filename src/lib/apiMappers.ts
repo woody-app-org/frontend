@@ -13,6 +13,7 @@ import { isWoodyMediaType } from "@/domain/mediaAttachment";
 import type { SocialLink, UserBadge, UserProfile } from "@/features/profile/types";
 import { mapSubscription } from "@/features/auth/authMapper";
 import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
+import { formatPostCardTimestamp } from "@/features/feed/lib/formatPostCardTimestamp";
 
 const PLATFORMS = new Set(["instagram", "facebook", "twitter", "tiktok", "linkedin", "other"]);
 
@@ -160,7 +161,7 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
     imageUrls: imageUrls && imageUrls.length > 0 ? imageUrls : undefined,
     mediaAttachments,
     tags: Array.isArray(raw.tags) ? raw.tags.map((t: unknown) => String(t)) : undefined,
-    createdAt: formatDisplayDateTimeFromIso(asString(raw.createdAt)),
+    createdAt: formatPostCardTimestamp(asString(raw.createdAt)),
     updatedAt: raw.updatedAt ?? null,
     deletedAt: raw.deletedAt ?? null,
     likesCount: Number(raw.likesCount ?? 0),

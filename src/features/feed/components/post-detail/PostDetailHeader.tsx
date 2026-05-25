@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Clock, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { Post } from "@/domain/types";
@@ -91,10 +91,9 @@ export function PostDetailHeader({
             <p className="text-sm font-semibold text-[var(--woody-text)]">{post.author.name}</p>
             {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
           </div>
-          <div className="mt-0.5 flex items-center gap-1 text-xs text-[var(--woody-muted)]">
-            <Clock className="size-3" />
-            <span>{post.createdAt}</span>
-          </div>
+          {post.author.username ? (
+            <p className="mt-0.5 truncate text-xs text-[var(--woody-muted)]">@{post.author.username}</p>
+          ) : null}
         </div>
       </div>
     </header>

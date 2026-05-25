@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
+import { MessageCircle, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -50,7 +50,9 @@ const styles = {
   headerMeta: "min-w-0 flex-1",
   authorName: "font-semibold text-[var(--woody-text)] text-[0.98rem] leading-tight truncate md:text-[1.02rem]",
   authorPronouns: "text-[var(--woody-muted)] text-[0.75rem]",
-  timestamp: "flex items-center gap-1 text-[var(--woody-muted)] text-[0.75rem] mt-0.5",
+  authorHandle: "text-[0.8125rem] leading-tight text-[var(--woody-muted)] truncate mt-0.5",
+  postMeta:
+    "text-[0.8125rem] leading-snug text-[var(--woody-muted)] mt-3 first:mt-0",
   menuTrigger:
     "shrink-0 touch-manipulation text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-2 min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 sm:p-1.5",
   metaRow:
@@ -261,13 +263,9 @@ export function PostCard({
                   </>
                 )}
               </div>
-              <div className={styles.timestamp}>
-                <Clock className="size-3 shrink-0" aria-hidden />
-                <span>
-                  {post.createdAt}
-                  <span className="text-[var(--woody-muted)]/80"> · #{post.id}</span>
-                </span>
-              </div>
+              {post.author.username ? (
+                <p className={styles.authorHandle}>@{post.author.username}</p>
+              ) : null}
             </div>
             </Link>
           </div>
@@ -320,6 +318,7 @@ export function PostCard({
             <PostMediaGallery items={galleryItems} className="mt-0 sm:mt-1" />
           </div>
         ) : null}
+        <p className={styles.postMeta}>{post.createdAt}</p>
         <div className={styles.footer}>
           <button
             type="button"
