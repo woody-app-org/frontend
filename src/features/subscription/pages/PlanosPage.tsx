@@ -172,7 +172,7 @@ export function PlanosPage() {
         )}
       >
         <header className="space-y-2 text-center sm:text-left sm:space-y-2.5">
-          <h1 className="text-balance text-xl font-bold tracking-tight text-[var(--woody-text)] sm:text-2xl md:text-[1.75rem] md:leading-tight">
+          <h1 className="font-heading text-balance text-xl font-bold tracking-tight text-[var(--woody-text)] sm:text-2xl md:text-[1.75rem] md:leading-tight">
             Planos sem TABU
           </h1>
           <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[var(--woody-muted)] sm:mx-0">
@@ -236,7 +236,7 @@ export function PlanosPage() {
 
             <div className={cardFooterClass}>
               <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-muted)]">Preço</p>
-              <p className="mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl">Sem custo</p>
+              <p className="font-display mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl">Sem custo</p>
               <p className="text-xs font-medium text-[var(--woody-muted)] sm:text-sm">R$ 0,00</p>
               {isEssencialCurrent ? (
                 <Button
@@ -301,7 +301,7 @@ export function PlanosPage() {
 
             <div className={cn("relative border-[var(--woody-nav)]/12", cardFooterClass)}>
               <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-muted)]">Preço</p>
-              <p className="mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl">{proPrice.primary}</p>
+              <p className="font-display mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl">{proPrice.primary}</p>
               {proPrice.secondary ? (
                 <p className="text-xs font-medium text-[var(--woody-muted)] sm:text-sm">{proPrice.secondary}</p>
               ) : null}
@@ -362,7 +362,7 @@ export function PlanosPage() {
 
             <div className={cardFooterClass}>
               <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-muted)]">Preço</p>
-              <p className="mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl">{maxPrice.primary}</p>
+              <p className="font-display mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl">{maxPrice.primary}</p>
               {maxPrice.secondary ? (
                 <p className="text-xs font-medium text-[var(--woody-muted)] sm:text-sm">{maxPrice.secondary}</p>
               ) : null}

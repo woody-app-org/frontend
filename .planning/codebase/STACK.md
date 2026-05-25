@@ -83,8 +83,8 @@ No package script for tests, formatting, typecheck-only, or coverage is defined 
 - `components.json` sets `style: "new-york"`, `baseColor: "neutral"`, `iconLibrary: "lucide"`, and aliases such as `@/components`, `@/components/ui`, and `@/lib/utils`.
 
 **Fonts and assets:**
-- Google Fonts `Lora` and `Plus Jakarta Sans` are loaded in `index.html`.
-- The app favicon points at `src/assets/cat.svg` from `index.html`.
+- Typography is self-hosted via Fontsource in `src/index.css` (no remote Google Fonts): **Public Sans** (`font-sans` / `font-body`, global UI), **Raleway** (`font-heading`, titles), **Space Grotesk** (`font-display`, campaign CTAs), **Instrument Serif** (`font-editorial`, short editorial lines).
+- Favicons and PWA manifest are linked from `index.html` under `/public`.
 
 ## Configuration
 

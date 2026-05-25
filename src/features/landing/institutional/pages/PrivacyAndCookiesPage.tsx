@@ -16,13 +16,13 @@ export function PrivacyAndCookiesPage() {
 
         <article className="mx-auto max-w-3xl rounded-[2rem] bg-white px-8 py-12 md:px-12 md:py-14">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#8a6f4a]">Transparência</p>
-          <h1 className="mt-3 font-sans text-[clamp(1.35rem,3vw,2rem)] font-extrabold uppercase leading-snug tracking-[0.04em] text-[var(--woody-ink)]">
+          <h1 className="font-heading mt-3 text-balance text-[clamp(1.35rem,3vw,2rem)] font-bold uppercase leading-snug tracking-[0.02em] text-[var(--woody-ink)]">
             Política de Cookies e Tecnologias Locais
           </h1>
-          <p className="mt-2 text-[13px] font-medium leading-snug text-[var(--woody-ink)]/65">
+          <p className="mt-2 text-[13px] font-normal leading-snug text-[var(--woody-ink)]/65">
             Woody | Versão 1.0 | Última atualização: 13 de maio de 2026
           </p>
-          <p className="mt-6 font-serif text-base leading-[1.75] text-[var(--woody-ink)] md:text-[1.05rem]">
+          <p className="mt-6 text-base leading-[1.75] text-[var(--woody-ink)] md:text-[1.05rem]">
             Um resumo simples de como a Woody trata dados no seu navegador neste momento — sem juridiquês
             excessivo, mas com honestidade. Esta política explica o uso de cookies, armazenamento local, sessão,
             recursos técnicos e terceiros necessários para a aplicação funcionar de forma segura e transparente.
@@ -148,8 +148,9 @@ export function PrivacyAndCookiesPage() {
               <h2 className="font-sans text-base font-bold text-[var(--woody-ink)]">Fontes, scripts e outros terceiros</h2>
               <InstitutionalProse className="mt-3 !max-w-none">
                 <p>
-                  No carregamento normal da aplicação, a Woody usa as famílias <strong>Plus Jakarta Sans</strong> e <strong>Lora</strong>, ambas com
-                  licença aberta OFL, incluídas no pacote da própria aplicação e servidas pelo mesmo site.
+                  No carregamento normal da aplicação, a Woody usa as famílias <strong>Public Sans</strong>, <strong>Raleway</strong>,{" "}
+                  <strong>Space Grotesk</strong> e <strong>Instrument Serif</strong>, com licença aberta OFL, incluídas no pacote da própria
+                  aplicação e servidas pelo mesmo site.
                 </p>
                 <p>
                   Isso significa que, no cenário atual, a aplicação <strong>não precisa fazer pedidos ao Google Fonts</strong> nem a outros

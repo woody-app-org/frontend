@@ -63,7 +63,7 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
           }
         >
           <ScrollReveal enabled={motion} yOffset={16} className="lg:pr-4">
-            <h2 className="max-w-[min(100%,22rem)] font-sans text-[clamp(2rem,5.5vw,3.75rem)] font-black leading-[0.95] tracking-[-0.03em] text-[#8dbf43] md:max-w-none">
+            <h2 className="font-display max-w-[min(100%,22rem)] text-balance text-[clamp(2rem,5.5vw,3.75rem)] font-bold leading-[0.95] tracking-[-0.02em] text-[#8dbf43] md:max-w-none">
               {mobileQr.title}
             </h2>
             <WoodyLogo
@@ -97,7 +97,7 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
           </ScrollReveal>
 
           <ScrollReveal enabled={motion} delayMs={200} yOffset={12} className="text-center lg:text-right">
-            <p className="mx-auto max-w-[min(100%,19.5rem)] font-sans text-[clamp(1.12rem,2.85vw,2.28rem)] font-extrabold uppercase leading-[1.02] tracking-[0.1em] text-white md:max-w-[19rem] lg:mx-0 lg:ml-auto lg:max-w-[18.5rem] xl:max-w-[19.5rem]">
+            <p className="font-heading mx-auto max-w-[min(100%,19.5rem)] text-balance text-[clamp(1rem,2.5vw,1.65rem)] font-semibold uppercase leading-[1.12] tracking-[0.05em] text-white md:max-w-[19rem] lg:mx-0 lg:ml-auto lg:max-w-[18.5rem] xl:max-w-[19.5rem]">
               {mobileQr.instructions}
             </p>
           </ScrollReveal>

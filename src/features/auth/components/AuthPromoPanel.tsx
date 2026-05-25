@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 const styles = {
   wrap: "relative pl-8",
   accentBar: "absolute left-0 top-0 h-full w-1 rounded-full bg-[var(--auth-button)]",
-  title: "text-[2.65rem] leading-[0.95] md:text-6xl font-bold tracking-tight text-[var(--auth-text-on-beige)]",
+  title:
+    "font-heading text-[2.65rem] leading-[0.95] md:text-6xl font-bold tracking-tight text-[var(--auth-text-on-beige)]",
   subtitle: "text-lg text-[var(--auth-text-on-beige)]/80 mt-6 leading-relaxed max-w-[26rem]",
   trustRow:
     "mt-8 inline-flex items-center gap-2 rounded-full border border-black/10 bg-[var(--auth-button)]/12 px-3 py-1.5 text-xs font-medium text-[var(--auth-text-on-beige)]/78",

@@ -60,21 +60,21 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
 
             <div className="max-w-[min(100%,34rem)] md:max-w-[min(100%,38rem)]">
               <ScrollReveal enabled={motion} yOffset={16}>
-                <h2 className="font-sans text-[clamp(2.35rem,7.5vw,4.75rem)] font-bold leading-[0.98] tracking-[-0.04em] text-white drop-shadow-[0_4px_48px_rgba(0,0,0,0.55)]">
+                <h2 className="font-heading text-balance text-[clamp(2.35rem,7.5vw,4.75rem)] font-bold leading-[0.98] tracking-[-0.03em] text-white drop-shadow-[0_4px_48px_rgba(0,0,0,0.55)]">
                   {whatIsWoody.title}
                 </h2>
               </ScrollReveal>
 
               <ScrollReveal enabled={motion} delayMs={90} yOffset={12} className="mt-6 md:mt-10">
                 {/* Desktop / tablet: texto completo */}
-                <div className="hidden space-y-6 font-sans text-[clamp(0.98rem,2.1vw,1.12rem)] font-medium leading-[1.72] text-white/92 drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] md:block">
+                <div className="hidden space-y-6 text-[clamp(0.98rem,2.1vw,1.12rem)] font-normal leading-[1.72] text-white/92 drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] md:block">
                   {whatIsWoody.paragraphs.map((p) => (
                     <p key={p.slice(0, 28)}>{p}</p>
                   ))}
                 </div>
 
                 {/* Mobile: prévia curta + «Ler mais» */}
-                <div className="font-sans text-[clamp(0.98rem,2.1vw,1.12rem)] font-medium leading-[1.72] text-white/92 drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] md:hidden">
+                <div className="text-[clamp(0.98rem,2.1vw,1.12rem)] font-normal leading-[1.72] text-white/92 drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] md:hidden">
                   {mobileExpanded ? (
                     <div id="what-is-woody-mobile-body" className="space-y-6">
                       {whatIsWoody.paragraphs.map((p) => (
@@ -96,7 +96,7 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
                     </div>
                   ) : (
                     <>
-                      <p>{mobilePreview}</p>
+                      <p className="font-editorial text-pretty leading-[1.78]">{mobilePreview}</p>
                       {hasMoreOnMobile ? (
                         <button
                           type="button"

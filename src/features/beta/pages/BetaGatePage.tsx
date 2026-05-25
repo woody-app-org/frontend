@@ -99,7 +99,7 @@ export function BetaGatePage() {
             />
           </div>
 
-          <h1 className="text-center font-sans text-[1.65rem] font-semibold leading-tight tracking-tight text-[var(--woody-ink)] sm:text-[1.85rem]">
+          <h1 className="font-heading text-center text-[1.65rem] font-semibold leading-tight tracking-tight text-[var(--woody-ink)] sm:text-[1.85rem]">
             {COPY.title}
           </h1>
           <p className="mt-4 max-w-[26rem] text-center text-[0.9375rem] leading-relaxed text-[var(--woody-muted)] sm:text-base">

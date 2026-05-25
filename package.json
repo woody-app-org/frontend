@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource-variable/lora": "^5.2.8",
-    "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
+    "@fontsource-variable/public-sans": "^5.2.7",
+    "@fontsource-variable/raleway": "^5.2.8",
+    "@fontsource-variable/space-grotesk": "^5.2.10",
+    "@fontsource/instrument-serif": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@microsoft/signalr": "^9.0.6",
     "axios": "^1.13.5",

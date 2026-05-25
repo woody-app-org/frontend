@@ -36,7 +36,7 @@ export function LandingHero() {
             </p>
           </div>
 
-          <h1 className="mt-8 font-serif text-[clamp(2.65rem,6.4vw,4.35rem)] font-semibold leading-[0.98] tracking-[-0.035em] text-[var(--woody-ink)]">
+          <h1 className="font-heading mt-8 text-[clamp(2.65rem,6.4vw,4.35rem)] font-semibold leading-[0.98] tracking-[-0.035em] text-[var(--woody-ink)]">
             O teu espaço,
             <br />
             <span className="relative inline-block">

@@ -35,13 +35,19 @@ export function MissionNarrativeSection({ embedInLanding = false }: MissionNarra
 
         <ScrollReveal enabled={motion} yOffset={20}>
           <div className="mx-auto w-full max-w-3xl rounded-[2rem] bg-white px-8 py-12 shadow-[0_32px_90px_-40px_rgba(0,0,0,0.45)] md:px-14 md:py-16">
-            <h2 className="font-sans text-[clamp(1.85rem,4.5vw,2.85rem)] font-extrabold leading-[1.05] tracking-[-0.02em] text-[#8dbf43]">
+            <h2 className="font-heading text-balance text-[clamp(1.85rem,4.5vw,2.85rem)] font-bold leading-[1.05] tracking-[-0.02em] text-[#8dbf43]">
               {mission.title}
             </h2>
 
-            <div className="mt-10 space-y-6 font-serif text-[1.08rem] font-normal leading-[1.78] text-[var(--woody-ink)] md:text-[1.14rem]">
-              <p>{mission.lead}</p>
-              {expanded ? mission.body.map((p) => <p key={p.slice(0, 24)}>{p}</p>) : null}
+            <div className="mt-10 space-y-6 text-[1.08rem] leading-[1.78] text-[var(--woody-ink)] md:text-[1.14rem]">
+              <p className="font-editorial max-w-prose text-pretty font-normal leading-[1.8]">{mission.lead}</p>
+              {expanded
+                ? mission.body.map((p) => (
+                    <p key={p.slice(0, 24)} className="font-normal">
+                      {p}
+                    </p>
+                  ))
+                : null}
             </div>
 
             <div className="mt-12">

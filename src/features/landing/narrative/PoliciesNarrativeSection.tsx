@@ -44,12 +44,12 @@ export function PoliciesNarrativeSection({ embedInLanding = false }: PoliciesNar
               <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#6b7280]">Woody</p>
             </ScrollReveal>
             <ScrollReveal enabled={motion} delayMs={70} yOffset={12}>
-              <h2 className="mt-3 font-sans text-[clamp(1.75rem,4vw,2.65rem)] font-extrabold uppercase leading-[1.05] tracking-[0.04em] text-[var(--woody-ink)]">
+              <h2 className="font-heading mt-3 text-balance text-[clamp(1.75rem,4vw,2.65rem)] font-bold uppercase leading-[1.05] tracking-[0.03em] text-[var(--woody-ink)]">
                 Políticas
               </h2>
             </ScrollReveal>
             <ScrollReveal enabled={motion} delayMs={130} yOffset={10}>
-              <p className="mt-5 max-w-xl font-serif text-[1.02rem] leading-relaxed text-[var(--woody-ink)]/85 md:text-[1.06rem]">
+              <p className="font-editorial mt-5 max-w-xl text-pretty text-[1.02rem] leading-relaxed text-[var(--woody-ink)]/85 md:text-[1.06rem]">
                 {policiesIndexIntro}
               </p>
             </ScrollReveal>
@@ -78,7 +78,7 @@ export function PoliciesNarrativeSection({ embedInLanding = false }: PoliciesNar
         <ScrollReveal enabled={motion} delayMs={450} yOffset={12} className="mt-14 max-w-3xl">
           <div className="rounded-[1.5rem] border border-black/[0.08] bg-white/70 px-6 py-6 shadow-sm md:px-8 md:py-7">
             <p className="font-sans text-sm font-bold uppercase tracking-[0.12em] text-[#6b7280]">Política de Cookies e Tecnologias Locais</p>
-            <p className="mt-3 font-serif text-[1.02rem] leading-relaxed text-[var(--woody-ink)]/88 md:text-[1.05rem]">
+            <p className="mt-3 text-[1.02rem] leading-relaxed text-[var(--woody-ink)]/88 md:text-[1.05rem]">
             Um resumo simples de como a Woody trata dados no seu navegador neste momento - sem juridiquês excessivo, mas com honestidade. Esta política explica o uso de cookies, armazenamento local, sessão, recursos técnicos e terceiros necessários para a aplicação funcionar de forma segura e transparente.
             </p>
             <Link

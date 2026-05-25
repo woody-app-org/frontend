@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const styles = {
-  panelTitle: "text-3xl font-bold text-[var(--auth-text-on-maroon)] text-center md:text-left tracking-tight",
+  panelTitle:
+    "font-heading text-3xl font-bold text-[var(--auth-text-on-maroon)] text-center md:text-left tracking-tight",
   panelLead:
     "text-xl text-[var(--auth-text-on-maroon)]/80 text-center md:text-left mt-3 max-w-md mx-auto md:mx-0 leading-relaxed",
   ctaStack: "mt-8 flex flex-col gap-3 w-full max-w-sm mx-auto md:mx-0",

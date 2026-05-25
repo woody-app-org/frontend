@@ -8,7 +8,7 @@ export function LandingSecurity() {
         <div className="grid gap-14 lg:grid-cols-[1fr_1.05fr] lg:items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/55">Segurança e contexto</p>
-            <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight tracking-tight md:text-[2.35rem]">
+            <h2 className="font-heading mt-4 text-3xl font-semibold leading-tight tracking-tight md:text-[2.35rem]">
               Um ambiente mais acolhedor, com interações mais claras.
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-white/72">

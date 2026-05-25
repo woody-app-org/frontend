@@ -46,10 +46,10 @@ export function InstitutionalHubPage() {
     <main className="px-[var(--layout-gutter)] pb-24 pt-12 md:pt-20">
       <div className="mx-auto max-w-[var(--layout-max-width)]">
         <p className="text-[11px] font-bold uppercase tracking-[0.38em] text-[var(--woody-muted)]">Woody</p>
-        <h1 className="mt-4 max-w-[18ch] font-sans text-[clamp(2.4rem,8vw,4.25rem)] font-black uppercase leading-[0.92] tracking-[-0.02em] text-[var(--woody-ink)]">
+        <h1 className="font-heading mt-4 max-w-[18ch] text-balance text-[clamp(2.4rem,8vw,4.25rem)] font-extrabold uppercase leading-[0.92] tracking-[-0.02em] text-[var(--woody-ink)]">
           Informação
         </h1>
-        <p className="mt-6 max-w-lg font-serif text-lg leading-relaxed text-[var(--woody-ink)]/88 md:text-xl">
+        <p className="font-editorial mt-6 max-w-lg text-pretty text-lg leading-relaxed text-[var(--woody-ink)]/88 md:text-xl">
           Da missão às políticas — páginas para te orientares com clareza, sem frieza de manual corporativo.
         </p>
 
@@ -64,10 +64,10 @@ export function InstitutionalHubPage() {
                   {item.kicker}
                 </span>
                 <div className="min-w-0 flex-1 md:flex md:items-start md:justify-between md:gap-12">
-                  <h2 className="font-sans text-[clamp(1.35rem,3vw,2.1rem)] font-extrabold uppercase leading-tight tracking-[0.02em] text-[var(--woody-ink)] group-hover:text-[#3d4a28] md:max-w-[min(100%,28rem)]">
+                  <h2 className="font-heading text-balance text-[clamp(1.35rem,3vw,2.1rem)] font-bold uppercase leading-tight tracking-[0.02em] text-[var(--woody-ink)] group-hover:text-[#3d4a28] md:max-w-[min(100%,28rem)]">
                     {item.title}
                   </h2>
-                  <p className="mt-2 max-w-sm font-serif text-[0.98rem] leading-relaxed text-[var(--woody-muted)] md:mt-0 md:text-right md:text-[1rem]">
+                  <p className="mt-2 max-w-sm text-[0.98rem] leading-relaxed text-[var(--woody-muted)] md:mt-0 md:text-right md:text-[1rem]">
                     {item.desc}
                   </p>
                 </div>
@@ -83,7 +83,7 @@ export function InstitutionalHubPage() {
         </ul>
 
         <div className="mt-16 flex flex-col gap-6 border-t border-[var(--woody-ink)]/[0.08] pt-12 md:flex-row md:items-center md:justify-between">
-          <p className="max-w-xl font-serif text-base leading-relaxed text-[var(--woody-ink)]/88">
+          <p className="font-heading max-w-xl text-base font-semibold leading-snug text-[var(--woody-ink)]/88">
             Pronta para entrar? A Woody espera-te com comunidades, conversas e ferramentas pensadas para o teu ritmo.
           </p>
           <InstitutionalPrimaryCta to="/auth/onboarding/1" variant="lime">

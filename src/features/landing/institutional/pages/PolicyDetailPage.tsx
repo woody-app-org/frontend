@@ -30,10 +30,10 @@ export function PolicyDetailPage() {
 
         <article className="mx-auto max-w-3xl rounded-[2rem] bg-white px-8 py-12 md:px-12 md:py-14">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#8a6f4a]">{formatPolicyBadge(doc.badge)}</p>
-          <h1 className="mt-3 font-sans text-[clamp(1.35rem,3vw,2rem)] font-extrabold uppercase leading-snug tracking-[0.04em] text-[var(--woody-ink)]">
+          <h1 className="font-heading mt-3 text-balance text-[clamp(1.35rem,3vw,2rem)] font-bold uppercase leading-snug tracking-[0.02em] text-[var(--woody-ink)]">
             {doc.title}
           </h1>
-          <p className="mt-6 font-serif text-base leading-[1.75] text-[var(--woody-ink)] md:text-[1.05rem]">{doc.excerpt}</p>
+          <p className="mt-6 text-base leading-[1.75] text-[var(--woody-ink)] md:text-[1.05rem]">{doc.excerpt}</p>
 
           <div className="mt-12 space-y-10 border-t border-black/[0.06] pt-12">
             {doc.sections.map((s) => (

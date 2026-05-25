@@ -42,7 +42,7 @@ const styles = {
   actionsCol: "flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end",
   meta: "min-w-0 flex-1",
   nameBlock: "min-w-0",
-  name: "truncate text-2xl font-bold tracking-[-0.03em] text-[var(--woody-text)] sm:text-[1.7rem]",
+  name: "font-heading truncate text-2xl font-semibold tracking-[-0.02em] text-[var(--woody-text)] sm:text-[1.7rem]",
   pronouns: "text-sm font-medium text-[var(--woody-muted)]",
   details: "mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[var(--woody-muted)]",
   detailItem: "inline-flex min-w-0 max-w-full items-center gap-1",

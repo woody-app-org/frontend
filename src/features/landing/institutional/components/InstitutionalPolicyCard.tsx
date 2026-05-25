@@ -27,7 +27,7 @@ export function InstitutionalPolicyCard({ badge, title, excerpt, to, className }
       <span className="mt-3 text-center font-sans text-[11px] font-semibold tracking-[0.22em] text-[#8a6f4a]">
         {formatPolicyBadge(badge)}
       </span>
-      <p className="mt-6 flex-1 text-left font-serif text-[0.94rem] leading-[1.72] text-[var(--woody-ink)] md:text-[1rem] md:leading-[1.75]">
+      <p className="mt-6 flex-1 text-left text-[0.94rem] leading-[1.72] text-[var(--woody-ink)] md:text-[1rem] md:leading-[1.75]">
         {excerpt}
       </p>
       <span className="mt-8 inline-flex w-fit items-center self-center rounded-lg bg-[#556b2f] px-7 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_6px_20px_-10px_rgba(61,79,47,0.5)] transition-[background-color,transform,box-shadow] duration-300 ease-out group-hover:bg-[#627836] group-hover:shadow-[0_10px_28px_-12px_rgba(61,79,47,0.55)]">

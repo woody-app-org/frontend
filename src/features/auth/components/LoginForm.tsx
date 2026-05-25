@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { identifierInputProps } from "@/components/forms";
 
 const styles = {
-  formTitle: "text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center md:text-left",
+  formTitle: "font-heading text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center md:text-left",
   form: "space-y-4",
   link:
     "text-sm text-[var(--auth-text-on-beige)] hover:underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 rounded",

@@ -11,7 +11,7 @@ import { useSectionParallaxY } from "../motion/useSectionParallaxY";
 import { cn } from "@/lib/utils";
 
 const rulesTopBarTickerClasses =
-  "font-bold uppercase leading-none tracking-[0.2em] text-white/90 text-[11px] sm:text-[12px] md:text-[0.9375rem] md:tracking-[0.22em] lg:text-[1.0625rem]";
+  "font-display font-bold uppercase leading-none tracking-[0.2em] text-white/90 text-[11px] sm:text-[12px] md:text-[0.9375rem] md:tracking-[0.22em] lg:text-[1.0625rem]";
 
 export interface RulesNarrativeSectionProps {
   embedInLanding?: boolean;
@@ -40,7 +40,7 @@ export function RulesNarrativeSection({ embedInLanding = false }: RulesNarrative
             </p>
           ) : (
             <div className="overflow-hidden" role="presentation">
-              <div className={cn("woody-rules-marquee-track font-sans", rulesTopBarTickerClasses)}>
+              <div className={cn("woody-rules-marquee-track", rulesTopBarTickerClasses)}>
                 <span className="shrink-0 whitespace-nowrap">{marqueeSegment}</span>
                 <span className="shrink-0 whitespace-nowrap" aria-hidden>
                   {marqueeSegment}
@@ -81,7 +81,7 @@ export function RulesNarrativeSection({ embedInLanding = false }: RulesNarrative
 
             <div className="flex flex-1 flex-col items-center justify-center text-center">
               <ScrollReveal enabled={motion} delayMs={70} yOffset={18}>
-                <h2 className="max-w-[min(100%,52rem)] font-sans text-[clamp(1.35rem,4.2vw,3.15rem)] font-extrabold uppercase leading-[1.08] tracking-[0.06em] text-white drop-shadow-[0_4px_40px_rgba(0,0,0,0.55)]">
+                <h2 className="font-heading max-w-[min(100%,52rem)] text-balance text-[clamp(1.35rem,4.2vw,3.15rem)] font-bold uppercase leading-[1.1] tracking-[0.04em] text-white drop-shadow-[0_4px_40px_rgba(0,0,0,0.55)] sm:tracking-[0.05em]">
                   <RulesHeroTitle />
                 </h2>
               </ScrollReveal>
