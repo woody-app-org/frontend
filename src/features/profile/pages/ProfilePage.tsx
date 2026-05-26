@@ -160,10 +160,6 @@ function ProfilePageInner() {
     if (!open) setFollowList(null);
   }, []);
 
-  const handleFollowListKindChange = useCallback((kind: ProfileFollowListKind) => {
-    setFollowList(kind);
-  }, []);
-
   const handleProfileSaved = useCallback(
     (next: UserProfile) => {
       void refetch();
@@ -252,11 +248,7 @@ function ProfilePageInner() {
               open={followList !== null}
               onOpenChange={handleFollowListOpenChange}
               profileUserId={profile.id}
-              profileName={profile.name}
               kind={followList ?? "followers"}
-              onKindChange={handleFollowListKindChange}
-              followersCount={profile.followersCount ?? 0}
-              followingCount={profile.followingCount ?? 0}
               refreshEpoch={followListsRevision}
             />
             {isOwnProfile ? (
