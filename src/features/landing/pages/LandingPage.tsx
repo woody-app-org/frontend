@@ -6,6 +6,7 @@ import { MissionNarrativeSection } from "../narrative/MissionNarrativeSection";
 import { MobileQrNarrativeSection } from "../narrative/MobileQrNarrativeSection";
 import { NarrativeScrollSection } from "../narrative/NarrativeScrollSection";
 import { PoliciesNarrativeSection } from "../narrative/PoliciesNarrativeSection";
+import { RulesMarqueeBar } from "../narrative/RulesMarqueeBar";
 import { RulesNarrativeSection } from "../narrative/RulesNarrativeSection";
 import { WhatIsWoodySection } from "../narrative/WhatIsWoodySection";
 
@@ -15,7 +16,7 @@ import { WhatIsWoodySection } from "../narrative/WhatIsWoodySection";
  */
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#f4f2ec] text-[var(--woody-text)] antialiased selection:bg-[var(--woody-lime)]/25">
+    <div className="min-h-screen bg-white text-[var(--woody-text)] antialiased selection:bg-[var(--woody-lime)]/25">
       <LandingHeader />
       <main>
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.oQueEWoody}>
@@ -33,6 +34,8 @@ export function LandingPage() {
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.politicas}>
           <PoliciesNarrativeSection embedInLanding />
         </NarrativeScrollSection>
+
+        <RulesMarqueeBar animate />
 
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.mobileQr}>
           <MobileQrNarrativeSection embedInLanding />

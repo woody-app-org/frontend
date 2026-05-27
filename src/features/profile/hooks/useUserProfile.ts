@@ -49,6 +49,10 @@ export function useUserProfile(routeHandle: string | undefined): UseUserProfileR
     }
     setIsLoading(true);
     setError(null);
+    setProfile(null);
+    setResolvedUserId(null);
+    setPinnedPosts([]);
+    setPosts([]);
     try {
       const profileData = isLegacyNumericProfileParam(routeHandle)
         ? await getProfile(routeHandle)
@@ -90,15 +94,26 @@ export function useUserProfile(routeHandle: string | undefined): UseUserProfileR
   }, [resolvedUserId, page, fetchPostsPage]);
 
   const profileUrlRedirect = useMemo(() => {
-    if (!profile) return null;
+    if (!profile || isLoading) return null;
+
+    const handle = routeHandle?.trim() ?? "";
+    const profileId = profile.id.trim();
+    const profileUsername = profile.username?.trim() ?? "";
     const canonical = profile.canonicalUsername?.trim();
-    if (canonical) return profilePath(canonical);
-    if (routeHandle && isLegacyNumericProfileParam(routeHandle)) {
-      const username = profile.username?.trim();
-      if (username) return profilePath(username);
+
+    if (handle && isLegacyNumericProfileParam(handle)) {
+      if (profileId !== handle) return null;
+      if (canonical) return profilePath(canonical);
+      if (profileUsername) return profilePath(profileUsername);
+      return null;
     }
+
+    if (canonical && canonical !== handle && canonical !== profileUsername) {
+      return profilePath(canonical);
+    }
+
     return null;
-  }, [profile, routeHandle]);
+  }, [profile, routeHandle, isLoading]);
 
   const nextPage = useCallback(() => setPage((p) => p + 1), []);
   const previousPage = useCallback(() => setPage((p) => Math.max(1, p - 1)), []);

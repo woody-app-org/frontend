@@ -29,7 +29,7 @@ export const whatIsWoody = {
 export const rules = {
   topBar:
     "NÃO QUEREMOS VOCÊ ENTEDIADA, ROLANDO TELA INFINITA. QUEREMOS VOCÊ EXISTINDO, CRIANDO, SE CONECTANDO COM OUTRAS USUÁRIAS DA WOODY.",
-  title: "O QUE NÃO É LEGAL FAZER AQUI",
+  title: "O que não é legal fazer na Woody",
 };
 
 export const policiesIndexIntro =

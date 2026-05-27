@@ -68,6 +68,7 @@ const styles = {
 
 type UserItem = {
   id: string;
+  username: string;
   name: string;
   avatarUrl: string | null;
   hasActiveStories?: boolean;
@@ -130,6 +131,7 @@ function FollowingUserRow({ user }: { user: UserItem }) {
 function toRow(u: User): UserItem {
   return {
     id: u.id,
+    username: u.username,
     name: u.name,
     avatarUrl: u.avatarUrl,
     hasActiveStories: u.hasActiveStories,

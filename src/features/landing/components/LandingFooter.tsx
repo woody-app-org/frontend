@@ -7,7 +7,7 @@ const landingAnchor = (id: string) => `/landing#${id}`;
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-black/[0.08] bg-[#f0efe8] py-14">
+    <footer className="border-t border-black/[0.08] bg-white py-14">
       <div className="mx-auto max-w-[var(--layout-max-width)] px-[var(--layout-gutter)]">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div>
