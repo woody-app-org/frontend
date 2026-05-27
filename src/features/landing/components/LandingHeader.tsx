@@ -32,14 +32,14 @@ export function LandingHeader() {
       className={cn(
         "sticky top-0 z-50 w-full border-b transition-[background-color,box-shadow,border-color] duration-300",
         scrolled
-          ? "border-black/[0.06] bg-[#f4f2ec]/92 shadow-[0_1px_0_rgba(10,10,10,0.04)] backdrop-blur-md"
+          ? "border-black/[0.06] bg-white/92 shadow-[0_1px_0_rgba(10,10,10,0.04)] backdrop-blur-md"
           : "border-transparent bg-transparent"
       )}
     >
       <div className="mx-auto flex h-[4.25rem] max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--layout-gutter)] sm:gap-6">
         <Link
           to="/landing"
-          className="group flex shrink-0 items-center outline-none transition-opacity duration-300 ease-out hover:opacity-[0.88] focus-visible:ring-2 focus-visible:ring-[var(--woody-lime)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f2ec]"
+          className="group flex shrink-0 items-center outline-none transition-opacity duration-300 ease-out hover:opacity-[0.88] focus-visible:ring-2 focus-visible:ring-[var(--woody-lime)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
           <WoodyLogo className="h-7 w-auto max-w-[min(200px,46vw)] sm:h-8 md:h-9 md:max-w-[min(240px,40vw)]" />
         </Link>

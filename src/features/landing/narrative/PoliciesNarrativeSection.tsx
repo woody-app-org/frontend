@@ -7,7 +7,7 @@ import {
 } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
-import { INSTITUTIONAL_HERO_NOT_ALLOWED } from "../institutional/institutionalMedia";
+import { INSTITUTIONAL_POLICIES_EDITORIAL } from "../institutional/institutionalMedia";
 import { ScrollReveal } from "../motion/ScrollReveal";
 import { cn } from "@/lib/utils";
 
@@ -23,23 +23,28 @@ interface PolicyCircleProps {
   className?: string;
 }
 
+const editorialVerticalTextClasses =
+  "font-heading text-[1.3rem] font-extrabold uppercase leading-[1.5] tracking-[0.22em] text-[var(--woody-ink)] [writing-mode:vertical-rl]";
+
 function PolicyCircle({ title, badge, excerpt, to, className }: PolicyCircleProps) {
   return (
     <Link
       to={to}
       className={cn(
-        "group flex flex-col items-center justify-center rounded-full border border-[var(--woody-ink)]/20 p-10 text-center transition-[border-color] hover:border-[var(--woody-ink)]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#556b2f]/40 md:p-12",
+        "group flex flex-col items-center justify-center rounded-full border border-[var(--woody-ink)]/22 bg-transparent p-12 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#556b2f]/40 md:p-16",
         className,
       )}
     >
-      <p className="text-[0.62rem] font-extrabold uppercase leading-snug tracking-[0.15em] text-[var(--woody-ink)]">
+      <p className="text-[0.9rem] font-extrabold uppercase leading-snug tracking-[0.15em] text-[var(--woody-ink)] md:text-[0.98rem]">
         {title}
       </p>
-      <p className="mt-1.5 font-mono text-[0.58rem] font-semibold tracking-[0.18em] text-[var(--woody-ink)]/40">
+      <p className="mt-2.5 font-mono text-[0.85rem] font-semibold tracking-[0.18em] text-[var(--woody-ink)]/40 md:text-[0.9rem]">
         # {badge}
       </p>
-      <p className="mt-5 line-clamp-5 text-[0.88rem] leading-[1.68] text-[var(--woody-ink)]">{excerpt}</p>
-      <span className="mt-6 inline-flex items-center rounded-md border border-[#556b2f] px-5 py-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#556b2f] transition-colors group-hover:bg-[#556b2f] group-hover:text-white">
+      <p className="mt-7 line-clamp-5 text-[1.22rem] leading-[1.68] text-[var(--woody-ink)] md:text-[1.31rem]">
+        {excerpt}
+      </p>
+      <span className="mt-8 inline-flex items-center rounded-md border border-[#556b2f] px-7 py-3 text-[0.9rem] font-bold uppercase tracking-[0.14em] text-[#556b2f] transition-colors group-hover:bg-[#556b2f] group-hover:text-white md:text-[0.98rem]">
         LER MAIS
       </span>
     </Link>
@@ -51,14 +56,7 @@ export function PoliciesNarrativeSection({ embedInLanding = false }: PoliciesNar
 
   return (
     <div className="relative overflow-hidden bg-white">
-      {/* "LEITURA BREVE" vertical — direita */}
-      <div className="absolute right-3 top-1/3 z-10 hidden -translate-y-1/2 md:flex md:right-4 lg:right-5">
-        <p className="font-heading text-[0.48rem] font-bold uppercase tracking-[0.3em] text-[var(--woody-ink)]/35 [writing-mode:vertical-rl] md:text-[0.52rem]">
-          LEITURA BREVE
-        </p>
-      </div>
-
-      <div className="px-[var(--layout-gutter)] py-16 md:py-20">
+      <div className="px-[var(--layout-gutter)] py-16 md:py-24">
         <div className="mx-auto max-w-[var(--layout-max-width)]">
           {!embedInLanding && (
             <>
@@ -76,7 +74,7 @@ export function PoliciesNarrativeSection({ embedInLanding = false }: PoliciesNar
           )}
 
           {/* Mobile: empilhado */}
-          <div className="flex flex-col gap-10 lg:hidden">
+          <div className="flex flex-col gap-20 lg:hidden">
             {[
               { doc: policyConfidentiality, to: INSTITUTIONAL_PATHS.politicaConfidencialidade },
               { doc: policyAccess, to: INSTITUTIONAL_PATHS.politicaAcesso },
@@ -88,77 +86,83 @@ export function PoliciesNarrativeSection({ embedInLanding = false }: PoliciesNar
                   badge={doc.badge}
                   excerpt={doc.excerpt}
                   to={to}
-                  className="mx-auto aspect-square w-full max-w-[360px]"
+                  className="mx-auto aspect-square w-full max-w-[500px]"
                 />
               </ScrollReveal>
             ))}
           </div>
 
-          {/* Desktop: círculos sobrepostos */}
-          <div
-            className="relative hidden lg:block"
-            style={{ minHeight: "980px" }}
-          >
+          {/* Desktop: círculos sobrepostos — alinhado às seções anteriores */}
+          <div className="relative hidden min-h-[1680px] lg:block lg:pl-10">
+            {/* Foto editorial — no vão entre círculos #01 e #03 */}
+            <div className="absolute left-0 top-[519px] z-0 h-[563px] w-[450px] overflow-hidden">
+              <ScrollReveal enabled={motion} delayMs={140} yOffset={12} className="size-full">
+                <img
+                  src={INSTITUTIONAL_POLICIES_EDITORIAL}
+                  alt=""
+                  aria-hidden
+                  className="block size-full object-cover object-[center_32%]"
+                  decoding="async"
+                />
+              </ScrollReveal>
+            </div>
+
             {/* Círculo 1 — topo esquerdo */}
-            <div className="absolute" style={{ left: "0", top: "0" }}>
+            <div className="absolute left-0 top-0 z-10">
               <ScrollReveal enabled={motion} yOffset={16}>
                 <PolicyCircle
                   title={policyConfidentiality.title}
                   badge={policyConfidentiality.badge}
                   excerpt={policyConfidentiality.excerpt}
                   to={INSTITUTIONAL_PATHS.politicaConfidencialidade}
-                  className="h-[430px] w-[430px]"
+                  className="size-[625px]"
                 />
               </ScrollReveal>
             </div>
 
-            {/* Círculo 2 — centro direito, sobrepõe círculo 1 */}
-            <div className="absolute" style={{ right: "8%", top: "250px" }}>
+            {/* Círculo 2 — direita, próximo da foto */}
+            <div className="absolute left-[388px] top-[510px] z-10">
               <ScrollReveal enabled={motion} delayMs={100} yOffset={16}>
                 <PolicyCircle
                   title={policyAccess.title}
                   badge={policyAccess.badge}
                   excerpt={policyAccess.excerpt}
                   to={INSTITUTIONAL_PATHS.politicaAcesso}
-                  className="h-[430px] w-[430px]"
+                  className="size-[625px]"
                 />
               </ScrollReveal>
             </div>
 
-            {/* Foto P&B — esquerda, entre círculos 2 e 3 */}
-            <div
-              className="absolute overflow-hidden"
-              style={{ left: "2%", top: "490px", width: "210px", height: "285px" }}
-            >
-              <ScrollReveal enabled={motion} delayMs={140} yOffset={12}>
-                <img
-                  src={INSTITUTIONAL_HERO_NOT_ALLOWED}
-                  alt=""
-                  aria-hidden
-                  className="h-full w-full object-cover"
-                  style={{ filter: "grayscale(100%)" }}
-                  decoding="async"
-                />
-              </ScrollReveal>
-            </div>
-
-            {/* Círculo 3 — baixo esquerdo, sobrepõe círculo 2 */}
-            <div className="absolute" style={{ left: "16%", top: "530px" }}>
+            {/* Círculo 3 — baixo esquerdo, alinhado ao círculo 1 */}
+            <div className="absolute left-0 top-[1025px] z-10">
               <ScrollReveal enabled={motion} delayMs={180} yOffset={16}>
                 <PolicyCircle
                   title={policyBan.title}
                   badge={policyBan.badge}
                   excerpt={policyBan.excerpt}
                   to={INSTITUTIONAL_PATHS.evitarBanimento}
-                  className="h-[430px] w-[430px]"
+                  className="size-[625px]"
                 />
               </ScrollReveal>
             </div>
 
-            {/* Texto vertical direita — inferior */}
-            <div className="absolute bottom-8 right-0 flex justify-end">
-              <p className="font-heading text-[0.47rem] font-bold uppercase tracking-[0.3em] text-[var(--woody-ink)]/30 [writing-mode:vertical-rl]">
-                SE TODO MUNDO FIZER SUA PARTE TEREMOS A MELHOR EXPERIÊNCIA
+            {/* "Leitura breve" — topo direita */}
+            <div className="absolute right-[8%] top-[120px] z-10 flex justify-center">
+              <p className={editorialVerticalTextClasses}>
+                LEITURA
+                <br />
+                BREVE
+              </p>
+            </div>
+
+            {/* Texto vertical — 3 colunas como no mockup */}
+            <div className="absolute right-[8%] top-[1240px] z-10 flex justify-center">
+              <p className={editorialVerticalTextClasses}>
+                SE TODO MUNDO FIZER
+                <br />
+                SUA PARTE TEREMOS
+                <br />
+                A MELHOR EXPERIÊNCIA
               </p>
             </div>
           </div>

@@ -11,7 +11,7 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
   const motion = embedInLanding;
 
   return (
-    <div className="bg-[#f4f2ec]">
+    <div className="bg-white">
       {/* Foto hero — topo, sem overlay de texto */}
       <div className="w-full overflow-hidden" style={{ height: "min(58svh, 540px)" }}>
         <img
@@ -58,7 +58,7 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
 
               {/* Título */}
               <div className="min-w-0 md:col-span-8 md:col-start-5 md:row-start-1 lg:col-span-7 lg:col-start-5">
-                <h2 className="font-display text-right text-[clamp(2.8rem,9vw,7rem)] font-bold leading-[0.9] tracking-[-0.025em] text-[var(--woody-ink)]">
+                <h2 className="font-display text-right text-[clamp(2.8rem,9vw,7rem)] font-normal leading-[0.9] tracking-[-0.025em] text-[var(--woody-ink)]">
                   O que
                   <br />é<br />
                   Woody?
@@ -67,7 +67,7 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
 
               {/* Corpo — abaixo do título */}
               <div className="min-w-0 md:col-span-8 md:col-start-5 md:row-start-2 lg:col-span-7 lg:col-start-5">
-                <div className="ml-auto mt-8 max-w-[min(100%,52rem)] space-y-3 text-justify text-[1rem] leading-[1.38] text-[var(--woody-ink)] md:mt-10 md:max-w-[50rem] md:text-[1.05rem] md:leading-[1.4]">
+                <div className="ml-auto mt-8 max-w-[min(100%,52rem)] space-y-3 text-justify text-[1.1875rem] leading-[1.38] text-[var(--woody-ink)] md:mt-10 md:max-w-[50rem] md:text-[1.25rem] md:leading-[1.4]">
                   {whatIsWoody.paragraphs.map((p) => (
                     <p key={p.slice(0, 28)}>{p}</p>
                   ))}

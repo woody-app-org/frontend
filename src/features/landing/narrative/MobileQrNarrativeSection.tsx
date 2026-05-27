@@ -34,7 +34,7 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
   }, [targetUrl]);
 
   return (
-    <div className="bg-[#f4f2ec]">
+    <div className="bg-white">
       <div
         className={
           embedInLanding
