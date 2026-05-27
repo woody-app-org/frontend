@@ -121,15 +121,6 @@ export function BadgeFlipCarousel({
   const snapFinishedRef = useRef(false);
 
   useEffect(() => {
-    setIndex(initialIndex);
-    setDragX(0);
-    setSnapProgress(0);
-    setSnapDirection(null);
-    setSnapTargetIndex(null);
-    setIsSnapping(false);
-  }, [initialIndex, badges]);
-
-  useEffect(() => {
     onIndexChange?.(index);
   }, [index, onIndexChange]);
 

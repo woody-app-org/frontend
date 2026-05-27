@@ -317,7 +317,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       setBannerCropSrc(objectUrl);
       setBannerCropOpen(true);
     },
-    [dismissAvatarCrop, showBannerError]
+    [dismissAvatarCrop, showBannerError, clearFieldErrors]
   );
 
   const handleSubmit = useCallback(
