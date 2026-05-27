@@ -1,5 +1,5 @@
 import { Award } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -90,6 +90,68 @@ function BadgeDetailText({ badge }: { badge: UserBadge }) {
   );
 }
 
+function BadgeDetailDialogView({
+  badges,
+  safeInitialIndex,
+  isMobile,
+}: {
+  badges: UserBadge[];
+  safeInitialIndex: number;
+  isMobile: boolean;
+}) {
+  const [activeIndex, setActiveIndex] = useState(safeInitialIndex);
+
+  const badge = badges[activeIndex] ?? badges[safeInitialIndex] ?? badges[0];
+  const useCarousel = isMobile && badges.length > 1;
+  const displayBadge = useCarousel
+    ? (badges[activeIndex] ?? badge)
+    : (badges[safeInitialIndex] ?? badge);
+
+  if (!badge) return null;
+
+  return (
+    <>
+      <DialogHeader className="sr-only">
+        <DialogTitle>{badge.name}</DialogTitle>
+        <DialogDescription>{badge.description}</DialogDescription>
+      </DialogHeader>
+
+      <div className="flex flex-col items-center px-6 pb-6 pt-8 text-center">
+        {useCarousel ? (
+          <BadgeFlipCarousel
+            badges={badges}
+            initialIndex={safeInitialIndex}
+            onIndexChange={setActiveIndex}
+          />
+        ) : (
+          <BadgeIcon
+            badge={displayBadge}
+            className="size-32 rounded-full sm:size-40"
+            imageClassName="size-32 h-full w-full rounded-full object-cover sm:size-40"
+          />
+        )}
+
+        <div className={cn(useCarousel ? "mt-4 w-full" : "mt-6 w-full")}>
+          <BadgeDetailText badge={displayBadge} />
+        </div>
+
+        <DialogClose asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(
+              "mt-6 min-h-10 w-full rounded-xl border-[var(--woody-accent)]/20 font-semibold",
+              woodyFocus.ring
+            )}
+          >
+            Fechar
+          </Button>
+        </DialogClose>
+      </div>
+    </>
+  );
+}
+
 export function BadgeDetailDialog({
   badges,
   initialIndex = 0,
@@ -99,17 +161,7 @@ export function BadgeDetailDialog({
   const isMobile = useMatchMedia("(max-width: 767px)");
   const safeInitialIndex =
     badges.length === 0 ? 0 : Math.min(Math.max(initialIndex, 0), badges.length - 1);
-  const [activeIndex, setActiveIndex] = useState(safeInitialIndex);
-
-  useEffect(() => {
-    if (open) setActiveIndex(safeInitialIndex);
-  }, [open, safeInitialIndex]);
-
-  const badge = badges[activeIndex] ?? badges[safeInitialIndex] ?? badges[0];
-  const useCarousel = isMobile && badges.length > 1;
-  const displayBadge = useCarousel
-    ? (badges[activeIndex] ?? badge)
-    : (badges[safeInitialIndex] ?? badge);
+  const badge = badges[safeInitialIndex] ?? badges[0];
 
   if (!badge) return null;
 
@@ -121,44 +173,19 @@ export function BadgeDetailDialog({
           "max-w-sm gap-0 overflow-hidden border-[var(--woody-divider)] bg-[var(--woody-card)] p-0 sm:max-w-md"
         )}
       >
-        <DialogHeader className="sr-only">
-          <DialogTitle>{badge.name}</DialogTitle>
-          <DialogDescription>{badge.description}</DialogDescription>
-        </DialogHeader>
-
-        <div className="flex flex-col items-center px-6 pb-6 pt-8 text-center">
-          {useCarousel ? (
-            <BadgeFlipCarousel
-              key={`${open}-${safeInitialIndex}`}
-              badges={badges}
-              initialIndex={safeInitialIndex}
-              onIndexChange={setActiveIndex}
-            />
-          ) : (
-            <BadgeIcon
-              badge={displayBadge}
-              className="size-32 rounded-full sm:size-40"
-              imageClassName="size-32 h-full w-full rounded-full object-cover sm:size-40"
-            />
-          )}
-
-          <div className={cn(useCarousel ? "mt-4 w-full" : "mt-6 w-full")}>
-            <BadgeDetailText badge={displayBadge} />
-          </div>
-
-          <DialogClose asChild>
-            <Button
-              type="button"
-              variant="outline"
-              className={cn(
-                "mt-6 min-h-10 w-full rounded-xl border-[var(--woody-accent)]/20 font-semibold",
-                woodyFocus.ring
-              )}
-            >
-              Fechar
-            </Button>
-          </DialogClose>
-        </div>
+        {open ? (
+          <BadgeDetailDialogView
+            key={safeInitialIndex}
+            badges={badges}
+            safeInitialIndex={safeInitialIndex}
+            isMobile={isMobile}
+          />
+        ) : (
+          <DialogHeader className="sr-only">
+            <DialogTitle>{badge.name}</DialogTitle>
+            <DialogDescription>{badge.description}</DialogDescription>
+          </DialogHeader>
+        )}
       </DialogContent>
     </Dialog>
   );

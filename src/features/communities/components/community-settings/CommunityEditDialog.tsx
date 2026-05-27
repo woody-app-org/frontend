@@ -133,6 +133,7 @@ export function CommunityEditDialog({
       coverUrl,
       visibility,
       community.id,
+      community.slug,
       viewerId,
       onOpenChange,
       onSaved,

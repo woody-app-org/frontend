@@ -205,7 +205,7 @@ function CommunityDetailLoaded({
     } finally {
       setCtaBusy(false);
     }
-  }, [community.id, onDataChanged, viewerId]);
+  }, [community.slug, onDataChanged, viewerId]);
 
   const handleSavedSettings = useCallback(() => {
     onDataChanged();
