@@ -1,13 +1,10 @@
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { rules } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
-import { InstitutionalPrimaryCta } from "../institutional/components/InstitutionalPrimaryCta";
-import { INSTITUTIONAL_PATHS } from "../institutional/routes";
-import { INSTITUTIONAL_HERO_NOT_ALLOWED } from "../institutional/institutionalMedia";
+import { INSTITUTIONAL_HERO_WHAT_IS_WOODY } from "../institutional/institutionalMedia";
 import { RulesHeroTitle } from "./RulesHeroTitle";
 import { ScrollReveal } from "../motion/ScrollReveal";
 import { usePrefersReducedMotion } from "../motion/usePrefersReducedMotion";
-import { useSectionParallaxY } from "../motion/useSectionParallaxY";
 import { cn } from "@/lib/utils";
 
 const rulesTopBarTickerClasses =
@@ -18,22 +15,20 @@ export interface RulesNarrativeSectionProps {
 }
 
 export function RulesNarrativeSection({ embedInLanding = false }: RulesNarrativeSectionProps) {
-  const heroRef = useRef<HTMLDivElement>(null);
   const reduce = usePrefersReducedMotion();
-  const parallaxY = useSectionParallaxY(heroRef, reduce || !embedInLanding, embedInLanding ? 14 : 0);
   const motion = embedInLanding;
-
   const marqueeSegment = useMemo(() => `${rules.topBar}\u00A0\u00A0·\u00A0\u00A0`, []);
 
   return (
-    <div className="overflow-x-clip">
+    <div className="overflow-x-clip bg-[#f4f2ec]">
+      {/* Faixa marquee preta */}
       <ScrollReveal enabled={motion} yOffset={8}>
         <div className="border-b border-white/10 bg-black py-3 md:py-3.5">
           {reduce ? (
             <p
               className={cn(
                 "mx-auto max-w-6xl px-[var(--layout-gutter)] text-center leading-relaxed",
-                rulesTopBarTickerClasses
+                rulesTopBarTickerClasses,
               )}
             >
               {rules.topBar}
@@ -51,55 +46,43 @@ export function RulesNarrativeSection({ embedInLanding = false }: RulesNarrative
         </div>
       </ScrollReveal>
 
-      <div className="relative w-screen max-w-none -translate-x-1/2 left-1/2">
-        <div ref={heroRef} className="relative isolate min-h-[min(80svh,760px)] w-full overflow-hidden md:min-h-[min(88svh,820px)]">
-          <img
-            src={INSTITUTIONAL_HERO_NOT_ALLOWED}
-            alt="Fotografia editorial — convívio e diversidade na comunidade."
-            className={
-              motion && !reduce
-                ? "absolute inset-0 size-full object-cover object-[center_35%] will-change-transform"
-                : "absolute inset-0 size-full scale-[1.035] object-cover object-[center_35%]"
-            }
-            style={
-              motion && !reduce
-                ? { transform: `translate3d(0, ${parallaxY}px, 0) scale(1.035)` }
-                : undefined
-            }
-            decoding="async"
-          />
-          <div className="absolute inset-0 bg-black/35 md:bg-black/25" aria-hidden />
-          <div
-            className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/70 to-transparent"
-            aria-hidden
-          />
+      {/* Seção editorial */}
+      <div className="px-[var(--layout-gutter)] py-16 md:py-24">
+        <div className="mx-auto max-w-[var(--layout-max-width)]">
+          {!embedInLanding && (
+            <div className="mb-10">
+              <InstitutionalBackLink />
+            </div>
+          )}
 
-          <div className="relative z-10 mx-auto flex min-h-[min(80svh,760px)] max-w-[var(--layout-max-width)] flex-col px-[var(--layout-gutter)] pb-14 pt-20 md:min-h-[min(88svh,820px)] md:pb-20 md:pt-28">
-            {!embedInLanding ? (
-              <InstitutionalBackLink className="!mb-6 !text-white/80 hover:!text-white md:!mb-10" />
-            ) : null}
+          <p className="mb-12 font-mono text-sm font-semibold text-[var(--woody-ink)]/38">// 003</p>
 
-            <div className="flex flex-1 flex-col items-center justify-center text-center">
-              <ScrollReveal enabled={motion} delayMs={70} yOffset={18}>
-                <h2 className="font-heading max-w-[min(100%,52rem)] text-balance text-[clamp(1.35rem,4.2vw,3.15rem)] font-bold uppercase leading-[1.1] tracking-[0.04em] text-white drop-shadow-[0_4px_40px_rgba(0,0,0,0.55)] sm:tracking-[0.05em]">
+          <div className="flex flex-col items-center gap-14 lg:flex-row lg:items-center lg:gap-16">
+            {/* Foto editorial (P&B) */}
+            <ScrollReveal enabled={motion} yOffset={14} className="w-full lg:w-[36%] lg:shrink-0">
+              <div className="overflow-hidden" style={{ aspectRatio: "3/4" }}>
+                <img
+                  src={INSTITUTIONAL_HERO_WHAT_IS_WOODY}
+                  alt=""
+                  aria-hidden
+                  className="h-full w-full object-cover object-[center_20%]"
+                  style={{ filter: "grayscale(100%)" }}
+                  decoding="async"
+                />
+              </div>
+            </ScrollReveal>
+
+            {/* Círculo com título */}
+            <ScrollReveal enabled={motion} delayMs={80} yOffset={16} className="flex flex-1 items-center justify-center">
+              <div
+                className="flex items-center justify-center rounded-full border border-[var(--woody-ink)]/22 p-10 text-center md:p-14"
+                style={{ width: "min(90vw, 460px)", aspectRatio: "1" }}
+              >
+                <h2 className="font-display text-[clamp(1.6rem,4vw,2.9rem)] font-bold leading-[1.1] tracking-[-0.01em] text-[var(--woody-ink)]">
                   <RulesHeroTitle />
                 </h2>
-              </ScrollReveal>
-              {!embedInLanding ? (
-                <ScrollReveal enabled={motion} delayMs={140} yOffset={10} className="mt-10 flex flex-wrap items-center justify-center gap-4">
-                  <InstitutionalPrimaryCta to={INSTITUTIONAL_PATHS.politicas} variant="dark">
-                    Ver políticas
-                  </InstitutionalPrimaryCta>
-                  <InstitutionalPrimaryCta
-                    to={INSTITUTIONAL_PATHS.hub}
-                    variant="ghost"
-                    className="!border-white/30 !bg-white/10 !text-white hover:!border-white/45 hover:!bg-white/18 focus-visible:!ring-offset-black/40"
-                  >
-                    Índice institucional
-                  </InstitutionalPrimaryCta>
-                </ScrollReveal>
-              ) : null}
-            </div>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </div>

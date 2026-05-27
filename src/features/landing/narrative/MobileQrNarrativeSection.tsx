@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
-import { WoodyLogo } from "@/components/branding/WoodyLogo";
 import { mobileQr } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
 import { ScrollReveal } from "../motion/ScrollReveal";
@@ -35,70 +34,67 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
   }, [targetUrl]);
 
   return (
-    <div
-      className={
-        embedInLanding
-          ? "overflow-hidden bg-black text-white"
-          : "min-h-svh overflow-hidden bg-black text-white"
-      }
-    >
+    <div className="bg-[#f4f2ec]">
       <div
         className={
           embedInLanding
             ? "mx-auto max-w-[var(--layout-max-width)] px-[var(--layout-gutter)] py-16 md:py-24"
-            : "mx-auto flex min-h-svh max-w-[var(--layout-max-width)] flex-col px-[var(--layout-gutter)] py-10 md:py-14"
+            : "mx-auto flex min-h-svh max-w-[var(--layout-max-width)] flex-col px-[var(--layout-gutter)] py-14 md:py-20"
         }
       >
-        {!embedInLanding ? (
-          <div className="text-white/60 [&_a]:text-white/85 [&_a]:hover:text-white">
-            <InstitutionalBackLink className="!mb-6 !text-white/55 hover:!text-white md:!mb-8" />
+        {!embedInLanding && (
+          <div className="mb-10">
+            <InstitutionalBackLink />
           </div>
-        ) : null}
+        )}
 
         <div
           className={
             embedInLanding
-              ? "grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-6 lg:gap-x-4 xl:gap-x-8"
-              : "grid flex-1 grid-cols-1 items-center gap-12 pb-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-6 lg:gap-x-4 xl:gap-x-8"
+              ? "grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-8 xl:gap-14"
+              : "grid flex-1 grid-cols-1 items-center gap-12 pb-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-8 xl:gap-14"
           }
         >
+          {/* Esquerda: título em display italic grande */}
           <ScrollReveal enabled={motion} yOffset={16} className="lg:pr-4">
-            <h2 className="font-display max-w-[min(100%,22rem)] text-balance text-[clamp(2rem,5.5vw,3.75rem)] font-bold leading-[0.95] tracking-[-0.02em] text-[#8dbf43] md:max-w-none">
-              {mobileQr.title}
+            <h2 className="font-display text-[clamp(2.6rem,7vw,5.5rem)] font-bold italic leading-[0.92] tracking-[-0.03em] text-[var(--woody-ink)]">
+              tenha
+              <br />
+              Woody
+              <br />
+              na palma
+              <br />
+              da sua
+              <br />
+              mão
             </h2>
-            <WoodyLogo
-              tone="onDark"
-              alt=""
-              aria-hidden
-              className="mt-5 h-auto w-[min(100%,14rem)] opacity-95 md:mt-6 md:w-[min(100%,17rem)]"
-            />
           </ScrollReveal>
 
+          {/* Centro: QR code */}
           <ScrollReveal enabled={motion} delayMs={100} yOffset={14}>
-            <div className="relative mx-auto flex w-full max-w-[min(88vw,340px)] shrink-0 justify-center">
-              <div className="relative rounded-[2.5rem] border border-white/[0.12] bg-white/[0.04] p-4 shadow-[0_0_0_1px_rgba(141,191,67,0.2)] md:p-5">
-                <div className="relative overflow-hidden rounded-[1.75rem] bg-white p-3 ring-1 ring-black/15">
-                  {dataUrl ? (
-                    <img
-                      src={dataUrl}
-                      width={qrSize}
-                      height={qrSize}
-                      className="size-[min(78vw,320px)]"
-                      alt="Código QR para abrir a Woody no telemóvel"
-                    />
-                  ) : (
-                    <div className="flex size-[min(78vw,320px)] items-center justify-center bg-white text-sm text-black/45">
-                      A gerar QR…
-                    </div>
-                  )}
-                </div>
+            <div className="relative mx-auto flex w-full max-w-[min(88vw,300px)] shrink-0 justify-center">
+              <div className="overflow-hidden rounded-2xl border border-[var(--woody-ink)]/12 bg-white p-3 shadow-sm ring-1 ring-black/[0.06]">
+                {dataUrl ? (
+                  <img
+                    src={dataUrl}
+                    width={qrSize}
+                    height={qrSize}
+                    className="size-[min(76vw,280px)]"
+                    alt="Código QR para abrir a Woody no telemóvel"
+                  />
+                ) : (
+                  <div className="flex size-[min(76vw,280px)] items-center justify-center bg-white text-sm text-black/35">
+                    A gerar QR…
+                  </div>
+                )}
               </div>
             </div>
           </ScrollReveal>
 
+          {/* Direita: instrução uppercase */}
           <ScrollReveal enabled={motion} delayMs={200} yOffset={12} className="text-center lg:text-right">
-            <p className="font-heading mx-auto max-w-[min(100%,19.5rem)] text-balance text-[clamp(1rem,2.5vw,1.65rem)] font-semibold uppercase leading-[1.12] tracking-[0.05em] text-white md:max-w-[19rem] lg:mx-0 lg:ml-auto lg:max-w-[18.5rem] xl:max-w-[19.5rem]">
-              {mobileQr.instructions}
+            <p className="font-heading mx-auto max-w-[min(100%,18rem)] text-balance text-[clamp(0.85rem,2.2vw,1.4rem)] font-extrabold uppercase leading-[1.2] tracking-[0.06em] text-[var(--woody-ink)] lg:mx-0 lg:ml-auto lg:max-w-[17rem]">
+              {mobileQr.instructions.toUpperCase()}
             </p>
           </ScrollReveal>
         </div>

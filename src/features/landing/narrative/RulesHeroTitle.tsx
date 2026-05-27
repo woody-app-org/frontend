@@ -1,6 +1,6 @@
 import { rules } from "../institutional/content";
 
-/** Título hero das regras com sublinhado editorial na palavra «legal». */
+/** Título das regras — sublinha a palavra «legal» independentemente de caixa. */
 export function RulesHeroTitle() {
   const t = rules.title;
   const idx = t.toLowerCase().indexOf("legal");
