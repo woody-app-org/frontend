@@ -1,4 +1,3 @@
-import { rules } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
 import { INSTITUTIONAL_RULES_EDITORIAL } from "../institutional/institutionalMedia";
 import { RulesHeroTitle } from "./RulesHeroTitle";
