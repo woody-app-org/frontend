@@ -1,22 +1,44 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { absolutePostUrl, buildPostShareUrl, postPath } from "./postPaths";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  absolutePostUrl,
+  buildPostExternalShareUrl,
+  buildPostInternalUrl,
+  buildPostShareUrl,
+  getPublicShareBaseUrl,
+  postPath,
+} from "./postPaths";
 
 describe("postPaths share URLs", () => {
   afterEach(() => {
-    // vitest jsdom default origin
+    vi.unstubAllEnvs();
   });
 
-  it("postPath usa publicId opaco", () => {
+  it("postPath usa publicId opaco (rota interna SPA)", () => {
     expect(postPath("pst_abc123xyz456")).toBe("/posts/pst_abc123xyz456");
   });
 
-  it("absolutePostUrl inclui origin e publicId", () => {
-    expect(absolutePostUrl("pst_abc123xyz456")).toBe(
+  it("buildPostInternalUrl usa origin do frontend", () => {
+    expect(buildPostInternalUrl("pst_abc123xyz456")).toBe(
       `${window.location.origin}/posts/pst_abc123xyz456`
     );
   });
 
-  it("buildPostShareUrl é alias de absolutePostUrl", () => {
-    expect(buildPostShareUrl("pst_xyz")).toBe(absolutePostUrl("pst_xyz"));
+  it("buildPostExternalShareUrl usa base da API em dev", () => {
+    vi.stubEnv("VITE_API_BASE_URL", "http://localhost:5000/api");
+    expect(buildPostExternalShareUrl("pst_xyz")).toBe(
+      "http://localhost:5000/share/posts/pst_xyz"
+    );
+  });
+
+  it("getPublicShareBaseUrl respeita VITE_PUBLIC_SHARE_BASE_URL", () => {
+    vi.stubEnv("VITE_PUBLIC_SHARE_BASE_URL", "https://share.woody.test/");
+    expect(getPublicShareBaseUrl()).toBe("https://share.woody.test");
+  });
+
+  it("absolutePostUrl e buildPostShareUrl apontam para share OG externo", () => {
+    vi.stubEnv("VITE_API_BASE_URL", "http://localhost:5000/api");
+    const expected = "http://localhost:5000/share/posts/pst_xyz";
+    expect(absolutePostUrl("pst_xyz")).toBe(expected);
+    expect(buildPostShareUrl("pst_xyz")).toBe(expected);
   });
 });

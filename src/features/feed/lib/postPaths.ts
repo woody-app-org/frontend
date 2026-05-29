@@ -7,20 +7,50 @@ export function postPath(publicId: string): string {
   return `/posts/${encodeURIComponent(publicId)}`;
 }
 
-/** URL absoluta para partilhar (copiar link / Web Share API). */
-export function absolutePostUrl(publicId: string): string {
+/** Origem pública da API para URLs de share OG (sem sufixo `/api`). */
+export function getPublicShareBaseUrl(): string {
+  const explicit = import.meta.env.VITE_PUBLIC_SHARE_BASE_URL?.toString().trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+
+  const api = import.meta.env.VITE_API_BASE_URL?.toString().trim();
+  if (api) {
+    const noTrail = api.replace(/\/+$/, "");
+    if (noTrail.endsWith("/api")) return noTrail.slice(0, -4);
+    return noTrail;
+  }
+
+  if (import.meta.env.DEV) return "http://localhost:5000";
+
+  throw new Error(
+    "VITE_PUBLIC_SHARE_BASE_URL ou VITE_API_BASE_URL deve estar definido para partilha externa."
+  );
+}
+
+/** URL absoluta interna do frontend (`/posts/{publicId}`). */
+export function buildPostInternalUrl(publicId: string): string {
   const id = publicId.trim();
   if (typeof window === "undefined") return postPath(id);
   return `${window.location.origin}${postPath(id)}`;
 }
 
-/** Alias explícito para partilha — sempre usa `publicId`, nunca id incremental. */
-export const buildPostShareUrl = absolutePostUrl;
+/** URL absoluta externa com Open Graph server-side (`/share/posts/{publicId}`). */
+export function buildPostExternalShareUrl(publicId: string): string {
+  const id = publicId.trim();
+  return `${getPublicShareBaseUrl()}/share/posts/${encodeURIComponent(id)}`;
+}
+
+/** URL absoluta para partilhar (copiar link / Web Share API) — usa endpoint OG. */
+export function absolutePostUrl(publicId: string): string {
+  return buildPostExternalShareUrl(publicId);
+}
+
+/** Alias explícito para partilha externa. */
+export const buildPostShareUrl = buildPostExternalShareUrl;
 
 export function absolutePostUrlForPost(post: { publicId?: string | null; id: string }): string {
   const publicId = post.publicId?.trim();
-  if (publicId) return absolutePostUrl(publicId);
-  return absolutePostUrl(post.id);
+  if (publicId) return buildPostExternalShareUrl(publicId);
+  return buildPostExternalShareUrl(post.id);
 }
 
 export function postPathForPost(post: { publicId?: string | null; id: string }): string {
