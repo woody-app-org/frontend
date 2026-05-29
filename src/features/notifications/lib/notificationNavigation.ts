@@ -118,6 +118,9 @@ export function getNotificationTargetRoute(
     case "post_comment":
       return postWithCommentsFocusFromMetadata(ctx, commentId);
 
+    case "post_shared":
+      return postRouteFromMetadata(ctx);
+
     case "comment_reply":
       return postWithCommentsFocusFromMetadata(ctx, commentId);
 

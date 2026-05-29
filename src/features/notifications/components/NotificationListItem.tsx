@@ -1,4 +1,4 @@
-import { ChevronRight, ImageIcon } from "lucide-react";
+import { ChevronRight, ImageIcon, Share2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatRelativeTimeUtc } from "@/lib/formatRelativeTimeUtc";
@@ -29,6 +29,7 @@ export function NotificationListItem({ item, summary, hasDestination, onActivate
   const unread = !item.readAt;
   const showContextThumb =
     item.type === "post_like" || item.type === "post_comment" || item.type === "comment_reply";
+  const showShareBadge = item.type === "post_shared";
 
   return (
     <li>
@@ -60,6 +61,12 @@ export function NotificationListItem({ item, summary, hasDestination, onActivate
               <span className="inline-flex items-center gap-0.5 rounded-md bg-black/[0.04] px-1.5 py-0.5 text-[0.65rem] font-medium text-[var(--woody-muted)] dark:bg-white/[0.06]">
                 <ImageIcon className="size-3 opacity-80" aria-hidden />
                 Post
+              </span>
+            ) : null}
+            {showShareBadge ? (
+              <span className="inline-flex items-center gap-0.5 rounded-md bg-black/[0.04] px-1.5 py-0.5 text-[0.65rem] font-medium text-[var(--woody-muted)] dark:bg-white/[0.06]">
+                <Share2 className="size-3 opacity-80" aria-hidden />
+                Compartilhamento
               </span>
             ) : null}
           </span>
