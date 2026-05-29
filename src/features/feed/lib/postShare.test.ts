@@ -4,6 +4,7 @@ import {
   copyPostLinkToClipboard,
   sharePostNatively,
 } from "./postShare";
+import { buildPostExternalShareUrl } from "./postPaths";
 import { makePost } from "@/test/fixtures/post";
 
 describe("canSharePostExternally", () => {
@@ -64,9 +65,7 @@ describe("copyPostLinkToClipboard", () => {
 
     await copyPostLinkToClipboard(makePost({ publicId: "pst_abc123xyz456" }));
 
-    expect(writeText).toHaveBeenCalledWith(
-      `${window.location.origin}/posts/pst_abc123xyz456`
-    );
+    expect(writeText).toHaveBeenCalledWith(buildPostExternalShareUrl("pst_abc123xyz456"));
   });
 });
 
@@ -85,7 +84,7 @@ describe("sharePostNatively", () => {
     expect(share).toHaveBeenCalledWith({
       title: "Publicação na Woody",
       text: "Olha esta publicação na Woody",
-      url: `${window.location.origin}/posts/pst_share000001`,
+      url: buildPostExternalShareUrl("pst_share000001"),
     });
   });
 

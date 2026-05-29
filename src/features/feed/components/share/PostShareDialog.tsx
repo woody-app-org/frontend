@@ -117,8 +117,7 @@ export function PostShareDialog({
 
             {!canShareExternally && post.publicationContext === "community" ? (
               <p className="text-xs leading-relaxed text-[var(--woody-muted)]">
-                Esta publicação é de um espaço com acesso restrito. Podes copiar o link para quem já tem
-                acesso na Woody.
+                Podes copiar o link para partilhar com quem já tem acesso na Woody.
               </p>
             ) : null}
           </>
