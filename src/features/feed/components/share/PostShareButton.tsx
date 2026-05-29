@@ -16,13 +16,17 @@ export function PostShareButton({ post, variant = "card", className }: PostShare
   const {
     dialogOpen,
     setDialogOpen,
+    shareStep,
+    setShareStep,
     shareUrl,
     canShareExternally,
     nativeShareAvailable,
     isCopying,
     isSharing,
+    isSendingToWoody,
     copyLink,
     shareOutside,
+    sendToWoody,
   } = usePostShare(post);
 
   const label = "Compartilhar publicação";
@@ -60,13 +64,17 @@ export function PostShareButton({ post, variant = "card", className }: PostShare
         post={post}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        shareStep={shareStep}
+        onShareStepChange={setShareStep}
         shareUrl={shareUrl}
         canShareExternally={canShareExternally}
         nativeShareAvailable={nativeShareAvailable}
         isCopying={isCopying}
         isSharing={isSharing}
+        isSendingToWoody={isSendingToWoody}
         onCopyLink={() => void copyLink()}
         onShareOutside={() => void shareOutside()}
+        onSendToWoody={(target, message) => void sendToWoody(target, message)}
       />
     </>
   );

@@ -22,13 +22,17 @@ describe("PostShareButton", () => {
     mockUsePostShare.mockReturnValue({
       dialogOpen: false,
       setDialogOpen,
+      shareStep: "menu",
+      setShareStep: vi.fn(),
       shareUrl: "https://woody.test/posts/pst_test00000001",
       canShareExternally: true,
       nativeShareAvailable: true,
       isCopying: false,
       isSharing: false,
+      isSendingToWoody: false,
       copyLink,
       shareOutside,
+      sendToWoody: vi.fn(),
     });
   });
 
@@ -45,13 +49,17 @@ describe("PostShareButton", () => {
     mockUsePostShare.mockReturnValue({
       dialogOpen: true,
       setDialogOpen,
+      shareStep: "menu",
+      setShareStep: vi.fn(),
       shareUrl: "https://woody.test/posts/pst_test00000001",
       canShareExternally: true,
       nativeShareAvailable: true,
       isCopying: false,
       isSharing: false,
+      isSendingToWoody: false,
       copyLink,
       shareOutside,
+      sendToWoody: vi.fn(),
     });
 
     render(<PostShareButton post={makePost()} variant="detail" />);
@@ -59,6 +67,7 @@ describe("PostShareButton", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Compartilhar publicação")).toBeInTheDocument();
     expect(screen.getByText("Compartilhar fora da Woody")).toBeInTheDocument();
+    expect(screen.getByText("Enviar dentro da Woody")).toBeInTheDocument();
     expect(screen.getByText("Copiar link")).toBeInTheDocument();
   });
 });

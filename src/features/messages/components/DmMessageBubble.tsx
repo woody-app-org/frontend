@@ -9,6 +9,7 @@ import { formatMessageDetailTimestamp } from "../lib/formatMessageTimestamp";
 import { DM_MESSAGE_BODY_MAX_LENGTH } from "../lib/dmLimits";
 import { DmMessageActionsMenu } from "./DmMessageActionsMenu";
 import { MessageAttachmentRenderer } from "./MessageAttachmentRenderer";
+import { SharedPostPreviewCard } from "./SharedPostPreviewCard";
 
 function senderInitials(sender: MessageResponseDto["sender"]): string {
   const raw = (sender.displayName || sender.username || "?").trim();
@@ -145,6 +146,12 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
                 <>
                   {message.body ? (
                     <p className="whitespace-pre-wrap break-words text-[var(--woody-text)]">{message.body}</p>
+                  ) : null}
+                  {message.sharedPost && !message.isDeleted ? (
+                    <SharedPostPreviewCard
+                      preview={message.sharedPost}
+                      className={message.body ? "mt-2" : undefined}
+                    />
                   ) : null}
                   {message.attachments?.length ? (
                     <MessageAttachmentRenderer

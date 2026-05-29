@@ -97,6 +97,20 @@ export interface MessageResponseDto {
   isEdited: boolean;
   isDeleted: boolean;
   attachments: MessageAttachmentResponseDto[];
+  sharedPost?: SharedPostPreviewDto | null;
+}
+
+export interface SharedPostPreviewDto {
+  id?: string | null;
+  publicId?: string | null;
+  authorDisplayName?: string | null;
+  authorUsername?: string | null;
+  authorProfilePic?: string | null;
+  contentPreview?: string | null;
+  firstMediaUrl?: string | null;
+  firstMediaType?: string | null;
+  communityName?: string | null;
+  isUnavailable: boolean;
 }
 
 export interface ConversationMessagesPageDto {

@@ -12,13 +12,17 @@ vi.mock("../../hooks/usePostShare", () => ({
   usePostShare: () => ({
     dialogOpen: false,
     setDialogOpen: vi.fn(),
+    shareStep: "menu" as const,
+    setShareStep: vi.fn(),
     shareUrl: "https://woody.test/posts/pst_test00000001",
     canShareExternally: true,
     nativeShareAvailable: false,
     isCopying: false,
     isSharing: false,
+    isSendingToWoody: false,
     copyLink: vi.fn(),
     shareOutside: vi.fn(),
+    sendToWoody: vi.fn(),
   }),
 }));
 
