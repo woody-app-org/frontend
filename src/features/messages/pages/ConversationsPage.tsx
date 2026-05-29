@@ -28,6 +28,7 @@ import { ConversationStartHints } from "../components/ConversationStartHints";
 import { sortConversationsByActivity } from "../lib/sortConversations";
 import { sortMessagesChronological } from "../lib/sortMessages";
 import { DM_MESSAGES_MAX_PAGE_SIZE } from "../lib/dmLimits";
+import { BLOCK_RELATIONSHIP_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 
 export function ConversationsPage() {
   const navigate = useNavigate();
@@ -114,6 +115,25 @@ export function ConversationsPage() {
     }
     void reloadMessages(selectedId);
   }, [selectedId, reloadMessages]);
+
+  useEffect(() => {
+    const onBlockChanged = () => {
+      scheduleReloadLists();
+    };
+    window.addEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onBlockChanged);
+    return () => window.removeEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onBlockChanged);
+  }, [scheduleReloadLists]);
+
+  useEffect(() => {
+    if (loadingLists || selectedId == null) return;
+    const stillExists =
+      conversations.some((c) => c.id === selectedId) ||
+      pendingReceived.some((c) => c.id === selectedId);
+    if (!stillExists) {
+      setMessages([]);
+      navigate("/messages", { replace: true });
+    }
+  }, [conversations, loadingLists, navigate, pendingReceived, selectedId]);
 
   const mergeMessage = useCallback((next: MessageResponseDto) => {
     if (!next || next.id < 1) return;

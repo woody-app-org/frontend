@@ -20,7 +20,11 @@ import { useProfilePermissions } from "@/features/auth/hooks/useProfilePermissio
 import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
-import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
+import { dispatchSocialGraphChanged, dispatchBlockRelationshipChanged } from "@/lib/socialGraphEvents";
+import { showActionErrorToast, showSuccessToast } from "@/lib/toast/woodyToast";
+import { blockUser } from "@/features/users/services/userBlock.service";
+import { BlockUserConfirmationDialog } from "@/features/users/components/BlockUserConfirmationDialog";
+import { BlockedUsersDialog } from "@/features/users/components/BlockedUsersDialog";
 import {
   StoryComposerModal,
   StoryViewerModal,
@@ -77,6 +81,9 @@ function ProfilePageInner() {
   const [editOpen, setEditOpen] = useState(false);
   const [followList, setFollowList] = useState<ProfileFollowListKind | null>(null);
   const [followListsRevision, setFollowListsRevision] = useState(0);
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [blockPending, setBlockPending] = useState(false);
+  const [blockedUsersOpen, setBlockedUsersOpen] = useState(false);
   const {
     profile,
     pinnedPosts,
@@ -156,6 +163,25 @@ function ProfilePageInner() {
     [applyFollowPatch, bumpFollowLists]
   );
 
+  const handleConfirmBlock = useCallback(async () => {
+    if (!profile) return;
+    const targetId = Number.parseInt(profile.id, 10);
+    if (!Number.isFinite(targetId) || targetId <= 0) return;
+    setBlockPending(true);
+    try {
+      await blockUser(targetId);
+      showSuccessToast("Usuária bloqueada.");
+      dispatchBlockRelationshipChanged(profile.id);
+      dispatchSocialGraphChanged();
+      setBlockDialogOpen(false);
+      navigate("/feed", { replace: true });
+    } catch (e) {
+      showActionErrorToast(e, "Não foi possível bloquear esta usuária.");
+    } finally {
+      setBlockPending(false);
+    }
+  }, [navigate, profile]);
+
   const handleFollowListOpenChange = useCallback((open: boolean) => {
     if (!open) setFollowList(null);
   }, []);
@@ -207,6 +233,12 @@ function ProfilePageInner() {
               }
               onAddStory={isOwnProfile ? () => setStoryComposerOpen(true) : undefined}
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
+              onOpenBlockedUsers={isOwnProfile ? () => setBlockedUsersOpen(true) : undefined}
+              onBlockUser={
+                !isOwnProfile && isAuthenticated && profile
+                  ? () => setBlockDialogOpen(true)
+                  : undefined
+              }
               followStats={
                 <ProfileFollowStats
                   followersCount={profile.followersCount ?? 0}
@@ -258,6 +290,17 @@ function ProfilePageInner() {
                 profile={profile}
                 onSaved={handleProfileSaved}
               />
+            ) : (
+              <BlockUserConfirmationDialog
+                open={blockDialogOpen}
+                onOpenChange={setBlockDialogOpen}
+                displayName={profile.name}
+                isPending={blockPending}
+                onConfirm={handleConfirmBlock}
+              />
+            )}
+            {isOwnProfile ? (
+              <BlockedUsersDialog open={blockedUsersOpen} onOpenChange={setBlockedUsersOpen} />
             ) : null}
 
             <div
@@ -368,7 +411,7 @@ function ProfilePageInner() {
 
         {!isLoading && !error && !profile && (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <p className="text-[var(--woody-muted)]">Perfil não encontrado.</p>
+            <p className="text-[var(--woody-muted)]">Este perfil não está disponível.</p>
             <button
               type="button"
               onClick={() => navigate("/feed")}

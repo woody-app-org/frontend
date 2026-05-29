@@ -8,7 +8,7 @@ import { subscribeUserDisplayPatches, getUserDisplayPatchesVersion } from "@/dom
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import type { Post, FeedFilter } from "../types";
 import { getFeed } from "../services/feed.service";
-import { SOCIAL_GRAPH_CHANGED_EVENT } from "@/lib/socialGraphEvents";
+import { SOCIAL_GRAPH_CHANGED_EVENT, BLOCK_RELATIONSHIP_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 import { usePostListLikeToggle } from "./usePostListLikeToggle";
 
 function appendPostsDeduped(existing: Post[], incoming: Post[]): Post[] {
@@ -131,8 +131,15 @@ export function useFeed(): UseFeedReturn {
       if (filterRef.current !== "following") return;
       void loadFirstPage();
     };
+    const onBlockChanged = () => {
+      void loadFirstPage();
+    };
     window.addEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
-    return () => window.removeEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
+    window.addEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onBlockChanged);
+    return () => {
+      window.removeEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onFollowGraphChanged);
+      window.removeEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onBlockChanged);
+    };
   }, [loadFirstPage]);
 
   const setFilter = useCallback((newFilter: FeedFilter) => {

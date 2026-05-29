@@ -10,7 +10,7 @@ import {
   fetchMySuggestions,
 } from "@/features/users/services/userSocial.service";
 import type { User } from "@/domain/types";
-import { SOCIAL_GRAPH_CHANGED_EVENT } from "@/lib/socialGraphEvents";
+import { SOCIAL_GRAPH_CHANGED_EVENT, BLOCK_RELATIONSHIP_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { FeedDecorWaves } from "./FeedDecorWaves";
 
@@ -177,7 +177,11 @@ export function RightPanel({ className }: RightPanelProps) {
       void load();
     };
     window.addEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onSocialChange);
-    return () => window.removeEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onSocialChange);
+    window.addEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onSocialChange);
+    return () => {
+      window.removeEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onSocialChange);
+      window.removeEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onSocialChange);
+    };
   }, [load]);
 
   const hasSuggestions = suggestions.length > 0;
