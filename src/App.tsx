@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { lazy, Suspense } from "react";
 import { RouterProvider } from "react-router-dom";
 
@@ -20,9 +22,13 @@ const ActiveRouterProvider = lazy(async () => {
 
 function App() {
   return (
-    <Suspense fallback={null}>
-      <ActiveRouterProvider />
-    </Suspense>
+    <>
+      <Suspense fallback={null}>
+        <ActiveRouterProvider />
+      </Suspense>
+      <Analytics />
+      <SpeedInsights />
+    </>
   );
 }
 

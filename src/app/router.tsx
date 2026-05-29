@@ -13,6 +13,10 @@ import { OnboardingStepProfilePhoto } from "@/features/auth/onboarding/steps/Onb
 import { OnboardingStepInterests } from "@/features/auth/onboarding/steps/OnboardingStepInterests";
 import { OnboardingStepCommunities } from "@/features/auth/onboarding/steps/OnboardingStepCommunities";
 import { OnboardingStepComplete } from "@/features/auth/onboarding/steps/OnboardingStepComplete";
+import { ForgotPasswordFlow } from "@/features/auth/passwordReset/ForgotPasswordFlow";
+import { ForgotPasswordRequestPage } from "@/features/auth/passwordReset/pages/ForgotPasswordRequestPage";
+import { ForgotPasswordVerifyCodePage } from "@/features/auth/passwordReset/pages/ForgotPasswordVerifyCodePage";
+import { ResetPasswordPage } from "@/features/auth/passwordReset/pages/ResetPasswordPage";
 import { ProtectedRoute } from "@/app/ProtectedRoute";
 import { CreatePostPage, FeedPage, PostDetailRoutePage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
@@ -92,6 +96,19 @@ export const router = createBrowserRouter([
             <LoginPage />
           </BetaClosedGate>
         ),
+      },
+      {
+        path: "auth/forgot-password",
+        element: (
+          <BetaClosedGate>
+            <ForgotPasswordFlow />
+          </BetaClosedGate>
+        ),
+        children: [
+          { index: true, element: <ForgotPasswordRequestPage /> },
+          { path: "verify", element: <ForgotPasswordVerifyCodePage /> },
+          { path: "new-password", element: <ResetPasswordPage /> },
+        ],
       },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },
       {

@@ -99,6 +99,7 @@ export function OnboardingCodeInput({
             refs.current[i] = el;
           }}
           {...otpCellProps(i)}
+          autoComplete={i === 0 ? "one-time-code" : "off"}
           maxLength={1}
           disabled={disabled}
           value={ch}

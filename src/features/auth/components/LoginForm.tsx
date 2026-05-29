@@ -83,17 +83,17 @@ export function LoginForm({
             disabled={isSubmitting}
             error={formState.errors.password?.message}
           />
-          <button
-            type="button"
+          <Link
+            to="/auth/forgot-password"
             className={cn(
               styles.link,
-              "self-end mt-1 text-right bg-transparent border-none cursor-pointer font-inherit p-0 disabled:opacity-50"
+              "self-end mt-1 text-right disabled:opacity-50 pointer-events-auto"
             )}
-            disabled={isSubmitting}
-            title="Em breve"
+            aria-disabled={isSubmitting}
+            tabIndex={isSubmitting ? -1 : undefined}
           >
             Esqueci minha senha
-          </button>
+          </Link>
         </div>
 
         <button
