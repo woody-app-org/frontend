@@ -22,6 +22,7 @@ import { PostLikeIcon } from "./PostLikeIcon";
 import { usePostLikeTapAnimation } from "../hooks/usePostLikeTapAnimation";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { postPathForPost, postCommentsFocusPath } from "@/features/feed/lib/postPaths";
+import { PostShareButton } from "./share/PostShareButton";
 import { buildPostDetailNavState } from "../lib/postDetailNavState";
 import {
   isBackgroundNavigationSuppressed,
@@ -357,6 +358,7 @@ export function PostCard({
             <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
             {formatCount(post.commentsCount)}
           </button>
+          <PostShareButton post={post} variant="card" className={styles.footerItem} />
           {communityBoost ? (
             <button
               type="button"

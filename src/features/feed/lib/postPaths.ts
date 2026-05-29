@@ -7,6 +7,22 @@ export function postPath(publicId: string): string {
   return `/posts/${encodeURIComponent(publicId)}`;
 }
 
+/** URL absoluta para partilhar (copiar link / Web Share API). */
+export function absolutePostUrl(publicId: string): string {
+  const id = publicId.trim();
+  if (typeof window === "undefined") return postPath(id);
+  return `${window.location.origin}${postPath(id)}`;
+}
+
+/** Alias explícito para partilha — sempre usa `publicId`, nunca id incremental. */
+export const buildPostShareUrl = absolutePostUrl;
+
+export function absolutePostUrlForPost(post: { publicId?: string | null; id: string }): string {
+  const publicId = post.publicId?.trim();
+  if (publicId) return absolutePostUrl(publicId);
+  return absolutePostUrl(post.id);
+}
+
 export function postPathForPost(post: { publicId?: string | null; id: string }): string {
   const publicId = post.publicId?.trim();
   if (publicId) return postPath(publicId);

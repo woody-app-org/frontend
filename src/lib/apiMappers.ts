@@ -190,6 +190,7 @@ function mapCommunityPreviewFromApi(raw: ApiRecord): NonNullable<Post["community
     avatarUrl: raw.avatarUrl ?? null,
     category: safeCategory,
     communityPlan: mapCommunityBillingPlan(raw.communityPlan ?? "free"),
+    visibility: raw.visibility === "private" ? "private" : "public",
   };
 }
 

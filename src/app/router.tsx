@@ -14,7 +14,7 @@ import { OnboardingStepInterests } from "@/features/auth/onboarding/steps/Onboar
 import { OnboardingStepCommunities } from "@/features/auth/onboarding/steps/OnboardingStepCommunities";
 import { OnboardingStepComplete } from "@/features/auth/onboarding/steps/OnboardingStepComplete";
 import { ProtectedRoute } from "@/app/ProtectedRoute";
-import { CreatePostPage, FeedPage, PostDetailPage } from "@/features/feed";
+import { CreatePostPage, FeedPage, PostDetailRoutePage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
 import {
   CommunitiesPage,
@@ -171,11 +171,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "posts/:publicId",
-        element: (
-          <ProtectedRoute>
-            <PostDetailPage />
-          </ProtectedRoute>
-        ),
+        element: <PostDetailRoutePage />,
       },
       { path: "home", element: <Navigate to="/feed" replace /> },
       {

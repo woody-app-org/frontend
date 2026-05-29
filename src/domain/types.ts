@@ -122,6 +122,8 @@ export interface PostCommunityPreview {
   category: CommunityCategory;
   /** Plano efetivo da comunidade (`free` | `premium`) para gates no feed. */
   communityPlan?: CommunityBillingPlan;
+  /** Visibilidade do espaço (`public` | `private`) para partilha externa. */
+  visibility?: CommunityVisibility;
 }
 
 /** Onde o post foi publicado (alinhado à API: `publicationContext`). */
