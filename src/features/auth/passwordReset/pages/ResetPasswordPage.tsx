@@ -42,7 +42,7 @@ export function ResetPasswordPage() {
     setRateLimitSeconds(null);
     setIsSubmitting(true);
     try {
-      await confirmPasswordReset(resetToken, data.newPassword, data.confirmPassword);
+      await confirmPasswordReset(resetToken!, data.newPassword, data.confirmPassword);
       setIsSuccess(true);
       showSuccessToast("Senha alterada com sucesso. Entre novamente.", {
         id: "password-reset-success",

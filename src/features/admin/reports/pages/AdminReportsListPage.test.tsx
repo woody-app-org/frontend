@@ -194,8 +194,8 @@ describe("AdminReportsListPage", () => {
 
     await waitFor(() => {
       const calls = mockListAdminReports.mock.calls;
-      const lastCall = calls[calls.length - 1][0];
-      expect(lastCall.status).toBeUndefined();
+      const lastCall = calls.at(-1)?.[0];
+      expect(lastCall?.status).toBeUndefined();
     });
   });
 
