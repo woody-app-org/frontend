@@ -49,17 +49,18 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
                 Desktop: md:[display:contents] torna o wrapper transparente para o grid,
                 cada filho vira célula direta do grid-cols-12 (comportamento original preservado).
               */}
-              <div className="flex items-start gap-3 md:[display:contents]">
+              {/* items-center: centraliza o label verticalmente em relação ao título no mobile */}
+              <div className="flex items-center gap-3 md:[display:contents]">
 
                 {/* Rótulo editorial */}
-                <div className="shrink-0 pt-1 md:col-span-4 md:row-start-1 md:flex md:items-center md:pl-8 lg:col-span-4 lg:pl-10">
+                <div className="shrink-0 md:col-span-4 md:row-start-1 md:flex md:items-center md:pl-8 lg:col-span-4 lg:pl-10">
 
-                  {/* Mobile: coluna estreita e discreta ao lado do título */}
-                  <div className="md:hidden w-[3.8rem]">
-                    <p className="font-heading text-[0.55rem] font-black uppercase leading-[1.35] tracking-[0.04em] text-[var(--woody-ink)]">
-                      SE<br />VOCÊ<br />CHEGOU<br />ATÉ<br />AQUI,<br />DEVE<br />QUERER<br />SABER.
+                  {/* Mobile: texto corrido, ~4 palavras por linha, máx 2 linhas, recuado da borda */}
+                  <div className="md:hidden ml-12 w-[8rem]">
+                    <p className="font-heading text-[0.80rem] font-black uppercase leading-[1.4] tracking-[0.04em] text-[var(--woody-ink)]">
+                      SE VOCÊ CHEGOU ATÉ AQUI, DEVE QUERER SABER.
                     </p>
-                    <p className="mt-1 font-mono text-[0.48rem] font-bold tracking-normal text-[var(--woody-ink)]/50">
+                    <p className="mt-1 font-mono text-[0.56rem] font-bold tracking-normal text-[var(--woody-ink)]/50">
                       // 001
                     </p>
                   </div>

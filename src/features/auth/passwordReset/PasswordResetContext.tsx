@@ -1,7 +1,6 @@
 import {
   createContext,
   useCallback,
-  useContext,
   useMemo,
   useState,
   type ReactNode,
@@ -13,13 +12,14 @@ export interface PasswordResetFlowState {
   resetToken: string | null;
 }
 
-interface PasswordResetContextValue extends PasswordResetFlowState {
+export interface PasswordResetContextValue extends PasswordResetFlowState {
   setRequestResult: (email: string, maskedEmail: string) => void;
   setResetToken: (token: string) => void;
   clear: () => void;
 }
 
-const PasswordResetContext = createContext<PasswordResetContextValue | null>(null);
+// eslint-disable-next-line react-refresh/only-export-components
+export const PasswordResetContext = createContext<PasswordResetContextValue | null>(null);
 
 const emptyState: PasswordResetFlowState = {
   email: null,
@@ -53,12 +53,4 @@ export function PasswordResetProvider({ children }: { children: ReactNode }) {
   );
 
   return <PasswordResetContext.Provider value={value}>{children}</PasswordResetContext.Provider>;
-}
-
-export function usePasswordResetFlow() {
-  const ctx = useContext(PasswordResetContext);
-  if (!ctx) {
-    throw new Error("usePasswordResetFlow must be used within PasswordResetProvider");
-  }
-  return ctx;
 }

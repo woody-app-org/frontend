@@ -6,7 +6,7 @@ import { Mail } from "lucide-react";
 import { AuthInputField } from "../../components/AuthInputField";
 import { OnboardingStepHeader } from "../../onboarding/components/OnboardingStepHeader";
 import { onboardingStyles } from "../../onboarding/uiTokens";
-import { usePasswordResetFlow } from "../PasswordResetContext";
+import { usePasswordResetFlow } from "../usePasswordResetFlow";
 import { requestPasswordReset } from "../services/passwordReset.service";
 import { PasswordResetRateLimitError } from "../passwordResetRateLimitError";
 import { forgotPasswordEmailSchema, type ForgotPasswordEmailFormData } from "../validation";

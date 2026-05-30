@@ -7,7 +7,7 @@ import { AuthPasswordField } from "../../components/AuthPasswordField";
 import { withPasswordAutofillSync } from "../../lib/passwordAutofillRegistration";
 import { OnboardingStepHeader } from "../../onboarding/components/OnboardingStepHeader";
 import { onboardingStyles } from "../../onboarding/uiTokens";
-import { usePasswordResetFlow } from "../PasswordResetContext";
+import { usePasswordResetFlow } from "../usePasswordResetFlow";
 import { confirmPasswordReset } from "../services/passwordReset.service";
 import { PasswordResetRateLimitError } from "../passwordResetRateLimitError";
 import { resetPasswordFormSchema, type ResetPasswordFormData } from "../validation";

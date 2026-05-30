@@ -7,7 +7,7 @@ import { OnboardingStepHeader } from "../../onboarding/components/OnboardingStep
 import { OnboardingCodeInput } from "../../onboarding/components/OnboardingCodeInput";
 import { emailVerificationCodeSchema, type EmailVerificationCodeFormData } from "../../onboarding/validation";
 import { onboardingStyles } from "../../onboarding/uiTokens";
-import { usePasswordResetFlow } from "../PasswordResetContext";
+import { usePasswordResetFlow } from "../usePasswordResetFlow";
 import { verifyPasswordResetCode } from "../services/passwordReset.service";
 import { PasswordResetRateLimitError } from "../passwordResetRateLimitError";
 import { cn } from "@/lib/utils";
