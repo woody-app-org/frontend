@@ -22,6 +22,7 @@ import {
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { VerificationStatus } from "@/features/auth/types";
+import { AdminNav } from "@/features/admin/components/AdminNav";
 
 const STATUS_OPTIONS: { value: VerificationStatus | ""; label: string }[] = [
   { value: "", label: "Todos os status" },
@@ -116,6 +117,7 @@ export function AdminVerificationListPage() {
 
   return (
     <FeedLayout showRightPanel={false} wideMain>
+      <AdminNav />
       {/* Cabeçalho */}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3">

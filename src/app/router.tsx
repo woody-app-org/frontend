@@ -47,6 +47,8 @@ import { VerificationRejectedPage } from "@/features/verification/pages/Verifica
 import { SuperAdminRoute } from "@/app/SuperAdminRoute";
 import { AdminVerificationListPage } from "@/features/admin/verification/pages/AdminVerificationListPage";
 import { AdminVerificationDetailPage } from "@/features/admin/verification/pages/AdminVerificationDetailPage";
+import { AdminReportsListPage } from "@/features/admin/reports/pages/AdminReportsListPage";
+import { AdminReportDetailPage } from "@/features/admin/reports/pages/AdminReportDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -268,6 +270,22 @@ export const router = createBrowserRouter([
         element: (
           <SuperAdminRoute>
             <AdminVerificationDetailPage />
+          </SuperAdminRoute>
+        ),
+      },
+      {
+        path: "admin/reports",
+        element: (
+          <SuperAdminRoute>
+            <AdminReportsListPage />
+          </SuperAdminRoute>
+        ),
+      },
+      {
+        path: "admin/reports/:id",
+        element: (
+          <SuperAdminRoute>
+            <AdminReportDetailPage />
           </SuperAdminRoute>
         ),
       },
