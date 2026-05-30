@@ -38,7 +38,7 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
       <div
         className={
           embedInLanding
-            ? "mx-auto max-w-[var(--layout-max-width)] px-[var(--layout-gutter)] py-16 md:py-24"
+            ? "mx-auto max-w-[var(--layout-max-width)] px-[var(--layout-gutter)] py-12 md:py-24"
             : "mx-auto flex min-h-svh max-w-[var(--layout-max-width)] flex-col px-[var(--layout-gutter)] py-14 md:py-20"
         }
       >
@@ -51,13 +51,18 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
         <div
           className={
             embedInLanding
-              ? "grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-8 xl:gap-14"
-              : "grid flex-1 grid-cols-1 items-center gap-12 pb-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-8 xl:gap-14"
+              ? "grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-8 xl:gap-14"
+              : "grid flex-1 grid-cols-1 items-center gap-8 pb-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-8 xl:gap-14"
           }
         >
-          {/* Esquerda: título em display italic grande */}
+          {/*
+            Título — mobile: centralizado, tamanho proporcional.
+            Desktop: alinhado à esquerda, maior (preservado).
+          */}
           <ScrollReveal enabled={motion} yOffset={16} className="lg:pr-4">
-            <h2 className="font-display text-[clamp(2.6rem,7vw,5.5rem)] font-bold italic leading-[0.92] tracking-[-0.03em] text-[var(--woody-ink)]">
+            <h2 className="font-display font-bold italic leading-[0.92] tracking-[-0.03em] text-[var(--woody-ink)]
+              text-center text-[clamp(2.2rem,12vw,3rem)]
+              lg:text-left lg:text-[clamp(2.6rem,7vw,5.5rem)]">
               tenha
               <br />
               Woody
@@ -70,7 +75,7 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
             </h2>
           </ScrollReveal>
 
-          {/* Centro: QR code */}
+          {/* QR code — único, centralizado. Sem duplicação. */}
           <ScrollReveal enabled={motion} delayMs={100} yOffset={14}>
             <div className="relative mx-auto flex w-full max-w-[min(88vw,300px)] shrink-0 justify-center">
               <div className="overflow-hidden rounded-2xl border border-[var(--woody-ink)]/12 bg-white p-3 shadow-sm ring-1 ring-black/[0.06]">
@@ -91,9 +96,11 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
             </div>
           </ScrollReveal>
 
-          {/* Direita: instrução uppercase */}
+          {/* Instrução — mobile: centralizada abaixo do QR. Desktop: direita (preservado). */}
           <ScrollReveal enabled={motion} delayMs={200} yOffset={12} className="text-center lg:text-right">
-            <p className="font-heading mx-auto max-w-[min(100%,18rem)] text-balance text-[clamp(0.85rem,2.2vw,1.4rem)] font-extrabold uppercase leading-[1.2] tracking-[0.06em] text-[var(--woody-ink)] lg:mx-0 lg:ml-auto lg:max-w-[17rem]">
+            <p className="font-heading mx-auto max-w-[min(100%,18rem)] text-balance font-extrabold uppercase leading-[1.2] text-[var(--woody-ink)]
+              text-[clamp(0.82rem,3.5vw,1.1rem)] tracking-[0.07em]
+              lg:mx-0 lg:ml-auto lg:max-w-[17rem] lg:text-[clamp(0.85rem,2.2vw,1.4rem)] lg:tracking-[0.06em]">
               {mobileQr.instructions.toUpperCase()}
             </p>
           </ScrollReveal>

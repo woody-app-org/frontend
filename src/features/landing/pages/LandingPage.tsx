@@ -13,34 +13,50 @@ import { WhatIsWoodySection } from "../narrative/WhatIsWoodySection";
 /**
  * Landing narrativa — fluxo vertical contínuo (sem hero legacy).
  * Rota pública: `/landing`.
+ *
+ * Ordem das seções:
+ * 1. O que é Woody?
+ * 2. QR / tenha Woody na palma da sua mão
+ * 3. Nossa missão
+ * 4. O que não é legal fazer (Regras)
+ * 5. Políticas
+ * 6. Faixa marquee
+ * 7. Footer
  */
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-[var(--woody-text)] antialiased selection:bg-[var(--woody-lime)]/25">
       <LandingHeader />
       <main>
+        {/* 1. O que é Woody? */}
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.oQueEWoody}>
           <WhatIsWoodySection embedInLanding />
         </NarrativeScrollSection>
 
+        {/* 2. QR — logo após a apresentação */}
+        <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.mobileQr}>
+          <MobileQrNarrativeSection embedInLanding />
+        </NarrativeScrollSection>
+
+        {/* 3. Nossa missão */}
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.missao}>
           <MissionNarrativeSection embedInLanding />
         </NarrativeScrollSection>
 
+        {/* 4. O que não é legal fazer */}
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.regras}>
           <RulesNarrativeSection embedInLanding />
         </NarrativeScrollSection>
 
+        {/* 5. Políticas */}
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.politicas}>
           <PoliciesNarrativeSection embedInLanding />
         </NarrativeScrollSection>
 
+        {/* 6. Faixa marquee — logo acima do footer */}
         <RulesMarqueeBar animate />
-
-        <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.mobileQr}>
-          <MobileQrNarrativeSection embedInLanding />
-        </NarrativeScrollSection>
       </main>
+
       <ScrollReveal enabled yOffset={12}>
         <LandingFooter />
       </ScrollReveal>
