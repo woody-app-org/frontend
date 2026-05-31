@@ -21,7 +21,7 @@ export const whatIsWoody = {
     'O nome Woody é alusivo ao "olhar amadeirado", expressão utilizada no meio lésbico. Em inglês, Woody significa "amadeirado".',
   paragraphs: [
     'O nome Woody é alusivo ao "olhar amadeirado", expressão utilizada no meio lésbico. Em inglês, Woody significa "amadeirado". Para nós, Woody é também centelha, início de jornada, possibilidade de conexão e expansão, é green flag — pessoal e profissional.',
-    'Woody é uma plataforma voltada para mulheres LBP (lésbicas, bissexuais, pansexuais) cis, e pessoas alinhadas ao feminino.',
+    'Woody é uma plataforma voltada para mulheres LBP (lésbicas, bissexuais, pansexuais) e pessoas alinhadas ao feminino.',
     'Aqui, você encontra curadoria, gestão, suporte e espaço aberto para trocas sinceras, desafiadoras, reais, íntimas, leves, profundas. Diversidade é palavra-chave, que busca criar um ambiente sem barreiras, onde pessoas dispostas se atraem.',
   ],
 };

@@ -33,24 +33,24 @@ export function LandingPage() {
           <WhatIsWoodySection embedInLanding />
         </NarrativeScrollSection>
 
-        {/* 2. QR — logo após a apresentação */}
-        <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.mobileQr}>
-          <MobileQrNarrativeSection embedInLanding />
-        </NarrativeScrollSection>
-
-        {/* 3. Nossa missão */}
+        {/* 2. Nossa missão */}
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.missao}>
           <MissionNarrativeSection embedInLanding />
         </NarrativeScrollSection>
 
-        {/* 4. O que não é legal fazer */}
+        {/* 3. O que não é legal fazer */}
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.regras}>
           <RulesNarrativeSection embedInLanding />
         </NarrativeScrollSection>
 
-        {/* 5. Políticas */}
+        {/* 4. Políticas */}
         <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.politicas}>
           <PoliciesNarrativeSection embedInLanding />
+        </NarrativeScrollSection>
+
+        {/* 5. QR — antes do footer */}
+        <NarrativeScrollSection id={LANDING_NARRATIVE_IDS.mobileQr}>
+          <MobileQrNarrativeSection embedInLanding />
         </NarrativeScrollSection>
 
         {/* 6. Faixa marquee — logo acima do footer */}

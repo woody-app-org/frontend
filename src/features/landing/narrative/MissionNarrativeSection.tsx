@@ -101,10 +101,16 @@ export function MissionNarrativeSection({ embedInLanding = false }: MissionNarra
                   decoding="async"
                 />
 
-                {/* "NOSSA MISSÃO" sobreposto — mobile only, sem sombra */}
+                {/* "NOSSA MISSÃO" sobreposto — mobile only */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center md:hidden">
-                  <p className="font-heading font-black uppercase text-center leading-[1.06] tracking-[0.05em] text-[var(--woody-ink)]
-                    text-[clamp(2.6rem,13vw,3.8rem)]">
+                  <p
+                    className="font-baron font-black uppercase text-center leading-[1.06] tracking-[0.05em] text-white
+                      text-[clamp(2.6rem,13vw,3.8rem)]"
+                    style={{
+                      textShadow:
+                        "0 0 20px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.14)",
+                    }}
+                  >
                     NOSSA
                     <br />
                     MISSÃO

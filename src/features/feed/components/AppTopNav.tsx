@@ -2,6 +2,7 @@ import { NavLink, Link } from "react-router-dom";
 import { Home, MessageCircle, PenLine, Search, Sparkles, UsersRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import { useHideOnScroll } from "@/lib/useHideOnScroll";
 import { PrivateNotificationsBell } from "./PrivateNotificationsBell";
 import { UserAccountMenu } from "./UserAccountMenu";
 import { WoodyLogo } from "@/components/branding/WoodyLogo";
@@ -40,10 +41,17 @@ export function AppTopNav({
   hideOnMobile,
   className,
 }: AppTopNavProps) {
+  // Esconde ao rolar para baixo, mostra ao rolar para cima — apenas mobile.
+  // No desktop o header permanece sempre visível (navegação principal está nele).
+  const scrollHidden = useHideOnScroll();
+
   return (
     <header
       className={cn(
         "sticky top-0 z-50 w-full shrink-0 border-b border-black/[0.07] bg-[var(--woody-header)]/92 backdrop-blur-md backdrop-saturate-150",
+        "transition-transform duration-300",
+        // Aplica hide-on-scroll só em mobile; desktop sempre visível
+        scrollHidden && "max-md:-translate-y-full",
         hideOnMobile && "max-md:hidden",
         className
       )}

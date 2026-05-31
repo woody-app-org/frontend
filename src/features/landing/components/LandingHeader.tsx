@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { WoodyLogo } from "@/components/branding/WoodyLogo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useHideOnScroll } from "@/lib/useHideOnScroll";
 import { LANDING_NARRATIVE_IDS } from "../constants";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 
@@ -16,6 +17,7 @@ const narrativeNav = [
 
 export function LandingHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const hidden = useHideOnScroll();
   const location = useLocation();
   const onLanding = location.pathname === "/landing";
   const anchorHref = (id: string) => (onLanding ? `#${id}` : `/landing#${id}`);
@@ -30,10 +32,11 @@ export function LandingHeader() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b transition-[background-color,box-shadow,border-color] duration-300",
+        "sticky top-0 z-50 w-full border-b transition-[background-color,box-shadow,border-color,transform] duration-300",
         scrolled
           ? "border-black/[0.06] bg-white/92 shadow-[0_1px_0_rgba(10,10,10,0.04)] backdrop-blur-md"
-          : "border-transparent bg-transparent"
+          : "border-transparent bg-transparent",
+        hidden && "-translate-y-full"
       )}
     >
       <div className="mx-auto flex h-[4.25rem] max-w-[var(--layout-max-width)] items-center justify-between gap-4 px-[var(--layout-gutter)] sm:gap-6">
