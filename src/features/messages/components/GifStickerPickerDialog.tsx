@@ -50,7 +50,6 @@ export function GifStickerPickerDialog({
   open,
   onOpenChange,
   onPick,
-  onRequestLocalFile,
   disabled,
 }: GifStickerPickerDialogProps) {
   const idBase = useId();
