@@ -17,7 +17,7 @@ export function WhatIsWoodySection({ embedInLanding = false }: WhatIsWoodySectio
         Mobile: faixa estreita (160px) com foco nos olhos — pouca boca visível.
         Desktop: altura proporcional à viewport (preservado).
       */}
-      <div className="w-full overflow-hidden h-[160px] md:h-[min(58svh,540px)]">
+      <div className="w-full overflow-hidden h-[160px] md:h-[min(47svh,460px)]">
         <img
           src={INSTITUTIONAL_HERO_WHAT_IS_WOODY}
           alt="Composição visual associada à identidade Woody."

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { fetchProfileSignalStatus, type ProfileSignalStatus } from "../services/profile-signals.service";
 
 /**
- * Estado de elegibilidade para enviar sinais à destinatária (fonte: GET /profile-signals/status).
+ * Estado de elegibilidade parEnviando sinais à destinatária (fonte: GET /profile-signals/status).
  * `senderEligible` ignora cooldown por tipo — o botão só some quando bloqueio/preferência impedem.
  */
 export function useProfileSignalEligibility(recipientUserId: number) {

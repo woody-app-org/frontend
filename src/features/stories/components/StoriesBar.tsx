@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+﻿import { Plus } from "lucide-react";
 import type { MouseEvent, ReactNode } from "react";
 import { StoryRing, STORY_RING_BAR_OUTER_CLASS } from "@/components/ui/StoryRing";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,7 +53,7 @@ export function StoriesBar({
 
   if (isLoading) {
     return (
-      <div className={cn("w-full min-w-0", className)} aria-busy aria-label="A carregar stories">
+      <div className={cn("w-full min-w-0", className)} aria-busy aria-label="Carregando stories">
         <div className={scrollClass}>
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className={itemShellClass}>

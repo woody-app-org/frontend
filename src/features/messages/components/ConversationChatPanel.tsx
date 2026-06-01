@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+﻿import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -162,7 +162,7 @@ export function ConversationChatPanel({
 
       {loadingMessages ? (
         <div className="flex min-h-0 flex-1 items-center justify-center p-6">
-          <p className="text-sm text-[var(--woody-muted)]">A carregar mensagens…</p>
+          <p className="text-sm text-[var(--woody-muted)]">Carregando mensagens…</p>
         </div>
       ) : messagesLoadError ? (
         <div className="min-h-0 flex-1 bg-[var(--woody-bg)]/50" aria-hidden />

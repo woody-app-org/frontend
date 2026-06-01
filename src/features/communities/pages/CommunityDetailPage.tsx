@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import type {
@@ -270,13 +270,13 @@ function CommunityDetailLoaded({
           runAccess(async () => {
             const r = await leaveCommunity(viewerId, community.slug);
             return r;
-          }, "Saíste desta comunidade.")
+          }, "Você saiu desta comunidade.")
         }
         onJoinPublic={() =>
           runAccess(async () => {
             const r = await joinCommunityPublic(viewerId, community.slug);
             return r;
-          }, "Agora participas nesta comunidade.")
+          }, "Agora faz parte dessa comunidade.")
         }
         onRequestJoin={() =>
           runAccess(async () => {
@@ -589,7 +589,7 @@ function CommunityDetailPageContent() {
           woodyLayout.pagePadWide
         )}
       >
-        A carregar comunidade…
+        Carregando comunidade…
       </div>
     );
   }

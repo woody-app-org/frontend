@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+﻿import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Send, Sparkles, X } from "lucide-react";
 import {
   Dialog,
@@ -174,7 +174,7 @@ export function ProfileSignalDialog({
                 {busy ? (
                   <>
                     <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
-                    <span>A enviar…</span>
+                    <span>Enviando…</span>
                   </>
                 ) : lockedAfterSend ? (
                   <>

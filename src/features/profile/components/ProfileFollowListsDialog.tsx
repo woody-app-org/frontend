@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Loader2, Search, Users, X } from "lucide-react";
 import {
   Dialog,
@@ -132,7 +132,7 @@ function ProfileFollowListsDialogBody({
             aria-live="polite"
           >
             <Loader2 className="size-8 animate-spin text-[var(--woody-nav)]" aria-hidden />
-            <p className="text-sm">A carregar…</p>
+            <p className="text-sm">Carregando…</p>
           </div>
         ) : null}
 
@@ -219,7 +219,7 @@ function ProfileFollowListsDialogBody({
               {loadingMore ? (
                 <span className="inline-flex items-center gap-2">
                   <Loader2 className="size-4 animate-spin" aria-hidden />
-                  A carregar…
+                  Carregando…
                 </span>
               ) : (
                 "Carregar mais"

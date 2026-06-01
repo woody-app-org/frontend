@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -230,7 +230,7 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
             disabled={busy}
             onClick={() => void executeDelete()}
           >
-            {busy ? "A apagar…" : "Apagar"}
+            {busy ? "Apagando…" : "Apagar"}
           </Button>
         </div>
       </DialogContent>

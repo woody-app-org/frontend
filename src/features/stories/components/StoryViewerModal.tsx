@@ -1,4 +1,4 @@
-import {
+﻿import {
   useCallback,
   useEffect,
   useRef,
@@ -291,7 +291,7 @@ export function StoryViewerModal({
 
         {loadState === "loading" ? (
           <div className="flex flex-1 items-center justify-center text-white/70">
-            <span className="text-sm">A carregar stories…</span>
+            <span className="text-sm">Carregando stories…</span>
           </div>
         ) : null}
 

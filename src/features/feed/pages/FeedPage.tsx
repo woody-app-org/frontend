@@ -204,7 +204,11 @@ function FeedPageContent() {
           selfUser={selfUserForBar}
           selfFeedItem={selfFeedItem}
           others={othersFeedItems}
-          onOpenUserStories={(userId) => storyViewer.open(userId)}
+          onOpenUserStories={(userId) => {
+            // Atualiza o aro visualmente na hora, sem esperar pelo re-fetch
+            storiesFeed.markUserViewed(userId);
+            storyViewer.open(userId);
+          }}
           onAddStory={() => setStoryComposerOpen(true)}
         />
       ) : null}

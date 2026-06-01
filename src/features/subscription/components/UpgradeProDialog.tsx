@@ -52,7 +52,7 @@ export function UpgradeProDialog({ children }: UpgradeProDialogProps) {
           <ProUpgradeBenefitsList />
         </div>
 
-        <ProPlanCheckoutActions startCheckout={startCheckout} loadingCode={loadingCode} error={error} />
+        <ProPlanCheckoutActions startCheckout={startCheckout} loadingCode={loadingCode} error={error} className="mt-2" />
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between sm:items-center">
           <Button type="button" variant="ghost" className={cn(woodyFocus.ring, "text-[var(--woody-muted)]")} asChild>

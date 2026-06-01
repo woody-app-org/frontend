@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { ImagePlus, Loader2, UserRound, Users, Video } from "lucide-react";
+import { Hash, ImagePlus, Loader2, UserRound, Users, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -137,6 +137,8 @@ export function PostComposerForm({
   const [communityId, setCommunityId] = useState(forcedCommunity?.id ?? "");
   const [content, setContent] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
+  // Controla visibilidade do input de hashtag no modal (aberto via botão na toolbar)
+  const [hashtagOpen, setHashtagOpen] = useState(false);
 
   const [imageItems, setImageItems] = useState<ComposerImageItem[]>([]);
   const [videoItem, setVideoItem] = useState<ComposerVideoItem | null>(null);
@@ -534,7 +536,7 @@ export function PostComposerForm({
   const submitDisabled =
     submitting || communityBlocking || (!hasText && !hasMediaQueued) || content.length > POST_COMPOSER_CONTENT_MAX_LENGTH;
 
-  const mainPlaceholder = "Uma foto, um pensamento, um caos compartilhado";
+  const mainPlaceholder = "Publique uma foto, um pensamento, um caos";
 
   const hasImages = imageItems.length > 0;
   const hasVideo = videoItem !== null;
@@ -599,7 +601,7 @@ export function PostComposerForm({
           {loadingCommunities ? (
             <div className="flex h-10 items-center gap-2 rounded-2xl border border-black/[0.06] bg-black/[0.02] px-3 text-sm text-[var(--woody-muted)]">
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              A carregar…
+              Carregando…
             </div>
           ) : communityLoadError ? (
             <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
@@ -734,6 +736,7 @@ export function PostComposerForm({
               disabled={fieldsDisabled}
               compact
               composerBare={isModalEmbed}
+              showInput={isModalEmbed ? (hashtagOpen || hashtags.length > 0) : true}
             />
 
             <MediaPreviewGrid
@@ -825,6 +828,24 @@ export function PostComposerForm({
               {imageItems.length}/{POST_COMPOSER_IMAGES_MAX_COUNT}
             </span>
           ) : null}
+
+          {/* Botão hashtag — só no modal; fora do modal o campo já aparece inline */}
+          {isModalEmbed && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setHashtagOpen((v) => !v)}
+              disabled={fieldsDisabled}
+              aria-label="Adicionar hashtag"
+              className={cn(
+                toolbarIconBtn,
+                (hashtagOpen || hashtags.length > 0) && "bg-[var(--woody-accent)]/14"
+              )}
+            >
+              <Hash className="size-[1.15rem] sm:size-5" aria-hidden />
+            </Button>
+          )}
         </div>
 
         <Button

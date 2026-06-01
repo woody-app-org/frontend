@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Search, UserX } from "lucide-react";
 import {
   Dialog,
@@ -147,7 +147,7 @@ export function BlockedUsersDialog({ open, onOpenChange }: BlockedUsersDialogPro
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-12 text-sm text-[var(--woody-muted)]">
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              A carregar…
+              Carregando…
             </div>
           ) : error ? (
             <div className="px-2 py-8 text-center text-sm text-red-600">{error}</div>
@@ -215,7 +215,7 @@ export function BlockedUsersDialog({ open, onOpenChange }: BlockedUsersDialogPro
               {loadingMore ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
-                  A carregar…
+                  Carregando…
                 </>
               ) : (
                 "Carregar mais"

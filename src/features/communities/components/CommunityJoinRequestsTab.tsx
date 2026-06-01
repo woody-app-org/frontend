@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Inbox } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -140,7 +140,7 @@ function JoinRequestModerationCard({ row, viewerId, onChanged }: JoinRequestCard
                 void run(() => approveJoinRequest(viewerId, request.id), "Solicitação aprovada.")
               }
             >
-              {busy ? "A processar…" : "Aprovar"}
+              {busy ? "Processando…" : "Aprovar"}
             </Button>
             <Button
               type="button"
@@ -209,7 +209,7 @@ function JoinRequestModerationCard({ row, viewerId, onChanged }: JoinRequestCard
                 }, "Solicitação recusada.")
               }
             >
-              {busy ? "A processar…" : "Confirmar recusa"}
+              {busy ? "Processando…" : "Confirmar recusa"}
             </Button>
           </div>
         </DialogContent>

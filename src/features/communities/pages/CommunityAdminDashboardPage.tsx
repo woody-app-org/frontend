@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, BarChart3, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
@@ -305,7 +305,7 @@ export function CommunityAdminDashboardPage() {
         {dashLoading && !dashboard ? (
           <div className="flex items-center gap-2 text-sm text-[var(--woody-muted)]">
             <Loader2 className="size-4 animate-spin" aria-hidden />
-            A carregar métricas…
+            Carregando métricas…
           </div>
         ) : null}
 

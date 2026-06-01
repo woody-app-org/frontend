@@ -44,7 +44,7 @@ export function MessageMediaPicker({
         variant="outline"
         size="icon"
         className={cn(
-          "size-11 shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)]",
+          "size-11 shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)] leading-[0]",
           buttonClassName
         )}
         disabled={disabled || buttonDisabled}

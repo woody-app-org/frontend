@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -90,7 +90,7 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
       </div>
 
       {mode === "loading" ? (
-        <p className="text-sm text-[var(--woody-muted)] py-2">A carregar comunidades…</p>
+        <p className="text-sm text-[var(--woody-muted)] py-2">Carregando comunidades…</p>
       ) : mode === "empty" ? (
         <p className="text-sm text-[var(--woody-muted)] py-2">
           {isAuthenticated

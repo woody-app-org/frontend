@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { mobileQr } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
@@ -89,7 +89,7 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
                   />
                 ) : (
                   <div className="flex size-[min(76vw,280px)] items-center justify-center bg-white text-sm text-black/35">
-                    A gerar QR…
+                    Gerando QR…
                   </div>
                 )}
               </div>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState } from "react";
+﻿import { useCallback, useEffect, useId, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { Loader2, RotateCcw } from "lucide-react";
 import {
@@ -248,7 +248,7 @@ export function ImageCropDialog({
             {confirming ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden />
-                A enviar…
+                Enviando…
               </>
             ) : (
               "Aplicar"

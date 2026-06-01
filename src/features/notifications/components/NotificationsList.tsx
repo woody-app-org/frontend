@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCheck, Inbox, RefreshCw } from "lucide-react";
+﻿import { AlertCircle, CheckCheck, Inbox, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -98,7 +98,7 @@ export function NotificationsList({
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {loading ? (
-          <div className="space-y-3 p-3" aria-busy="true" aria-label="A carregar notificações">
+          <div className="space-y-3 p-3" aria-busy="true" aria-label="Carregando notificações">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex gap-3">
                 <Skeleton className="size-11 shrink-0 rounded-full" />

@@ -1,4 +1,4 @@
-/** Alinhado aos DTOs da API Woody (mensagens diretas). */
+﻿/** Alinhado aos DTOs da API Woody (mensagens diretas). */
 
 export interface ConversationPeerPreviewDto {
   id: number;
@@ -73,7 +73,7 @@ export interface StickerGifSearchResponseDto {
   providerKey: string;
 }
 
-/** Anexo na mensagem a enviar (alinhado a <c>MessageAttachmentItemRequestDto</c>). */
+/** Anexo na mensagem Enviando (alinhado a <c>MessageAttachmentItemRequestDto</c>). */
 export interface OutgoingMessageAttachment {
   url: string;
   mediaType: string;

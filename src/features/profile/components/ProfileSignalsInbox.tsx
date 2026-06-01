@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -49,7 +49,7 @@ export function ProfileSignalsInbox() {
         role="status"
       >
         <Loader2 className="size-8 animate-spin text-[var(--woody-nav)]" aria-hidden />
-        <p className="text-sm">A carregar sinais...</p>
+        <p className="text-sm">Carregando sinais...</p>
       </div>
     );
   }

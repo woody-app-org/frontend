@@ -76,14 +76,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+
+    // Otimístico: usa o utilizador guardado no localStorage imediatamente para evitar
+    // tela branca enquanto espera a validação de rede.
+    // A validação em background garante que sessões expiradas são limpas logo depois.
+    const storedUser = getAuthUser();
+    if (storedUser) {
+      setUser(storedUser);
+      setIsLoading(false); // conteúdo renderiza sem esperar pela rede
+    }
+
     void (async () => {
       try {
         const u = await bootstrapAuthSession();
         if (!cancelled) setUser(u);
+      } catch {
+        if (!cancelled) setUser(null);
       } finally {
-        if (!cancelled) setIsLoading(false);
+        // Se não havia utilizador guardado, só agora sabemos o resultado
+        if (!cancelled && !storedUser) setIsLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
     };

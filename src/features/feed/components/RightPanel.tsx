@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { StoryRing } from "@/components/ui/StoryRing";
 import { cn } from "@/lib/utils";
@@ -206,7 +206,7 @@ export function RightPanel({ className }: RightPanelProps) {
             </div>
           ) : loadState === "loading" && !hasSuggestions ? (
             <div className={styles.emptyState}>
-              <span>A carregar…</span>
+              <span>Carregando…</span>
             </div>
           ) : !hasSuggestions ? (
             <div className={styles.emptyState}>
@@ -231,7 +231,7 @@ export function RightPanel({ className }: RightPanelProps) {
             </div>
           ) : loadState === "loading" && !hasFollowing ? (
             <div className={styles.emptyState}>
-              <span>A carregar…</span>
+              <span>Carregando…</span>
             </div>
           ) : loadState === "error" ? (
             <div className={styles.emptyState}>

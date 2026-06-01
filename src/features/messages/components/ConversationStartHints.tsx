@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,7 +20,7 @@ function initials(name: string): string {
 }
 
 export interface ConversationStartHintsProps {
-  /** Quando falso, não pede a API (ex.: ainda a carregar listas). */
+  /** Quando falso, não pede a API (ex.: ainda Carregando listas). */
   enabled: boolean;
 }
 
@@ -63,14 +63,14 @@ function ConversationStartHintsLoaded() {
       </p>
 
       {phase === "loading" ? (
-        <p className="text-sm text-[var(--woody-muted)]">A carregar quem segues…</p>
+        <p className="text-sm text-[var(--woody-muted)]">Carregando quem segues…</p>
       ) : phase === "error" ? (
         <p className="text-sm text-[var(--woody-muted)]">Não foi possível carregar sugestões agora.</p>
       ) : following.length === 0 ? (
         <div className="flex items-start gap-2 rounded-xl bg-[var(--woody-card)]/80 px-3 py-3 text-sm text-[var(--woody-muted)]">
           <Users className="mt-0.5 size-4 shrink-0 text-[var(--woody-muted)]" aria-hidden />
           <span>
-            Quando seguires alguém, aparece aqui um atalho para enviar mensagem. Até lá, abre um{" "}
+            Quando seguires alguém, aparece aqui um atalho parEnviando mensagem. Até lá, abre um{" "}
             <Link to="/feed" className="font-medium text-[var(--woody-nav)] underline-offset-2 hover:underline">
               perfil no feed
             </Link>{" "}

@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+﻿import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodySection } from "@/lib/woody-ui";
@@ -38,7 +38,7 @@ export function ConversationRequestsSection({
     return (
       <section className="flex flex-col gap-2">
         <h2 className={cn(woodySection.eyebrow, "px-1")}>Pedidos recebidos</h2>
-        <p className="px-3 py-3 text-sm text-[var(--woody-muted)]">A carregar…</p>
+        <p className="px-3 py-3 text-sm text-[var(--woody-muted)]">Carregando…</p>
       </section>
     );
   }
@@ -95,7 +95,7 @@ export function ConversationRequestsSection({
                   disabled={busy}
                   onClick={() => void onAccept(c.id)}
                 >
-                  {busy ? "A processar…" : "Aceitar"}
+                  {busy ? "Processando…" : "Aceitar"}
                 </Button>
                 <Button
                   type="button"

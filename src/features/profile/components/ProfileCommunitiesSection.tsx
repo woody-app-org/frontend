@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, UsersRound } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -99,7 +99,7 @@ export function ProfileCommunitiesSection({
 
   const body =
     loadState === "loading" ? (
-      <p className="text-sm text-[var(--woody-muted)] py-4">A carregar comunidades…</p>
+      <p className="text-sm text-[var(--woody-muted)] py-4">Carregando comunidades…</p>
     ) : loadState === "error" ? (
       <p className="text-sm text-[var(--woody-muted)] py-4">Não foi possível carregar as comunidades.</p>
     ) : rows.length === 0 ? (
