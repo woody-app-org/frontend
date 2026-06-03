@@ -125,6 +125,11 @@ export async function fetchAuthUserFromMe(): Promise<AuthUser> {
   const raw = data as Record<string, unknown>;
   const id = raw.id != null ? String(raw.id) : "";
   if (!id) throw new Error("Resposta inválida de /users/me.");
+  const trimOrUndef = (v: unknown): string | undefined => {
+    const s = v != null ? String(v).trim() : "";
+    return s || undefined;
+  };
+
   const user: AuthUser = {
     id,
     username: raw.username != null ? String(raw.username) : id,
@@ -136,6 +141,11 @@ export async function fetchAuthUserFromMe(): Promise<AuthUser> {
         ? (raw.verificationStatus as VerificationStatus)
         : "PendingDocument",
     role: raw.role != null ? (raw.role as UserRole) : "User",
+    // Campos de perfil estendido — mapeados do UserProfileDto já retornado por /users/me.
+    bannerUrl: raw.bannerUrl != null ? String(raw.bannerUrl) : null,
+    bio: trimOrUndef(raw.bio),
+    location: trimOrUndef(raw.location),
+    pronouns: trimOrUndef(raw.pronouns),
   };
   return normalizeStoredUser(user);
 }

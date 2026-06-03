@@ -22,6 +22,16 @@ export interface AuthUser {
   verificationStatus?: VerificationStatus;
   /** Papel global na plataforma (≠ admin de comunidade). */
   role?: UserRole;
+  // Campos de perfil estendido — populados a partir de /users/me.
+  // Opcionais para compatibilidade com sessões antigas gravadas no localStorage.
+  /** URL do banner/capa do perfil. */
+  bannerUrl?: string | null;
+  /** Bio / descrição curta. */
+  bio?: string;
+  /** Localização pública definida pela utilizadora. */
+  location?: string;
+  /** Pronomes declarados. */
+  pronouns?: string;
 }
 
 /** Sessão atual (espelho de `AuthUser` para vocabulário alinhado ao backend). */

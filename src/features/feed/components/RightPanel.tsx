@@ -1,44 +1,18 @@
-﻿import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { StoryRing } from "@/components/ui/StoryRing";
 import { cn } from "@/lib/utils";
 import { Heart, UserPlus, Users } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
-import {
-  fetchMyFollowing,
-  fetchMySuggestions,
-} from "@/features/users/services/userSocial.service";
+import { fetchMySuggestions } from "@/features/users/services/userSocial.service";
 import type { User } from "@/domain/types";
 import { SOCIAL_GRAPH_CHANGED_EVENT, BLOCK_RELATIONSHIP_CHANGED_EVENT } from "@/lib/socialGraphEvents";
-import { profilePathForUser } from "@/features/profile/lib/profilePaths";
+import { isOwnProfileRoute, profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { FeedDecorWaves } from "./FeedDecorWaves";
+import { RightPanelProfileCard } from "./RightPanelProfileCard";
 
-/** Quantas linhas de utilizadora mostrar em cada cartão do painel — sem scroll interno; adapta ao ecrã. */
-function useSidebarUserRowCap(): number {
-  const [cap, setCap] = useState(4);
-
-  useEffect(() => {
-    const update = () => {
-      const h = window.visualViewport?.height ?? window.innerHeight;
-      const w = window.innerWidth;
-      if (h < 640) setCap(3);
-      else if (h < 740 || w < 900) setCap(4);
-      else if (h < 900) setCap(5);
-      else setCap(6);
-    };
-    update();
-    window.addEventListener("resize", update);
-    const vv = window.visualViewport;
-    vv?.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("resize", update);
-      vv?.removeEventListener("resize", update);
-    };
-  }, []);
-
-  return cap;
-}
+// Máximo de sugestões visíveis no painel (fixo — sem cálculo de viewport)
+const SUGGESTIONS_VISIBLE = 3;
 
 export interface RightPanelProps {
   className?: string;
@@ -106,28 +80,6 @@ function SuggestionUserRow({ user }: { user: UserItem }) {
   );
 }
 
-function FollowingUserRow({ user }: { user: UserItem }) {
-  const numericId = Number.parseInt(user.id, 10);
-  const canDm = Number.isFinite(numericId) && numericId > 0;
-
-  return (
-    <li className={styles.item}>
-      <Link to={profilePathForUser(user)} className={styles.itemLink} aria-label={`Ver perfil de ${user.name}`}>
-        <StoryRing
-          avatarUrl={user.avatarUrl}
-          displayName={user.name}
-          hasActiveStories={user.hasActiveStories ?? false}
-          size="sm"
-        />
-        <span className={styles.itemName}>{user.name}</span>
-      </Link>
-      {canDm ? (
-        <StartConversationButton otherUserId={numericId} peerLabel={user.name} variant="icon" className="size-8 min-h-8 min-w-8" />
-      ) : null}
-    </li>
-  );
-}
-
 function toRow(u: User): UserItem {
   return {
     id: u.id,
@@ -139,29 +91,27 @@ function toRow(u: User): UserItem {
 }
 
 export function RightPanel({ className }: RightPanelProps) {
-  const { isAuthenticated } = useAuth();
-  const rowCap = useSidebarUserRowCap();
+  const { pathname } = useLocation();
+  const { isAuthenticated, user } = useAuth();
+  const hideProfileCard = Boolean(user && isOwnProfileRoute(pathname, user));
   const [suggestions, setSuggestions] = useState<UserItem[]>([]);
-  const [following, setFollowing] = useState<UserItem[]>([]);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   const load = useCallback(async () => {
     await Promise.resolve();
     if (!isAuthenticated) {
       setSuggestions([]);
-      setFollowing([]);
       setLoadState("idle");
       return;
     }
     setLoadState("loading");
     try {
-      const [sug, fol] = await Promise.all([fetchMySuggestions(12), fetchMyFollowing()]);
+      // Pedimos apenas 3 sugestões — o painel mostra no máximo SUGGESTIONS_VISIBLE
+      const sug = await fetchMySuggestions(SUGGESTIONS_VISIBLE);
       setSuggestions(sug.map(toRow));
-      setFollowing(fol.map(toRow));
       setLoadState("done");
     } catch {
       setSuggestions([]);
-      setFollowing([]);
       setLoadState("error");
     }
   }, [isAuthenticated]);
@@ -173,9 +123,7 @@ export function RightPanel({ className }: RightPanelProps) {
   }, [load]);
 
   useEffect(() => {
-    const onSocialChange = () => {
-      void load();
-    };
+    const onSocialChange = () => void load();
     window.addEventListener(SOCIAL_GRAPH_CHANGED_EVENT, onSocialChange);
     window.addEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onSocialChange);
     return () => {
@@ -185,72 +133,35 @@ export function RightPanel({ className }: RightPanelProps) {
   }, [load]);
 
   const hasSuggestions = suggestions.length > 0;
-  const hasFollowing = following.length > 0;
-  const showAuthHint = !isAuthenticated;
-  const visibleSuggestions = suggestions.slice(0, rowCap);
-  const visibleFollowing = following.slice(0, rowCap);
 
   return (
     <aside data-feed-right-panel className={cn(styles.panel, className)}>
       <div className={styles.panelInner}>
-        <section className={styles.sectionCard}>
-          <SectionHeader title="Sugestões para você" />
-          {showAuthHint ? (
-            <div className={styles.emptyState}>
-              <Users className={styles.emptyStateIcon} aria-hidden />
-              <span>Inicie sessão para ver sugestões de perfis.</span>
-            </div>
-          ) : loadState === "error" ? (
-            <div className={styles.emptyState}>
-              <span>Não foi possível carregar sugestões.</span>
-            </div>
-          ) : loadState === "loading" && !hasSuggestions ? (
-            <div className={styles.emptyState}>
-              <span>Carregando…</span>
-            </div>
-          ) : !hasSuggestions ? (
-            <div className={styles.emptyState}>
-              <Users className={styles.emptyStateIcon} aria-hidden />
-              <span>Nenhuma sugestão no momento.</span>
-            </div>
-          ) : (
-            <ul className={cn(styles.list, "m-0 list-none p-0")}>
-              {visibleSuggestions.map((user) => (
-                <SuggestionUserRow key={user.id} user={user} />
-              ))}
-            </ul>
-          )}
-        </section>
 
-        <section className={styles.sectionCard}>
-          <SectionHeader title="Pessoas em sintonia" />
-          {showAuthHint ? (
-            <div className={styles.emptyState}>
-              <Users className={styles.emptyStateIcon} aria-hidden />
-              <span>Inicie sessão para ver quem segue.</span>
-            </div>
-          ) : loadState === "loading" && !hasFollowing ? (
-            <div className={styles.emptyState}>
-              <span>Carregando…</span>
-            </div>
-          ) : loadState === "error" ? (
-            <div className={styles.emptyState}>
-              <span>Não foi possível carregar a lista.</span>
-            </div>
-          ) : !hasFollowing ? (
-            <div className={styles.emptyState}>
-              <Users className={styles.emptyStateIcon} aria-hidden />
-              <span>Ainda não segue ninguém.</span>
-            </div>
-          ) : (
-            <ul className={cn(styles.list, "m-0 list-none p-0")}>
-              {visibleFollowing.map((user) => (
-                <FollowingUserRow key={user.id} user={user} />
-              ))}
-            </ul>
-          )}
-        </section>
+        {/* ── Mini Profile Card (oculto no próprio perfil — evita duplicar o header) ── */}
+        {isAuthenticated && user && !hideProfileCard ? (
+          <RightPanelProfileCard user={user} />
+        ) : null}
 
+        {/* ── Sugestões para você (max 3, só quando existem) ────────────── */}
+        {isAuthenticated && (hasSuggestions || loadState === "loading") ? (
+          <section className={styles.sectionCard}>
+            <SectionHeader title="Sugestões para você" />
+            {loadState === "loading" && !hasSuggestions ? (
+              <div className={styles.emptyState}>
+                <span>Carregando…</span>
+              </div>
+            ) : (
+              <ul className={cn(styles.list, "m-0 list-none p-0")}>
+                {suggestions.slice(0, SUGGESTIONS_VISIBLE).map((u) => (
+                  <SuggestionUserRow key={u.id} user={u} />
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
+
+        {/* ── Card institucional ────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl border border-black/[0.08] bg-gradient-to-b from-[var(--woody-card)] to-[var(--woody-main-surface)] px-3.5 py-3 shadow-[0_2px_8px_rgba(10,10,10,0.04)]">
           <FeedDecorWaves className="opacity-50" variant="promo" />
           <div
@@ -274,6 +185,7 @@ export function RightPanel({ className }: RightPanelProps) {
             <span aria-hidden>→</span>
           </Link>
         </div>
+
       </div>
     </aside>
   );
