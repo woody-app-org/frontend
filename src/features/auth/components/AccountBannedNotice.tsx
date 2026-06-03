@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { AlertTriangle } from "lucide-react";
 import type { AccountBannedLoginDetails } from "../errors/accountBannedLogin";
 import { formatBannedAt } from "../errors/accountBannedLogin";
@@ -6,6 +7,9 @@ import { cn } from "@/lib/utils";
 
 const SUPPORT_HINT =
   "Caso você acredite que houve um engano, poderá solicitar uma revisão pelo suporte da Woody.";
+
+const appealButtonClass =
+  "inline-flex w-full items-center justify-center rounded-xl h-10 px-4 text-sm font-semibold border border-amber-400/60 bg-white text-amber-950 hover:bg-amber-100/80 md:bg-amber-900/50 md:text-amber-50 md:hover:bg-amber-900/70 transition-colors";
 
 export interface AccountBannedNoticeProps {
   details: AccountBannedLoginDetails;
@@ -51,26 +55,18 @@ export function AccountBannedNotice({ details, className }: AccountBannedNoticeP
         </div>
       </div>
 
-      {support.kind === "link" ? (
-        <a
-          href={support.href}
-          className="inline-flex w-full items-center justify-center rounded-xl h-10 px-4 text-sm font-semibold border border-amber-400/60 bg-white text-amber-950 hover:bg-amber-100/80 md:bg-amber-900/50 md:text-amber-50 md:hover:bg-amber-900/70 transition-colors"
+      {support.kind === "route" ? (
+        <Link
+          to={support.href}
+          className={appealButtonClass}
+          onClick={(e) => e.stopPropagation()}
         >
           {support.label}
-        </a>
+        </Link>
       ) : (
-        <div className="space-y-2">
-          <button
-            type="button"
-            disabled
-            className="inline-flex w-full items-center justify-center rounded-xl h-10 px-4 text-sm font-semibold border border-amber-300/50 bg-amber-100/50 text-amber-800/70 cursor-not-allowed md:bg-amber-900/30 md:text-amber-200/70"
-          >
-            {support.label}
-          </button>
-          <p className="text-xs text-center text-amber-800/80 md:text-amber-100/75">
-            Canal de suporte em breve.
-          </p>
-        </div>
+        <a href={support.href} className={appealButtonClass}>
+          {support.label}
+        </a>
       )}
     </section>
   );

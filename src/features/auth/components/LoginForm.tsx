@@ -59,9 +59,9 @@ export function LoginForm({
     <div className={cn("w-full max-w-sm mx-auto md:mx-0 px-0", className)}>
       <h2 className={styles.formTitle}>Entrar</h2>
 
-      <form onSubmit={handleSubmitForm} className={styles.form} noValidate>
-        {accountBanned ? <AccountBannedNotice details={accountBanned} /> : null}
+      {accountBanned ? <AccountBannedNotice details={accountBanned} className="mb-4" /> : null}
 
+      <form onSubmit={handleSubmitForm} className={styles.form} noValidate>
         {errorMessage && !accountBanned ? (
           <p
             className="text-sm text-red-600 md:text-red-200 bg-red-100 md:bg-red-900/30 rounded-lg px-3 py-2"

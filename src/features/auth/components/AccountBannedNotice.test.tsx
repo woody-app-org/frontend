@@ -1,11 +1,13 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { AccountBannedNotice } from "./AccountBannedNotice";
 
 vi.mock("../lib/supportContact", () => ({
   getSupportContactAction: () => ({
-    kind: "disabled" as const,
-    label: "Falar com suporte — Em breve",
+    kind: "route" as const,
+    href: "/support/ban-appeal",
+    label: "Solicitar revisão",
   }),
 }));
 
@@ -17,28 +19,25 @@ describe("AccountBannedNotice", () => {
   };
 
   it("exibe título, motivo e data", () => {
-    render(<AccountBannedNotice details={details} />);
+    render(
+      <MemoryRouter>
+        <AccountBannedNotice details={details} />
+      </MemoryRouter>
+    );
 
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByText("Conta desativada")).toBeInTheDocument();
     expect(screen.getByText(/Motivo:/)).toBeInTheDocument();
-    expect(screen.getByText(/Violação das regras da plataforma/)).toBeInTheDocument();
-    expect(screen.getByText(/Data da decisão:/)).toBeInTheDocument();
   });
 
-  it("não exibe campos internos", () => {
-    render(<AccountBannedNotice details={details} />);
+  it("link de revisão aponta para /support/ban-appeal", () => {
+    render(
+      <MemoryRouter>
+        <AccountBannedNotice details={details} />
+      </MemoryRouter>
+    );
 
-    expect(screen.queryByText(/nota interna/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/ban_source/i)).not.toBeInTheDocument();
-  });
-
-  it("mostra botão de suporte desabilitado e texto em breve", () => {
-    render(<AccountBannedNotice details={details} />);
-
-    const btn = screen.getByRole("button", { name: /falar com suporte/i });
-    expect(btn).toBeDisabled();
-    expect(btn).toHaveTextContent("Em breve");
-    expect(screen.getByText("Canal de suporte em breve.")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /solicitar revisão/i });
+    expect(link).toHaveAttribute("href", "/support/ban-appeal");
   });
 });

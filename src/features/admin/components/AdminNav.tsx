@@ -1,10 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Shield, Flag } from "lucide-react";
+import { Shield, Flag, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { to: "/admin/verification", label: "Verificações", Icon: Shield },
   { to: "/admin/reports", label: "Denúncias", Icon: Flag },
+  { to: "/admin/support", label: "Suporte", Icon: LifeBuoy },
 ];
 
 export function AdminNav() {

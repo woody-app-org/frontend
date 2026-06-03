@@ -1,16 +1,17 @@
 export type SupportContactAction =
-  | { kind: "disabled"; label: string }
+  | { kind: "route"; href: string; label: string }
   | { kind: "link"; href: string; label: string };
 
+const BAN_APPEAL_PATH = "/support/ban-appeal";
+
 /**
- * Canal de suporte para revisão de banimento.
- * Sem rota nem e-mail oficial configurados nesta fase → botão desabilitado.
+ * Canal de revisão de banimento no login.
+ * Prioriza rota interna de apelo; mailto só como fallback opcional via env.
  */
 export function getSupportContactAction(): SupportContactAction {
-  const email = import.meta.env.VITE_SUPPORT_EMAIL?.trim();
-  if (email) {
-    return { kind: "link", href: `mailto:${email}`, label: "Falar com suporte" };
-  }
-
-  return { kind: "disabled", label: "Falar com suporte — Em breve" };
+  return {
+    kind: "route",
+    href: BAN_APPEAL_PATH,
+    label: "Solicitar revisão",
+  };
 }

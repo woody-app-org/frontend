@@ -142,6 +142,24 @@ const AdminReportsListPage = lazy(() =>
 const AdminReportDetailPage = lazy(() =>
   import("@/features/admin/reports/pages/AdminReportDetailPage").then(m => ({ default: m.AdminReportDetailPage }))
 );
+const SupportPage = lazy(() =>
+  import("@/features/support/pages/SupportPage").then(m => ({ default: m.SupportPage }))
+);
+const SupportNewPage = lazy(() =>
+  import("@/features/support/pages/SupportNewPage").then(m => ({ default: m.SupportNewPage }))
+);
+const SupportDetailPage = lazy(() =>
+  import("@/features/support/pages/SupportDetailPage").then(m => ({ default: m.SupportDetailPage }))
+);
+const BanAppealPage = lazy(() =>
+  import("@/features/support/pages/BanAppealPage").then(m => ({ default: m.BanAppealPage }))
+);
+const AdminSupportListPage = lazy(() =>
+  import("@/features/admin/support/pages/AdminSupportListPage").then(m => ({ default: m.AdminSupportListPage }))
+);
+const AdminSupportDetailPage = lazy(() =>
+  import("@/features/admin/support/pages/AdminSupportDetailPage").then(m => ({ default: m.AdminSupportDetailPage }))
+);
 
 // ─── Wrapper Suspense mínimo (guarda de loading existente nos guards já cobre) ─
 function S({ children }: { children: React.ReactNode }) {
@@ -191,6 +209,14 @@ export const router = createBrowserRouter([
         element: (
           <BetaClosedGate>
             <LoginPage />
+          </BetaClosedGate>
+        ),
+      },
+      {
+        path: "support/ban-appeal",
+        element: (
+          <BetaClosedGate>
+            <S><BanAppealPage /></S>
           </BetaClosedGate>
         ),
       },
@@ -355,6 +381,30 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "support",
+        element: (
+          <ProtectedRoute requireVerified={false}>
+            <S><SupportPage /></S>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "support/new",
+        element: (
+          <ProtectedRoute requireVerified={false}>
+            <S><SupportNewPage /></S>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "support/:publicId",
+        element: (
+          <ProtectedRoute requireVerified={false}>
+            <S><SupportDetailPage /></S>
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "admin/verification",
         element: (
           <SuperAdminRoute>
@@ -383,6 +433,22 @@ export const router = createBrowserRouter([
         element: (
           <SuperAdminRoute>
             <S><AdminReportDetailPage /></S>
+          </SuperAdminRoute>
+        ),
+      },
+      {
+        path: "admin/support",
+        element: (
+          <SuperAdminRoute>
+            <S><AdminSupportListPage /></S>
+          </SuperAdminRoute>
+        ),
+      },
+      {
+        path: "admin/support/:publicId",
+        element: (
+          <SuperAdminRoute>
+            <S><AdminSupportDetailPage /></S>
           </SuperAdminRoute>
         ),
       },
