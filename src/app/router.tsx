@@ -94,6 +94,9 @@ const MissionPage = lazy(() =>
 const MobileQrPage = lazy(() =>
   import("@/features/landing/institutional/pages/MobileQrPage").then(m => ({ default: m.MobileQrPage }))
 );
+const InstallPage = lazy(() =>
+  import("@/features/landing/pwa/InstallPage").then(m => ({ default: m.InstallPage }))
+);
 const PoliciesIndexPage = lazy(() =>
   import("@/features/landing/institutional/pages/PoliciesIndexPage").then(m => ({ default: m.PoliciesIndexPage }))
 );
@@ -182,6 +185,7 @@ export const router = createBrowserRouter([
       { path: "invite/:code", element: <S><BetaInviteLinkPage /></S> },
       { index: true, element: <IntroPage /> },
       { path: "landing", element: <S><LandingPage /></S> },
+      { path: "install", element: <S><InstallPage /></S> },
       {
         path: "institutional",
         element: <S><InstitutionalLayout /></S>,

@@ -112,6 +112,6 @@ export const policyBan = {
 
 export const mobileQr = {
   title: "Tenha Woody na palma da sua mão.",
-  instructions:
-    "Clique no QR Code para baixar a woody no seu celular.",
+  instructions: "Toque no QR Code e adicione a Woody à tela inicial.",
+  installHint: "Toque para instalar",
 };
