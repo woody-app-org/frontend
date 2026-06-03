@@ -293,7 +293,6 @@ export function CommentForm({
         open={gifPickerOpen}
         onOpenChange={setGifPickerOpen}
         onPick={onGifPick}
-        onRequestLocalFile={() => setGifPickerOpen(false)}
         disabled={disabled || isSubmitting}
       />
     </>

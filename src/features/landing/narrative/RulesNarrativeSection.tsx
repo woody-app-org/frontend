@@ -62,9 +62,9 @@ export function RulesNarrativeSection({ embedInLanding = false }: RulesNarrative
                     "-mt-14 self-center",
                     /* Desktop (sm+): overlap lateral original */
                     "sm:mt-0 sm:self-auto sm:-mt-[8rem] sm:-ml-[5.5rem]",
-                    "md:-mt-[10rem] md:-ml-[7.5rem]",
-                    "lg:-mt-[12rem] lg:-ml-[10rem]",
-                    "xl:-mt-[14rem] xl:-ml-[11.5rem]",
+                    "md:-mt-[12rem] md:-ml-[7.5rem]",
+                    "lg:-mt-[14rem] lg:-ml-[10.5rem]",
+                    "xl:-mt-[14rem] xl:-ml-[10rem]",
                   ].join(" ")}
                 >
                   <div

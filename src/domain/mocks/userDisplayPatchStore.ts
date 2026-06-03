@@ -30,9 +30,16 @@ export function getUserDisplayPatchesVersion(): number {
 export function applyUserDisplayPatch(userId: string, patch: UserDisplayPatch): void {
   const prev = patchesByUserId.get(userId) ?? {};
   const next = { ...prev };
+  let changed = false;
   for (const [k, v] of Object.entries(patch) as [keyof UserDisplayPatch, UserDisplayPatch[keyof UserDisplayPatch]][]) {
-    if (v !== undefined) (next as Record<string, unknown>)[k] = v;
+    if (v !== undefined && prev[k as keyof UserDisplayPatch] !== v) {
+      (next as Record<string, unknown>)[k] = v;
+      changed = true;
+    }
   }
+  // Só notifica se algo mudou de facto — evita incrementar patchVersion
+  // em cada bootstrap de sessão quando os dados são idênticos ao que já está guardado.
+  if (!changed) return;
   patchesByUserId.set(userId, next);
   notifyUserPatchListeners();
 }

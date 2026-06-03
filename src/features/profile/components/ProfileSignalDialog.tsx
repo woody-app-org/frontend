@@ -88,7 +88,7 @@ export function ProfileSignalDialog({
                 Enviar sinal
               </DialogTitle>
               <DialogDescription className="mt-1.5 text-left text-sm leading-relaxed text-[var(--woody-muted)]">
-                Escolhe um gesto leve. Ela recebe isto em privado — não aparece no perfil público.
+                Escolhe um sinal para enviar a {recipientName}. Só tu e {recipientName} veem este sinal.
               </DialogDescription>
             </div>
             <DialogClose asChild>

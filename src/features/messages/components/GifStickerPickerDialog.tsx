@@ -25,7 +25,6 @@ export interface GifStickerPickerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPick: (item: StickerGifSearchItemDto) => void;
-  onRequestLocalFile: () => void;
   disabled?: boolean;
 }
 

@@ -178,9 +178,9 @@ export function ConversationChatPanel({
             <MessagesSquare className="size-7 text-[var(--woody-nav)] opacity-90" strokeWidth={1.75} />
           </div>
           <div className="flex max-w-sm flex-col gap-2">
-            <p className="text-[0.9375rem] font-semibold tracking-tight text-[var(--woody-text)]">Começa a conversa</p>
+            <p className="text-[0.9375rem] font-semibold tracking-tight text-[var(--woody-text)]">Comece a conversa</p>
             <p className="text-sm leading-relaxed text-[var(--woody-muted)]">
-              Escreve uma mensagem em baixo ou usa o botão + para foto, vídeo, GIF ou sticker.
+              Mande uma mensagem, uma pic ou um GIF para iniciar a conversa com {peer ? label : "seu contacto"}.
             </p>
           </div>
         </div>

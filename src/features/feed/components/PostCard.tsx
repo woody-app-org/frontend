@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MessageCircle, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
@@ -105,7 +105,7 @@ export interface PostCardProps {
   onViewAuthorStories?: (authorId: string) => void;
 }
 
-export function PostCard({
+function PostCardInner({
   post,
   profilePinHighlight = false,
   profilePinMenu,
@@ -402,3 +402,9 @@ export function PostCard({
     </Card>
   );
 }
+
+/**
+ * Memoizado: só re-renderiza quando as suas próprias props mudam.
+ * Evita que curtir/comentar um post re-renderize todos os outros cards na lista.
+ */
+export const PostCard = memo(PostCardInner);

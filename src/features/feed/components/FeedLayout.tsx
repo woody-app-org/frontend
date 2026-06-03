@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { RightPanel } from "./RightPanel";
+import { useMatchMedia } from "@/lib/useMatchMedia";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { cn } from "@/lib/utils";
 import { SearchModal } from "@/features/search/components/SearchModal";
@@ -79,6 +80,9 @@ function FeedLayoutShell({
   isSearchOpen: boolean;
   setIsSearchOpen: (v: boolean) => void;
 }) {
+  // Só monta o RightPanel em desktop — evita 2 requests de sugestões/seguidores em mobile.
+  // useMatchMedia lê matchMedia() de forma síncrona no estado inicial, sem flash.
+  const isDesktop = useMatchMedia("(min-width: 768px)");
   const stretchMainGrid = wideMain && !showRightPanel;
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -207,8 +211,8 @@ function FeedLayoutShell({
             >
               {children}
             </main>
-            {showRightPanel ? (
-              <RightPanel className="hidden md:flex md:sticky md:top-[calc(var(--app-topnav-height)+0.75rem)] md:max-h-[calc(100dvh-var(--app-topnav-height)-1.25rem)] md:min-h-0 md:overflow-y-auto md:overscroll-y-contain md:self-start md:pt-6 md:justify-self-stretch" />
+            {showRightPanel && isDesktop ? (
+              <RightPanel className="md:flex md:sticky md:top-[calc(var(--app-topnav-height)+0.75rem)] md:max-h-[calc(100dvh-var(--app-topnav-height)-1.25rem)] md:min-h-0 md:overflow-y-auto md:overscroll-y-contain md:self-start md:pt-6 md:justify-self-stretch" />
             ) : null}
           </div>
         </div>

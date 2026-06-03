@@ -791,7 +791,6 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
         open={stickerPickerOpen}
         onOpenChange={setStickerPickerOpen}
         onPick={(item) => addFromCatalog(item)}
-        onRequestLocalFile={() => stickerRef.current?.click()}
         disabled={busy || disabled}
       />
     </div>

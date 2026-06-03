@@ -195,7 +195,7 @@ function PeopleResults({ people }: { people: User[] }) {
             className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/55 px-4 py-3 transition-colors hover:bg-white/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
           >
             <div className="size-9 rounded-full bg-black/10 overflow-hidden shrink-0">
-              {u.avatarUrl ? <img src={u.avatarUrl} alt="" className="size-9 object-cover" /> : null}
+              {u.avatarUrl ? <img src={u.avatarUrl} alt="" className="size-9 object-cover" loading="lazy" decoding="async" /> : null}
             </div>
             <div className="min-w-0 text-left">
               <div className="text-sm font-semibold text-[var(--woody-text)] truncate">{u.name}</div>
@@ -219,7 +219,7 @@ function CommunitiesResults({ communities }: { communities: Community[] }) {
           >
             <div className="size-10 rounded-xl bg-black/10 overflow-hidden shrink-0 mt-0.5">
               {c.avatarUrl ? (
-                <img src={c.avatarUrl} alt="" className="size-10 object-cover" />
+                <img src={c.avatarUrl} alt="" className="size-10 object-cover" loading="lazy" decoding="async" />
               ) : null}
             </div>
             <div className="min-w-0 text-left">

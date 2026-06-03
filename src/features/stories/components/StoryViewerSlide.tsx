@@ -107,6 +107,7 @@ export const StoryViewerSlide = forwardRef<StoryViewerSlideHandle, StoryViewerSl
             alt=""
             className="max-h-full max-w-full object-contain"
             draggable={false}
+            decoding="async"
           />
         </div>
       );

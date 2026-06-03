@@ -1,54 +1,152 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ScrollToTop } from "./ScrollToTop";
 import { WoodyToaster } from "@/components/ui/woody-toaster";
 import { AuthProvider } from "@/features/auth/context/AuthContext";
+import { ProtectedRoute } from "@/app/ProtectedRoute";
+import { SuperAdminRoute } from "@/app/SuperAdminRoute";
+import { BetaClosedGate } from "@/features/beta/components/BetaClosedGate";
+
+// ─── Rotas críticas — importação estática (carregam no bundle inicial) ─────────
+// São as páginas que os utilizadores autenticados visitam com maior frequência.
 import { AuthEntryPage } from "@/features/auth/pages/AuthEntryPage";
 import { IntroPage } from "@/features/auth/pages/IntroPage";
 import { LoginPage } from "@/features/auth/pages/LoginPage";
-import { OnboardingProvider } from "@/features/auth/onboarding/OnboardingContext";
-import { OnboardingFlow } from "@/features/auth/onboarding/OnboardingFlow";
-import { OnboardingStepAccount } from "@/features/auth/onboarding/steps/OnboardingStepAccount";
-import { OnboardingStepVerifyEmail } from "@/features/auth/onboarding/steps/OnboardingStepVerifyEmail";
-import { OnboardingStepProfilePhoto } from "@/features/auth/onboarding/steps/OnboardingStepProfilePhoto";
-import { OnboardingStepInterests } from "@/features/auth/onboarding/steps/OnboardingStepInterests";
-import { OnboardingStepCommunities } from "@/features/auth/onboarding/steps/OnboardingStepCommunities";
-import { OnboardingStepComplete } from "@/features/auth/onboarding/steps/OnboardingStepComplete";
-import { ForgotPasswordFlow } from "@/features/auth/passwordReset/ForgotPasswordFlow";
-import { ForgotPasswordRequestPage } from "@/features/auth/passwordReset/pages/ForgotPasswordRequestPage";
-import { ForgotPasswordVerifyCodePage } from "@/features/auth/passwordReset/pages/ForgotPasswordVerifyCodePage";
-import { ResetPasswordPage } from "@/features/auth/passwordReset/pages/ResetPasswordPage";
-import { ProtectedRoute } from "@/app/ProtectedRoute";
-import { CreatePostPage, FeedPage, PostDetailRoutePage } from "@/features/feed";
+import { FeedPage, PostDetailRoutePage, CreatePostPage } from "@/features/feed";
 import { ProfilePage } from "@/features/profile";
-import {
-  CommunitiesPage,
-  CommunityDetailPage,
-  CreateCommunityPage,
-} from "@/features/communities";
-import { CommunityAdminDashboardPage } from "@/features/communities/pages/CommunityAdminDashboardPage";
-import { AssinaturaCanceladaPage, AssinaturaSucessoPage, PlanosPage } from "@/features/subscription/pages";
+import { CommunitiesPage, CommunityDetailPage } from "@/features/communities";
 import { ConversationsPage } from "@/features/messages";
-import { LandingPage } from "@/features/landing";
-import { InstitutionalLayout } from "@/features/landing/institutional/InstitutionalLayout";
-import { InstitutionalHubPage } from "@/features/landing/institutional/pages/InstitutionalHubPage";
-import { MissionPage } from "@/features/landing/institutional/pages/MissionPage";
-import { MobileQrPage } from "@/features/landing/institutional/pages/MobileQrPage";
-import { PoliciesIndexPage } from "@/features/landing/institutional/pages/PoliciesIndexPage";
-import { PrivacyAndCookiesPage } from "@/features/landing/institutional/pages/PrivacyAndCookiesPage";
-import { PolicyDetailPage } from "@/features/landing/institutional/pages/PolicyDetailPage";
-import { RulesPage } from "@/features/landing/institutional/pages/RulesPage";
-import { WhatIsWoodyPage } from "@/features/landing/institutional/pages/WhatIsWoodyPage";
-import { BetaClosedGate } from "@/features/beta/components/BetaClosedGate";
-import { BetaGatePage } from "@/features/beta/pages/BetaGatePage";
-import { BetaInviteLinkPage } from "@/features/beta/pages/BetaInviteLinkPage";
-import { VerificationDocumentPage } from "@/features/verification/pages/VerificationDocumentPage";
-import { VerificationPendingPage } from "@/features/verification/pages/VerificationPendingPage";
-import { VerificationRejectedPage } from "@/features/verification/pages/VerificationRejectedPage";
-import { SuperAdminRoute } from "@/app/SuperAdminRoute";
-import { AdminVerificationListPage } from "@/features/admin/verification/pages/AdminVerificationListPage";
-import { AdminVerificationDetailPage } from "@/features/admin/verification/pages/AdminVerificationDetailPage";
-import { AdminReportsListPage } from "@/features/admin/reports/pages/AdminReportsListPage";
-import { AdminReportDetailPage } from "@/features/admin/reports/pages/AdminReportDetailPage";
+
+// ─── Rotas lazy — carregam só quando o utilizador as visita ───────────────────
+
+// Onboarding (1× por conta, bundle separado dos 6 passos)
+const OnboardingProvider = lazy(() =>
+  import("@/features/auth/onboarding/OnboardingContext").then(m => ({ default: m.OnboardingProvider }))
+);
+const OnboardingFlow = lazy(() =>
+  import("@/features/auth/onboarding/OnboardingFlow").then(m => ({ default: m.OnboardingFlow }))
+);
+const OnboardingStepAccount = lazy(() =>
+  import("@/features/auth/onboarding/steps/OnboardingStepAccount").then(m => ({ default: m.OnboardingStepAccount }))
+);
+const OnboardingStepVerifyEmail = lazy(() =>
+  import("@/features/auth/onboarding/steps/OnboardingStepVerifyEmail").then(m => ({ default: m.OnboardingStepVerifyEmail }))
+);
+const OnboardingStepProfilePhoto = lazy(() =>
+  import("@/features/auth/onboarding/steps/OnboardingStepProfilePhoto").then(m => ({ default: m.OnboardingStepProfilePhoto }))
+);
+const OnboardingStepInterests = lazy(() =>
+  import("@/features/auth/onboarding/steps/OnboardingStepInterests").then(m => ({ default: m.OnboardingStepInterests }))
+);
+const OnboardingStepCommunities = lazy(() =>
+  import("@/features/auth/onboarding/steps/OnboardingStepCommunities").then(m => ({ default: m.OnboardingStepCommunities }))
+);
+const OnboardingStepComplete = lazy(() =>
+  import("@/features/auth/onboarding/steps/OnboardingStepComplete").then(m => ({ default: m.OnboardingStepComplete }))
+);
+
+// Password reset (raramente usado)
+const ForgotPasswordFlow = lazy(() =>
+  import("@/features/auth/passwordReset/ForgotPasswordFlow").then(m => ({ default: m.ForgotPasswordFlow }))
+);
+const ForgotPasswordRequestPage = lazy(() =>
+  import("@/features/auth/passwordReset/pages/ForgotPasswordRequestPage").then(m => ({ default: m.ForgotPasswordRequestPage }))
+);
+const ForgotPasswordVerifyCodePage = lazy(() =>
+  import("@/features/auth/passwordReset/pages/ForgotPasswordVerifyCodePage").then(m => ({ default: m.ForgotPasswordVerifyCodePage }))
+);
+const ResetPasswordPage = lazy(() =>
+  import("@/features/auth/passwordReset/pages/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage }))
+);
+
+// Verificação (usado apenas na primeira aprovação)
+const VerificationDocumentPage = lazy(() =>
+  import("@/features/verification/pages/VerificationDocumentPage").then(m => ({ default: m.VerificationDocumentPage }))
+);
+const VerificationPendingPage = lazy(() =>
+  import("@/features/verification/pages/VerificationPendingPage").then(m => ({ default: m.VerificationPendingPage }))
+);
+const VerificationRejectedPage = lazy(() =>
+  import("@/features/verification/pages/VerificationRejectedPage").then(m => ({ default: m.VerificationRejectedPage }))
+);
+
+// Beta gate (raramente necessário)
+const BetaGatePage = lazy(() =>
+  import("@/features/beta/pages/BetaGatePage").then(m => ({ default: m.BetaGatePage }))
+);
+const BetaInviteLinkPage = lazy(() =>
+  import("@/features/beta/pages/BetaInviteLinkPage").then(m => ({ default: m.BetaInviteLinkPage }))
+);
+
+// Landing + Institucional (marketing, raramente visitadas por utilizadoras autenticadas)
+const LandingPage = lazy(() =>
+  import("@/features/landing").then(m => ({ default: m.LandingPage }))
+);
+const InstitutionalLayout = lazy(() =>
+  import("@/features/landing/institutional/InstitutionalLayout").then(m => ({ default: m.InstitutionalLayout }))
+);
+const InstitutionalHubPage = lazy(() =>
+  import("@/features/landing/institutional/pages/InstitutionalHubPage").then(m => ({ default: m.InstitutionalHubPage }))
+);
+const MissionPage = lazy(() =>
+  import("@/features/landing/institutional/pages/MissionPage").then(m => ({ default: m.MissionPage }))
+);
+const MobileQrPage = lazy(() =>
+  import("@/features/landing/institutional/pages/MobileQrPage").then(m => ({ default: m.MobileQrPage }))
+);
+const PoliciesIndexPage = lazy(() =>
+  import("@/features/landing/institutional/pages/PoliciesIndexPage").then(m => ({ default: m.PoliciesIndexPage }))
+);
+const PrivacyAndCookiesPage = lazy(() =>
+  import("@/features/landing/institutional/pages/PrivacyAndCookiesPage").then(m => ({ default: m.PrivacyAndCookiesPage }))
+);
+const PolicyDetailPage = lazy(() =>
+  import("@/features/landing/institutional/pages/PolicyDetailPage").then(m => ({ default: m.PolicyDetailPage }))
+);
+const RulesPage = lazy(() =>
+  import("@/features/landing/institutional/pages/RulesPage").then(m => ({ default: m.RulesPage }))
+);
+const WhatIsWoodyPage = lazy(() =>
+  import("@/features/landing/institutional/pages/WhatIsWoodyPage").then(m => ({ default: m.WhatIsWoodyPage }))
+);
+
+// Comunidades — criação e admin (usados com menos frequência)
+const CreateCommunityPage = lazy(() =>
+  import("@/features/communities").then(m => ({ default: m.CreateCommunityPage }))
+);
+const CommunityAdminDashboardPage = lazy(() =>
+  import("@/features/communities/pages/CommunityAdminDashboardPage").then(m => ({ default: m.CommunityAdminDashboardPage }))
+);
+
+// Subscrição (raramente visitada)
+const PlanosPage = lazy(() =>
+  import("@/features/subscription/pages").then(m => ({ default: m.PlanosPage }))
+);
+const AssinaturaSucessoPage = lazy(() =>
+  import("@/features/subscription/pages").then(m => ({ default: m.AssinaturaSucessoPage }))
+);
+const AssinaturaCanceladaPage = lazy(() =>
+  import("@/features/subscription/pages").then(m => ({ default: m.AssinaturaCanceladaPage }))
+);
+
+// Admin (SuperAdmin apenas — bundle totalmente separado)
+const AdminVerificationListPage = lazy(() =>
+  import("@/features/admin/verification/pages/AdminVerificationListPage").then(m => ({ default: m.AdminVerificationListPage }))
+);
+const AdminVerificationDetailPage = lazy(() =>
+  import("@/features/admin/verification/pages/AdminVerificationDetailPage").then(m => ({ default: m.AdminVerificationDetailPage }))
+);
+const AdminReportsListPage = lazy(() =>
+  import("@/features/admin/reports/pages/AdminReportsListPage").then(m => ({ default: m.AdminReportsListPage }))
+);
+const AdminReportDetailPage = lazy(() =>
+  import("@/features/admin/reports/pages/AdminReportDetailPage").then(m => ({ default: m.AdminReportDetailPage }))
+);
+
+// ─── Wrapper Suspense mínimo (guarda de loading existente nos guards já cobre) ─
+function S({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={null}>{children}</Suspense>;
+}
 
 export const router = createBrowserRouter([
   {
@@ -60,27 +158,24 @@ export const router = createBrowserRouter([
       </AuthProvider>
     ),
     children: [
-      { path: "invite", element: <BetaGatePage /> },
+      { path: "invite", element: <S><BetaGatePage /></S> },
       { path: "beta", element: <Navigate to="/invite" replace /> },
-      { path: "convite/:code", element: <BetaInviteLinkPage /> },
-      { path: "invite/:code", element: <BetaInviteLinkPage /> },
-      {
-        index: true,
-        element: <IntroPage />,
-      },
-      { path: "landing", element: <LandingPage /> },
+      { path: "convite/:code", element: <S><BetaInviteLinkPage /></S> },
+      { path: "invite/:code", element: <S><BetaInviteLinkPage /></S> },
+      { index: true, element: <IntroPage /> },
+      { path: "landing", element: <S><LandingPage /></S> },
       {
         path: "institutional",
-        element: <InstitutionalLayout />,
+        element: <S><InstitutionalLayout /></S>,
         children: [
-          { index: true, element: <InstitutionalHubPage /> },
-          { path: "missao", element: <MissionPage /> },
-          { path: "o-que-e-a-woody", element: <WhatIsWoodyPage /> },
-          { path: "regras-e-comportamento", element: <RulesPage /> },
-          { path: "politicas", element: <PoliciesIndexPage /> },
-          { path: "politicas/:slug", element: <PolicyDetailPage /> },
-          { path: "privacidade-e-cookies", element: <PrivacyAndCookiesPage /> },
-          { path: "woody-no-celular", element: <MobileQrPage /> },
+          { index: true, element: <S><InstitutionalHubPage /></S> },
+          { path: "missao", element: <S><MissionPage /></S> },
+          { path: "o-que-e-a-woody", element: <S><WhatIsWoodyPage /></S> },
+          { path: "regras-e-comportamento", element: <S><RulesPage /></S> },
+          { path: "politicas", element: <S><PoliciesIndexPage /></S> },
+          { path: "politicas/:slug", element: <S><PolicyDetailPage /></S> },
+          { path: "privacidade-e-cookies", element: <S><PrivacyAndCookiesPage /></S> },
+          { path: "woody-no-celular", element: <S><MobileQrPage /></S> },
         ],
       },
       {
@@ -103,13 +198,13 @@ export const router = createBrowserRouter([
         path: "auth/forgot-password",
         element: (
           <BetaClosedGate>
-            <ForgotPasswordFlow />
+            <S><ForgotPasswordFlow /></S>
           </BetaClosedGate>
         ),
         children: [
-          { index: true, element: <ForgotPasswordRequestPage /> },
-          { path: "verify", element: <ForgotPasswordVerifyCodePage /> },
-          { path: "new-password", element: <ResetPasswordPage /> },
+          { index: true, element: <S><ForgotPasswordRequestPage /></S> },
+          { path: "verify", element: <S><ForgotPasswordVerifyCodePage /></S> },
+          { path: "new-password", element: <S><ResetPasswordPage /></S> },
         ],
       },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },
@@ -117,7 +212,7 @@ export const router = createBrowserRouter([
         path: "verification/document",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <VerificationDocumentPage />
+            <S><VerificationDocumentPage /></S>
           </ProtectedRoute>
         ),
       },
@@ -125,7 +220,7 @@ export const router = createBrowserRouter([
         path: "verification/pending",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <VerificationPendingPage />
+            <S><VerificationPendingPage /></S>
           </ProtectedRoute>
         ),
       },
@@ -133,7 +228,7 @@ export const router = createBrowserRouter([
         path: "verification/rejected",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <VerificationRejectedPage />
+            <S><VerificationRejectedPage /></S>
           </ProtectedRoute>
         ),
       },
@@ -141,19 +236,21 @@ export const router = createBrowserRouter([
         path: "auth/onboarding",
         element: (
           <BetaClosedGate>
-            <OnboardingProvider>
-              <OnboardingFlow />
-            </OnboardingProvider>
+            <S>
+              <OnboardingProvider>
+                <OnboardingFlow />
+              </OnboardingProvider>
+            </S>
           </BetaClosedGate>
         ),
         children: [
           { index: true, element: <Navigate to="1" replace /> },
-          { path: "1", element: <OnboardingStepAccount /> },
-          { path: "2", element: <OnboardingStepVerifyEmail /> },
-          { path: "3", element: <OnboardingStepProfilePhoto /> },
-          { path: "4", element: <OnboardingStepInterests /> },
-          { path: "5", element: <OnboardingStepCommunities /> },
-          { path: "6", element: <OnboardingStepComplete /> },
+          { path: "1", element: <S><OnboardingStepAccount /></S> },
+          { path: "2", element: <S><OnboardingStepVerifyEmail /></S> },
+          { path: "3", element: <S><OnboardingStepProfilePhoto /></S> },
+          { path: "4", element: <S><OnboardingStepInterests /></S> },
+          { path: "5", element: <S><OnboardingStepCommunities /></S> },
+          { path: "6", element: <S><OnboardingStepComplete /></S> },
         ],
       },
       {
@@ -205,7 +302,7 @@ export const router = createBrowserRouter([
         path: "communities/nova",
         element: (
           <ProtectedRoute>
-            <CreateCommunityPage />
+            <S><CreateCommunityPage /></S>
           </ProtectedRoute>
         ),
       },
@@ -221,7 +318,7 @@ export const router = createBrowserRouter([
         path: "communities/:communitySlug/admin",
         element: (
           <ProtectedRoute>
-            <CommunityAdminDashboardPage />
+            <S><CommunityAdminDashboardPage /></S>
           </ProtectedRoute>
         ),
       },
@@ -237,7 +334,7 @@ export const router = createBrowserRouter([
         path: "assinatura/sucesso",
         element: (
           <ProtectedRoute>
-            <AssinaturaSucessoPage />
+            <S><AssinaturaSucessoPage /></S>
           </ProtectedRoute>
         ),
       },
@@ -245,7 +342,7 @@ export const router = createBrowserRouter([
         path: "assinatura/cancelado",
         element: (
           <ProtectedRoute>
-            <AssinaturaCanceladaPage />
+            <S><AssinaturaCanceladaPage /></S>
           </ProtectedRoute>
         ),
       },
@@ -253,7 +350,7 @@ export const router = createBrowserRouter([
         path: "planos",
         element: (
           <ProtectedRoute>
-            <PlanosPage />
+            <S><PlanosPage /></S>
           </ProtectedRoute>
         ),
       },
@@ -261,7 +358,7 @@ export const router = createBrowserRouter([
         path: "admin/verification",
         element: (
           <SuperAdminRoute>
-            <AdminVerificationListPage />
+            <S><AdminVerificationListPage /></S>
           </SuperAdminRoute>
         ),
       },
@@ -269,7 +366,7 @@ export const router = createBrowserRouter([
         path: "admin/verification/:id",
         element: (
           <SuperAdminRoute>
-            <AdminVerificationDetailPage />
+            <S><AdminVerificationDetailPage /></S>
           </SuperAdminRoute>
         ),
       },
@@ -277,7 +374,7 @@ export const router = createBrowserRouter([
         path: "admin/reports",
         element: (
           <SuperAdminRoute>
-            <AdminReportsListPage />
+            <S><AdminReportsListPage /></S>
           </SuperAdminRoute>
         ),
       },
@@ -285,7 +382,7 @@ export const router = createBrowserRouter([
         path: "admin/reports/:id",
         element: (
           <SuperAdminRoute>
-            <AdminReportDetailPage />
+            <S><AdminReportDetailPage /></S>
           </SuperAdminRoute>
         ),
       },

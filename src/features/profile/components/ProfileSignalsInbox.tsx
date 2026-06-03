@@ -65,7 +65,7 @@ export function ProfileSignalsInbox() {
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--woody-nav)]/85">Privado</p>
             <h2 className="mt-1 text-lg font-bold tracking-tight text-[var(--woody-text)]">Sinais recebidos</h2>
             <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--woody-muted)]">
-              Flertes enviados para ti aparecem só aqui. Lê, responde ou arquiva sem expor nada no teu perfil público.
+              Flertes enviados para ti aparecem só aqui.
             </p>
           </div>
         </div>
