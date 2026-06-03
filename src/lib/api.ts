@@ -95,9 +95,11 @@ api.interceptors.response.use(
       if (data?.code === "ACCOUNT_PENDING_VERIFICATION") {
         dispatchAuthRefreshUserEvent();
       } else if (data?.code === "ACCOUNT_BANNED") {
-        clearAuthPersistence();
-        dispatchAuthLogoutEvent();
-        showInfoToast("Não foi possível acessar esta conta.");
+        if (!isAuthCredentialsRequest(err.config?.url)) {
+          clearAuthPersistence();
+          dispatchAuthLogoutEvent();
+          showInfoToast("Não foi possível acessar esta conta.");
+        }
       }
       return Promise.reject(err);
     }

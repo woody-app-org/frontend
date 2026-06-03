@@ -16,6 +16,10 @@ import { showInfoToast } from "@/lib/toast";
 import { ensureFreshAccessToken } from "../authRefresh";
 import { mapAuthUser, mapSubscription, normalizeStoredUser } from "../authMapper";
 import { persistLoginPayload } from "../authSessionPersist";
+import {
+  AccountBannedLoginError,
+  parseAccountBannedLoginError,
+} from "../errors/accountBannedLogin";
 import { stripPasswordWhitespace } from "../lib/passwordPolicy";
 import { normalizeUsername } from "../lib/usernamePolicy";
 
@@ -51,9 +55,23 @@ export async function loginMock(credentials: LoginCredentials): Promise<AuthUser
     const user = mapAuthUser(data.user as Parameters<typeof mapAuthUser>[0]);
     return user;
   } catch (e) {
+    const banned = parseAccountBannedLoginError(e);
+    if (banned) throw banned;
+
+    if (axios.isAxiosError(e)) {
+      if (e.response?.status === 429) {
+        throw new Error("Muitas tentativas. Aguarde um momento e tente novamente.");
+      }
+      if (!e.response) {
+        throw new Error("Não foi possível conectar. Verifique sua internet e tente novamente.");
+      }
+    }
+
     throw new Error(getApiErrorMessage(e, "Falha no login."));
   }
 }
+
+export { AccountBannedLoginError };
 
 export async function registerMock(credentials: RegisterCredentials): Promise<AuthUser> {
   try {

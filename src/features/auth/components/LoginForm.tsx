@@ -9,6 +9,8 @@ import { loginSchema } from "../lib/validation";
 import type { LoginFormData } from "../lib/validation";
 import { cn } from "@/lib/utils";
 import { identifierInputProps } from "@/components/forms";
+import { AccountBannedNotice } from "./AccountBannedNotice";
+import type { AccountBannedLoginDetails } from "../errors/accountBannedLogin";
 
 const styles = {
   formTitle: "font-heading text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center md:text-left",
@@ -28,6 +30,7 @@ export interface LoginFormProps {
   onSubmit: (data: LoginFormData) => Promise<void>;
   isSubmitting: boolean;
   errorMessage: string | null;
+  accountBanned?: AccountBannedLoginDetails | null;
   /** Rota para cadastro (footer só em mobile; no desktop o painel bege cobre isso) */
   createAccountTo?: string;
   className?: string;
@@ -37,6 +40,7 @@ export function LoginForm({
   onSubmit,
   isSubmitting,
   errorMessage,
+  accountBanned = null,
   createAccountTo = "/auth/onboarding/1",
   className,
 }: LoginFormProps) {
@@ -56,14 +60,16 @@ export function LoginForm({
       <h2 className={styles.formTitle}>Entrar</h2>
 
       <form onSubmit={handleSubmitForm} className={styles.form} noValidate>
-        {errorMessage && (
+        {accountBanned ? <AccountBannedNotice details={accountBanned} /> : null}
+
+        {errorMessage && !accountBanned ? (
           <p
             className="text-sm text-red-600 md:text-red-200 bg-red-100 md:bg-red-900/30 rounded-lg px-3 py-2"
             role="alert"
           >
             {errorMessage}
           </p>
-        )}
+        ) : null}
 
         <AuthInputField
           label="Usuário"
@@ -83,17 +89,22 @@ export function LoginForm({
             disabled={isSubmitting}
             error={formState.errors.password?.message}
           />
-          <Link
-            to="/auth/forgot-password"
-            className={cn(
-              styles.link,
-              "self-end mt-1 text-right disabled:opacity-50 pointer-events-auto"
-            )}
-            aria-disabled={isSubmitting}
-            tabIndex={isSubmitting ? -1 : undefined}
-          >
-            Esqueci minha senha
-          </Link>
+          <div className="flex flex-col items-end gap-1 mt-1">
+            <Link
+              to="/auth/forgot-password"
+              className={cn(
+                styles.link,
+                "text-right disabled:opacity-50 pointer-events-auto"
+              )}
+              aria-disabled={isSubmitting}
+              tabIndex={isSubmitting ? -1 : undefined}
+            >
+              Esqueci minha senha
+            </Link>
+            <p className="text-xs text-[var(--auth-text-on-beige)]/80 md:text-white/70 text-right max-w-[16rem]">
+              Redefinir a senha não reativa uma conta desativada.
+            </p>
+          </div>
         </div>
 
         <button

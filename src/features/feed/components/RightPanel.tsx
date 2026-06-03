@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StoryRing } from "@/components/ui/StoryRing";
 import { cn } from "@/lib/utils";
-import { Heart, UserPlus, Users } from "lucide-react";
+import { Heart, UserPlus } from "lucide-react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { fetchMySuggestions } from "@/features/users/services/userSocial.service";
 import type { User } from "@/domain/types";

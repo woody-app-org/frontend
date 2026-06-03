@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin, Pencil } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { resolvePublicMediaUrl } from "@/lib/api";
