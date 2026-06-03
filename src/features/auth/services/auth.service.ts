@@ -176,11 +176,20 @@ export async function bootstrapAuthSession(): Promise<AuthUser | null> {
     syncAuthUserToDisplayPatch(user);
     return user;
   } catch (e) {
-    if (axios.isAxiosError(e) && e.response?.status === 401) {
-      if (getStoredToken() || getStoredRefreshToken()) {
+    if (axios.isAxiosError(e)) {
+      const code = (e.response?.data as Record<string, unknown> | undefined)?.code;
+      if (e.response?.status === 403 && code === "ACCOUNT_BANNED") {
         clearAuthPersistence();
         dispatchAuthLogoutEvent();
-        showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+        showInfoToast("Não foi possível acessar esta conta.");
+        return null;
+      }
+      if (e.response?.status === 401) {
+        if (getStoredToken() || getStoredRefreshToken()) {
+          clearAuthPersistence();
+          dispatchAuthLogoutEvent();
+          showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+        }
       }
     }
     return null;

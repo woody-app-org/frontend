@@ -1,14 +1,19 @@
-import { api } from "@/lib/api";
+import axios from "axios";
+import { api, getApiErrorMessage } from "@/lib/api";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
 export type ReportStatus = "Pending" | "InReview" | "Resolved" | "Rejected";
+
+export type AccountStatus = "Active" | "Banned";
 
 export interface ReportUserPreview {
   id: string;
   name: string;
   username: string;
   avatarUrl?: string | null;
+  /** Preenchido pelo backend em contextos administrativos. */
+  accountStatus?: AccountStatus | null;
 }
 
 export interface ReportTargetPreview {
@@ -104,6 +109,22 @@ export interface UpdateReportStatusPayload {
   resolutionCode?: string;
 }
 
+export interface BanReportAuthorPayload {
+  reason: string;
+  internalNote?: string;
+}
+
+export interface BanReportAuthorResult {
+  userId: number;
+  username: string;
+  displayName: string;
+  accountStatus: AccountStatus;
+  bannedAt?: string | null;
+}
+
+export const BAN_REASON_MIN_LENGTH = 10;
+export const BAN_REASON_MAX_LENGTH = 500;
+
 // ─── Service functions ────────────────────────────────────────────────────────
 
 export async function listAdminReports(
@@ -138,4 +159,42 @@ export async function updateAdminReportStatus(
     payload
   );
   return data;
+}
+
+export function isReportUserBanned(user: ReportUserPreview | null | undefined): boolean {
+  return user?.accountStatus === "Banned";
+}
+
+export function getBanReportAuthorErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as { code?: string; error?: string } | undefined;
+    if (
+      data?.code === "CANNOT_BAN_SELF" ||
+      data?.code === "CANNOT_BAN_SUPERADMIN"
+    ) {
+      return "Esta conta não pode ser banida por esta ação.";
+    }
+    if (err.response?.status === 403) {
+      return "Você não tem permissão para realizar esta ação.";
+    }
+  }
+  return getApiErrorMessage(err, "Não foi possível banir esta conta.");
+}
+
+export async function banReportAuthor(
+  reportId: number,
+  payload: BanReportAuthorPayload
+): Promise<BanReportAuthorResult> {
+  try {
+    const { data } = await api.post<BanReportAuthorResult>(
+      `/admin/reports/${reportId}/ban-author`,
+      {
+        reason: payload.reason.trim(),
+        internalNote: payload.internalNote?.trim() || undefined,
+      }
+    );
+    return data;
+  } catch (err) {
+    throw new Error(getBanReportAuthorErrorMessage(err));
+  }
 }

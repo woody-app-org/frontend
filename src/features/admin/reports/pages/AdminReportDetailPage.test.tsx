@@ -16,10 +16,15 @@ vi.mock("@/features/admin/components/AdminNav", () => ({
   AdminNav: () => <nav data-testid="admin-nav" />,
 }));
 
-vi.mock("../services/adminReports.service", () => ({
-  getAdminReportDetail: vi.fn(),
-  updateAdminReportStatus: vi.fn(),
-}));
+vi.mock("../services/adminReports.service", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/adminReports.service")>();
+  return {
+    ...actual,
+    getAdminReportDetail: vi.fn(),
+    updateAdminReportStatus: vi.fn(),
+    banReportAuthor: vi.fn(),
+  };
+});
 
 vi.mock("@/lib/api", () => ({
   resolvePublicMediaUrl: (url: string) => url,
@@ -30,11 +35,16 @@ vi.mock("@/lib/toast", () => ({
   showErrorToast: vi.fn(),
 }));
 
-import { getAdminReportDetail, updateAdminReportStatus } from "../services/adminReports.service";
+import {
+  getAdminReportDetail,
+  updateAdminReportStatus,
+  banReportAuthor,
+} from "../services/adminReports.service";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 const mockGet = vi.mocked(getAdminReportDetail);
 const mockUpdate = vi.mocked(updateAdminReportStatus);
+const mockBan = vi.mocked(banReportAuthor);
 const mockSuccessToast = vi.mocked(showSuccessToast);
 const mockErrorToast = vi.mocked(showErrorToast);
 
@@ -284,6 +294,74 @@ describe("AdminReportDetailPage", () => {
   });
 
   // ── reviewedBy / reviewedAt ───────────────────────────────────────────────────
+
+  it("mostra botão Banir conta quando autora não está banida", async () => {
+    mockGet.mockResolvedValue(postDetail);
+
+    renderDetail("1");
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /banir conta/i })).toBeInTheDocument();
+    });
+  });
+
+  it("mostra badge Conta banida quando autora está banida", async () => {
+    mockGet.mockResolvedValue({
+      ...postDetail,
+      reportedContentAuthor: { ...author, accountStatus: "Banned" },
+    });
+
+    renderDetail("1");
+
+    await waitFor(() => {
+      expect(screen.getByText("Conta banida")).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: /banir conta/i })).not.toBeInTheDocument();
+  });
+
+  it("abre modal e bane autora com sucesso", async () => {
+    mockBan.mockResolvedValue({
+      userId: 20,
+      username: "maria",
+      displayName: "Maria Souza",
+      accountStatus: "Banned",
+      bannedAt: "2026-03-01T12:00:00Z",
+    });
+    mockGet
+      .mockResolvedValueOnce(postDetail)
+      .mockResolvedValueOnce({
+        ...postDetail,
+        reportedContentAuthor: { ...author, accountStatus: "Banned" },
+      });
+
+    renderDetail("1");
+
+    await waitFor(() => screen.getByRole("button", { name: /banir conta/i }));
+    fireEvent.click(screen.getByRole("button", { name: /banir conta/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/motivo do banimento/i), {
+      target: { value: "Violação das regras da plataforma" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /confirmar banimento/i }));
+
+    await waitFor(() => {
+      expect(mockBan).toHaveBeenCalledWith(1, {
+        reason: "Violação das regras da plataforma",
+        internalNote: undefined,
+      });
+    });
+
+    await waitFor(() => {
+      expect(mockSuccessToast).toHaveBeenCalledWith(
+        "Conta banida com sucesso.",
+        expect.anything()
+      );
+    });
+  });
 
   it("exibe revisora e data de revisão quando presentes", async () => {
     const reviewed: AdminReportDetail = {

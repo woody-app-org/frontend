@@ -16,6 +16,7 @@ import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AdminNav } from "@/features/admin/components/AdminNav";
 import { ReportStatusBadge } from "../components/ReportStatusBadge";
+import { ReportContentAuthorSection } from "../components/ReportContentAuthorSection";
 import {
   getAdminReportDetail,
   updateAdminReportStatus,
@@ -98,6 +99,11 @@ export function AdminReportDetailPage() {
       setIsSaving(false);
     }
   }, [reportId, selectedStatus, internalNote, resolutionCode]);
+
+  const handleAuthorBanned = useCallback(async () => {
+    showSuccessToast("Conta banida com sucesso.", { id: "report-ban-success" });
+    await load();
+  }, [load]);
 
   if (isLoading) {
     return (
@@ -219,12 +225,11 @@ export function AdminReportDetailPage() {
                 <UserCard user={detail.reporterUser} />
               </div>
               {detail.reportedContentAuthor && (
-                <div className="px-5 py-4">
-                  <p className="text-xs font-medium text-zinc-400 mb-2 uppercase tracking-wide">
-                    Autora do conteúdo
-                  </p>
-                  <UserCard user={detail.reportedContentAuthor} />
-                </div>
+                <ReportContentAuthorSection
+                  reportId={detail.id}
+                  author={detail.reportedContentAuthor}
+                  onBanned={handleAuthorBanned}
+                />
               )}
               {detail.reviewedBy && (
                 <div className="px-5 py-4">

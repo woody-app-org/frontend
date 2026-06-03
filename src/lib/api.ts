@@ -94,6 +94,10 @@ api.interceptors.response.use(
       const data = err.response?.data as Record<string, unknown> | undefined;
       if (data?.code === "ACCOUNT_PENDING_VERIFICATION") {
         dispatchAuthRefreshUserEvent();
+      } else if (data?.code === "ACCOUNT_BANNED") {
+        clearAuthPersistence();
+        dispatchAuthLogoutEvent();
+        showInfoToast("Não foi possível acessar esta conta.");
       }
       return Promise.reject(err);
     }
