@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -5,6 +6,7 @@ import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import type { AuthUser } from "@/features/auth/types";
+import { cn } from "@/lib/utils";
 
 function getInitials(name?: string, username?: string): string {
   const display = (name?.trim() || username || "?");
@@ -26,6 +28,13 @@ export function RightPanelProfileCard({ user }: RightPanelProfileCardProps) {
   const profilePath = profilePathForUser({ id: user.id, username: user.username });
   const avatarUrl = user.avatarUrl ? resolvePublicMediaUrl(user.avatarUrl) : null;
   const bannerUrl = user.bannerUrl ? resolvePublicMediaUrl(user.bannerUrl) : null;
+  const bannerKey = user.bannerUrl ?? "";
+  const [bannerLoaded, setBannerLoaded] = useState(false);
+
+  useEffect(() => {
+    setBannerLoaded(false);
+  }, [bannerKey]);
+
   const displayName = user.name?.trim() || user.username;
   const showProBadge = user.subscription?.showProBadge ?? false;
 
@@ -42,22 +51,26 @@ export function RightPanelProfileCard({ user }: RightPanelProfileCardProps) {
         aria-hidden
       >
         <div className="relative h-[5.5rem] w-full overflow-hidden">
+          <div
+            className="absolute inset-0 bg-gradient-to-br from-[var(--woody-nav)]/28 via-[var(--woody-accent)]/14 to-[var(--woody-nav)]/22"
+            aria-hidden
+          />
           {bannerUrl ? (
             <img
+              key={bannerKey}
               src={bannerUrl}
               alt=""
               aria-hidden
-              className="h-full w-full object-cover"
+              className={cn(
+                "relative h-full w-full object-cover transition-opacity duration-300",
+                bannerLoaded ? "opacity-100" : "opacity-0"
+              )}
               loading="eager"
               decoding="async"
+              fetchPriority="high"
+              onLoad={() => setBannerLoaded(true)}
             />
-          ) : (
-            // Gradiente Woody como fallback quando não há banner
-            <div
-              className="h-full w-full bg-gradient-to-br from-[var(--woody-nav)]/28 via-[var(--woody-accent)]/14 to-[var(--woody-nav)]/22"
-              aria-hidden
-            />
-          )}
+          ) : null}
         </div>
       </Link>
 

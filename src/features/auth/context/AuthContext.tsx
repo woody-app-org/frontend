@@ -119,13 +119,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshUser]);
 
   const login = useCallback(async (credentials: LoginCredentials): Promise<AuthUser> => {
-    const u = await loginMock(credentials);
+    await loginMock(credentials);
+    const u = await refreshAuthUserFromMe();
     setUser(u);
     return u;
   }, []);
 
   const register = useCallback(async (credentials: RegisterCredentials): Promise<AuthUser> => {
-    const u = await registerMock(credentials);
+    await registerMock(credentials);
+    const u = await refreshAuthUserFromMe();
     setUser(u);
     return u;
   }, []);
