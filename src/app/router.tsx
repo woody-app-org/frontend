@@ -1,5 +1,6 @@
-import { lazy, Suspense } from "react";
+import { lazy } from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { LazyRouteSuspense } from "./LazyRouteSuspense";
 import { ScrollToTop } from "./ScrollToTop";
 import { WoodyToaster } from "@/components/ui/woody-toaster";
 import { AuthProvider } from "@/features/auth/context/AuthContext";
@@ -164,11 +165,6 @@ const AdminSupportDetailPage = lazy(() =>
   import("@/features/admin/support/pages/AdminSupportDetailPage").then(m => ({ default: m.AdminSupportDetailPage }))
 );
 
-// ─── Wrapper Suspense mínimo (guarda de loading existente nos guards já cobre) ─
-function S({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={null}>{children}</Suspense>;
-}
-
 export const router = createBrowserRouter([
   {
     element: (
@@ -179,25 +175,25 @@ export const router = createBrowserRouter([
       </AuthProvider>
     ),
     children: [
-      { path: "invite", element: <S><BetaGatePage /></S> },
+      { path: "invite", element: <LazyRouteSuspense><BetaGatePage /></LazyRouteSuspense> },
       { path: "beta", element: <Navigate to="/invite" replace /> },
-      { path: "convite/:code", element: <S><BetaInviteLinkPage /></S> },
-      { path: "invite/:code", element: <S><BetaInviteLinkPage /></S> },
+      { path: "convite/:code", element: <LazyRouteSuspense><BetaInviteLinkPage /></LazyRouteSuspense> },
+      { path: "invite/:code", element: <LazyRouteSuspense><BetaInviteLinkPage /></LazyRouteSuspense> },
       { index: true, element: <IntroPage /> },
-      { path: "landing", element: <S><LandingPage /></S> },
-      { path: "install", element: <S><InstallPage /></S> },
+      { path: "landing", element: <LazyRouteSuspense><LandingPage /></LazyRouteSuspense> },
+      { path: "install", element: <LazyRouteSuspense><InstallPage /></LazyRouteSuspense> },
       {
         path: "institutional",
-        element: <S><InstitutionalLayout /></S>,
+        element: <LazyRouteSuspense><InstitutionalLayout /></LazyRouteSuspense>,
         children: [
-          { index: true, element: <S><InstitutionalHubPage /></S> },
-          { path: "missao", element: <S><MissionPage /></S> },
-          { path: "o-que-e-a-woody", element: <S><WhatIsWoodyPage /></S> },
-          { path: "regras-e-comportamento", element: <S><RulesPage /></S> },
-          { path: "politicas", element: <S><PoliciesIndexPage /></S> },
-          { path: "politicas/:slug", element: <S><PolicyDetailPage /></S> },
-          { path: "privacidade-e-cookies", element: <S><PrivacyAndCookiesPage /></S> },
-          { path: "woody-no-celular", element: <S><MobileQrPage /></S> },
+          { index: true, element: <LazyRouteSuspense><InstitutionalHubPage /></LazyRouteSuspense> },
+          { path: "missao", element: <LazyRouteSuspense><MissionPage /></LazyRouteSuspense> },
+          { path: "o-que-e-a-woody", element: <LazyRouteSuspense><WhatIsWoodyPage /></LazyRouteSuspense> },
+          { path: "regras-e-comportamento", element: <LazyRouteSuspense><RulesPage /></LazyRouteSuspense> },
+          { path: "politicas", element: <LazyRouteSuspense><PoliciesIndexPage /></LazyRouteSuspense> },
+          { path: "politicas/:slug", element: <LazyRouteSuspense><PolicyDetailPage /></LazyRouteSuspense> },
+          { path: "privacidade-e-cookies", element: <LazyRouteSuspense><PrivacyAndCookiesPage /></LazyRouteSuspense> },
+          { path: "woody-no-celular", element: <LazyRouteSuspense><MobileQrPage /></LazyRouteSuspense> },
         ],
       },
       {
@@ -220,7 +216,7 @@ export const router = createBrowserRouter([
         path: "support/ban-appeal",
         element: (
           <BetaClosedGate>
-            <S><BanAppealPage /></S>
+            <LazyRouteSuspense><BanAppealPage /></LazyRouteSuspense>
           </BetaClosedGate>
         ),
       },
@@ -228,13 +224,13 @@ export const router = createBrowserRouter([
         path: "auth/forgot-password",
         element: (
           <BetaClosedGate>
-            <S><ForgotPasswordFlow /></S>
+            <LazyRouteSuspense><ForgotPasswordFlow /></LazyRouteSuspense>
           </BetaClosedGate>
         ),
         children: [
-          { index: true, element: <S><ForgotPasswordRequestPage /></S> },
-          { path: "verify", element: <S><ForgotPasswordVerifyCodePage /></S> },
-          { path: "new-password", element: <S><ResetPasswordPage /></S> },
+          { index: true, element: <LazyRouteSuspense><ForgotPasswordRequestPage /></LazyRouteSuspense> },
+          { path: "verify", element: <LazyRouteSuspense><ForgotPasswordVerifyCodePage /></LazyRouteSuspense> },
+          { path: "new-password", element: <LazyRouteSuspense><ResetPasswordPage /></LazyRouteSuspense> },
         ],
       },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },
@@ -242,7 +238,7 @@ export const router = createBrowserRouter([
         path: "verification/document",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <S><VerificationDocumentPage /></S>
+            <LazyRouteSuspense><VerificationDocumentPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -250,7 +246,7 @@ export const router = createBrowserRouter([
         path: "verification/pending",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <S><VerificationPendingPage /></S>
+            <LazyRouteSuspense><VerificationPendingPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -258,7 +254,7 @@ export const router = createBrowserRouter([
         path: "verification/rejected",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <S><VerificationRejectedPage /></S>
+            <LazyRouteSuspense><VerificationRejectedPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -266,21 +262,21 @@ export const router = createBrowserRouter([
         path: "auth/onboarding",
         element: (
           <BetaClosedGate>
-            <S>
+            <LazyRouteSuspense>
               <OnboardingProvider>
                 <OnboardingFlow />
               </OnboardingProvider>
-            </S>
+            </LazyRouteSuspense>
           </BetaClosedGate>
         ),
         children: [
           { index: true, element: <Navigate to="1" replace /> },
-          { path: "1", element: <S><OnboardingStepAccount /></S> },
-          { path: "2", element: <S><OnboardingStepVerifyEmail /></S> },
-          { path: "3", element: <S><OnboardingStepProfilePhoto /></S> },
-          { path: "4", element: <S><OnboardingStepInterests /></S> },
-          { path: "5", element: <S><OnboardingStepCommunities /></S> },
-          { path: "6", element: <S><OnboardingStepComplete /></S> },
+          { path: "1", element: <LazyRouteSuspense><OnboardingStepAccount /></LazyRouteSuspense> },
+          { path: "2", element: <LazyRouteSuspense><OnboardingStepVerifyEmail /></LazyRouteSuspense> },
+          { path: "3", element: <LazyRouteSuspense><OnboardingStepProfilePhoto /></LazyRouteSuspense> },
+          { path: "4", element: <LazyRouteSuspense><OnboardingStepInterests /></LazyRouteSuspense> },
+          { path: "5", element: <LazyRouteSuspense><OnboardingStepCommunities /></LazyRouteSuspense> },
+          { path: "6", element: <LazyRouteSuspense><OnboardingStepComplete /></LazyRouteSuspense> },
         ],
       },
       {
@@ -332,7 +328,7 @@ export const router = createBrowserRouter([
         path: "communities/nova",
         element: (
           <ProtectedRoute>
-            <S><CreateCommunityPage /></S>
+            <LazyRouteSuspense><CreateCommunityPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -348,7 +344,7 @@ export const router = createBrowserRouter([
         path: "communities/:communitySlug/admin",
         element: (
           <ProtectedRoute>
-            <S><CommunityAdminDashboardPage /></S>
+            <LazyRouteSuspense><CommunityAdminDashboardPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -364,7 +360,7 @@ export const router = createBrowserRouter([
         path: "assinatura/sucesso",
         element: (
           <ProtectedRoute>
-            <S><AssinaturaSucessoPage /></S>
+            <LazyRouteSuspense><AssinaturaSucessoPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -372,7 +368,7 @@ export const router = createBrowserRouter([
         path: "assinatura/cancelado",
         element: (
           <ProtectedRoute>
-            <S><AssinaturaCanceladaPage /></S>
+            <LazyRouteSuspense><AssinaturaCanceladaPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -380,7 +376,7 @@ export const router = createBrowserRouter([
         path: "planos",
         element: (
           <ProtectedRoute>
-            <S><PlanosPage /></S>
+            <LazyRouteSuspense><PlanosPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -388,7 +384,7 @@ export const router = createBrowserRouter([
         path: "support",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <S><SupportPage /></S>
+            <LazyRouteSuspense><SupportPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -396,7 +392,7 @@ export const router = createBrowserRouter([
         path: "support/new",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <S><SupportNewPage /></S>
+            <LazyRouteSuspense><SupportNewPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -404,7 +400,7 @@ export const router = createBrowserRouter([
         path: "support/:publicId",
         element: (
           <ProtectedRoute requireVerified={false}>
-            <S><SupportDetailPage /></S>
+            <LazyRouteSuspense><SupportDetailPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },
@@ -412,7 +408,7 @@ export const router = createBrowserRouter([
         path: "admin/verification",
         element: (
           <SuperAdminRoute>
-            <S><AdminVerificationListPage /></S>
+            <LazyRouteSuspense><AdminVerificationListPage /></LazyRouteSuspense>
           </SuperAdminRoute>
         ),
       },
@@ -420,7 +416,7 @@ export const router = createBrowserRouter([
         path: "admin/verification/:id",
         element: (
           <SuperAdminRoute>
-            <S><AdminVerificationDetailPage /></S>
+            <LazyRouteSuspense><AdminVerificationDetailPage /></LazyRouteSuspense>
           </SuperAdminRoute>
         ),
       },
@@ -428,7 +424,7 @@ export const router = createBrowserRouter([
         path: "admin/reports",
         element: (
           <SuperAdminRoute>
-            <S><AdminReportsListPage /></S>
+            <LazyRouteSuspense><AdminReportsListPage /></LazyRouteSuspense>
           </SuperAdminRoute>
         ),
       },
@@ -436,7 +432,7 @@ export const router = createBrowserRouter([
         path: "admin/reports/:id",
         element: (
           <SuperAdminRoute>
-            <S><AdminReportDetailPage /></S>
+            <LazyRouteSuspense><AdminReportDetailPage /></LazyRouteSuspense>
           </SuperAdminRoute>
         ),
       },
@@ -444,7 +440,7 @@ export const router = createBrowserRouter([
         path: "admin/support",
         element: (
           <SuperAdminRoute>
-            <S><AdminSupportListPage /></S>
+            <LazyRouteSuspense><AdminSupportListPage /></LazyRouteSuspense>
           </SuperAdminRoute>
         ),
       },
@@ -452,7 +448,7 @@ export const router = createBrowserRouter([
         path: "admin/support/:publicId",
         element: (
           <SuperAdminRoute>
-            <S><AdminSupportDetailPage /></S>
+            <LazyRouteSuspense><AdminSupportDetailPage /></LazyRouteSuspense>
           </SuperAdminRoute>
         ),
       },

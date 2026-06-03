@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -29,11 +29,8 @@ export function RightPanelProfileCard({ user }: RightPanelProfileCardProps) {
   const avatarUrl = user.avatarUrl ? resolvePublicMediaUrl(user.avatarUrl) : null;
   const bannerUrl = user.bannerUrl ? resolvePublicMediaUrl(user.bannerUrl) : null;
   const bannerKey = user.bannerUrl ?? "";
-  const [bannerLoaded, setBannerLoaded] = useState(false);
-
-  useEffect(() => {
-    setBannerLoaded(false);
-  }, [bannerKey]);
+  const [loadedBannerKey, setLoadedBannerKey] = useState("");
+  const bannerLoaded = bannerKey !== "" && loadedBannerKey === bannerKey;
 
   const displayName = user.name?.trim() || user.username;
   const showProBadge = user.subscription?.showProBadge ?? false;
@@ -68,7 +65,7 @@ export function RightPanelProfileCard({ user }: RightPanelProfileCardProps) {
               loading="eager"
               decoding="async"
               fetchPriority="high"
-              onLoad={() => setBannerLoaded(true)}
+              onLoad={() => setLoadedBannerKey(bannerKey)}
             />
           ) : null}
         </div>

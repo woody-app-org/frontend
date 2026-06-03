@@ -10,13 +10,27 @@ import { cn } from "@/lib/utils";
 
 const qrSize = 320;
 
+function initialInstallOpenFromHash(embedInLanding: boolean): boolean {
+  if (!embedInLanding || typeof window === "undefined") return false;
+  const hash = window.location.hash.replace("#", "");
+  if (hash === "install") {
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${window.location.search}#woody-no-celular`
+    );
+    return true;
+  }
+  return hash === "woody-no-celular";
+}
+
 export interface MobileQrNarrativeSectionProps {
   embedInLanding?: boolean;
 }
 
 export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNarrativeSectionProps) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
-  const [installOpen, setInstallOpen] = useState(false);
+  const [installOpen, setInstallOpen] = useState(() => initialInstallOpenFromHash(embedInLanding));
   const motion = embedInLanding;
 
   const targetUrl = useMemo(() => {
@@ -37,17 +51,6 @@ export function MobileQrNarrativeSection({ embedInLanding = false }: MobileQrNar
       cancelled = true;
     };
   }, [targetUrl]);
-
-  useEffect(() => {
-    if (!embedInLanding || typeof window === "undefined") return;
-    const hash = window.location.hash.replace("#", "");
-    if (hash === "install" || hash === "woody-no-celular") {
-      setInstallOpen(true);
-      if (hash === "install") {
-        window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#woody-no-celular`);
-      }
-    }
-  }, [embedInLanding]);
 
   const openInstall = () => setInstallOpen(true);
 

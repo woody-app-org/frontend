@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PwaInstallSheet } from "./PwaInstallSheet";
 import { isMobileViewport, isPwaInstalled } from "@/lib/pwa/platform";
@@ -8,13 +8,9 @@ import { isMobileViewport, isPwaInstalled } from "@/lib/pwa/platform";
  * No mobile abre o fluxo de instalação; no desktop orienta a escanear o QR.
  */
 export function InstallPage() {
-  const [sheetOpen, setSheetOpen] = useState(false);
   const installed = isPwaInstalled();
+  const [sheetOpen, setSheetOpen] = useState(() => !installed);
   const mobile = isMobileViewport();
-
-  useEffect(() => {
-    if (!installed) setSheetOpen(true);
-  }, [installed]);
 
   return (
     <div className="flex min-h-svh flex-col bg-white text-[var(--woody-text)]">
