@@ -3,6 +3,7 @@ import {
   isAndroid,
   isIOS,
   isIOSSafari,
+  isSamsungInternet,
   isDisplayModeStandalone,
   isPwaInstalled,
   readInstalledFromStorage,
@@ -43,6 +44,18 @@ describe("pwa platform", () => {
     });
     expect(isAndroid()).toBe(true);
     expect(isIOS()).toBe(false);
+  });
+
+  it("detecta Samsung Internet", () => {
+    vi.stubGlobal("navigator", {
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 13; SAMSUNG SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/23.0 Chrome/115.0.0.0 Mobile Safari/537.36",
+      platform: "Linux",
+      maxTouchPoints: 5,
+      standalone: false,
+    });
+    expect(isSamsungInternet()).toBe(true);
+    expect(isAndroid()).toBe(true);
   });
 
   it("identifica Safari no iOS", () => {

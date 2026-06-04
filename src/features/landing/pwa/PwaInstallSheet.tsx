@@ -19,6 +19,7 @@ import {
   isIOSNonSafari,
   isIOSSafari,
   isMobileViewport,
+  isSamsungInternet,
 } from "@/lib/pwa/platform";
 import { usePwaInstall } from "@/lib/pwa/usePwaInstall";
 
@@ -123,28 +124,6 @@ export function PwaInstallSheet({ open, onOpenChange }: PwaInstallSheetProps) {
         </Button>
       </div>
     );
-  } else if (canPromptInstall) {
-    body = (
-      <div className="space-y-4">
-        <p className="text-sm text-[var(--woody-muted)]">
-          O navegador pode instalar a Woody como atalho. Toque abaixo e confirme no prompt do sistema.
-        </p>
-        <Button
-          type="button"
-          className="w-full bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90"
-          disabled={installing}
-          onClick={() => void handleInstall()}
-        >
-          {installing ? "Abrindo…" : "Instalar agora"}
-        </Button>
-        {android && (
-          <p className="text-xs text-[var(--woody-muted)]">
-            Se o botão não funcionar, abra o menu do navegador (⋮) e escolha &quot;Instalar app&quot; ou
-            &quot;Adicionar à tela inicial&quot;.
-          </p>
-        )}
-      </div>
-    );
   } else if (ios) {
     body = (
       <div className="space-y-3">
@@ -161,6 +140,52 @@ export function PwaInstallSheet({ open, onOpenChange }: PwaInstallSheetProps) {
         )}
         <h3 className="text-base font-semibold text-[var(--woody-ink)]">Adicionar Woody à Tela de Início</h3>
         <IOSInstallSteps />
+      </div>
+    );
+  } else if (android && canPromptInstall) {
+    body = (
+      <div className="space-y-4">
+        <p className="text-sm text-[var(--woody-muted)]">
+          Adicione a Woody à tela inicial e acesse como um app.
+        </p>
+        <Button
+          type="button"
+          className="w-full bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90"
+          disabled={installing}
+          onClick={() => void handleInstall()}
+        >
+          {installing ? "Abrindo…" : "Instalar Woody"}
+        </Button>
+      </div>
+    );
+  } else if (android) {
+    body = (
+      <div className="space-y-4">
+        <h3 className="text-base font-semibold text-[var(--woody-ink)]">Adicionar Woody ao celular</h3>
+        <p className="text-sm text-[var(--woody-muted)]">
+          {isSamsungInternet()
+            ? "Toque no menu do navegador e escolha \"Adicionar página a\" ou \"Adicionar à Tela inicial\"."
+            : "Seu navegador ainda não liberou a instalação automática. Você pode adicionar a Woody pelo menu do navegador."}
+        </p>
+        <Button type="button" variant="outline" className="w-full" onClick={() => void handleCopyLink()}>
+          Copiar link
+        </Button>
+      </div>
+    );
+  } else if (canPromptInstall) {
+    body = (
+      <div className="space-y-4">
+        <p className="text-sm text-[var(--woody-muted)]">
+          O navegador pode instalar a Woody como atalho. Toque abaixo e confirme no prompt do sistema.
+        </p>
+        <Button
+          type="button"
+          className="w-full bg-[var(--woody-nav)] text-white hover:bg-[var(--woody-nav)]/90"
+          disabled={installing}
+          onClick={() => void handleInstall()}
+        >
+          {installing ? "Abrindo…" : "Instalar agora"}
+        </Button>
       </div>
     );
   } else {

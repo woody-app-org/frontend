@@ -23,6 +23,12 @@ export function isAndroid(): boolean {
   return /Android/i.test(ua);
 }
 
+/** Samsung Internet no Android. */
+export function isSamsungInternet(): boolean {
+  const ua = getNavigator()?.userAgent ?? "";
+  return /SamsungBrowser/i.test(ua);
+}
+
 /** Safari no iOS (não Chrome/Edge/Firefox iOS). */
 export function isIOSSafari(): boolean {
   if (!isIOS()) return false;

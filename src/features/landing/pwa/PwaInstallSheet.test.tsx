@@ -15,6 +15,7 @@ vi.mock("@/lib/pwa/platform", () => ({
   isAndroid: vi.fn(() => true),
   isIOSSafari: vi.fn(() => false),
   isIOSNonSafari: vi.fn(() => false),
+  isSamsungInternet: vi.fn(() => false),
   isMobileViewport: vi.fn(() => true),
 }));
 
@@ -43,7 +44,7 @@ describe("PwaInstallSheet", () => {
     });
   });
 
-  it("mostra botão Instalar agora quando beforeinstallprompt está disponível", () => {
+  it("mostra botão Instalar Woody quando beforeinstallprompt está disponível", () => {
     usePwaInstallMock.mockReturnValue({
       canPromptInstall: true,
       isInstalled: false,
@@ -51,7 +52,7 @@ describe("PwaInstallSheet", () => {
     });
 
     renderSheet();
-    expect(screen.getByRole("button", { name: /instalar agora/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /instalar woody/i })).toBeInTheDocument();
   });
 
   it("mostra estado já instalada", () => {

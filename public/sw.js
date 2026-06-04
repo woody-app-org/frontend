@@ -1,8 +1,8 @@
 /**
- * Service worker mínimo — elegibilidade PWA no Chrome/Edge.
- * CACHE_VERSION: incrementar após mudar manifest/ícones para forçar atualização.
+ * Service worker mínimo — elegibilidade PWA no Chrome/Edge/Samsung Internet.
+ * CACHE_VERSION: incrementar após mudar manifest/ícones Android.
  */
-const CACHE_VERSION = "woody-pwa-v2";
+const CACHE_VERSION = "woody-pwa-v3-android";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
@@ -13,7 +13,9 @@ self.addEventListener("activate", (event) => {
     (async () => {
       const keys = await caches.keys();
       await Promise.all(
-        keys.filter((key) => key.startsWith("woody-") && key !== CACHE_VERSION).map((key) => caches.delete(key))
+        keys
+          .filter((key) => key.startsWith("woody-") && key !== CACHE_VERSION)
+          .map((key) => caches.delete(key))
       );
       await self.clients.claim();
     })()
