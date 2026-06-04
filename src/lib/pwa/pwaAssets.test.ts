@@ -24,14 +24,18 @@ describe("PWA assets estáticos", () => {
     expect(manifest.name).toBe("Woody");
     const srcs = manifest.icons.map((i) => i.src);
     expect(srcs).toContain("/icons/woody-android-192.png");
+    expect(srcs).toContain("/icons/woody-android-maskable-192.png");
     expect(srcs).toContain("/icons/woody-android-512.png");
     expect(srcs).toContain("/icons/woody-android-maskable-512.png");
+    const maskable192 = manifest.icons.find((i) => i.src === "/icons/woody-android-maskable-192.png");
+    expect(maskable192?.purpose).toBe("maskable");
   });
 
   it("ícones Android e fallbacks Woody existem", () => {
     for (const file of [
       "icons/woody-icon-180.png",
       "icons/woody-android-192.png",
+      "icons/woody-android-maskable-192.png",
       "icons/woody-android-512.png",
       "icons/woody-android-maskable-512.png",
       "icon-192.png",
