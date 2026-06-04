@@ -78,7 +78,7 @@ function ringToneClass(hasUnviewedStories: boolean | undefined): string {
   const unviewed = hasUnviewedStories !== false;
   return unviewed
     ? "bg-gradient-to-tr from-emerald-500 via-[var(--woody-nav)] to-teal-500 shadow-[0_0_0_1px_rgba(139,195,74,0.35)]"
-    : "bg-gradient-to-tr from-[var(--woody-nav)]/50 via-[var(--woody-nav)]/38 to-[var(--woody-nav)]/50 shadow-[0_0_0_1px_rgba(139,195,74,0.18)]";
+    : "bg-gradient-to-tr from-zinc-300 via-zinc-400 to-zinc-300 shadow-[0_0_0_1px_rgba(10,10,10,0.12)]";
 }
 
 function AvatarClip({ className, children }: { className?: string; children: ReactNode }) {

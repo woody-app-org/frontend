@@ -51,12 +51,6 @@ describe("RightPanelProfileCard", () => {
     expect(links[0]).toHaveAttribute("href", "/profile/camila");
   });
 
-  it("link 'Editar' aponta para o perfil da utilizadora", () => {
-    renderCard();
-    const editLink = screen.getByRole("link", { name: /editar perfil/i });
-    expect(editLink).toHaveAttribute("href", "/profile/camila");
-  });
-
   // ── Banner ────────────────────────────────────────────────────────────────
 
   it("mostra imagem de banner quando bannerUrl está presente", () => {

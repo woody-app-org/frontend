@@ -7,7 +7,7 @@ import { useAuth } from "@/features/auth/context/AuthContext";
 import { fetchMySuggestions } from "@/features/users/services/userSocial.service";
 import type { User } from "@/domain/types";
 import { SOCIAL_GRAPH_CHANGED_EVENT, BLOCK_RELATIONSHIP_CHANGED_EVENT } from "@/lib/socialGraphEvents";
-import { isOwnProfileRoute, profilePathForUser } from "@/features/profile/lib/profilePaths";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { FeedDecorWaves } from "./FeedDecorWaves";
 import { RightPanelProfileCard } from "./RightPanelProfileCard";
 
@@ -90,10 +90,16 @@ function toRow(u: User): UserItem {
   };
 }
 
+function isFeedRoute(pathname: string): boolean {
+  const base = pathname.split("?")[0] || "/";
+  const p = base.length > 1 && base.endsWith("/") ? base.slice(0, -1) : base;
+  return p === "/feed";
+}
+
 export function RightPanel({ className }: RightPanelProps) {
   const { pathname } = useLocation();
   const { isAuthenticated, user } = useAuth();
-  const hideProfileCard = Boolean(user && isOwnProfileRoute(pathname, user));
+  const showProfileCard = Boolean(isAuthenticated && user && isFeedRoute(pathname));
   const [suggestions, setSuggestions] = useState<UserItem[]>([]);
   const [loadState, setLoadState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
@@ -138,10 +144,8 @@ export function RightPanel({ className }: RightPanelProps) {
     <aside data-feed-right-panel className={cn(styles.panel, className)}>
       <div className={styles.panelInner}>
 
-        {/* ── Mini Profile Card (oculto no próprio perfil — evita duplicar o header) ── */}
-        {isAuthenticated && user && !hideProfileCard ? (
-          <RightPanelProfileCard user={user} />
-        ) : null}
+        {/* ── Mini perfil: só no feed (em perfil/comunidades fica só sugestões) ── */}
+        {showProfileCard ? <RightPanelProfileCard user={user} /> : null}
 
         {/* ── Sugestões para você (max 3, só quando existem) ────────────── */}
         {isAuthenticated && (hasSuggestions || loadState === "loading") ? (

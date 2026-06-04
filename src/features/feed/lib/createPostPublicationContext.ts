@@ -1,4 +1,5 @@
 import type { Community } from "@/domain/types";
+import { isOwnProfileRoute } from "@/features/profile/lib/profilePaths";
 
 /** Destino da publicação ao abrir o modal (sempre contextual; sem modo "manual" no modal). */
 export type CreatePostModalPublication =
@@ -34,7 +35,9 @@ export function resolveCreatePostPublicationFromRoute(
 }
 
 export interface ShouldShowFloatingCreatePostOptions {
-  viewerUserId: string | undefined;
+  viewer:
+    | { id: string | number; username?: string | null }
+    | undefined;
 }
 
 /**
@@ -44,7 +47,7 @@ export function shouldShowFloatingCreatePost(
   pathname: string,
   opts: ShouldShowFloatingCreatePostOptions
 ): boolean {
-  if (!opts.viewerUserId) return false;
+  if (!opts.viewer) return false;
 
   const p = normalizePath(pathname);
 
@@ -56,8 +59,7 @@ export function shouldShowFloatingCreatePost(
   if (/^\/communities\/[^/]+\/admin$/.test(p)) return false;
   if (p.startsWith("/assinatura/")) return false;
 
-  const profileMatch = /^\/profile\/([^/]+)$/.exec(p);
-  if (profileMatch) return profileMatch[1] === opts.viewerUserId;
+  if (/^\/profile\/[^/]+$/.test(p)) return isOwnProfileRoute(p, opts.viewer);
 
   if (p === "/feed") return true;
   if (p === "/communities") return true;
