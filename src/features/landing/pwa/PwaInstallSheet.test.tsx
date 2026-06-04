@@ -16,6 +16,9 @@ vi.mock("@/lib/pwa/platform", () => ({
   isIOSSafari: vi.fn(() => false),
   isIOSNonSafari: vi.fn(() => false),
   isSamsungInternet: vi.fn(() => false),
+  isChromeAndroid: vi.fn(() => true),
+  isEdgeAndroid: vi.fn(() => false),
+  isFirefoxAndroid: vi.fn(() => false),
   isMobileViewport: vi.fn(() => true),
 }));
 

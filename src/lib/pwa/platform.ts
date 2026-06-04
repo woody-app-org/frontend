@@ -29,6 +29,28 @@ export function isSamsungInternet(): boolean {
   return /SamsungBrowser/i.test(ua);
 }
 
+/** Microsoft Edge no Android. */
+export function isEdgeAndroid(): boolean {
+  if (!isAndroid()) return false;
+  const ua = getNavigator()?.userAgent ?? "";
+  return /EdgA/i.test(ua);
+}
+
+/** Firefox no Android. */
+export function isFirefoxAndroid(): boolean {
+  if (!isAndroid()) return false;
+  const ua = getNavigator()?.userAgent ?? "";
+  return /Firefox/i.test(ua) && !/EdgA/i.test(ua);
+}
+
+/** Chrome no Android (exclui Samsung Internet, Edge e Firefox). */
+export function isChromeAndroid(): boolean {
+  if (!isAndroid()) return false;
+  const ua = getNavigator()?.userAgent ?? "";
+  if (isSamsungInternet() || isEdgeAndroid() || isFirefoxAndroid()) return false;
+  return /Chrome/i.test(ua);
+}
+
 /** Safari no iOS (não Chrome/Edge/Firefox iOS). */
 export function isIOSSafari(): boolean {
   if (!isIOS()) return false;

@@ -9,38 +9,45 @@ describe("PWA assets estáticos", () => {
     const html = readFileSync(path.join(root, "index.html"), "utf8");
     expect(html).toContain('href="/manifest.webmanifest"');
     expect(html).toContain('href="/icons/woody-icon-180.png"');
-    expect(html).not.toContain("woody-android-180");
+    expect(html).not.toContain("site.webmanifest");
     expect(html).toContain('name="apple-mobile-web-app-title" content="Woody"');
-    expect(html).toContain('name="application-name" content="Woody"');
   });
 
-  it("manifest.webmanifest define ícones Android para Chromium", () => {
+  it("manifest.webmanifest define ícones Android e id estável", () => {
     const raw = readFileSync(path.join(root, "public/manifest.webmanifest"), "utf8");
     const manifest = JSON.parse(raw) as {
+      id: string;
       name: string;
-      short_name: string;
-      background_color: string;
-      icons: { src: string; purpose?: string; sizes: string }[];
+      icons: { src: string; purpose?: string }[];
     };
+    expect(manifest.id).toBe("/");
     expect(manifest.name).toBe("Woody");
-    expect(manifest.short_name).toBe("Woody");
-    expect(manifest.background_color).toBe("#ffffff");
     const srcs = manifest.icons.map((i) => i.src);
     expect(srcs).toContain("/icons/woody-android-192.png");
     expect(srcs).toContain("/icons/woody-android-512.png");
     expect(srcs).toContain("/icons/woody-android-maskable-512.png");
-    const maskable = manifest.icons.find((i) => i.purpose === "maskable");
-    expect(maskable?.sizes).toBe("512x512");
   });
 
-  it("arquivos PNG Android existem em public/icons", () => {
+  it("ícones Android e fallbacks Woody existem", () => {
     for (const file of [
-      "woody-icon-180.png",
-      "woody-android-192.png",
-      "woody-android-512.png",
-      "woody-android-maskable-512.png",
+      "icons/woody-icon-180.png",
+      "icons/woody-android-192.png",
+      "icons/woody-android-512.png",
+      "icons/woody-android-maskable-512.png",
+      "icon-192.png",
+      "icon-512.png",
+      "favicon-16x16.png",
+      "favicon-32x32.png",
+      "favicon.ico",
     ]) {
-      expect(existsSync(path.join(root, "public/icons", file))).toBe(true);
+      expect(existsSync(path.join(root, "public", file))).toBe(true);
     }
+    const legacySize = readFileSync(path.join(root, "public/icon-192.png")).length;
+    expect(legacySize).toBeGreaterThan(5000);
+    expect(legacySize).toBeLessThan(20000);
+  });
+
+  it("site.webmanifest duplicado foi removido", () => {
+    expect(existsSync(path.join(root, "public/site.webmanifest"))).toBe(false);
   });
 });

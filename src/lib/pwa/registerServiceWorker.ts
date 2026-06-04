@@ -3,9 +3,13 @@ export function registerServiceWorker(): void {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
   const register = () => {
-    void navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
-      /* Falha silenciosa — instalação manual / iOS ainda funciona */
-    });
+    void navigator.serviceWorker
+      .register("/sw.js", { scope: "/" })
+      .catch((error: unknown) => {
+        if (import.meta.env.DEV) {
+          console.warn("[PWA] Falha ao registar service worker:", error);
+        }
+      });
   };
 
   if (document.readyState === "loading") {

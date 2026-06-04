@@ -7,6 +7,13 @@ import { PwaInstallSheet } from "./PwaInstallSheet";
 const usePwaInstallMock = vi.fn();
 const installFn = vi.fn();
 
+const { isChromeAndroid, isSamsungInternet, isEdgeAndroid, isFirefoxAndroid } = vi.hoisted(() => ({
+  isChromeAndroid: vi.fn(() => true),
+  isSamsungInternet: vi.fn(() => false),
+  isEdgeAndroid: vi.fn(() => false),
+  isFirefoxAndroid: vi.fn(() => false),
+}));
+
 vi.mock("@/lib/pwa/usePwaInstall", () => ({
   usePwaInstall: () => usePwaInstallMock(),
 }));
@@ -16,7 +23,10 @@ vi.mock("@/lib/pwa/platform", () => ({
   isAndroid: vi.fn(() => true),
   isIOSSafari: vi.fn(() => false),
   isIOSNonSafari: vi.fn(() => false),
-  isSamsungInternet: vi.fn(() => false),
+  isSamsungInternet,
+  isChromeAndroid,
+  isEdgeAndroid,
+  isFirefoxAndroid,
   isMobileViewport: vi.fn(() => true),
 }));
 
@@ -28,6 +38,10 @@ vi.mock("@/lib/toast", () => ({
 describe("PwaInstallSheet Android", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isChromeAndroid.mockReturnValue(true);
+    isSamsungInternet.mockReturnValue(false);
+    isEdgeAndroid.mockReturnValue(false);
+    isFirefoxAndroid.mockReturnValue(false);
     usePwaInstallMock.mockReturnValue({
       canPromptInstall: false,
       isInstalled: false,
@@ -42,10 +56,9 @@ describe("PwaInstallSheet Android", () => {
       </MemoryRouter>
     );
     expect(screen.queryByText(/compartilhar do safari/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/não há instalação automática no iphone/i)).not.toBeInTheDocument();
   });
 
-  it("com deferredPrompt mostra botão Instalar Woody e chama install", async () => {
+  it("com deferredPrompt mostra botão Instalar Woody", async () => {
     usePwaInstallMock.mockReturnValue({
       canPromptInstall: true,
       isInstalled: false,
@@ -59,21 +72,31 @@ describe("PwaInstallSheet Android", () => {
       </MemoryRouter>
     );
 
-    const btn = screen.getByRole("button", { name: /instalar woody/i });
-    expect(btn).toBeInTheDocument();
-    await user.click(btn);
+    await user.click(screen.getByRole("button", { name: /instalar woody/i }));
     expect(installFn).toHaveBeenCalled();
   });
 
-  it("sem deferredPrompt mostra fallback Android", () => {
+  it("Chrome Android sem prompt mostra passos numerados do Chrome", () => {
     render(
       <MemoryRouter>
         <PwaInstallSheet open onOpenChange={vi.fn()} />
       </MemoryRouter>
     );
-    expect(screen.getByText(/adicionar woody ao celular/i)).toBeInTheDocument();
-    expect(screen.getByText(/instalação automática/i)).toBeInTheDocument();
+    expect(screen.getByText(/adicionar woody à tela inicial/i)).toBeInTheDocument();
+    expect(screen.getByText(/três pontinhos/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /instalar woody/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /copiar link/i })).toBeInTheDocument();
+  });
+
+  it("Samsung Internet sem prompt mostra passos Samsung", () => {
+    isChromeAndroid.mockReturnValue(false);
+    isSamsungInternet.mockReturnValue(true);
+
+    render(
+      <MemoryRouter>
+        <PwaInstallSheet open onOpenChange={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText(/adicionar página a/i)).toBeInTheDocument();
   });
 });

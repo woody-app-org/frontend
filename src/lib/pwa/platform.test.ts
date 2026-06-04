@@ -4,6 +4,8 @@ import {
   isIOS,
   isIOSSafari,
   isSamsungInternet,
+  isChromeAndroid,
+  isEdgeAndroid,
   isDisplayModeStandalone,
   isPwaInstalled,
   readInstalledFromStorage,
@@ -56,6 +58,19 @@ describe("pwa platform", () => {
     });
     expect(isSamsungInternet()).toBe(true);
     expect(isAndroid()).toBe(true);
+    expect(isChromeAndroid()).toBe(false);
+  });
+
+  it("detecta Chrome Android", () => {
+    vi.stubGlobal("navigator", {
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+      platform: "Linux",
+      maxTouchPoints: 5,
+      standalone: false,
+    });
+    expect(isChromeAndroid()).toBe(true);
+    expect(isEdgeAndroid()).toBe(false);
   });
 
   it("identifica Safari no iOS", () => {

@@ -19,9 +19,9 @@ import {
   isIOSNonSafari,
   isIOSSafari,
   isMobileViewport,
-  isSamsungInternet,
 } from "@/lib/pwa/platform";
 import { usePwaInstall } from "@/lib/pwa/usePwaInstall";
+import { AndroidManualInstallSteps } from "./AndroidManualInstallSteps";
 
 export interface PwaInstallSheetProps {
   open: boolean;
@@ -161,12 +161,8 @@ export function PwaInstallSheet({ open, onOpenChange }: PwaInstallSheetProps) {
   } else if (android) {
     body = (
       <div className="space-y-4">
-        <h3 className="text-base font-semibold text-[var(--woody-ink)]">Adicionar Woody ao celular</h3>
-        <p className="text-sm text-[var(--woody-muted)]">
-          {isSamsungInternet()
-            ? "Toque no menu do navegador e escolha \"Adicionar página a\" ou \"Adicionar à Tela inicial\"."
-            : "Seu navegador ainda não liberou a instalação automática. Você pode adicionar a Woody pelo menu do navegador."}
-        </p>
+        <h3 className="text-base font-semibold text-[var(--woody-ink)]">Adicionar Woody à tela inicial</h3>
+        <AndroidManualInstallSteps />
         <Button type="button" variant="outline" className="w-full" onClick={() => void handleCopyLink()}>
           Copiar link
         </Button>
