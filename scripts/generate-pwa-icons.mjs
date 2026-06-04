@@ -24,6 +24,12 @@ const variants = [
   { file: "woody-android-192.png", size: 192, paddingRatio: 0.12, background: androidBackground },
   { file: "woody-android-512.png", size: 512, paddingRatio: 0.12, background: androidBackground },
   {
+    file: "woody-android-maskable-192.png",
+    size: 192,
+    paddingRatio: 0.28,
+    background: androidBackground,
+  },
+  {
     file: "woody-android-maskable-512.png",
     size: 512,
     paddingRatio: 0.28,
