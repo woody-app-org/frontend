@@ -3,7 +3,6 @@ import {
   policyAccess,
   policyBan,
   policyConfidentiality,
-  policiesIndexIntro,
 } from "../institutional/content";
 import { InstitutionalBackLink } from "../institutional/components/InstitutionalBackLink";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
@@ -99,9 +98,6 @@ export function PoliciesNarrativeSection({ embedInLanding = false }: PoliciesNar
                 <h2 className="font-heading mt-3 text-balance text-[clamp(1.75rem,4vw,2.65rem)] font-bold uppercase leading-[1.05] tracking-[0.03em] text-[var(--woody-ink)]">
                   Políticas
                 </h2>
-                <p className="font-editorial mt-5 max-w-xl text-pretty text-[1.02rem] leading-relaxed text-[var(--woody-ink)]/85 md:text-[1.06rem]">
-                  {policiesIndexIntro}
-                </p>
               </header>
             </>
           )}

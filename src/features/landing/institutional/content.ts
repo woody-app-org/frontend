@@ -32,9 +32,6 @@ export const rules = {
   title: "O que não é legal fazer na Woody",
 };
 
-export const policiesIndexIntro =
-  "Documentos essenciais para navegares a Woody com segurança. Cada página inclui orientações práticas — não substituem aconselhamento jurídico personalizado.";
-
 export const policyConfidentiality = {
   title: "POLITICA DE CONFIDENCIALIDADE",
   badge: "01",
