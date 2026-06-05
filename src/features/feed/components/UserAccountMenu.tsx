@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LifeBuoy, LogOut, Sparkles, User } from "lucide-react";
+import { LifeBuoy, LogOut, ScrollText, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -148,6 +148,12 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
             <Link to="/support" className="flex items-center gap-2">
               <LifeBuoy className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
               Suporte
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer focus:bg-[var(--woody-nav)]/10">
+            <Link to="/institutional/politicas" className="flex items-center gap-2">
+              <ScrollText className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
+              Políticas
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />

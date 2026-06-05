@@ -22,7 +22,7 @@ export function FloatingCreatePostButton({ hidden, className }: FloatingCreatePo
 
   if (hidden) return null;
 
-  const visible = shouldShowFloatingCreatePost(location.pathname, { viewerUserId: user?.id });
+  const visible = shouldShowFloatingCreatePost(location.pathname, { viewer: user ?? undefined });
   if (!visible) return null;
 
   return (

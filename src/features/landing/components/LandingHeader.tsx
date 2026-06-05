@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { WoodyLogo } from "@/components/branding/WoodyLogo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useHideOnScroll } from "@/lib/useHideOnScroll";
+import { useAuth } from "@/features/auth/context/AuthContext";
 import { LANDING_NARRATIVE_IDS } from "../constants";
 import { INSTITUTIONAL_PATHS } from "../institutional/routes";
 
@@ -19,6 +21,7 @@ export function LandingHeader() {
   const [scrolled, setScrolled] = useState(false);
   const hidden = useHideOnScroll();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const onLanding = location.pathname === "/landing";
   const anchorHref = (id: string) => (onLanding ? `#${id}` : `/landing#${id}`);
 
@@ -72,21 +75,37 @@ export function LandingHeader() {
         </nav>
 
         <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="max-sm:px-2 max-sm:text-[13px] text-[var(--woody-muted)]"
-            asChild
-          >
-            <Link to="/auth/login">Entrar</Link>
-          </Button>
-          <Button
-            size="sm"
-            className="rounded-full bg-[var(--woody-ink)] px-3 font-semibold text-[var(--woody-lime)] shadow-[0_0_0_1px_rgba(139,195,74,0.35),0_8px_24px_rgba(139,195,74,0.18)] sm:px-4 hover:bg-black"
-            asChild
-          >
-            <Link to="/auth/onboarding/1">Criar conta</Link>
-          </Button>
+          {isAuthenticated ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="max-sm:px-2 max-sm:text-[13px] text-[var(--woody-muted)] flex items-center gap-1.5"
+              asChild
+            >
+              <Link to="/feed">
+                <ArrowLeft className="size-4 shrink-0" aria-hidden />
+                Voltar ao feed
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="max-sm:px-2 max-sm:text-[13px] text-[var(--woody-muted)]"
+                asChild
+              >
+                <Link to="/auth/login">Entrar</Link>
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-full bg-[var(--woody-ink)] px-3 font-semibold text-[var(--woody-lime)] shadow-[0_0_0_1px_rgba(139,195,74,0.35),0_8px_24px_rgba(139,195,74,0.18)] sm:px-4 hover:bg-black"
+                asChild
+              >
+                <Link to="/auth/onboarding/1">Criar conta</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
