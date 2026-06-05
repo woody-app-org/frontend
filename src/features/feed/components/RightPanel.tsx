@@ -145,7 +145,7 @@ export function RightPanel({ className }: RightPanelProps) {
       <div className={styles.panelInner}>
 
         {/* ── Mini perfil: só no feed (em perfil/comunidades fica só sugestões) ── */}
-        {showProfileCard ? <RightPanelProfileCard user={user} /> : null}
+        {showProfileCard && user ? <RightPanelProfileCard user={user} /> : null}
 
         {/* ── Sugestões para você (max 3, só quando existem) ────────────── */}
         {isAuthenticated && (hasSuggestions || loadState === "loading") ? (
