@@ -176,7 +176,7 @@ export function BlockedUsersDialog({ open, onOpenChange }: BlockedUsersDialogPro
                         {user.name}
                       </p>
                       {user.username ? (
-                        <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
+                        <p className="truncate text-xs text-[var(--woody-muted)]">{user.username}</p>
                       ) : null}
                     </div>
                     <Button

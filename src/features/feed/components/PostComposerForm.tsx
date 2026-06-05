@@ -26,7 +26,7 @@ import {
 } from "@/domain/postMediaLimits";
 import { MediaPicker } from "@/components/media/MediaPicker";
 import { MediaPreviewGrid, type MediaPreviewItem } from "@/components/media/MediaPreviewGrid";
-import { showSuccessToast, showActionErrorToast } from "@/lib/toast";
+import { showPostCreatedToast, showActionErrorToast } from "@/lib/toast";
 import { HashtagChipsField } from "./HashtagChipsField";
 
 const selectClass = cn(
@@ -514,7 +514,7 @@ export function PostComposerForm({
         return null;
       });
 
-      showSuccessToast("Publicação criada com sucesso.", { id: "woody-post-created" });
+      showPostCreatedToast(post);
       onPostCreated?.(post);
     } catch (err) {
       showActionErrorToast(err, "Falha ao publicar.");

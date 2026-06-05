@@ -40,8 +40,10 @@ describe("RightPanelProfileCard", () => {
 
   it("renderiza nome e username", () => {
     renderCard();
+    // Card de perfil mostra o displayName (nome completo) como primário
     expect(screen.getByText("Camila Ribeiro")).toBeInTheDocument();
-    expect(screen.getByText("@camila")).toBeInTheDocument();
+    // Username sem @ abaixo do nome
+    expect(screen.getByText("camila")).toBeInTheDocument();
   });
 
   it("link 'Ver perfil' aponta para o perfil da utilizadora", () => {
@@ -134,6 +136,7 @@ describe("RightPanelProfileCard", () => {
 
   it("usa username como fallback quando name está ausente", () => {
     renderCard({ name: undefined, username: "anon_user" });
-    expect(screen.getByText("anon_user")).toBeInTheDocument();
+    // "anon_user" aparece como displayName (fallback) e também como username — ambos devem existir
+    expect(screen.getAllByText("anon_user").length).toBeGreaterThan(0);
   });
 });

@@ -60,19 +60,19 @@ function SectionHeader({ title }: { title: string }) {
 function SuggestionUserRow({ user }: { user: UserItem }) {
   return (
     <li className={styles.item}>
-      <Link to={profilePathForUser(user)} className={styles.itemLink} aria-label={`Ver perfil de ${user.name}`}>
+      <Link to={profilePathForUser(user)} className={styles.itemLink} aria-label={`Ver perfil de ${user.username}`}>
         <StoryRing
           avatarUrl={user.avatarUrl}
-          displayName={user.name}
+          displayName={user.username}
           hasActiveStories={user.hasActiveStories ?? false}
           size="sm"
         />
-        <span className={styles.itemName}>{user.name}</span>
+        <span className={styles.itemName}>{user.username}</span>
       </Link>
       <Link
         to={profilePathForUser(user)}
         className={styles.iconBtn}
-        aria-label={`Seguir ou ver ${user.name}`}
+        aria-label={`Seguir ou ver ${user.username}`}
       >
         <UserPlus className="size-3.5" strokeWidth={2} aria-hidden />
       </Link>

@@ -174,7 +174,7 @@ function PostsResults({ posts }: { posts: Post[] }) {
             {firstLineOfPost(p.content, 140)}
           </div>
           <div className="mt-0.5 text-xs text-[var(--woody-muted)] line-clamp-1">
-            {p.author?.name ? `por ${p.author.name}` : " "}
+            {p.author?.username ? `por ${p.author.username}` : " "}
           </div>
           {p.content ? (
             <div className="mt-1 text-sm text-[var(--woody-text)]/80 line-clamp-2">{p.content}</div>
@@ -198,8 +198,7 @@ function PeopleResults({ people }: { people: User[] }) {
               {u.avatarUrl ? <img src={u.avatarUrl} alt="" className="size-9 object-cover" loading="lazy" decoding="async" /> : null}
             </div>
             <div className="min-w-0 text-left">
-              <div className="text-sm font-semibold text-[var(--woody-text)] truncate">{u.name}</div>
-              <div className="text-xs text-[var(--woody-muted)] truncate">@{u.username}</div>
+              <div className="text-sm font-semibold text-[var(--woody-text)] truncate">{u.username}</div>
             </div>
           </Link>
         </li>

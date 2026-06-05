@@ -11,9 +11,59 @@ export const USERNAME_TOO_SHORT_MESSAGE =
 export const USERNAME_TOO_LONG_MESSAGE = "Nome de usuário muito longo (máx. 30 caracteres).";
 export const USERNAME_INVALID_CHARS_MESSAGE =
   "Use apenas letras minúsculas, números, ponto (.) e sublinhado (_).";
+export const USERNAME_INVALID_DOT_PLACEMENT_MESSAGE =
+  "O username não pode começar nem terminar com ponto, nem ter pontos seguidos.";
+export const USERNAME_RESERVED_MESSAGE = "Este nome de usuário não está disponível.";
+export const USERNAME_PERMANENT_LEAD = "Esse será seu @ na Woody. Escolha com calma:";
+export const USERNAME_PERMANENT_EMPHASIS = "Ele não poderá ser alterado depois.";
+
+const RESERVED_USERNAMES = new Set([
+  "admin",
+  "suporte",
+  "support",
+  "woody",
+  "thewoody",
+  "moderacao",
+  "moderação",
+  "root",
+  "system",
+  "sistema",
+  "api",
+  "login",
+  "logout",
+  "signup",
+  "register",
+  "settings",
+  "profile",
+  "user",
+  "users",
+  "comunidade",
+  "comunidades",
+  "community",
+  "communities",
+  "planos",
+  "plans",
+  "ajuda",
+  "help",
+  "legal",
+  "terms",
+  "privacy",
+]);
 
 export function normalizeUsername(raw: string): string {
   return raw.trim().toLowerCase();
+}
+
+export function isReservedUsername(normalized: string): boolean {
+  return RESERVED_USERNAMES.has(normalized);
+}
+
+export function hasValidUsernameDotPlacement(normalized: string): boolean {
+  return (
+    !normalized.startsWith(".") &&
+    !normalized.endsWith(".") &&
+    !normalized.includes("..")
+  );
 }
 
 export function validateUsername(
@@ -28,6 +78,12 @@ export function validateUsername(
   }
   if (!USERNAME_PATTERN.test(value)) {
     return { ok: false, error: USERNAME_INVALID_CHARS_MESSAGE };
+  }
+  if (!hasValidUsernameDotPlacement(value)) {
+    return { ok: false, error: USERNAME_INVALID_DOT_PLACEMENT_MESSAGE };
+  }
+  if (isReservedUsername(value)) {
+    return { ok: false, error: USERNAME_RESERVED_MESSAGE };
   }
   return { ok: true, value };
 }

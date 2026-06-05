@@ -60,7 +60,7 @@ export function PendingRequestRow({ request, user, viewerId, onChanged }: Pendin
           </Avatar>
           <div className="min-w-0 text-left">
             <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
-            <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
+            <p className="truncate text-xs text-[var(--woody-muted)]">{user.username}</p>
             <span className="mt-1 inline-flex rounded-md bg-amber-500/15 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-100">
               Pendente
             </span>

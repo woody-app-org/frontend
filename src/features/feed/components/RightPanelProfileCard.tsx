@@ -103,7 +103,7 @@ export function RightPanelProfileCard({ user }: RightPanelProfileCardProps) {
             {showProBadge && <ProBadge variant="inline" />}
           </div>
           <p className="mt-0.5 text-[0.8125rem] text-[var(--woody-muted)]">
-            @{user.username}
+            {user.username}
           </p>
         </Link>
 

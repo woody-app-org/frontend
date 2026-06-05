@@ -46,12 +46,7 @@ export function CommentItem({
   const { isAuthenticated } = useAuth();
   const { tapPhase, triggerTap } = usePostLikeTapAnimation();
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const initials = author.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = author.username.slice(0, 2).toUpperCase();
 
   return (
     <article
@@ -88,17 +83,9 @@ export function CommentItem({
                   nested ? "text-[0.8125rem] sm:text-sm" : "text-sm"
                 )}
               >
-                {author.name}
+                {author.username}
               </Link>
               {author.showProBadge ? <ProBadge variant="inline" /> : null}
-            </span>
-            <span
-              className={cn(
-                "truncate text-[var(--woody-muted)]",
-                nested ? "text-[0.6875rem] sm:text-xs" : "text-xs"
-              )}
-            >
-              @{author.username}
             </span>
             <span
               className={cn(

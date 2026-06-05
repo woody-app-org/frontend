@@ -67,17 +67,14 @@ export function PublicPostPage() {
                     <AvatarImage src={post.author.avatarUrl} alt="" />
                   ) : null}
                   <AvatarFallback className="bg-[var(--woody-nav)]/15 text-sm font-semibold text-[var(--woody-nav)]">
-                    {post.author.name.slice(0, 1).toUpperCase()}
+                    {post.author.username.slice(0, 1).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-1">
-                    <span className="font-semibold text-[var(--woody-text)]">{post.author.name}</span>
+                    <span className="font-semibold text-[var(--woody-text)]">{post.author.username}</span>
                     {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
                   </div>
-                  {post.author.username ? (
-                    <p className="text-sm text-[var(--woody-muted)]">@{post.author.username}</p>
-                  ) : null}
                 </div>
               </div>
 

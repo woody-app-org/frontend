@@ -56,7 +56,6 @@ export function PostShareButton({ post, variant = "card", className }: PostShare
           onClick={() => setDialogOpen(true)}
         >
           <Share2 className="size-4" />
-          <span className="hidden sm:inline">Compartilhar</span>
         </Button>
       )}
 

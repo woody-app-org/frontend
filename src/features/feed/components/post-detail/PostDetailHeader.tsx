@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { Post } from "@/domain/types";
@@ -38,12 +38,7 @@ export function PostDetailHeader({
     }
     navigate(-1);
   };
-  const initials = post.author.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = post.author.username.slice(0, 2).toUpperCase();
 
   return (
     <header className="space-y-4">
@@ -86,13 +81,29 @@ export function PostDetailHeader({
             </AvatarFallback>
           </Avatar>
         </Link>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 flex flex-col gap-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <p className="text-sm font-semibold text-[var(--woody-text)]">{post.author.name}</p>
+            <p className="text-sm font-semibold text-[var(--woody-text)]">{post.author.username}</p>
             {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
           </div>
-          {post.author.username ? (
-            <p className="mt-0.5 truncate text-xs text-[var(--woody-muted)]">@{post.author.username}</p>
+          {/* Tags + Impulsionado — mesma linha, logo abaixo do username */}
+          {((post.tags?.length ?? 0) > 0 || (post.communityBoostActive && post.publicationContext === "community")) ? (
+            <div className="flex flex-wrap items-center gap-1">
+              {post.communityBoostActive && post.publicationContext === "community" ? (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20">
+                  <TrendingUp className="size-3" aria-hidden />
+                  Impulsionado
+                </span>
+              ) : null}
+              {post.tags?.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center rounded-full px-2.5 py-[0.1875rem] text-[0.75rem] font-semibold tracking-[0.01em] bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] ring-1 ring-[rgba(139,195,74,0.28)]"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
           ) : null}
         </div>
       </div>

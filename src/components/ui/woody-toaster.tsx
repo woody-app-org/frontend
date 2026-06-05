@@ -19,6 +19,8 @@ export function WoodyToaster() {
           description: "!text-sm !text-[var(--woody-muted)]",
           closeButton:
             "!border-[var(--woody-divider)] !bg-[var(--woody-card)] !text-[var(--woody-muted)] hover:!bg-[var(--woody-nav)]/10",
+          actionButton:
+            "!min-h-10 !rounded-xl !font-semibold focus-visible:!outline-none focus-visible:!ring-2 focus-visible:!ring-[var(--woody-nav)]/25",
           success: "!border-l-[3px] !border-l-[var(--woody-nav)]",
           error: "!border-l-[3px] !border-l-red-500",
           warning: "!border-l-[3px] !border-l-amber-500",

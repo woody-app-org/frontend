@@ -31,7 +31,8 @@ describe("PublicPostPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Texto público")).toBeInTheDocument();
     });
-    expect(screen.getByText("Ana Silva")).toBeInTheDocument();
+    // Exibe username (não o nome completo) conforme padrão da aplicação
+    expect(screen.getByText("ana")).toBeInTheDocument();
   });
 
   it("404 mostra tela genérica indisponível", async () => {

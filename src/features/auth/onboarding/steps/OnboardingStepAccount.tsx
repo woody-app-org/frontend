@@ -28,7 +28,7 @@ import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 import { isBetaClosed } from "@/config/beta";
 import { codeInputProps, cpfInputProps, identifierInputProps } from "@/components/forms";
-import { USERNAME_MAX_LENGTH, filterUsernameInput } from "@/features/auth/lib/usernamePolicy";
+import { USERNAME_MAX_LENGTH, USERNAME_PERMANENT_EMPHASIS, USERNAME_PERMANENT_LEAD, filterUsernameInput } from "@/features/auth/lib/usernamePolicy";
 
 /**
  * Etapa 1 — dados iniciais da conta (validação pronta para espelhar no backend).
@@ -152,6 +152,18 @@ export function OnboardingStepAccount() {
               }
               error={errors.username?.message}
             />
+            <div
+              className="mt-2 rounded-xl border border-[var(--auth-button)]/40 bg-[var(--auth-button)]/12 px-3.5 py-3 text-xs leading-relaxed text-[var(--auth-text-on-maroon)]/90 sm:text-sm"
+              role="note"
+              aria-label={`${USERNAME_PERMANENT_LEAD} ${USERNAME_PERMANENT_EMPHASIS}`}
+            >
+              <p>
+                {USERNAME_PERMANENT_LEAD}{" "}
+                <strong className="font-bold text-[var(--auth-text-on-maroon)]">
+                  {USERNAME_PERMANENT_EMPHASIS}
+                </strong>
+              </p>
+            </div>
             <AuthInputField
               label="E-mail"
               placeholder="seu@email.com"

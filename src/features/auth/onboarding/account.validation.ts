@@ -6,7 +6,11 @@ import {
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
   USERNAME_TOO_SHORT_MESSAGE,
+  hasValidUsernameDotPlacement,
+  isReservedUsername,
   normalizeUsername,
+  USERNAME_INVALID_DOT_PLACEMENT_MESSAGE,
+  USERNAME_RESERVED_MESSAGE,
 } from "../lib/usernamePolicy";
 
 /** Remove formatação para validar dígitos. */
@@ -62,6 +66,8 @@ export const onboardingAccountSchema = z.object({
         .min(USERNAME_MIN_LENGTH, USERNAME_TOO_SHORT_MESSAGE)
         .max(USERNAME_MAX_LENGTH, "Máximo 30 caracteres")
         .regex(/^[a-z0-9_.]+$/, USERNAME_INVALID_CHARS_MESSAGE)
+        .refine(hasValidUsernameDotPlacement, USERNAME_INVALID_DOT_PLACEMENT_MESSAGE)
+        .refine((value) => !isReservedUsername(value), USERNAME_RESERVED_MESSAGE)
     ),
   email: z.string().min(1, "E-mail é obrigatório").email("E-mail inválido"),
   password: z

@@ -23,15 +23,6 @@ export interface CommunityMembersPreviewProps {
 
 const panel = cn(woodySurface.card, "p-4 sm:p-5");
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 export function CommunityMembersPreview({
   communitySlug,
   memberCount,
@@ -112,15 +103,14 @@ export function CommunityMembersPreview({
                 <Avatar className="size-9 shrink-0">
                   <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
                   <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xs text-[var(--woody-text)]">
-                    {initials(user.name)}
+                    {user.username.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                    <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
+                    <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.username}</p>
                     <CommunityMemberRoleIndicator role={role} variant="participant" />
                   </div>
-                  <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
                 </div>
               </Link>
             </li>
@@ -165,16 +155,15 @@ export function CommunityMembersPreview({
                   <Avatar className="size-10 shrink-0">
                     <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
                     <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xs text-[var(--woody-text)]">
-                      {initials(user.name)}
+                      {user.username.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                      <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
+                      <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.username}</p>
                       <CommunityMemberRoleIndicator role={role} variant="participant" />
                     </div>
-                    <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
-                  </div>
+                    </div>
                 </Link>
               </li>
             ))}

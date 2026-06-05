@@ -1,5 +1,6 @@
 export {
   showSuccessToast,
+  showPostCreatedToast,
   showErrorToast,
   showWarningToast,
   showInfoToast,
@@ -7,4 +8,5 @@ export {
   useToast,
   rawToast,
   WOODY_TOAST_FALLBACK,
+  type PostCreatedToastTarget,
 } from "./woodyToast";

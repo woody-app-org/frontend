@@ -9,16 +9,6 @@ import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { fetchMyFollowing } from "@/features/users/services/userSocial.service";
 import { StartConversationButton } from "./StartConversationButton";
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 export interface ConversationStartHintsProps {
   /** Quando falso, não pede a API (ex.: ainda Carregando listas). */
   enabled: boolean;
@@ -95,15 +85,15 @@ function ConversationStartHintsLoaded() {
                   <Avatar className="size-9 shrink-0 border border-[var(--woody-accent)]/12">
                     <AvatarImage src={u.avatarUrl ?? undefined} alt="" />
                     <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xs font-medium text-[var(--woody-text)]">
-                      {initials(u.name)}
+                      {u.username.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="truncate text-sm font-medium text-[var(--woody-text)]">{u.name}</span>
+                  <span className="truncate text-sm font-medium text-[var(--woody-text)]">{u.username}</span>
                 </Link>
                 {ok ? (
                   <StartConversationButton
                     otherUserId={uid}
-                    peerLabel={u.name}
+                    peerLabel={u.username}
                     variant="outline"
                     compact
                     className="shrink-0"

@@ -2,17 +2,13 @@ import axios from "axios";
 import type { UserProfile, ProfilePostsResponse, ProfileUpdatePayload } from "../types";
 import { applyUserDisplayPatch } from "@/domain/mocks/userDisplayPatchStore";
 import { getAuthUser } from "@/features/auth/services/auth.service";
-import { validateUsername } from "@/features/auth/lib/usernamePolicy";
 import { api, getApiErrorMessage } from "@/lib/api";
 import { mapPostFromApi, mapUserProfileFromApi } from "@/lib/apiMappers";
 
-export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { ok: true; username: string } | { ok: false; error: string } {
+export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { ok: true } | { ok: false; error: string } {
   const name = payload.name?.trim() ?? "";
   if (name.length < 1) return { ok: false, error: "Informe um nome de exibição." };
   if (name.length > 80) return { ok: false, error: "Nome muito longo (máx. 80 caracteres)." };
-
-  const usernameCheck = validateUsername(payload.username ?? "");
-  if (!usernameCheck.ok) return usernameCheck;
 
   const bio = payload.bio ?? "";
   if (bio.length > 500) return { ok: false, error: "Bio muito longa (máx. 500 caracteres)." };
@@ -34,7 +30,7 @@ export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { o
     if (t.label.length > 48) return { ok: false, error: "Um dos interesses é muito longo." };
   }
 
-  return { ok: true, username: usernameCheck.value };
+  return { ok: true };
 }
 
 export async function getProfile(userId: string): Promise<UserProfile | null> {
@@ -74,7 +70,6 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
   try {
     const { data } = await api.patch("/users/me", {
       name: payload.name!.trim(),
-      username: validated.username,
       bio: (payload.bio ?? "").trim(),
       pronouns: payload.pronouns?.trim() || undefined,
       location: payload.location?.trim() || undefined,
@@ -112,7 +107,6 @@ export async function updateMyAvatarFromUploadedUrl(
     const p = mapUserProfileFromApi(data as Record<string, unknown>);
     return updateProfile(session.id, {
       name: p.name,
-      username: (p.username ?? session.username).trim(),
       bio: p.bio,
       pronouns: p.pronouns,
       location: p.location,

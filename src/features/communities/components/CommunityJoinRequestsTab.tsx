@@ -113,7 +113,7 @@ function JoinRequestModerationCard({ row, viewerId, onChanged }: JoinRequestCard
           </Avatar>
           <div className="min-w-0 text-left">
             <p className="truncate font-semibold text-[var(--woody-text)]">{user.name}</p>
-            <p className="truncate text-sm text-[var(--woody-muted)]">@{user.username}</p>
+            <p className="truncate text-sm text-[var(--woody-muted)]">{user.username}</p>
             <p className="mt-1 text-xs text-[var(--woody-muted)]">Pedido em {formatRequestedAt(request.requestedAt)}</p>
             <span
               className={cn(

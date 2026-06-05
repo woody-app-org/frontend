@@ -162,10 +162,12 @@ function PostCardInner({
   const showProfileContext =
     post.publicationContext === "profile" && !post.community && postSurface !== "profile";
 
-  const showMetaRow =
-    (post.communityBoostActive && post.publicationContext === "community") ||
-    Boolean(post.pinnedOnProfileAt && postSurface === "profile") ||
-    (post.tags?.length ?? 0) > 0;
+  // "Em destaque" fica no content (indicador de pin no perfil)
+  const showMetaRow = Boolean(post.pinnedOnProfileAt && postSurface === "profile");
+  // Tags e badge "Impulsionado" sobem para o header, logo abaixo do username
+  const hasTags = (post.tags?.length ?? 0) > 0;
+  const showBoostBadge = Boolean(post.communityBoostActive && post.publicationContext === "community");
+  const showHeaderMeta = hasTags || showBoostBadge;
 
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     if (ignoreNextCardClickRef.current) {
@@ -233,7 +235,7 @@ function PostCardInner({
             {/* TODO(stories-feed-dto): enriquecer author no feed com hasActiveStories quando a API expuser o campo. */}
             <StoryRing
               avatarUrl={post.author.avatarUrl}
-              displayName={post.author.name}
+              displayName={post.author.username}
               hasActiveStories={post.author.hasActiveStories ?? false}
               size="md"
               onClick={
@@ -246,29 +248,45 @@ function PostCardInner({
                   : undefined
               }
             />
-            <Link
-              to={profilePathForUser(post.author)}
-              className="flex min-w-0 flex-1 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
-              aria-label={`Ver perfil de ${post.author.name}`}
-            >
-            <div className={styles.headerMeta}>
-              <div className="flex flex-wrap items-baseline gap-1">
-                <span className={styles.authorName}>{post.author.name}</span>
-                {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
-                {post.author.pronouns && (
-                  <>
-                    <span className={styles.authorPronouns}>•</span>
-                    <span className={cn(styles.authorPronouns, "truncate")}>
-                      {post.author.pronouns}
+            {/* Coluna: username (link) + tags/boost abaixo */}
+            <div className="min-w-0 flex-1 flex flex-col gap-1">
+              <Link
+                to={profilePathForUser(post.author)}
+                className="flex min-w-0 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
+                aria-label={`Ver perfil de ${post.author.name}`}
+              >
+                <div className={styles.headerMeta}>
+                  <div className="flex flex-wrap items-baseline gap-1">
+                    <span className={styles.authorName}>{post.author.username}</span>
+                    {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
+                  </div>
+                </div>
+              </Link>
+
+              {/* Tags + Impulsionado — mesma linha, compacto */}
+              {showHeaderMeta ? (
+                <div
+                  data-post-ignore-open="true"
+                  className="flex flex-wrap items-center gap-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {showBoostBadge ? (
+                    <span
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
+                      title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
+                    >
+                      <TrendingUp className="size-3" aria-hidden />
+                      Impulsionado
                     </span>
-                  </>
-                )}
-              </div>
-              {post.author.username ? (
-                <p className={styles.authorHandle}>@{post.author.username}</p>
+                  ) : null}
+                  {post.tags?.map((tag) => (
+                    <span key={tag} className={styles.pill}>
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
               ) : null}
             </div>
-            </Link>
           </div>
         </div>
         <PostOverflowMenu
@@ -285,25 +303,9 @@ function PostCardInner({
       <CardContent className={styles.contentBlock}>
         {showMetaRow ? (
           <div className={styles.metaRow}>
-            {post.communityBoostActive && post.publicationContext === "community" ? (
-              <span
-                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
-                title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
-              >
-                <TrendingUp className="size-3" aria-hidden />
-                Impulsionado
-              </span>
-            ) : null}
-            {post.pinnedOnProfileAt && postSurface === "profile" ? (
-              <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
-                Em destaque
-              </span>
-            ) : null}
-            {post.tags?.map((tag) => (
-              <span key={tag} className={styles.pill}>
-                #{tag}
-              </span>
-            ))}
+            <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
+              Em destaque
+            </span>
           </div>
         ) : null}
         <p className={cn(styles.content, showMetaRow && "mt-2")}>

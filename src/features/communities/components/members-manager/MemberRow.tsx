@@ -79,7 +79,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
               <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
               {user.showProBadge ? <ProBadge variant="inline" /> : null}
             </div>
-            <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
+            <p className="truncate text-xs text-[var(--woody-muted)]">{user.username}</p>
             <span
               className={cn(
                 "mt-1 inline-flex rounded-md px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide",

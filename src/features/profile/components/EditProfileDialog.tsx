@@ -8,12 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { IdentifierInput } from "@/components/forms";
-import {
-  USERNAME_MAX_LENGTH,
-  filterUsernameInput,
-  normalizeUsername,
-} from "@/features/auth/lib/usernamePolicy";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -102,7 +96,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const avatarSectionRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState(profile.name);
-  const [username, setUsername] = useState(profile.username ?? "");
   const [bio, setBio] = useState(profile.bio);
   const [pronouns, setPronouns] = useState(profile.pronouns ?? "");
   const [location, setLocation] = useState(profile.location ?? "");
@@ -178,7 +171,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     }
     const p = profileRef.current;
     setName(p.name);
-    setUsername(p.username ?? "");
     setBio(p.bio);
     setPronouns(p.pronouns ?? "");
     setLocation(p.location ?? "");
@@ -329,7 +321,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       const interests = parseInterestsField(interestsRaw, profile.interests);
       const payload = {
         name: name.trim(),
-        username: normalizeUsername(username),
         bio: bio.trim(),
         pronouns: pronouns.trim() || undefined,
         location: location.trim() || undefined,
@@ -361,7 +352,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     },
     [
       name,
-      username,
       bio,
       pronouns,
       location,
@@ -557,19 +547,20 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor={`${formId}-username`} className="text-sm font-medium text-[var(--woody-text)]">
-                Nome de usuário
-              </label>
-              <IdentifierInput
-                id={`${formId}-username`}
-                value={username}
-                maxLength={USERNAME_MAX_LENGTH}
-                onChange={(ev) => setUsername(filterUsernameInput(ev.target.value))}
-                className={inputClass}
-                required
-              />
+              <p className="text-sm font-medium text-[var(--woody-text)]">Username permanente</p>
+              <div
+                className={cn(
+                  "flex min-h-10 cursor-not-allowed select-none items-center rounded-xl border border-[var(--woody-accent)]/15",
+                  "bg-[var(--woody-muted)]/12 px-3 text-sm text-[var(--woody-muted)] shadow-none"
+                )}
+                aria-readonly="true"
+                aria-disabled="true"
+                title="Seu username não pode ser alterado"
+              >
+                @{profile.username ?? "—"}
+              </div>
               <p className="text-xs text-[var(--woody-muted)]">
-                3–30 caracteres: letras minúsculas, números, ponto (.) e sublinhado (_)
+                Seu @ é permanente e não pode ser alterado.
               </p>
             </div>
             <div className="space-y-1.5">

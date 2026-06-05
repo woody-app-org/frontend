@@ -63,10 +63,9 @@ export interface UserProfile {
   badges: UserBadge[];
 }
 
-/** Payload para `updateProfile` / futura API REST. */
+/** Payload para `updateProfile` / API REST. Username é imutável após criação. */
 export interface ProfileUpdatePayload {
   name: string;
-  username: string;
   bio: string;
   pronouns?: string;
   location?: string;

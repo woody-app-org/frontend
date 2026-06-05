@@ -6,15 +6,6 @@ import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import type { User } from "@/domain/types";
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 export interface FollowListUserRowProps {
   user: User;
   className?: string;
@@ -36,12 +27,11 @@ export function FollowListUserRow({ user, className, onNavigate }: FollowListUse
         <Avatar className="size-11 shrink-0 border border-[var(--woody-accent)]/12 sm:size-12">
           <AvatarImage src={resolvePublicMediaUrl(user.avatarUrl) || undefined} alt="" />
           <AvatarFallback className="bg-[var(--woody-nav)]/10 text-sm text-[var(--woody-text)]">
-            {initials(user.name)}
+            {user.username.slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1 text-left">
-          <p className="truncate font-medium text-[var(--woody-text)]">{user.name}</p>
-          <p className="truncate text-sm text-[var(--woody-muted)]">@{user.username}</p>
+          <p className="truncate font-medium text-[var(--woody-text)]">{user.username}</p>
         </div>
       </Link>
     </li>
