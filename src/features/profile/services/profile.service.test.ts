@@ -40,7 +40,7 @@ describe("updateProfile", () => {
       name: "Maria",
       email: "maria@example.com",
       role: "User",
-      avatarUrl: null,
+      avatarUrl: undefined,
     });
   });
 
