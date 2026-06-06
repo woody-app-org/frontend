@@ -110,16 +110,13 @@ export function adaptiveMediaShellClass(
 
 export function adaptiveStillImageClass(
   kind: PostMediaIntrinsicKind | null,
-  placement: Placement,
+  _placement: Placement,
 ): string {
   const base = "absolute inset-0 size-full transition-opacity duration-150";
-  if (placement === "detail") {
-    if (kind === "feed_4_5" || kind === "phone_3_4" || kind === null)
-      return cn(base, "object-contain object-center");
-    if (kind === "square") return cn(base, "object-contain object-center");
-    return cn(base, "object-cover object-center");
-  }
-  return cn(base, "object-cover object-center");
+  // Landscape usa cover em qualquer placement (faz sentido visual preencher width).
+  // Todos os formatos verticais e quadrados usam contain para nunca cortar a imagem.
+  if (kind === "landscape") return cn(base, "object-cover object-center");
+  return cn(base, "object-contain object-center");
 }
 
 export function adaptiveVideoClass(kind: PostMediaIntrinsicKind | null, placement: Placement): string {

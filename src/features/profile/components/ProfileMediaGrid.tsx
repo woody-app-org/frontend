@@ -128,7 +128,7 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
                 <img
                   src={thumb ?? resolvePublicMediaUrl(attachment.url)}
                   alt=""
-                  className="absolute inset-0 size-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.04]"
+                  className="absolute inset-0 size-full object-contain object-center transition-transform duration-300 group-hover:scale-[1.04]"
                   loading="lazy"
                   decoding="async"
                 />
