@@ -317,6 +317,7 @@ function mapPremiumCapabilities(raw: unknown): CommunityPremiumCapabilities | un
     communityPremiumActive: Boolean(o.communityPremiumActive),
     canAccessCommunityAnalytics: Boolean(o.canAccessCommunityAnalytics),
     canBoostCommunityPosts: Boolean(o.canBoostCommunityPosts),
+    canAccessCommunityMaxFeatures: Boolean(o.canAccessCommunityMaxFeatures),
   };
 }
 

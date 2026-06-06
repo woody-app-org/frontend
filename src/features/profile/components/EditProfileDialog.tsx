@@ -622,7 +622,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                 value={genderIdentity || "none"}
                 onValueChange={(v) => setGenderIdentity(v === "none" ? "" : v)}
                 disabled={isSubmitting}
-                modal={false}
               >
                 <SelectTrigger
                   className={cn(

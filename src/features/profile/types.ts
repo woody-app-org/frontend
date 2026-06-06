@@ -57,6 +57,7 @@ export interface UserProfile {
   followersCount?: number;
   followingCount?: number;
   showProBadge?: boolean;
+  subscriptionBadge?: "pro" | "max" | null;
   /** Stories ativos nas últimas 24h (API `hasActiveStories`). */
   hasActiveStories?: boolean;
   /** Presente em `GET /users/me` quando a API envia o estado de assinatura. */
