@@ -109,7 +109,7 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
             <button
               key={`${postContext.publicId}-${i}`}
               type="button"
-              className="group relative aspect-[4/5] overflow-hidden bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--woody-accent)]/50"
+              className="group relative aspect-square overflow-hidden bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--woody-accent)]/50"
               aria-label={
                 isVideo && siblingCount === 1
                   ? `Abrir vídeo do post de ${postContext.authorName}`

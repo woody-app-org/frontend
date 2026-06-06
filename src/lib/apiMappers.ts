@@ -136,6 +136,8 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
         durationSeconds,
         durationMs:
           o.durationMs != null && Number.isFinite(Number(o.durationMs)) ? Number(o.durationMs) : null,
+        width: o.width != null && Number.isFinite(Number(o.width)) ? Number(o.width) : null,
+        height: o.height != null && Number.isFinite(Number(o.height)) ? Number(o.height) : null,
       });
     }
     if (list.length > 0) mediaAttachments = list;

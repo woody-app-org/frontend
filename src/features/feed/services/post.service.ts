@@ -34,6 +34,9 @@ export type CreatePostMediaAttachmentPayload = {
   storageKey?: string;
   mimeType?: string;
   fileSize?: number;
+  /** Dimensões reais (eco do upload); usadas para classificar o formato oficial Woody. */
+  width?: number;
+  height?: number;
   /** Poster de vídeo (URL de imagem após upload). */
   thumbnailUrl?: string;
 };

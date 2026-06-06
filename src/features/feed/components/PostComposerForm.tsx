@@ -25,6 +25,7 @@ import {
   formatFileSize,
 } from "@/domain/postMediaLimits";
 import { MediaPicker } from "@/components/media/MediaPicker";
+import { ImageCropDialog, type ImageCropFormatOption } from "@/components/media/ImageCropDialog";
 import { MediaPreviewGrid, type MediaPreviewItem } from "@/components/media/MediaPreviewGrid";
 import { showPostCreatedToast, showActionErrorToast } from "@/lib/toast";
 import { HashtagChipsField } from "./HashtagChipsField";
@@ -35,6 +36,13 @@ const selectClass = cn(
 );
 
 const VIDEO_MIME_OK = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+
+/** Formatos oficiais do feed oferecidos no passo de ajuste/crop. */
+const POST_CROP_FORMATS: ImageCropFormatOption[] = [
+  { key: "feed_4_5", label: "4:5", aspect: 4 / 5, outputWidth: 1080, outputHeight: 1350 },
+  { key: "phone_3_4", label: "3:4", aspect: 3 / 4, outputWidth: 1080, outputHeight: 1440 },
+  { key: "square_1_1", label: "1:1", aspect: 1, outputWidth: 1080, outputHeight: 1080 },
+];
 
 function targetOptionClass(selected: boolean) {
   return cn(
@@ -143,6 +151,11 @@ export function PostComposerForm({
   const [imageItems, setImageItems] = useState<ComposerImageItem[]>([]);
   const [videoItem, setVideoItem] = useState<ComposerVideoItem | null>(null);
 
+  // Passo de ajuste/crop: fila de imagens a enquadrar nos formatos oficiais.
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const cropSrcRef = useRef<string | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [communityLoadError, setCommunityLoadError] = useState(false);
@@ -185,6 +198,7 @@ export function PostComposerForm({
         URL.revokeObjectURL(videoItem.previewUrl);
         if (videoItem.posterUrl) URL.revokeObjectURL(videoItem.posterUrl);
       }
+      if (cropSrcRef.current) URL.revokeObjectURL(cropSrcRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -270,13 +284,22 @@ export function PostComposerForm({
       const toAdd = files.slice(0, remaining);
       const skipped = files.length - toAdd.length;
 
-      const newItems: ComposerImageItem[] = toAdd.map((f) => ({
-        id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        file: f,
-        previewUrl: URL.createObjectURL(f),
-      }));
+      // GIFs entram diretos (o crop em canvas perderia a animação); restantes vão ao passo de ajuste.
+      const gifs = toAdd.filter((f) => f.type === "image/gif");
+      const croppable = toAdd.filter((f) => f.type !== "image/gif");
 
-      setImageItems((prev) => [...prev, ...newItems]);
+      if (gifs.length > 0) {
+        const gifItems: ComposerImageItem[] = gifs.map((f) => ({
+          id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          file: f,
+          previewUrl: URL.createObjectURL(f),
+        }));
+        setImageItems((prev) => [...prev, ...gifItems]);
+      }
+
+      if (croppable.length > 0) {
+        setCropQueue((prev) => [...prev, ...croppable]);
+      }
 
       if (skipped > 0) {
         setFormError(
@@ -288,6 +311,45 @@ export function PostComposerForm({
     },
     [imageItems.length, videoItem]
   );
+
+  // Abre o próximo item da fila de crop quando não há nenhum diálogo ativo.
+  useEffect(() => {
+    if (cropSrc || cropQueue.length === 0) return;
+    const next = cropQueue[0];
+    const url = URL.createObjectURL(next);
+    cropSrcRef.current = url;
+    setCropSrc(url);
+  }, [cropQueue, cropSrc]);
+
+  const closeCurrentCrop = useCallback(() => {
+    if (cropSrcRef.current) {
+      URL.revokeObjectURL(cropSrcRef.current);
+      cropSrcRef.current = null;
+    }
+    setCropSrc(null);
+  }, []);
+
+  const handleCropConfirm = useCallback(
+    async (file: File) => {
+      setImageItems((prev) => [
+        ...prev,
+        {
+          id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        },
+      ]);
+      closeCurrentCrop();
+      setCropQueue((prev) => prev.slice(1));
+    },
+    [closeCurrentCrop]
+  );
+
+  const handleCropCancel = useCallback(() => {
+    // Cancelar descarta o item atual e o resto da fila.
+    closeCurrentCrop();
+    setCropQueue([]);
+  }, [closeCurrentCrop]);
 
   const removeImage = useCallback((id: string) => {
     setImageItems((prev) => {
@@ -481,6 +543,8 @@ export function PostComposerForm({
               storageKey: uploaded.storageKey,
               mimeType: uploaded.contentType,
               fileSize: uploaded.sizeBytes,
+              ...(uploaded.width != null && uploaded.width > 0 ? { width: uploaded.width } : {}),
+              ...(uploaded.height != null && uploaded.height > 0 ? { height: uploaded.height } : {}),
             };
           })
         );
@@ -656,6 +720,7 @@ export function PostComposerForm({
   );
 
   return (
+    <>
     <div
       className={cn(isModalEmbed ? "flex min-h-0 flex-1 flex-col" : "flex flex-col gap-3", className)}
       aria-busy={submitting}
@@ -760,6 +825,8 @@ export function PostComposerForm({
                 Até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos ({formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} cada) ou 1
                 vídeo até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} / {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s ·{" "}
                 {content.length}/{POST_COMPOSER_CONTENT_MAX_LENGTH}
+                <br />
+                Para ficar melhor no feed, use fotos em 4:5, 3:4 ou 1:1.
               </p>
             )}
             {isModalEmbed ? (
@@ -878,5 +945,21 @@ export function PostComposerForm({
         </Button>
       </div>
     </div>
+
+    <ImageCropDialog
+      open={cropSrc !== null}
+      onOpenChange={(o) => {
+        if (!o) handleCropCancel();
+      }}
+      imageSrc={cropSrc}
+      title="Ajustar enquadramento"
+      description="Para ficar melhor no feed, escolhe 4:5, 3:4 ou 1:1."
+      cropShape="rect"
+      layout="wide"
+      formatOptions={POST_CROP_FORMATS}
+      initialFormatKey="feed_4_5"
+      onConfirm={handleCropConfirm}
+    />
+    </>
   );
 }

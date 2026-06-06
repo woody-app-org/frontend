@@ -396,6 +396,42 @@ input.woody-auth-input:autofill:focus {
   }
 }
 
+/*
+ * Molduras oficiais de mídia Woody — proporções padronizadas.
+ * Mapeadas por `getMediaContainerClass` (lib/media/woodyMediaFormats).
+ * Use em conjunto com object-fit nos filhos para não deformar.
+ */
+.mediaFrame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.mediaFrame > img,
+.mediaFrame > video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.mediaFrame--contain > img,
+.mediaFrame--contain > video {
+  object-fit: contain;
+}
+.mediaFrame--4x5 {
+  aspect-ratio: 4 / 5;
+}
+.mediaFrame--3x4 {
+  aspect-ratio: 3 / 4;
+}
+.mediaFrame--1x1 {
+  aspect-ratio: 1 / 1;
+}
+.mediaFrame--9x16 {
+  aspect-ratio: 9 / 16;
+}
+
 /* Toasts (Sonner) — reduzir movimento sem remover feedback */
 @media (prefers-reduced-motion: reduce) {
   [data-sonner-toast],

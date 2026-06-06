@@ -16,6 +16,9 @@ export interface MediaUploadResult {
   mediaKind: string;
   durationMs?: number | null;
   durationSeconds?: number | null;
+  /** Dimensões reais lidas pelo servidor (imagens); ausentes quando não decodificável. */
+  width?: number | null;
+  height?: number | null;
 }
 
 function readErrorMessage(e: unknown): string | null {

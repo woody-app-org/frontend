@@ -14,6 +14,9 @@ export interface PostMediaAttachment {
   thumbnailUrl?: string | null;
   durationSeconds?: number | null;
   durationMs?: number | null;
+  /** Dimensões reais lidas pelo servidor; usadas para classificar o formato oficial sem layout shift. */
+  width?: number | null;
+  height?: number | null;
 }
 
 /** Converte URLs legadas (`imageUrl` / `imageUrls`) em anexos para a galeria unificada. */
