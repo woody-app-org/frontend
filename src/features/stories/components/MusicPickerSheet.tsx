@@ -41,34 +41,46 @@ export function MusicPickerSheet({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const stopAudio = useCallback(() => {
+  const stopAudioDom = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
       audioRef.current = null;
     }
-    setPlayingId(null);
-    setTrimPlaying(false);
   }, []);
 
-  useEffect(() => {
-    if (!open) {
-      stopAudio();
-      setQuery("");
-      setResults([]);
-      setSearchError(null);
-      setScreen("search");
-      setTrimTrack(null);
-      setStartTime(0);
-    }
-  }, [open, stopAudio]);
+  const stopAudio = useCallback(() => {
+    stopAudioDom();
+    setPlayingId(null);
+    setTrimPlaying(false);
+  }, [stopAudioDom]);
+
+  const resetSheet = useCallback(() => {
+    stopAudioDom();
+    setPlayingId(null);
+    setTrimPlaying(false);
+    setQuery("");
+    setResults([]);
+    setSearchError(null);
+    setScreen("search");
+    setTrimTrack(null);
+    setStartTime(0);
+  }, [stopAudioDom]);
+
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) resetSheet();
+      onOpenChange(next);
+    },
+    [onOpenChange, resetSheet]
+  );
 
   useEffect(() => {
     return () => {
-      stopAudio();
+      stopAudioDom();
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [stopAudio]);
+  }, [stopAudioDom]);
 
   // --- Ecrã de pesquisa ---
 
@@ -146,7 +158,7 @@ export function MusicPickerSheet({
     if (!trimTrack) return;
     stopAudio();
     onSelect({ ...trimTrack, startTime });
-    onOpenChange(false);
+    handleOpenChange(false);
   };
 
   const handleBackToSearch = () => {
@@ -158,13 +170,13 @@ export function MusicPickerSheet({
   const handleRemove = () => {
     stopAudio();
     onSelect(null);
-    onOpenChange(false);
+    handleOpenChange(false);
   };
 
   const formatTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         overlayClassName="bg-black/55 backdrop-blur-[2px]"
         className={cn(
@@ -196,7 +208,7 @@ export function MusicPickerSheet({
           </div>
           <button
             type="button"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             className={cn(
               "flex size-9 items-center justify-center rounded-full text-[var(--woody-muted)] hover:bg-black/5",
               woodyFocus.ring
