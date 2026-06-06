@@ -9,6 +9,7 @@ import { GifStickerPickerDialog } from "@/features/messages/components/GifSticke
 import type { StickerGifSearchItemDto } from "@/features/messages/types";
 import { showErrorToast } from "@/lib/toast";
 import { CommentEmojiPicker } from "./CommentEmojiPicker";
+import { COMMENT_CONTENT_MAX_LENGTH } from "../../services/post.service";
 
 export interface CommentFormProps {
   id?: string;
@@ -134,7 +135,9 @@ export function CommentForm({
 
   const trimmed = value.trim();
   const hasGif = draftGif != null && draftGif.gifUrl.length > 0;
-  const canSubmit = (trimmed.length > 0 || hasGif) && !isSubmitting && !disabled;
+  const overLimit = trimmed.length > COMMENT_CONTENT_MAX_LENGTH;
+  const charsLeft = COMMENT_CONTENT_MAX_LENGTH - trimmed.length;
+  const canSubmit = (trimmed.length > 0 || hasGif) && !isSubmitting && !disabled && !overLimit;
 
   const onGifPick = useCallback((item: StickerGifSearchItemDto) => {
     const mapped = stickerItemToCommentGif(item);
@@ -218,6 +221,15 @@ export function CommentForm({
         <div className={cn("flex flex-wrap items-center gap-2", footerStart ? "justify-between" : "justify-end")}>
           {footerStart ? <div className="flex shrink-0 items-center gap-2">{footerStart}</div> : null}
           <div className="flex flex-wrap items-center justify-end gap-1.5">
+            {trimmed.length > 0 ? (
+              <span className={cn(
+                "text-xs tabular-nums text-[var(--woody-muted)]",
+                charsLeft < 50 && "text-amber-500",
+                overLimit && "font-semibold text-red-500"
+              )}>
+                {charsLeft}
+              </span>
+            ) : null}
             <Button
               type="button"
               variant="ghost"

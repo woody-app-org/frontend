@@ -915,6 +915,22 @@ export function PostComposerForm({
           )}
         </div>
 
+        {/* Contador de caracteres — visível no modal quando há texto */}
+        {isModalEmbed && content.trim().length > 0 && (() => {
+          const charsLeft = POST_COMPOSER_CONTENT_MAX_LENGTH - content.trim().length;
+          return (
+            <span
+              className={cn(
+                "shrink-0 text-xs tabular-nums text-[var(--woody-muted)]",
+                charsLeft < 50 && "text-amber-500",
+                charsLeft < 0 && "font-semibold text-red-500"
+              )}
+            >
+              {charsLeft}
+            </span>
+          );
+        })()}
+
         <Button
           type="button"
           onClick={() => void handleSubmit()}
