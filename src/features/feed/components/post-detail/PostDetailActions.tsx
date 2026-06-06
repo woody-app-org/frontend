@@ -27,7 +27,7 @@ export function PostDetailActions({
   const { tapPhase, triggerTap } = usePostLikeTapAnimation();
 
   return (
-    <div className="flex flex-wrap items-center gap-2 pt-2">
+    <div className="flex items-center gap-24 pt-2">
       <Button
         type="button"
         variant={post.likedByCurrentUser ? "default" : "ghost"}

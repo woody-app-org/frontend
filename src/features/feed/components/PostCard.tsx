@@ -3,8 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MessageCircle, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
   Card,
-  CardContent,
-  CardHeader,
 } from "@/components/ui/card";
 import { StoryRing } from "@/components/ui/StoryRing";
 import { cn } from "@/lib/utils";
@@ -61,10 +59,10 @@ const styles = {
   pill:
     "inline-flex items-center rounded-full px-2.5 py-[0.1875rem] text-[0.75rem] font-semibold tracking-[0.01em] bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] ring-1 ring-[rgba(139,195,74,0.28)]",
   content:
-    "text-[var(--woody-text)]/92 text-[0.9375rem] leading-[1.65] whitespace-pre-wrap break-words",
+    "text-[var(--woody-text)]/92 text-[0.9375rem] leading-[1.45] whitespace-pre-wrap break-words",
   contentBlock: "relative z-[1] p-0 pt-1 pb-0",
   footer:
-    "relative z-[1] flex items-center gap-7 mt-4 pt-0.5 text-[var(--woody-muted)]",
+    "relative z-[1] flex items-center gap-24 mt-3 pt-0.5 text-[var(--woody-muted)]",
   footerItem:
     "flex items-center gap-1.5 text-xs transition-colors rounded-md py-1 px-1.5 -mx-1.5 hover:text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/5 [&_svg]:size-3.5",
 };
@@ -167,7 +165,6 @@ function PostCardInner({
   // Tags e badge "Impulsionado" sobem para o header, logo abaixo do username
   const hasTags = (post.tags?.length ?? 0) > 0;
   const showBoostBadge = Boolean(post.communityBoostActive && post.publicationContext === "community");
-  const showHeaderMeta = hasTags || showBoostBadge;
 
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     if (ignoreNextCardClickRef.current) {
@@ -225,104 +222,100 @@ function PostCardInner({
           variant={postListingContext}
         />
       ) : null}
-      <CardHeader className={cn(styles.header, hasContextBar && "pt-1 sm:pt-2")}>
-        <div className={styles.headerLeft}>
+      {/* Layout de duas colunas: avatar fixo à esquerda, todo conteúdo à direita */}
+      <div className={cn("flex items-start gap-3", hasContextBar && "pt-1 sm:pt-2")}>
+        {/* Coluna esquerda: avatar */}
+        <div
+          data-post-ignore-open="true"
+          className="shrink-0"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <StoryRing
+            avatarUrl={post.author.avatarUrl}
+            displayName={post.author.username}
+            hasActiveStories={post.author.hasActiveStories ?? false}
+            size="md"
+            onClick={
+              post.author.hasActiveStories
+                ? (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onViewAuthorStories?.(post.author.id);
+                  }
+                : undefined
+            }
+          />
+        </div>
+
+        {/* Coluna direita: username + conteúdo completo */}
+        <div className="min-w-0 flex-1 pr-8">
           <div
             data-post-ignore-open="true"
-            className="flex min-w-0 flex-1 items-start gap-3 rounded-md -m-1.5 p-1.5"
+            className="min-w-0"
             onClick={(event) => event.stopPropagation()}
           >
-            {/* TODO(stories-feed-dto): enriquecer author no feed com hasActiveStories quando a API expuser o campo. */}
-            <StoryRing
-              avatarUrl={post.author.avatarUrl}
-              displayName={post.author.username}
-              hasActiveStories={post.author.hasActiveStories ?? false}
-              size="md"
-              onClick={
-                post.author.hasActiveStories
-                  ? (event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      onViewAuthorStories?.(post.author.id);
-                    }
-                  : undefined
-              }
-            />
-            {/* Coluna: username (link) + tags/boost abaixo */}
-            <div className="min-w-0 flex-1 flex flex-col gap-1">
+            <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
               <Link
                 to={profilePathForUser(post.author)}
-                className="flex min-w-0 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
+                className="inline-flex items-baseline gap-1 min-w-0 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
                 aria-label={`Ver perfil de ${post.author.name}`}
               >
-                <div className={styles.headerMeta}>
-                  <div className="flex flex-wrap items-baseline gap-1">
-                    <span className={styles.authorName}>{post.author.username}</span>
-                    {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
-                  </div>
-                </div>
+                <span className={styles.authorName}>{post.author.username}</span>
+                {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
               </Link>
-
-              {/* Tags + Impulsionado — mesma linha, compacto */}
-              {showHeaderMeta ? (
-                <div
-                  data-post-ignore-open="true"
-                  className="flex flex-wrap items-center gap-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {showBoostBadge ? (
-                    <span
-                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
-                      title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
-                    >
-                      <TrendingUp className="size-3" aria-hidden />
-                      Impulsionado
-                    </span>
-                  ) : null}
-                  {post.tags?.map((tag) => (
-                    <span key={tag} className={styles.pill}>
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
+              <span className="text-[var(--woody-muted)] text-[0.8rem] leading-tight shrink-0">· {post.createdAt}</span>
             </div>
+            {showBoostBadge ? (
+              <div className="flex flex-wrap items-center gap-1 mt-1">
+                <span
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
+                  title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
+                >
+                  <TrendingUp className="size-3" aria-hidden />
+                  Impulsionado
+                </span>
+              </div>
+            ) : null}
           </div>
-        </div>
-        <PostOverflowMenu
-          post={post}
-          viewerId={viewerId}
-          profilePinMenu={profilePinMenu}
-          onPin={profilePinMenu ? undefined : onPin}
-          onPostUpdated={onPostUpdated}
-          onPostDeleted={onPostDeleted}
-          onBeforeMenuActionPointerDown={suppressNextCardOpenFromMenu}
-          triggerClassName={styles.menuTrigger}
-        />
-      </CardHeader>
-      <CardContent className={styles.contentBlock}>
-        {showMetaRow ? (
-          <div className={styles.metaRow}>
-            <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
-              Em destaque
-            </span>
+
+          {/* Conteúdo: destaque + texto + tags + mídia */}
+          <div>
+            {showMetaRow ? (
+              <div className={styles.metaRow}>
+                <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
+                  Em destaque
+                </span>
+              </div>
+            ) : null}
+            <p className={cn(styles.content, showMetaRow && "mt-2")}>
+              {post.content}
+            </p>
+            {hasTags ? (
+              <div
+                data-post-ignore-open="true"
+                className="flex flex-wrap gap-1 mt-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {post.tags?.map((tag) => (
+                  <span key={tag} className={styles.pill}>
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            {galleryItems ? (
+              <div
+                data-post-ignore-open="true"
+                className={cn("mt-4 sm:mt-5", mediaBleedClass)}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
+                <PostMediaGallery items={galleryItems} className="mt-0 sm:mt-1" />
+              </div>
+            ) : null}
           </div>
-        ) : null}
-        <p className={cn(styles.content, showMetaRow && "mt-2")}>
-          {post.content}
-        </p>
-        {galleryItems ? (
-          <div
-            data-post-ignore-open="true"
-            className={cn("mt-4 sm:mt-5", mediaBleedClass)}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-          >
-            <PostMediaGallery items={galleryItems} className="mt-0 sm:mt-1" />
-          </div>
-        ) : null}
-        <p className={styles.postMeta}>{post.createdAt}</p>
-        <div className={styles.footer}>
+
+          <div className={styles.footer}>
           <button
             type="button"
             data-post-ignore-open="true"
@@ -399,8 +392,22 @@ function PostCardInner({
               <span className="min-[380px]:hidden">Boost</span>
             </button>
           ) : null}
+          </div>
         </div>
-      </CardContent>
+      </div>
+      {/* Menu absoluto no canto superior direito — não estica a linha do username */}
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
+        <PostOverflowMenu
+          post={post}
+          viewerId={viewerId}
+          profilePinMenu={profilePinMenu}
+          onPin={profilePinMenu ? undefined : onPin}
+          onPostUpdated={onPostUpdated}
+          onPostDeleted={onPostDeleted}
+          onBeforeMenuActionPointerDown={suppressNextCardOpenFromMenu}
+          triggerClassName={styles.menuTrigger}
+        />
+      </div>
     </Card>
   );
 }

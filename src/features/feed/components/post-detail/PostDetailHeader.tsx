@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronLeft, TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +17,8 @@ export interface PostDetailHeaderProps {
   /** Após excluir no detalhe, navegar para esta rota. */
   postDeleteRedirectTo?: string;
   onPostUpdated?: (post: Post) => void;
+  /** Conteúdo renderizado dentro da coluna direita (abaixo do username) */
+  children?: React.ReactNode;
 }
 
 const menuTriggerClass =
@@ -25,6 +28,7 @@ export function PostDetailHeader({
   post,
   postDeleteRedirectTo = "/feed",
   onPostUpdated,
+  children,
 }: PostDetailHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,30 +85,27 @@ export function PostDetailHeader({
             </AvatarFallback>
           </Avatar>
         </Link>
-        <div className="min-w-0 flex-1 flex flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <p className="text-sm font-semibold text-[var(--woody-text)]">{post.author.username}</p>
-            {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
+        <div className="min-w-0 flex-1 pr-8">
+          <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+            <Link
+              to={profilePathForUser(post.author)}
+              className="inline-flex items-baseline gap-1 min-w-0 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
+              aria-label={`Ver perfil de ${post.author.name}`}
+            >
+              <span className="text-[1.2rem] font-semibold text-[var(--woody-text)] truncate">{post.author.username}</span>
+              {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
+            </Link>
+            <span className="text-[var(--woody-muted)] text-[0.8rem] leading-tight shrink-0">· {post.createdAt}</span>
           </div>
-          {/* Tags + Impulsionado — mesma linha, logo abaixo do username */}
-          {((post.tags?.length ?? 0) > 0 || (post.communityBoostActive && post.publicationContext === "community")) ? (
-            <div className="flex flex-wrap items-center gap-1">
-              {post.communityBoostActive && post.publicationContext === "community" ? (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20">
-                  <TrendingUp className="size-3" aria-hidden />
-                  Impulsionado
-                </span>
-              ) : null}
-              {post.tags?.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center rounded-full px-2.5 py-[0.1875rem] text-[0.75rem] font-semibold tracking-[0.01em] bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] ring-1 ring-[rgba(139,195,74,0.28)]"
-                >
-                  #{tag}
-                </span>
-              ))}
+          {(post.communityBoostActive && post.publicationContext === "community") ? (
+            <div className="flex flex-wrap items-center gap-1 mt-1">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20">
+                <TrendingUp className="size-3" aria-hidden />
+                Impulsionado
+              </span>
             </div>
           ) : null}
+          {children}
         </div>
       </div>
     </header>

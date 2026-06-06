@@ -76,14 +76,15 @@ export function PostDetailView({
           post={post}
           postDeleteRedirectTo={postDeleteRedirectTo}
           onPostUpdated={onPostUpdated}
-        />
-        <PostDetailContent post={post} />
-        <PostDetailActions
-          post={post}
-          isMutatingLike={isMutatingLike}
-          onLike={onToggleLike}
-          onComment={() => commentsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-        />
+        >
+          <PostDetailContent post={post} />
+          <PostDetailActions
+            post={post}
+            isMutatingLike={isMutatingLike}
+            onLike={onToggleLike}
+            onComment={() => commentsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          />
+        </PostDetailHeader>
 
         <section
           ref={commentsRef}
