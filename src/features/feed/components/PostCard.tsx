@@ -248,7 +248,7 @@ function PostCardInner({
         </div>
 
         {/* Coluna direita: username + conteúdo completo */}
-        <div className="min-w-0 flex-1 pr-8">
+        <div className="relative min-w-0 flex-1 pr-8">
           <div
             data-post-ignore-open="true"
             className="min-w-0"
@@ -393,20 +393,20 @@ function PostCardInner({
             </button>
           ) : null}
           </div>
+          {/* Menu absoluto no canto superior direito da coluna — alinha com username independente da context bar */}
+          <div className="absolute top-0 right-0 z-10">
+            <PostOverflowMenu
+              post={post}
+              viewerId={viewerId}
+              profilePinMenu={profilePinMenu}
+              onPin={profilePinMenu ? undefined : onPin}
+              onPostUpdated={onPostUpdated}
+              onPostDeleted={onPostDeleted}
+              onBeforeMenuActionPointerDown={suppressNextCardOpenFromMenu}
+              triggerClassName={styles.menuTrigger}
+            />
+          </div>
         </div>
-      </div>
-      {/* Menu absoluto no canto superior direito — não estica a linha do username */}
-      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
-        <PostOverflowMenu
-          post={post}
-          viewerId={viewerId}
-          profilePinMenu={profilePinMenu}
-          onPin={profilePinMenu ? undefined : onPin}
-          onPostUpdated={onPostUpdated}
-          onPostDeleted={onPostDeleted}
-          onBeforeMenuActionPointerDown={suppressNextCardOpenFromMenu}
-          triggerClassName={styles.menuTrigger}
-        />
       </div>
     </Card>
   );
