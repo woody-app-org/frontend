@@ -826,7 +826,7 @@ export function PostComposerForm({
                 vídeo até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} / {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s ·{" "}
                 {content.length}/{POST_COMPOSER_CONTENT_MAX_LENGTH}
                 <br />
-                Para ficar melhor no feed, use fotos em 4:5, 3:4 ou 1:1.
+                Escolha o melhor formato da sua mídia.
               </p>
             )}
             {isModalEmbed ? (
@@ -953,7 +953,7 @@ export function PostComposerForm({
       }}
       imageSrc={cropSrc}
       title="Ajustar enquadramento"
-      description="Para ficar melhor no feed, escolhe 4:5, 3:4 ou 1:1."
+      description="Escolha o melhor formato da sua mídia."
       cropShape="rect"
       layout="wide"
       formatOptions={POST_CROP_FORMATS}

@@ -49,8 +49,7 @@ export function DeletePostConfirmationDialog({
           <DialogDescription className="text-pretty pt-1">
             {preview ? (
               <>
-                Esta ação remove <span className="font-medium text-[var(--woody-text)]/90">“{preview}”</span> do feed.
-                Os comentários deixam de ficar visíveis no mock.
+                Esta ação é irreversível. Você perderá todas as interações no post.
               </>
             ) : (
               <>Esta publicação será removida do feed. Os comentários deixam de ficar visíveis no mock.</>
