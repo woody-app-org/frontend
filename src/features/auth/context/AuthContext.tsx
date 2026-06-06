@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { AuthUser, LoginCredentials, RegisterCredentials } from "../types";
 import {
   bootstrapAuthSession,
@@ -18,24 +18,11 @@ import {
 import { AUTH_REFRESH_TOKEN_KEY, AUTH_STORAGE_KEY, AUTH_TOKEN_KEY } from "../constants";
 import { getStoredRefreshToken, getStoredToken } from "@/lib/api";
 import { SessionBootstrapSplash } from "../components/SessionBootstrapSplash";
+// O contexto é um singleton isolado para sobreviver a recarregamentos HMR do Vite
+// sem recriar o objeto e quebrar o `useContext` em módulos já carregados.
+import { AuthContext, type AuthContextValue } from "./authContextInstance";
 
-interface AuthContextValue {
-  user: AuthUser | null;
-  isAuthenticated: boolean;
-  /** `true` apenas até a primeira validação de sessão (`/users/me`) terminar. */
-  isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<AuthUser>;
-  register: (credentials: RegisterCredentials) => Promise<AuthUser>;
-  logout: () => void;
-  /** Encerra sessão com latência de API mock; preferir no fluxo "Sair" na UI. */
-  logoutAsync: () => Promise<void>;
-  /** Atualiza dados da sessão e o `localStorage` (ex.: nome após editar perfil). */
-  patchUser: (patch: Partial<AuthUser>) => void;
-  /** Re-hidrata o utilizador a partir de `/users/me` (ex.: após aprovação ou 403 de verificação). */
-  refreshUser: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null);
+export type { AuthContextValue };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);

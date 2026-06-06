@@ -277,6 +277,8 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
     bio: asString(raw.bio ?? ""),
     location: raw.location ?? undefined,
     profession: raw.profession ?? undefined,
+    genderIdentity: raw.genderIdentity ?? undefined,
+    sexualOrientation: raw.sexualOrientation ?? undefined,
     socialLinks,
     interests,
     suggestions: Array.isArray(raw.suggestions) ? raw.suggestions : [],

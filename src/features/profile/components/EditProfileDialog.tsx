@@ -12,6 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { InterestTag, UserProfile } from "../types";
 import { updateProfile, validateProfileUpdatePayload } from "../services/profile.service";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -100,6 +107,8 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const [pronouns, setPronouns] = useState(profile.pronouns ?? "");
   const [location, setLocation] = useState(profile.location ?? "");
   const [profession, setProfession] = useState(profile.profession ?? "");
+  const [genderIdentity, setGenderIdentity] = useState(profile.genderIdentity ?? "");
+  const [sexualOrientation, setSexualOrientation] = useState(profile.sexualOrientation ?? "");
   const [interestsRaw, setInterestsRaw] = useState(interestsToField(profile.interests));
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl);
   const [bannerUrl, setBannerUrl] = useState<string | null>(profile.bannerUrl);
@@ -175,6 +184,8 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     setPronouns(p.pronouns ?? "");
     setLocation(p.location ?? "");
     setProfession(p.profession ?? "");
+    setGenderIdentity(p.genderIdentity ?? "");
+    setSexualOrientation(p.sexualOrientation ?? "");
     setInterestsRaw(interestsToField(p.interests));
     setAvatarUrl(p.avatarUrl);
     setBannerUrl(p.bannerUrl);
@@ -325,6 +336,8 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
         pronouns: pronouns.trim() || undefined,
         location: location.trim() || undefined,
         profession: profession.trim() || undefined,
+        genderIdentity: genderIdentity.trim() || undefined,
+        sexualOrientation: sexualOrientation.trim() || undefined,
         avatarUrl,
         bannerUrl,
         interests,
@@ -356,6 +369,8 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       pronouns,
       location,
       profession,
+      genderIdentity,
+      sexualOrientation,
       interestsRaw,
       avatarUrl,
       bannerUrl,
@@ -598,6 +613,61 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                 className={inputClass}
                 placeholder="Cidade, UF"
               />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--woody-text)]">
+                Identidade de gênero
+              </label>
+              <Select
+                value={genderIdentity || "none"}
+                onValueChange={(v) => setGenderIdentity(v === "none" ? "" : v)}
+                disabled={isSubmitting}
+                modal={false}
+              >
+                <SelectTrigger
+                  className={cn(
+                    inputClass,
+                    "h-10 w-full",
+                    "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20"
+                  )}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[200]">
+                  <SelectItem value="none">Prefiro não informar</SelectItem>
+                  <SelectItem value="Mulher cis">Mulher cis</SelectItem>
+                  <SelectItem value="Mulher trans">Mulher trans</SelectItem>
+                  <SelectItem value="Travesti">Travesti</SelectItem>
+                  <SelectItem value="Não binária (espectro feminino)">Não binária (espectro feminino)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--woody-text)]">
+                Orientação sexual
+              </label>
+              <Select
+                value={sexualOrientation || "none"}
+                onValueChange={(v) => setSexualOrientation(v === "none" ? "" : v)}
+                disabled={isSubmitting}
+              >
+                <SelectTrigger
+                  className={cn(
+                    inputClass,
+                    "h-10 w-full",
+                    "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20"
+                  )}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[200]">
+                  <SelectItem value="none">Prefiro não informar</SelectItem>
+                  <SelectItem value="Lésbica">Lésbica</SelectItem>
+                  <SelectItem value="Bi">Bi</SelectItem>
+                  <SelectItem value="Pan">Pan</SelectItem>
+                  <SelectItem value="Hétero">Hétero</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

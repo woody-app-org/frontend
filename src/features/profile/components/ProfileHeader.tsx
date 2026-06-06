@@ -304,6 +304,22 @@ export function ProfileHeader({
                     <span className={styles.detailText}>{profile.location}</span>
                   </span>
                 ) : null}
+                {profile.genderIdentity ? (
+                  <span className={styles.detailItem}>
+                    <span className={styles.detailIconWrap} aria-hidden>
+                      <Sparkles />
+                    </span>
+                    <span className={styles.detailText}>{profile.genderIdentity}</span>
+                  </span>
+                ) : null}
+                {profile.sexualOrientation ? (
+                  <span className={styles.detailItem}>
+                    <span className={styles.detailIconWrap} aria-hidden>
+                      <Heart />
+                    </span>
+                    <span className={styles.detailText}>{profile.sexualOrientation}</span>
+                  </span>
+                ) : null}
                 {profile.username ? (
                   <span
                     className={styles.detailItem}

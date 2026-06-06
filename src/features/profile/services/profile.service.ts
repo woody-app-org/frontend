@@ -22,6 +22,12 @@ export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { o
   const profession = payload.profession?.trim() ?? "";
   if (profession.length > 60) return { ok: false, error: "Título ou profissão muito longos." };
 
+  const genderIdentity = payload.genderIdentity?.trim() ?? "";
+  if (genderIdentity.length > 60) return { ok: false, error: "Identidade de gênero muito longa." };
+
+  const sexualOrientation = payload.sexualOrientation?.trim() ?? "";
+  if (sexualOrientation.length > 60) return { ok: false, error: "Orientação sexual muito longa." };
+
   const interestList = (payload.interests ?? []).map((t) => ({ ...t, label: t.label.trim() })).filter((t) => t.label.length > 0);
   if (interestList.length > 24) {
     return { ok: false, error: "Muitos interesses (máx. 24)." };
@@ -74,6 +80,8 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
       pronouns: payload.pronouns?.trim() || undefined,
       location: payload.location?.trim() || undefined,
       profession: payload.profession?.trim() || undefined,
+      genderIdentity: payload.genderIdentity?.trim() || undefined,
+      sexualOrientation: payload.sexualOrientation?.trim() || undefined,
       avatarUrl: payload.avatarUrl,
       bannerUrl: payload.bannerUrl,
       interests: payload.interests?.map((i) => ({ id: i.id, label: i.label.trim() })),
@@ -111,6 +119,8 @@ export async function updateMyAvatarFromUploadedUrl(
       pronouns: p.pronouns,
       location: p.location,
       profession: p.profession,
+      genderIdentity: p.genderIdentity,
+      sexualOrientation: p.sexualOrientation,
       avatarUrl: newAvatarUrl,
       bannerUrl: p.bannerUrl,
       interests: p.interests,

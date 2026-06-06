@@ -432,6 +432,18 @@ input.woody-auth-input:autofill:focus {
   aspect-ratio: 9 / 16;
 }
 
+/* Esconde o botão nativo de revelar senha do Edge/IE e do Chrome,
+   pois o app usa ícone próprio em todos os campos de password. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button {
+  display: none !important;
+  pointer-events: none;
+}
+
 /* Toasts (Sonner) — reduzir movimento sem remover feedback */
 @media (prefers-reduced-motion: reduce) {
   [data-sonner-toast],

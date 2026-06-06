@@ -46,6 +46,10 @@ export interface UserProfile {
   location?: string;
   /** Título ou profissão (campo do perfil; não é o papel da conta na plataforma). */
   profession?: string;
+  /** Identidade de gênero (valor da lista curada). */
+  genderIdentity?: string;
+  /** Orientação sexual (valor da lista curada). */
+  sexualOrientation?: string;
   socialLinks: SocialLink[];
   interests: InterestTag[];
   suggestions: ProfileSuggestion[];
@@ -70,6 +74,8 @@ export interface ProfileUpdatePayload {
   pronouns?: string;
   location?: string;
   profession?: string;
+  genderIdentity?: string;
+  sexualOrientation?: string;
   avatarUrl?: string | null;
   bannerUrl?: string | null;
   interests?: InterestTag[];
