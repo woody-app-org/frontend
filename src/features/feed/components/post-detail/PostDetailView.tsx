@@ -60,9 +60,6 @@ export function PostDetailView({
   const [modalParentId, setModalParentId] = useState<string | null>(null);
   const [modalContext, setModalContext] = useState<CommentComposerModalContext | undefined>(undefined);
 
-  // Último commentId cujas replies precisam expandir após submit do modal
-  const [forceExpandCommentId, setForceExpandCommentId] = useState<string | null>(null);
-
   const openCommentModal = useCallback(() => {
     setModalMode("comment");
     setModalParentId(null);
@@ -81,12 +78,12 @@ export function PostDetailView({
     async (body: string, gif?: CommentGifDraft | null) => {
       if (modalMode === "reply" && modalParentId) {
         const ok = await onReplySubmit(body, modalParentId, gif);
-        if (ok) setForceExpandCommentId(modalParentId);
+        if (ok) void onReloadComments?.();
         return ok;
       }
       return onCreateComment(body, gif);
     },
-    [modalMode, modalParentId, onCreateComment, onReplySubmit]
+    [modalMode, modalParentId, onCreateComment, onReplySubmit, onReloadComments]
   );
 
   useEffect(() => {
@@ -171,7 +168,6 @@ export function PostDetailView({
               isCreatingComment={isCreatingComment}
               onToggleCommentLike={onToggleCommentLike}
               commentLikePendingIds={commentLikePendingIds}
-              forceExpandCommentId={forceExpandCommentId}
             />
           </section>
         </div>

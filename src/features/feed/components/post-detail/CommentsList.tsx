@@ -35,8 +35,6 @@ export interface CommentsListProps {
   isCreatingComment: boolean;
   onToggleCommentLike: (commentId: string) => void;
   commentLikePendingIds: ReadonlySet<string>;
-  /** Quando definido, força a expansão das replies deste comentário. */
-  forceExpandCommentId?: string | null;
 }
 
 export function CommentsList({
@@ -51,7 +49,6 @@ export function CommentsList({
   isCreatingComment,
   onToggleCommentLike,
   commentLikePendingIds,
-  forceExpandCommentId,
 }: CommentsListProps) {
   if (error) {
     return (
@@ -92,7 +89,6 @@ export function CommentsList({
       isCreatingComment={isCreatingComment}
       onToggleCommentLike={onToggleCommentLike}
       commentLikePendingIds={commentLikePendingIds}
-      forceExpandCommentId={forceExpandCommentId}
       className={className}
     />
   );

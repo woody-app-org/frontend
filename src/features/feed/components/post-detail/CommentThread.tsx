@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { Comment, Post } from "@/domain/types";
 import { buildCommentThreadTree } from "@/domain/lib/commentThreads";
 import { cn } from "@/lib/utils";
@@ -16,8 +16,6 @@ export interface CommentThreadProps {
   className?: string;
   onToggleCommentLike: (commentId: string) => void;
   commentLikePendingIds: ReadonlySet<string>;
-  /** Quando definido, força a expansão das replies deste comentário. */
-  forceExpandCommentId?: string | null;
 }
 
 export function CommentThread({
@@ -30,7 +28,6 @@ export function CommentThread({
   className,
   onToggleCommentLike,
   commentLikePendingIds,
-  forceExpandCommentId,
 }: CommentThreadProps) {
   const viewerId = useViewerId();
   const tree = useMemo(() => buildCommentThreadTree(postId, comments), [postId, comments]);
@@ -54,11 +51,6 @@ export function CommentThread({
       return next;
     });
   }, []);
-
-  // Expande replies quando o modal de resposta teve sucesso
-  useEffect(() => {
-    if (forceExpandCommentId) ensureRepliesExpanded(forceExpandCommentId);
-  }, [forceExpandCommentId, ensureRepliesExpanded]);
 
   if (!tree.length) return null;
 

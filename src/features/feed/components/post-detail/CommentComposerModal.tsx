@@ -45,10 +45,11 @@ export function CommentComposerModal({
     return () => window.clearTimeout(t);
   }, [open]);
 
-  // Limpa o texto quando o modal fecha
-  useEffect(() => {
-    if (!open) setBody("");
-  }, [open]);
+  // Reset + fechar — usado tanto no X quanto no onOpenChange do Dialog
+  const handleClose = () => {
+    setBody("");
+    onClose();
+  };
 
   const handleSubmit = async (payload: { text: string; gif: CommentGifDraft | null }) => {
     const ok = await onSubmit(payload.text, payload.gif);
@@ -65,7 +66,7 @@ export function CommentComposerModal({
   const viewerInitials = (viewer?.username ?? viewer?.name ?? "?").slice(0, 2).toUpperCase();
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
       <DialogContent
         className="max-w-[min(560px,calc(100vw-1rem))] p-0 gap-0 overflow-hidden"
         overlayClassName="bg-black/60 backdrop-blur-[3px]"
@@ -81,7 +82,7 @@ export function CommentComposerModal({
               type="button"
               className="rounded-full p-1.5 text-[var(--woody-muted)] hover:bg-[var(--woody-nav)]/10 hover:text-[var(--woody-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
               aria-label="Fechar"
-              onClick={onClose}
+              onClick={handleClose}
             >
               <X className="size-4" aria-hidden />
             </button>
