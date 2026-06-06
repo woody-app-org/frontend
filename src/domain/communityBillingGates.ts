@@ -6,15 +6,21 @@ import type { CommunityBillingPlan, CommunityBillingState, CommunityMemberRole, 
 
 /** Normaliza valores da API para o union usado no cliente. */
 export function normalizeCommunityBillingPlan(v: unknown): CommunityBillingPlan {
+  if (v === "max") return "max";
   return v === "premium" ? "premium" : "free";
 }
 
-/** Indica se a comunidade tem benefícios premium ativos (campo `billing.effectivePlan` da API). */
+/** Indica se a comunidade tem benefícios premium ativos — Premium ou Max (campo `billing.effectivePlan` da API). */
 export function canAccessCommunityPremiumFeatures(billing?: CommunityBillingState): boolean {
-  return billing?.effectivePlan === "premium";
+  return billing?.effectivePlan === "premium" || billing?.effectivePlan === "max";
 }
 
-/** Analytics: exige staff na comunidade + plano premium ativo (paridade com o backend). */
+/** Indica se a comunidade tem o plano Max ativo. */
+export function hasCommunityMaxPlan(billing?: CommunityBillingState): boolean {
+  return billing?.effectivePlan === "max";
+}
+
+/** Analytics: exige staff na comunidade + plano premium ou Max ativo (paridade com o backend). */
 export function canAccessCommunityAnalytics(
   membershipRole: CommunityMemberRole | null | undefined,
   billing?: CommunityBillingState
@@ -31,11 +37,20 @@ export function canBoostCommunityPost(
   return canAccessCommunityAnalytics(membershipRole, billing);
 }
 
+/** Gestão avançada Max: staff + plano Max ativo. */
+export function canAccessCommunityMaxFeatures(
+  membershipRole: CommunityMemberRole | null | undefined,
+  billing?: CommunityBillingState
+): boolean {
+  const staff = membershipRole === "owner" || membershipRole === "admin";
+  return staff && hasCommunityMaxPlan(billing);
+}
+
 /** Quando só existe o resumo embutido no post (feed). */
 export function canBoostCommunityPostFromPreview(
   membershipRole: CommunityMemberRole | null | undefined,
   preview?: PostCommunityPreview
 ): boolean {
   const staff = membershipRole === "owner" || membershipRole === "admin";
-  return staff && preview?.communityPlan === "premium";
+  return staff && (preview?.communityPlan === "premium" || preview?.communityPlan === "max");
 }

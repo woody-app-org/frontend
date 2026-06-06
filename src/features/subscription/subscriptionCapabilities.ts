@@ -9,12 +9,14 @@
 import type { AuthUserSubscription, EffectiveSubscriptionPlan } from "./types";
 
 function normalizePlan(v: unknown): EffectiveSubscriptionPlan {
+  if (v === "max") return "max";
   return v === "pro" ? "pro" : "free";
 }
 
 /** A partir do objeto de assinatura devolvido pela API (ou sessão persistida). */
 export function isProUser(subscription?: AuthUserSubscription | null): boolean {
-  return normalizePlan(subscription?.effectivePlan) === "pro";
+  const plan = normalizePlan(subscription?.effectivePlan);
+  return plan === "pro" || plan === "max";
 }
 
 export function canCreateCommunity(subscription?: AuthUserSubscription | null): boolean {
@@ -24,6 +26,21 @@ export function canCreateCommunity(subscription?: AuthUserSubscription | null): 
 export function shouldShowProBadge(subscription?: AuthUserSubscription | null): boolean {
   if (subscription?.showProBadge === true) return true;
   return isProUser(subscription);
+}
+
+/** Retorna `"max"`, `"pro"` ou `null` para renderizar o badge correto. */
+export function getSubscriptionBadgeTier(
+  subscription?: AuthUserSubscription | null,
+): "pro" | "max" | null {
+  if (subscription?.subscriptionBadge === "max") return "max";
+  if (subscription?.subscriptionBadge === "pro") return "pro";
+  if (subscription?.showProBadge === true)
+    return subscription?.billingPlan === "max" ? "max" : "pro";
+  return isProUser(subscription)
+    ? subscription?.billingPlan === "max"
+      ? "max"
+      : "pro"
+    : null;
 }
 
 /** Extensível: hoje equivale a Pro; futuras flags podem combinar com `effectivePlan`. */

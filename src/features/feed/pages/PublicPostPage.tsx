@@ -73,7 +73,7 @@ export function PublicPostPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-1">
                     <span className="font-semibold text-[var(--woody-text)]">{post.author.username}</span>
-                    {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
+                    {post.author.subscriptionBadge ? <ProBadge variant="inline" tier={post.author.subscriptionBadge} /> : null}
                   </div>
                 </div>
               </div>

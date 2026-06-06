@@ -33,7 +33,7 @@ export function RightPanelProfileCard({ user }: RightPanelProfileCardProps) {
   const bannerLoaded = bannerKey !== "" && loadedBannerKey === bannerKey;
 
   const displayName = user.name?.trim() || user.username;
-  const showProBadge = user.subscription?.showProBadge ?? false;
+  const badgeTier = user.subscription?.subscriptionBadge ?? null;
 
   return (
     <article
@@ -100,7 +100,7 @@ export function RightPanelProfileCard({ user }: RightPanelProfileCardProps) {
             <span className="line-clamp-1 break-all text-[1rem] font-bold text-[var(--woody-text)] underline-offset-2 group-hover:underline decoration-[var(--woody-nav)]/60">
               {displayName}
             </span>
-            {showProBadge && <ProBadge variant="inline" />}
+            {badgeTier && <ProBadge variant="inline" tier={badgeTier} />}
           </div>
           <p className="mt-0.5 text-[0.8125rem] text-[var(--woody-muted)]">
             {user.username}

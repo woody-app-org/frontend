@@ -85,7 +85,7 @@ export function CommentItem({
               >
                 {author.username}
               </Link>
-              {author.showProBadge ? <ProBadge variant="inline" /> : null}
+              {author.subscriptionBadge ? <ProBadge variant="inline" tier={author.subscriptionBadge} /> : null}
             </span>
             <span
               className={cn(

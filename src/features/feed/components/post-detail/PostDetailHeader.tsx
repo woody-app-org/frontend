@@ -93,7 +93,7 @@ export function PostDetailHeader({
               aria-label={`Ver perfil de ${post.author.name}`}
             >
               <span className="text-[1.2rem] font-semibold text-[var(--woody-text)] truncate">{post.author.username}</span>
-              {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
+              {post.author.subscriptionBadge ? <ProBadge variant="inline" tier={post.author.subscriptionBadge} /> : null}
             </Link>
             <span className="text-[var(--woody-muted)] text-[0.8rem] leading-tight shrink-0">· {post.createdAt}</span>
           </div>

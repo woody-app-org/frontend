@@ -77,7 +77,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
           <div className="min-w-0 text-left">
             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
               <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
-              {user.showProBadge ? <ProBadge variant="inline" /> : null}
+              {user.subscriptionBadge ? <ProBadge variant="inline" tier={user.subscriptionBadge} /> : null}
             </div>
             <p className="truncate text-xs text-[var(--woody-muted)]">{user.username}</p>
             <span

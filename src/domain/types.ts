@@ -8,7 +8,7 @@ export type CommunityCategory = "bemestar" | "carreira" | "cultura" | "seguranca
 export type CommunityVisibility = "public" | "private";
 
 /** Plano de comunidade no catálogo / efetivo após regras de período (API `billing.*`). */
-export type CommunityBillingPlan = "free" | "premium";
+export type CommunityBillingPlan = "free" | "premium" | "max";
 
 /**
  * Estado de cobrança **desta comunidade** (Stripe / `billing.*` na API).
@@ -39,6 +39,8 @@ export interface CommunityPremiumCapabilities {
   canAccessCommunityAnalytics: boolean;
   /** Staff + espaço premium (impulsionamento). */
   canBoostCommunityPosts: boolean;
+  /** Staff + espaço Max (gestão avançada: moderação em massa, relatórios, ferramentas de crescimento). */
+  canAccessCommunityMaxFeatures: boolean;
 }
 
 /** Papéis dentro da comunidade (criadora = owner). */
@@ -63,6 +65,8 @@ export interface User {
   pronouns?: string;
   /** Benefício Pro visível em posts/comentários (API `showProBadge`). */
   showProBadge?: boolean;
+  /** Tier do badge de assinatura: `null` = free, `"pro"` = Pro, `"max"` = Max (API `subscriptionBadge`). */
+  subscriptionBadge?: "pro" | "max" | null;
   /** Stories ativos nas últimas 24h (API `hasActiveStories`). */
   hasActiveStories?: boolean;
 }

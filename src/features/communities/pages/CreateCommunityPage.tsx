@@ -11,6 +11,7 @@ import { useProCheckout } from "@/features/subscription/hooks/useProCheckout";
 import { ProPlanCheckoutActions } from "@/features/subscription/components/ProPlanCheckoutActions";
 import {
   createCommunity,
+  CommunityLimitReachedError,
   ProSubscriptionRequiredError,
   validateCommunityUpdatePayload,
 } from "../services/community.service";
@@ -73,7 +74,9 @@ export function CreateCommunityPage() {
         showSuccessToast("Comunidade criada.", { id: `woody-community-created-${created.id}` });
         navigate(`/communities/${encodeURIComponent(created.slug)}`, { replace: true });
       } catch (err) {
-        if (err instanceof ProSubscriptionRequiredError) {
+        if (err instanceof CommunityLimitReachedError) {
+          setSubmitError(err.message);
+        } else if (err instanceof ProSubscriptionRequiredError) {
           setSubmitError(err.message);
         } else if (err instanceof Error) {
           setSubmitError(err.message);

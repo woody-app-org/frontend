@@ -117,6 +117,14 @@ export class ProSubscriptionRequiredError extends Error {
   }
 }
 
+export class CommunityLimitReachedError extends Error {
+  readonly code = "community_limit_reached" as const;
+  constructor(message?: string) {
+    super(message ?? "O plano Pro permite criar apenas 1 comunidade.");
+    this.name = "CommunityLimitReachedError";
+  }
+}
+
 export async function fetchAllCommunities(): Promise<Community[]> {
   const { data } = await api.get("/communities");
   return (data as unknown[]).map((c) => mapCommunityFromApi(c as Record<string, unknown>));
@@ -152,6 +160,9 @@ export async function createCommunity(payload: CreateCommunityPayload): Promise<
       const body = e.response?.data as { code?: string; error?: string } | undefined;
       if (body?.code === "pro_required") {
         throw new ProSubscriptionRequiredError(typeof body.error === "string" ? body.error : undefined);
+      }
+      if (body?.code === "community_limit_reached") {
+        throw new CommunityLimitReachedError(typeof body.error === "string" ? body.error : undefined);
       }
     }
     throw new Error(getApiErrorMessage(e, "Não foi possível criar a comunidade."));

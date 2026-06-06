@@ -279,7 +279,7 @@ export function ProfileHeader({
             <div className={styles.nameBlock}>
               <div className="flex flex-wrap items-baseline gap-1.5">
                 <h1 className={styles.name}>{profile.name}</h1>
-                {profile.showProBadge ? <ProBadge variant="profile" /> : null}
+                {profile.showProBadge ? <ProBadge variant="profile" tier={profile.subscriptionBadge ?? "pro"} /> : null}
                 {profile.pronouns && (
                   <>
                     <span className={styles.pronouns}>•</span>
