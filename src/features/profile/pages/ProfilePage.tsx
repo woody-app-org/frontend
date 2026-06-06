@@ -24,7 +24,6 @@ import { dispatchSocialGraphChanged, dispatchBlockRelationshipChanged } from "@/
 import { showActionErrorToast, showSuccessToast } from "@/lib/toast/woodyToast";
 import { blockUser } from "@/features/users/services/userBlock.service";
 import { BlockUserConfirmationDialog } from "@/features/users/components/BlockUserConfirmationDialog";
-import { BlockedUsersDialog } from "@/features/users/components/BlockedUsersDialog";
 import {
   StoryComposerModal,
   StoryViewerModal,
@@ -83,7 +82,6 @@ function ProfilePageInner() {
   const [followListsRevision, setFollowListsRevision] = useState(0);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockPending, setBlockPending] = useState(false);
-  const [blockedUsersOpen, setBlockedUsersOpen] = useState(false);
   const {
     profile,
     pinnedPosts,
@@ -233,7 +231,6 @@ function ProfilePageInner() {
               }
               onAddStory={isOwnProfile ? () => setStoryComposerOpen(true) : undefined}
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
-              onOpenBlockedUsers={isOwnProfile ? () => setBlockedUsersOpen(true) : undefined}
               onBlockUser={
                 !isOwnProfile && isAuthenticated && profile
                   ? () => setBlockDialogOpen(true)
@@ -299,10 +296,6 @@ function ProfilePageInner() {
                 onConfirm={handleConfirmBlock}
               />
             )}
-            {isOwnProfile ? (
-              <BlockedUsersDialog open={blockedUsersOpen} onOpenChange={setBlockedUsersOpen} />
-            ) : null}
-
             <div
               className={cn(
                 "mb-4 overflow-x-auto border-b border-[var(--woody-divider)]/90 bg-transparent",

@@ -328,7 +328,7 @@ export function ConversationsPage() {
               selectedId={selectedId}
               onSelect={openConversation}
               loading={loadingLists}
-              emptyLabel="Ainda não tens conversas aceites."
+              emptyLabel="Não há conversas ativas."
             />
 
             {outgoingPending.length > 0 ? (

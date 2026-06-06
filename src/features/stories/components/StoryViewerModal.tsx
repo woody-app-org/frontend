@@ -7,7 +7,7 @@
 } from "react";
 import { Link } from "react-router-dom";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Music, Volume2, VolumeX, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import { formatRelativeTimeUtc } from "@/lib/formatRelativeTimeUtc";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { usePrefersReducedMotion } from "@/features/landing/motion/usePrefersReducedMotion";
-import type { Story } from "../types";
+import type { Story, StoryMusic } from "../types";
 import {
   filterActiveStories,
   isSameUserId,
@@ -65,6 +65,9 @@ export function StoryViewerModal({
   const markedViewRef = useRef<Set<string>>(new Set());
   const staticTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const staticStartedRef = useRef(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioBlocked, setAudioBlocked] = useState(false);
+  const [muted, setMuted] = useState(false);
 
   const currentStory = stories[currentIndex] ?? null;
   const isPaused = paused || holding || menuBlocked;
@@ -219,10 +222,14 @@ export function StoryViewerModal({
     if (currentStory.mediaType === "video") return;
 
     staticStartedRef.current = performance.now();
+    const music = currentStory.music;
+    const durationMs = music
+      ? Math.max(STORY_STATIC_DURATION_MS, (30 - (music.startTime ?? 0)) * 1000)
+      : STORY_STATIC_DURATION_MS;
     const tickMs = reduceMotion ? 120 : 50;
     staticTimerRef.current = setInterval(() => {
       const elapsed = performance.now() - staticStartedRef.current;
-      const p = Math.min(1, elapsed / STORY_STATIC_DURATION_MS);
+      const p = Math.min(1, elapsed / durationMs);
       setSegmentProgress(p);
       if (p >= 1) advanceStoryRef.current();
     }, tickMs);
@@ -256,6 +263,47 @@ export function StoryViewerModal({
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
   }, [open]);
+
+  // Gestão de áudio da música — gerida no modal para ter o z-index correto no badge
+  useEffect(() => {
+    const music = currentStory?.music;
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    setAudioBlocked(false);
+    setMuted(false);
+
+    if (!music?.previewUrl || !open) return;
+
+    const audio = new Audio(music.previewUrl);
+    audio.currentTime = music.startTime ?? 0;
+    audio.muted = false;
+    audioRef.current = audio;
+
+    if (!isPaused) {
+      audio.play().catch(() => setAudioBlocked(true));
+    }
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStory?.id, currentStory?.music?.previewUrl, open]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isPaused) {
+      audio.pause();
+    } else {
+      audio.play().catch(() => setAudioBlocked(true));
+    }
+  }, [isPaused]);
 
   const handleTapZone = (side: "left" | "right") => (e: ReactMouseEvent) => {
     e.preventDefault();
@@ -319,7 +367,7 @@ export function StoryViewerModal({
               })}
             </div>
 
-            <header className="relative z-20 flex items-center gap-3 px-3 pb-2 pt-10 sm:px-4 sm:pt-11">
+            <header className="relative z-20 flex items-center gap-3 px-3 pb-2 pt-5 sm:px-4 sm:pt-6">
               {author ? (
                 <Link
                   to={profilePathForUser(author)}
@@ -454,10 +502,72 @@ export function StoryViewerModal({
               ) : null}
             </div>
 
-            <div className="pointer-events-none h-[max(0.5rem,env(safe-area-inset-bottom))] shrink-0" />
+            {currentStory?.music ? (
+              <StoryMusicBar
+                music={currentStory.music}
+                audioBlocked={audioBlocked}
+                muted={muted}
+                onToggleMute={() => {
+                  const audio = audioRef.current;
+                  if (audioBlocked) {
+                    audio?.play().catch(() => undefined);
+                    setAudioBlocked(false);
+                    setMuted(false);
+                  } else {
+                    const next = !muted;
+                    if (audio) audio.muted = next;
+                    setMuted(next);
+                  }
+                }}
+              />
+            ) : null}
+
+            <div className="pointer-events-none h-[env(safe-area-inset-bottom)] shrink-0" />
           </>
         ) : null}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function StoryMusicBar({
+  music,
+  audioBlocked,
+  muted,
+  onToggleMute,
+}: {
+  music: StoryMusic;
+  audioBlocked: boolean;
+  muted: boolean;
+  onToggleMute: () => void;
+}) {
+  const silenced = audioBlocked || muted;
+  return (
+    <div className="flex shrink-0 items-center gap-2 border-t border-white/10 bg-black/60 px-3 py-1 backdrop-blur-sm">
+      {music.coverUrl ? (
+        <img src={music.coverUrl} alt="" className="size-6 shrink-0 rounded object-cover" />
+      ) : (
+        <Music className="size-3.5 shrink-0 text-white/60" aria-hidden />
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[11px] font-semibold leading-tight text-white">{music.title}</p>
+        <p className="truncate text-[10px] leading-tight text-white/60">{music.artist}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onToggleMute}
+        className={cn(
+          "flex size-7 shrink-0 items-center justify-center rounded-full transition-colors",
+          silenced ? "bg-white/15 text-white hover:bg-white/25" : "text-white/70 hover:text-white"
+        )}
+        aria-label={silenced ? "Ativar som" : "Mutar"}
+      >
+        {silenced ? (
+          <VolumeX className="size-3.5" aria-hidden />
+        ) : (
+          <Volume2 className="size-3.5 animate-pulse" aria-hidden />
+        )}
+      </button>
+    </div>
   );
 }

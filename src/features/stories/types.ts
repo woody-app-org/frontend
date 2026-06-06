@@ -2,6 +2,16 @@ import type { User } from "@/domain/types";
 
 export type StoryMediaType = "image" | "video" | "text";
 
+export interface StoryMusic {
+  provider: string;
+  trackId: string;
+  title: string;
+  artist: string;
+  previewUrl: string;
+  coverUrl: string;
+  startTime: number;
+}
+
 /** Entrada da barra horizontal de stories no feed (`GET /stories/feed`). */
 export interface StoryFeedItem {
   userId: string;
@@ -27,4 +37,5 @@ export interface Story {
   expiresAt: string;
   viewCount: number;
   hasViewedByMe: boolean;
+  music: StoryMusic | null;
 }

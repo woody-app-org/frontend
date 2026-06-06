@@ -48,9 +48,6 @@ function ConversationStartHintsLoaded() {
   return (
     <section className="rounded-2xl border border-dashed border-[var(--woody-divider)] bg-[var(--woody-bg)]/70 p-4">
       <h2 className={cn(woodySection.eyebrow, "mb-1 px-0.5")}>Começar a conversar</h2>
-      <p className="mb-3 text-sm leading-snug text-[var(--woody-muted)]">
-        Abre uma conversa com alguém que segues ou visita o perfil e toca em <strong className="font-medium text-[var(--woody-text)]">Mensagem</strong>.
-      </p>
 
       {phase === "loading" ? (
         <p className="text-sm text-[var(--woody-muted)]">Carregando quem segues…</p>

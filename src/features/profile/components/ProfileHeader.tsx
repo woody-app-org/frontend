@@ -11,7 +11,6 @@ import {
   Plus,
   ShieldBan,
   Sparkles,
-  UserX,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { StoryRing } from "@/components/ui/StoryRing";
@@ -88,8 +87,6 @@ export interface ProfileHeaderProps {
   onViewStories?: () => void;
   /** Abrir compositor de story (próprio perfil). */
   onAddStory?: () => void;
-  /** Lista de usuárias bloqueadas (próprio perfil). */
-  onOpenBlockedUsers?: () => void;
   /** Iniciar fluxo de bloqueio (perfil alheio autenticado). */
   onBlockUser?: () => void;
 }
@@ -103,7 +100,6 @@ export function ProfileHeader({
   followStats,
   onViewStories,
   onAddStory,
-  onOpenBlockedUsers,
   onBlockUser,
 }: ProfileHeaderProps) {
   const resolvedBannerUrl = useMemo(
@@ -213,31 +209,6 @@ export function ProfileHeader({
                 <Pencil className="size-4 text-[var(--woody-nav)]" />
                 Editar perfil
               </Button>
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className={cn(styles.menuBtn, woodyFocus.ring)}
-                    aria-label="Mais ações do perfil"
-                  >
-                    <MoreHorizontal className="size-4" aria-hidden />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[11rem] border-[var(--woody-accent)]/20 bg-[var(--woody-card)]">
-                  <DropdownMenuItem onSelect={onEditProfile} className="cursor-pointer">
-                    <Pencil className="size-4 text-[var(--woody-nav)]" aria-hidden />
-                    Editar perfil
-                  </DropdownMenuItem>
-                  {onOpenBlockedUsers ? (
-                    <DropdownMenuItem onSelect={onOpenBlockedUsers} className="cursor-pointer">
-                      <UserX className="size-4 text-[var(--woody-nav)]" aria-hidden />
-                      Usuárias bloqueadas
-                    </DropdownMenuItem>
-                  ) : null}
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           ) : !isOwnProfile && (followSlot || onBlockUser) ? (
             <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>

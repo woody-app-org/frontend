@@ -35,7 +35,7 @@ function parseTagsRaw(raw: string): string[] {
 export function CreateCommunityPage() {
   const navigate = useNavigate();
   const formId = useId();
-  const { canCreateCommunity } = useSubscriptionCapabilities();
+  const { canCreateCommunity, canSetOwnedCommunityPrivate } = useSubscriptionCapabilities();
   const { startCheckout, loadingCode, error } = useProCheckout();
 
   const [name, setName] = useState("");
@@ -174,7 +174,12 @@ export function CreateCommunityPage() {
                 onTagsChange={setTagsRaw}
                 onRulesChange={setRules}
               />
-              <CommunityAccessSection formId={formId} visibility={visibility} onVisibilityChange={setVisibility} />
+              <CommunityAccessSection
+                formId={formId}
+                visibility={visibility}
+                onVisibilityChange={setVisibility}
+                canSetPrivate={canSetOwnedCommunityPrivate}
+              />
 
               {submitError ? (
                 <p className="rounded-lg border border-[var(--woody-accent)]/20 bg-[var(--woody-nav)]/5 px-3 py-2 text-sm text-[var(--woody-text)]">

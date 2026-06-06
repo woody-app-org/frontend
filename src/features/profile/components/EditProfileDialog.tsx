@@ -34,7 +34,7 @@ const inputClass =
   "rounded-xl border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] " +
   "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20 shadow-none";
 
-const fileMaxBytes = 2_500_000;
+const fileMaxBytes = 10 * 1024 * 1024;
 
 const formAlertClass =
   "flex gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm font-medium text-red-800 dark:text-red-200";

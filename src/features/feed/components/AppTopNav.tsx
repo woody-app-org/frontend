@@ -71,7 +71,7 @@ export function AppTopNav({
         >
           <NavLink to="/feed" end className={({ isActive }) => (isActive ? navActive : navIdle)}>
             <Home className="size-[1.05rem] shrink-0 stroke-[2]" aria-hidden />
-            Início
+            Feed
           </NavLink>
           <NavLink to="/communities" className={({ isActive }) => (isActive ? navActive : navIdle)}>
             <UsersRound className="size-[1.05rem] shrink-0 stroke-[2]" aria-hidden />

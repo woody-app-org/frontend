@@ -176,10 +176,10 @@ export function CommentForm({
           onFocus={() => onTextareaFocus?.()}
           rows={rows}
           className={cn(
-            "min-h-[88px] resize-y rounded-xl border-[var(--woody-accent)]/18 bg-[var(--woody-card)]",
+            "min-h-[88px] resize-none rounded-xl border-transparent bg-transparent",
             "text-[var(--woody-text)] placeholder:text-[var(--woody-muted)]/80",
-            "shadow-none transition-[box-shadow,border-color] duration-200",
-            "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20"
+            "shadow-none transition-[box-shadow] duration-200",
+            "focus-visible:border-transparent focus-visible:ring-0"
           )}
           aria-label="Texto do comentário"
         />

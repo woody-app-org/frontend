@@ -131,6 +131,7 @@ export function getNotificationTargetRoute(
       return profileRouteForViewer(viewerCtx) ?? profileRouteFromMetadata(ctx, item.actor);
 
     case "message_request":
+    case "new_direct_message":
       if (conversationId != null) return `/messages/${conversationId}`;
       return "/messages";
 

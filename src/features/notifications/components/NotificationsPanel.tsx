@@ -4,6 +4,7 @@ import { handleNotificationClick } from "../lib/notificationNavigation";
 import type { NotificationItem } from "../services/notifications.service";
 import { useNotifications } from "../hooks/useNotifications";
 import { NotificationsList } from "./NotificationsList";
+import { markProfileSignalRead } from "@/features/profile/services/profile-signals.service";
 
 export interface NotificationsPanelProps {
   /** Painel visível (popover/modal aberto). */
@@ -49,6 +50,9 @@ export function NotificationsPanel({
   };
 
   const onActivateRow = async (n: NotificationItem) => {
+    if (n.type === "profile_signal" && n.targetId != null) {
+      markProfileSignalRead(n.targetId).catch(() => {});
+    }
     await handleNotificationClick({
       notification: n,
       viewer: { userId: viewerUserId, username: viewerUsername },

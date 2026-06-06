@@ -14,6 +14,15 @@ export class StoryLimitReachedError extends Error {
   }
 }
 
+export interface CreateStoryMusicPayload {
+  trackId: string;
+  title: string;
+  artist: string;
+  previewUrl: string;
+  coverUrl: string;
+  startTime: number;
+}
+
 export interface CreateStoryPayload {
   mediaType: StoryMediaType;
   mediaUrl?: string;
@@ -21,6 +30,7 @@ export interface CreateStoryPayload {
   storageKey?: string;
   text?: string;
   backgroundColor?: string;
+  music?: CreateStoryMusicPayload;
 }
 
 const STORY_LIMIT_MESSAGE =
@@ -47,6 +57,17 @@ export function mapStoryFromApi(raw: ApiRecord): Story {
     expiresAt: asString(raw.expiresAt),
     viewCount: Number(raw.viewCount ?? 0),
     hasViewedByMe: Boolean(raw.hasViewedByMe),
+    music: raw.musicTrackId
+      ? {
+          provider: asString(raw.musicProvider),
+          trackId: asString(raw.musicTrackId),
+          title: asString(raw.musicTitle),
+          artist: asString(raw.musicArtist),
+          previewUrl: asString(raw.musicPreviewUrl),
+          coverUrl: asString(raw.musicCoverUrl),
+          startTime: Number(raw.musicStartTime ?? 0),
+        }
+      : null,
   };
 }
 
@@ -86,7 +107,19 @@ export async function fetchUserStories(userId: string): Promise<Story[]> {
 
 export async function createStory(payload: CreateStoryPayload): Promise<Story> {
   try {
-    const { data } = await api.post("/stories", payload);
+    const { music, ...rest } = payload;
+    const body = music
+      ? {
+          ...rest,
+          musicTrackId: music.trackId,
+          musicTitle: music.title,
+          musicArtist: music.artist,
+          musicPreviewUrl: music.previewUrl,
+          musicCoverUrl: music.coverUrl,
+          musicStartTime: music.startTime,
+        }
+      : rest;
+    const { data } = await api.post("/stories", body);
     return mapStoryFromApi(data as ApiRecord);
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 409) {

@@ -73,6 +73,8 @@ export function notificationSummaryFromItem(item: NotificationItem): string {
     }
     case "message_request":
       return `${name} quer conversar com você`;
+    case "new_direct_message":
+      return `${name} enviou uma mensagem`;
     case "community_request": {
       const cname = communityNameFromSlug(str(ctx.communitySlug));
       return cname

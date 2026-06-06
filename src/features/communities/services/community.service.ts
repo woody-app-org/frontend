@@ -318,6 +318,7 @@ function mapPremiumCapabilities(raw: unknown): CommunityPremiumCapabilities | un
     canAccessCommunityAnalytics: Boolean(o.canAccessCommunityAnalytics),
     canBoostCommunityPosts: Boolean(o.canBoostCommunityPosts),
     canAccessCommunityMaxFeatures: Boolean(o.canAccessCommunityMaxFeatures),
+    canSetCommunityPrivate: Boolean(o.canSetCommunityPrivate),
   };
 }
 

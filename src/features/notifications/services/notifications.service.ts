@@ -16,6 +16,7 @@ export type NotificationType =
   | "community_request"
   | "community_request_approved"
   | "post_shared"
+  | "new_direct_message"
   | string;
 
 /** @deprecated use NotificationType */

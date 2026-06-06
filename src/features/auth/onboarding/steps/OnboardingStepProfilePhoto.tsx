@@ -44,7 +44,7 @@ export function OnboardingStepProfilePhoto() {
       return;
     }
     if (file.size > ONBOARDING_MAX_IMAGE_BYTES) {
-      setError("A imagem deve ter no máximo 5 MB.");
+      setError("A imagem deve ter no máximo 10 MB.");
       return;
     }
     dismissCropSession();
@@ -165,7 +165,7 @@ export function OnboardingStepProfilePhoto() {
             <p className="text-sm font-medium text-[var(--auth-text-on-maroon)] px-2">
               Arraste uma imagem ou escolha do dispositivo
             </p>
-            <p className="mt-1.5 text-xs text-[var(--auth-text-on-maroon)]/65">JPG, PNG ou WebP · até 5 MB</p>
+            <p className="mt-1.5 text-xs text-[var(--auth-text-on-maroon)]/65">JPG, PNG ou WebP · até 10 MB</p>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}

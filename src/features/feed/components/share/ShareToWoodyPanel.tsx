@@ -119,7 +119,7 @@ export function ShareToWoodyPanel({ onSend, isSending, onBack }: ShareToWoodyPan
         ) : null}
         {!loadingConversations && rows.length === 0 ? (
           <p className="px-3 py-4 text-sm text-[var(--woody-muted)]">
-            {showPeople ? "Nenhuma pessoa encontrada." : "Ainda não tens conversas."}
+            {showPeople ? "Nenhuma pessoa encontrada." : "Você não possui conversas ativas."}
           </p>
         ) : null}
         <ul className="divide-y divide-[var(--woody-divider)]">

@@ -14,6 +14,7 @@ import { woodyLayout, woodyFocus } from "@/lib/woody-ui";
 import { getStoredToken } from "@/lib/api";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
 import {
   fetchAllCommunityMembers,
@@ -110,6 +111,7 @@ function CommunityDetailLoaded({
   const [detailTab, setDetailTab] = useState<"feed" | "join-requests">("feed");
 
   const isOwner = community.ownerUserId === viewerId;
+  const { canSetOwnedCommunityPrivate } = useSubscriptionCapabilities();
   const isAdminRole = viewerMembershipRole === "admin";
   const isMember = viewerIsMember;
   const canMod = isOwner || isAdminRole;
@@ -308,6 +310,7 @@ function CommunityDetailLoaded({
           viewerId={viewerId}
           adminRoleLabel={isOwner ? "dona" : "administradora"}
           onSaved={handleSavedSettings}
+          canSetPrivate={isOwner && canSetOwnedCommunityPrivate}
         />
       ) : null}
 

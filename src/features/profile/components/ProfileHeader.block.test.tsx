@@ -30,29 +30,9 @@ describe("ProfileHeader — bloqueio", () => {
         profile={makeUserProfile()}
         isOwnProfile
         onEditProfile={vi.fn()}
-        onOpenBlockedUsers={vi.fn()}
       />
     );
 
     expect(screen.queryByText("Bloquear usuária")).not.toBeInTheDocument();
-  });
-
-  it("mostra item Usuárias bloqueadas no próprio perfil", async () => {
-    const user = userEvent.setup();
-    const onOpenBlockedUsers = vi.fn();
-
-    render(
-      <ProfileHeader
-        profile={makeUserProfile()}
-        isOwnProfile
-        onEditProfile={vi.fn()}
-        onOpenBlockedUsers={onOpenBlockedUsers}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: "Mais ações do perfil" }));
-    await user.click(screen.getByRole("menuitem", { name: "Usuárias bloqueadas" }));
-
-    expect(onOpenBlockedUsers).toHaveBeenCalledTimes(1);
   });
 });

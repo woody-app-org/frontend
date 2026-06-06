@@ -109,7 +109,7 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
             <button
               key={`${postContext.publicId}-${i}`}
               type="button"
-              className="group relative aspect-square overflow-hidden bg-black/5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--woody-accent)]/50"
+              className="group relative aspect-square overflow-hidden bg-white outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--woody-accent)]/50"
               aria-label={
                 isVideo && siblingCount === 1
                   ? `Abrir vídeo do post de ${postContext.authorName}`
@@ -120,15 +120,12 @@ export function ProfileMediaGrid({ posts, className }: ProfileMediaGridProps) {
               onClick={() => openLightbox(entry)}
             >
               {videoWithoutThumb ? (
-                <div
-                  className="absolute inset-0 bg-gradient-to-br from-[var(--woody-nav)]/12 via-black/[0.06] to-[var(--woody-accent)]/10"
-                  aria-hidden
-                />
+                <div className="absolute inset-0 bg-white" aria-hidden />
               ) : (
                 <img
                   src={thumb ?? resolvePublicMediaUrl(attachment.url)}
                   alt=""
-                  className="absolute inset-0 size-full object-contain object-center transition-transform duration-300 group-hover:scale-[1.04]"
+                  className="absolute inset-0 size-full object-cover object-center transition-transform duration-300 group-hover:scale-[1.04]"
                   loading="lazy"
                   decoding="async"
                 />

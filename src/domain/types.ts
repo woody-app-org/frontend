@@ -41,6 +41,8 @@ export interface CommunityPremiumCapabilities {
   canBoostCommunityPosts: boolean;
   /** Staff + espaço Max (gestão avançada: moderação em massa, relatórios, ferramentas de crescimento). */
   canAccessCommunityMaxFeatures: boolean;
+  /** Dono com plano pessoal Max ativo — pode colocar a comunidade em modo privado. */
+  canSetCommunityPrivate: boolean;
 }
 
 /** Papéis dentro da comunidade (criadora = owner). */

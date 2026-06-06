@@ -46,6 +46,13 @@ export function canAccessCommunityMaxFeatures(
   return staff && hasCommunityMaxPlan(billing);
 }
 
+/** Owner com plano Max pessoal ativo — pode colocar a comunidade em modo privado. */
+export function canSetCommunityPrivate(
+  capabilities?: { canSetCommunityPrivate: boolean } | null
+): boolean {
+  return capabilities?.canSetCommunityPrivate === true;
+}
+
 /** Quando só existe o resumo embutido no post (feed). */
 export function canBoostCommunityPostFromPreview(
   membershipRole: CommunityMemberRole | null | undefined,

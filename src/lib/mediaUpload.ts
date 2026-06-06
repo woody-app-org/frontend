@@ -49,6 +49,7 @@ export async function uploadImageMedia(
   try {
     const { data } = await api.post<MediaUploadResult>("media/images", form, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60_000,
     });
     return data;
   } catch (e) {
@@ -70,6 +71,7 @@ export async function uploadVideoMedia(
   try {
     const { data } = await api.post<MediaUploadResult>("media/videos", form, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 120_000,
     });
     return data;
   } catch (e) {

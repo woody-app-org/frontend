@@ -41,6 +41,8 @@ export interface CommunityEditDialogProps {
   /** Para texto de apoio: dona ou administradora convidada. */
   adminRoleLabel: "dona" | "administradora";
   onSaved: (community: Community) => void;
+  /** Viewer tem plano Max pessoal ativo e é dona → pode colocar em modo privado. Padrão: false. */
+  canSetPrivate?: boolean;
 }
 
 export function CommunityEditDialog({
@@ -50,6 +52,7 @@ export function CommunityEditDialog({
   viewerId,
   adminRoleLabel,
   onSaved,
+  canSetPrivate = false,
 }: CommunityEditDialogProps) {
   const formId = useId();
   const [name, setName] = useState(community.name);
@@ -197,7 +200,12 @@ export function CommunityEditDialog({
             onRulesChange={setRules}
           />
 
-          <CommunityAccessSection formId={formId} visibility={visibility} onVisibilityChange={setVisibility} />
+          <CommunityAccessSection
+            formId={formId}
+            visibility={visibility}
+            onVisibilityChange={setVisibility}
+            canSetPrivate={canSetPrivate}
+          />
 
           {fileError ? (
             <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">

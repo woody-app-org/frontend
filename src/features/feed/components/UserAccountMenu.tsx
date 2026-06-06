@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LifeBuoy, LogOut, ScrollText, Sparkles, User } from "lucide-react";
+import { LifeBuoy, LogOut, ScrollText, Sparkles, User, UserX } from "lucide-react";
+import { BlockedUsersDialog } from "@/features/users/components/BlockedUsersDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,6 +39,7 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);
   const [menuAvatarFailed, setMenuAvatarFailed] = useState(false);
+  const [blockedUsersOpen, setBlockedUsersOpen] = useState(false);
 
   useEffect(() => {
     setMenuAvatarFailed(false);
@@ -156,6 +158,13 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
               Políticas
             </Link>
           </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer focus:bg-[var(--woody-nav)]/10"
+            onClick={() => setBlockedUsersOpen(true)}
+          >
+            <UserX className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
+            Usuárias bloqueadas
+          </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           <DropdownMenuItem
             className="cursor-pointer text-[var(--woody-muted)] focus:bg-[var(--woody-nav)]/10 focus:text-[var(--woody-text)]"
@@ -167,6 +176,7 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
         </DropdownMenuContent>
       </DropdownMenu>
 
+      <BlockedUsersDialog open={blockedUsersOpen} onOpenChange={setBlockedUsersOpen} />
       <LogoutConfirmationDialog
         open={logoutOpen}
         onOpenChange={setLogoutOpen}

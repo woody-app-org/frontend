@@ -19,8 +19,18 @@ export function isProUser(subscription?: AuthUserSubscription | null): boolean {
   return plan === "pro" || plan === "max";
 }
 
+/** Somente plano Max pessoal (não basta Pro). */
+export function isMaxUser(subscription?: AuthUserSubscription | null): boolean {
+  return normalizePlan(subscription?.effectivePlan) === "max";
+}
+
 export function canCreateCommunity(subscription?: AuthUserSubscription | null): boolean {
   return isProUser(subscription);
+}
+
+/** Colocar comunidade própria em modo privado exige Max pessoal. */
+export function canSetOwnedCommunityPrivate(subscription?: AuthUserSubscription | null): boolean {
+  return isMaxUser(subscription);
 }
 
 export function shouldShowProBadge(subscription?: AuthUserSubscription | null): boolean {

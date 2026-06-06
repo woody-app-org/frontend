@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Check, ChevronDown, Loader2 } from "lucide-react";
+import { Check, ChevronDown, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -12,6 +12,8 @@ import { useProCheckout } from "../hooks/useProCheckout";
 import {
   MAX_ANNUAL_CHECKOUT_PLAN_CODE,
   MAX_MONTHLY_CHECKOUT_PLAN_CODE,
+  LAUNCH_PROMO_ACTIVE,
+  LAUNCH_PROMO_DAYS,
 } from "../constants";
 import {
   MAX_PLAN_CHECKOUT_ENABLED,
@@ -29,6 +31,19 @@ import { SubscriptionAccountPanel } from "../components/SubscriptionAccountPanel
 import { BillingModalityToggle } from "../components/BillingModalityToggle";
 
 const cardPad = "p-4 sm:p-5";
+
+function LaunchPromoBanner({ days }: { days: number }) {
+  return (
+    <div className="flex items-center gap-2.5 rounded-xl border border-[var(--woody-nav)]/25 bg-[var(--woody-nav)]/[0.07] px-4 py-3">
+      <Sparkles className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+      <p className="text-sm leading-snug text-[var(--woody-text)]">
+        <span className="font-semibold text-[var(--woody-nav)]">Lançamento:</span>{" "}
+        todos os planos estão gratuitos pelos primeiros{" "}
+        <span className="font-semibold">{days} dias</span>. Aproveite!
+      </p>
+    </div>
+  );
+}
 const cardFooterClass =
   "mt-4 border-t border-[var(--woody-accent)]/12 pt-4 dark:border-[var(--woody-accent)]/14";
 
@@ -180,6 +195,8 @@ export function PlanosPage() {
           </p>
         </header>
 
+        {LAUNCH_PROMO_ACTIVE ? <LaunchPromoBanner days={LAUNCH_PROMO_DAYS} /> : null}
+
         {isProUser || canOpenBillingPortal ? (
           <SubscriptionAccountPanel
             subscription={subscription}
@@ -301,9 +318,20 @@ export function PlanosPage() {
 
             <div className={cn("relative border-[var(--woody-nav)]/12", cardFooterClass)}>
               <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-muted)]">Preço</p>
-              <p className="font-display mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl">{proPrice.primary}</p>
+              {LAUNCH_PROMO_ACTIVE ? (
+                <p className="mt-1 text-sm font-semibold text-[var(--woody-nav)]">
+                  Grátis por {LAUNCH_PROMO_DAYS} dias
+                </p>
+              ) : null}
+              <p className={cn(
+                "font-display mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl",
+                LAUNCH_PROMO_ACTIVE && "line-through decoration-[1.5px] opacity-45"
+              )}>{proPrice.primary}</p>
               {proPrice.secondary ? (
-                <p className="text-xs font-medium text-[var(--woody-muted)] sm:text-sm">{proPrice.secondary}</p>
+                <p className={cn(
+                  "text-xs font-medium text-[var(--woody-muted)] sm:text-sm",
+                  LAUNCH_PROMO_ACTIVE && "line-through decoration-[1.5px] opacity-45"
+                )}>{proPrice.secondary}</p>
               ) : null}
               <Button
                 type="button"
@@ -362,9 +390,20 @@ export function PlanosPage() {
 
             <div className={cardFooterClass}>
               <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--woody-muted)]">Preço</p>
-              <p className="font-display mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl">{maxPrice.primary}</p>
+              {LAUNCH_PROMO_ACTIVE ? (
+                <p className="mt-1 text-sm font-semibold text-[var(--woody-nav)]">
+                  Grátis por {LAUNCH_PROMO_DAYS} dias
+                </p>
+              ) : null}
+              <p className={cn(
+                "font-display mt-0.5 text-xl font-bold tabular-nums text-[var(--woody-text)] sm:text-2xl",
+                LAUNCH_PROMO_ACTIVE && "line-through decoration-[1.5px] opacity-45"
+              )}>{maxPrice.primary}</p>
               {maxPrice.secondary ? (
-                <p className="text-xs font-medium text-[var(--woody-muted)] sm:text-sm">{maxPrice.secondary}</p>
+                <p className={cn(
+                  "text-xs font-medium text-[var(--woody-muted)] sm:text-sm",
+                  LAUNCH_PROMO_ACTIVE && "line-through decoration-[1.5px] opacity-45"
+                )}>{maxPrice.secondary}</p>
               ) : null}
               {!MAX_PLAN_CHECKOUT_ENABLED ? (
                 <p className="mt-1.5 text-[0.7rem] leading-snug text-[var(--woody-muted)] sm:text-xs">

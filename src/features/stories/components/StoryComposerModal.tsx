@@ -6,7 +6,7 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
-import { ImageIcon, Loader2, Type, Video, X } from "lucide-react";
+import { ImageIcon, Loader2, Music, Type, Video, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,8 @@ import {
   createStory,
   StoryLimitReachedError,
 } from "../services/stories.service";
+import { type DeezerTrack } from "../services/deezer.service";
+import { MusicPickerSheet } from "./MusicPickerSheet";
 import { STORY_MEDIA_UPLOAD_CONTEXT } from "../lib/storyUploadContext";
 import {
   formatFileSize,
@@ -84,6 +86,9 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
   const [textContent, setTextContent] = useState("");
   const [textBackgroundId, setTextBackgroundId] = useState(TEXT_BACKGROUNDS[0].id);
 
+  const [selectedTrack, setSelectedTrack] = useState<DeezerTrack | null>(null);
+  const [musicPickerOpen, setMusicPickerOpen] = useState(false);
+
   const resetComposer = useCallback(() => {
     setKind("image");
     setError(null);
@@ -101,6 +106,8 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
     setVideoPreviewUrl(null);
     setTextContent("");
     setTextBackgroundId(TEXT_BACKGROUNDS[0].id);
+    setSelectedTrack(null);
+    setMusicPickerOpen(false);
   }, [imagePreviewUrl, cropSrc, videoPreviewUrl]);
 
   useEffect(() => {
@@ -183,12 +190,24 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
     setError(null);
     try {
       let story: Story;
+      const musicPayload = selectedTrack
+        ? {
+            trackId: selectedTrack.id,
+            title: selectedTrack.title,
+            artist: selectedTrack.artist,
+            previewUrl: selectedTrack.previewUrl,
+            coverUrl: selectedTrack.coverUrl,
+            startTime: selectedTrack.startTime,
+          }
+        : undefined;
+
       if (kind === "image" && imageFile) {
         const uploaded = await uploadImageMedia(imageFile, STORY_MEDIA_UPLOAD_CONTEXT);
         story = await createStory({
           mediaType: "image",
           mediaUrl: uploaded.url,
           storageKey: uploaded.storageKey,
+          music: musicPayload,
         });
       } else if (kind === "video" && videoFile) {
         let durationSeconds: number | undefined;
@@ -215,6 +234,7 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
           mediaUrl: uploaded.url,
           storageKey: uploaded.storageKey,
           thumbnailUrl,
+          music: musicPayload,
         });
       } else {
         const bg = selectedBg.value;
@@ -222,6 +242,7 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
           mediaType: "text",
           text: textContent.trim(),
           backgroundColor: bg,
+          music: musicPayload,
         });
       }
       showSuccessToast("Story publicado.");
@@ -245,6 +266,7 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
     videoPreviewUrl,
     textContent,
     selectedBg.value,
+    selectedTrack,
     onPublished,
     handleClose,
   ]);
@@ -460,6 +482,58 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
               </div>
             ) : null}
 
+            <div className="mt-3">
+              <button
+                type="button"
+                disabled={publishing}
+                onClick={() => setMusicPickerOpen(true)}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm transition-colors",
+                  woodyFocus.ring,
+                  selectedTrack
+                    ? "border-[var(--woody-nav)]/40 bg-[var(--woody-nav)]/8"
+                    : "border-[var(--woody-divider)] hover:border-[var(--woody-nav)]/30"
+                )}
+              >
+                {selectedTrack ? (
+                  <>
+                    <img
+                      src={selectedTrack.coverUrl}
+                      alt=""
+                      className="size-8 shrink-0 rounded-lg object-cover"
+                    />
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="truncate font-semibold text-[var(--woody-text)]">
+                        {selectedTrack.title}
+                      </p>
+                      <p className="truncate text-xs text-[var(--woody-muted)]">
+                        {selectedTrack.artist}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTrack(null);
+                      }}
+                      className={cn(
+                        "flex size-7 shrink-0 items-center justify-center rounded-full text-[var(--woody-muted)] hover:bg-black/8",
+                        woodyFocus.ring
+                      )}
+                      aria-label="Remover música"
+                    >
+                      <X className="size-3.5" aria-hidden />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Music className="size-4 shrink-0 text-[var(--woody-muted)]" aria-hidden />
+                    <span className="text-[var(--woody-muted)]">Adicionar música</span>
+                  </>
+                )}
+              </button>
+            </div>
+
             {error ? (
               <p className="mt-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-950 dark:text-amber-100">
                 {error}
@@ -495,6 +569,13 @@ export function StoryComposerModal({ open, onOpenChange, onPublished }: StoryCom
           </div>
         </DialogContent>
       </Dialog>
+
+      <MusicPickerSheet
+        open={musicPickerOpen}
+        onOpenChange={setMusicPickerOpen}
+        selected={selectedTrack}
+        onSelect={setSelectedTrack}
+      />
 
       <ImageCropDialog
         open={cropOpen}

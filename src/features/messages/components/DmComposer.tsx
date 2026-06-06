@@ -535,7 +535,7 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
 
         <div
           className={cn(
-            "flex flex-col md:flex-row md:items-end",
+            "flex flex-col md:flex-row md:items-center",
             "transition-[gap] duration-[220ms] ease-out",
             "gap-2 md:gap-2",
             isExpanded ? "max-md:gap-2.5" : "max-md:gap-2"
@@ -568,7 +568,8 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
               "flex min-w-0 flex-1",
               "transition-[gap] duration-[220ms] ease-out",
               "gap-2",
-              isExpanded ? "max-md:items-end max-md:gap-2.5" : "max-md:items-center max-md:gap-2"
+              "md:items-center",
+          isExpanded ? "max-md:items-end max-md:gap-2.5" : "max-md:items-center max-md:gap-2"
             )}
           >
             <div className="shrink-0 md:hidden">

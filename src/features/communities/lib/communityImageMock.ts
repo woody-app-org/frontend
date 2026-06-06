@@ -1,5 +1,5 @@
 /** Limite de upload no mock (data URL). */
-export const COMMUNITY_MOCK_IMAGE_MAX_BYTES = 2_500_000;
+export const COMMUNITY_MOCK_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
 
 export function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

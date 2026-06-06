@@ -32,9 +32,7 @@ export const StoryViewerSlide = forwardRef<StoryViewerSlideHandle, StoryViewerSl
       play: () => {
         const v = videoRef.current;
         if (!v) return;
-        void v.play().catch(() => {
-          /* autoplay bloqueado — utilizadora pode tocar */
-        });
+        void v.play().catch(() => undefined);
       },
       pause: () => {
         videoRef.current?.pause();
