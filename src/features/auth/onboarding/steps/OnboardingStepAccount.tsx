@@ -71,7 +71,7 @@ export function OnboardingStepAccount() {
       password: "",
       cpf: "",
       birthDate: "",
-      socialNetwork: "",
+      socialNetwork: "" as OnboardingSocialNetwork,
       socialUsername: "",
     },
   });
