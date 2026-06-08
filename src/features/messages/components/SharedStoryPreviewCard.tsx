@@ -1,3 +1,4 @@
+import { Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,12 +31,13 @@ export function SharedStoryPreviewCard({ preview, className }: SharedStoryPrevie
   }
 
   const authorName = preview.authorDisplayName?.trim() || preview.authorUsername || "Autora";
-  const mediaUrl = preview.mediaUrl
-    ? resolvePublicMediaUrl(preview.mediaUrl)
-    : preview.thumbnailUrl
-      ? resolvePublicMediaUrl(preview.thumbnailUrl)
-      : null;
+  const thumbnailUrl = preview.thumbnailUrl ? resolvePublicMediaUrl(preview.thumbnailUrl) : null;
+  const mediaUrl = preview.mediaUrl ? resolvePublicMediaUrl(preview.mediaUrl) : null;
   const isVideo = preview.mediaType === "video";
+  // Para vídeo, preferimos mostrar a miniatura (carrega instantaneamente); o `<video>`
+  // só entra como último recurso, com a miniatura como pôster para não ficar em branco.
+  const imagePreviewUrl = isVideo ? thumbnailUrl ?? null : mediaUrl ?? thumbnailUrl ?? null;
+  const videoSrc = isVideo ? mediaUrl : null;
 
   return (
     <div
@@ -64,12 +66,25 @@ export function SharedStoryPreviewCard({ preview, className }: SharedStoryPrevie
         className="relative aspect-[9/16] max-h-56 w-full overflow-hidden"
         style={{ backgroundColor: preview.backgroundColor || "var(--woody-nav)" }}
       >
-        {mediaUrl ? (
-          isVideo ? (
-            <video src={mediaUrl} className="size-full object-cover" muted playsInline preload="metadata" />
-          ) : (
-            <img src={mediaUrl} alt="" className="size-full object-cover" loading="lazy" />
-          )
+        {imagePreviewUrl ? (
+          <>
+            <img src={imagePreviewUrl} alt="" className="size-full object-cover" loading="lazy" />
+            {isVideo ? (
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15">
+                <span className="flex size-9 items-center justify-center rounded-full bg-black/45 text-white">
+                  <Play className="size-4 translate-x-px" fill="currentColor" aria-hidden />
+                </span>
+              </span>
+            ) : null}
+          </>
+        ) : videoSrc ? (
+          <video
+            src={videoSrc}
+            className="size-full object-cover"
+            muted
+            playsInline
+            preload="metadata"
+          />
         ) : preview.textPreview ? (
           <p className="flex size-full items-center justify-center break-words px-4 text-center text-sm font-medium text-white">
             {preview.textPreview}

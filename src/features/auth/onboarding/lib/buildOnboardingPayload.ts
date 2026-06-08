@@ -20,6 +20,8 @@ export function buildRegisterCredentialsFromDraft(draft: OnboardingDraft): Regis
     cpf: a.cpf,
     birthDate: a.birthDate,
     policiesAccepted: draft.policiesAccepted === true,
+    socialNetwork: a.socialNetwork,
+    socialUsername: a.socialUsername,
   };
   const invite = draft.inviteCode?.trim();
   if (invite) {

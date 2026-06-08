@@ -14,6 +14,8 @@ export interface StoryViewerSlideProps {
   story: Story;
   isActive: boolean;
   paused: boolean;
+  /** Vídeo deve tocar mutado (há música própria do story tocando em paralelo, ou o som nativo está desligado). */
+  videoMuted?: boolean;
   onVideoEnded?: () => void;
   onVideoTimeUpdate?: (progress: number) => void;
   onVideoLoadedMetadata?: () => void;
@@ -21,7 +23,7 @@ export interface StoryViewerSlideProps {
 
 export const StoryViewerSlide = forwardRef<StoryViewerSlideHandle, StoryViewerSlideProps>(
   function StoryViewerSlide(
-    { story, isActive, paused, onVideoEnded, onVideoTimeUpdate, onVideoLoadedMetadata },
+    { story, isActive, paused, videoMuted = true, onVideoEnded, onVideoTimeUpdate, onVideoLoadedMetadata },
     ref
   ) {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -76,7 +78,7 @@ export const StoryViewerSlide = forwardRef<StoryViewerSlideHandle, StoryViewerSl
             poster={posterUrl}
             className="max-h-full max-w-full object-contain"
             playsInline
-            muted
+            muted={videoMuted}
             preload="auto"
             onEnded={() => onVideoEnded?.()}
             onTimeUpdate={(e) => {

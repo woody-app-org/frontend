@@ -80,6 +80,9 @@ export function StoryViewerModal({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioBlocked, setAudioBlocked] = useState(false);
   const [muted, setMuted] = useState(false);
+  // Vídeos sem música própria têm áudio nativo — começam mutados (autoplay exige isso
+  // na maioria dos browsers) e a pessoa pode tocar para ativar o som.
+  const [videoSoundOn, setVideoSoundOn] = useState(false);
 
   const currentStory = stories[currentIndex] ?? null;
   const isPaused = paused || holding || menuBlocked || composerActive;
@@ -306,6 +309,7 @@ export function StoryViewerModal({
     teardown();
     setAudioBlocked(false);
     setMuted(false);
+    setVideoSoundOn(false);
 
     if (!music?.trackId || !open) return;
 
@@ -433,6 +437,23 @@ export function StoryViewerModal({
                 </Link>
               ) : null}
               <div className="flex shrink-0 items-center gap-1">
+                {currentStory?.mediaType === "video" && !currentStory?.music ? (
+                  <button
+                    type="button"
+                    onClick={() => setVideoSoundOn((prev) => !prev)}
+                    className={cn(
+                      "flex size-10 shrink-0 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm",
+                      woodyFocus.ring
+                    )}
+                    aria-label={videoSoundOn ? "Desativar som do vídeo" : "Ativar som do vídeo"}
+                  >
+                    {videoSoundOn ? (
+                      <Volume2 className="size-5 animate-pulse" aria-hidden />
+                    ) : (
+                      <VolumeX className="size-5" aria-hidden />
+                    )}
+                  </button>
+                ) : null}
                 {canDeleteCurrent && currentStory ? (
                   <StoryViewerMoreMenu
                     storyId={currentStory.id}
@@ -470,6 +491,7 @@ export function StoryViewerModal({
                       story={story}
                       isActive={i === currentIndex}
                       paused={isPaused}
+                      videoMuted={Boolean(story.music) || !videoSoundOn}
                       onVideoEnded={() => advanceStory()}
                       onVideoTimeUpdate={(p) => setSegmentProgress(p)}
                     />

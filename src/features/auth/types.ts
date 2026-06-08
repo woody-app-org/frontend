@@ -55,6 +55,10 @@ export interface RegisterCredentials {
   avatarUrl?: string;
   /** Confirmação de leitura e concordância com as Políticas da Woody (obrigatória no servidor). */
   policiesAccepted: boolean;
+  /** Opcional: rede social informada para ajudar na validação de autenticidade do perfil. */
+  socialNetwork?: string;
+  /** Opcional: usuário (handle, sem `@`) na rede social informada. */
+  socialUsername?: string;
   /** Obrigatório no servidor quando o beta fechado está ativo. */
   inviteCode?: string;
 }

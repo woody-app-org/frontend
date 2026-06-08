@@ -13,6 +13,10 @@ import {
   USERNAME_RESERVED_MESSAGE,
 } from "../lib/usernamePolicy";
 
+/** Redes sociais aceitas para o handle opcional informado no cadastro. */
+export const ONBOARDING_SOCIAL_NETWORKS = ["instagram", "tiktok", "x", "threads", "facebook"] as const;
+export type OnboardingSocialNetwork = (typeof ONBOARDING_SOCIAL_NETWORKS)[number];
+
 /** Remove formatação para validar dígitos. */
 export function stripCpfDigits(value: string): string {
   return value.replace(/\D/g, "").slice(0, 11);
@@ -92,6 +96,16 @@ export const onboardingAccountSchema = z.object({
     .refine((s) => !Number.isNaN(new Date(s + "T12:00:00").getTime()), "Data inválida")
     .refine((s) => calcAgeYears(s) >= 14, "É necessário ter pelo menos 14 anos")
     .refine((s) => calcAgeYears(s) <= 120, "Verifique a data informada"),
+  /** Rede social + usuário, exibidos no perfil para ajudar a validar a autenticidade da conta mais rapidamente. */
+  socialNetwork: z.enum(ONBOARDING_SOCIAL_NETWORKS, {
+    message: "Selecione uma rede social",
+  }),
+  socialUsername: z
+    .string()
+    .min(1, "Informe o seu usuário nessa rede")
+    .max(80, "Usuário deve ter no máximo 80 caracteres")
+    .transform((s) => s.trim().replace(/^@+/, ""))
+    .refine((s) => s.length > 0, "Informe o seu usuário nessa rede"),
 });
 
 export type OnboardingAccountFormData = z.infer<typeof onboardingAccountSchema>;

@@ -88,6 +88,9 @@ export async function registerMock(credentials: RegisterCredentials): Promise<Au
       policiesAccepted: credentials.policiesAccepted,
       ...(credentials.avatarUrl ? { avatarUrl: credentials.avatarUrl } : {}),
       ...(credentials.inviteCode?.trim() ? { inviteCode: credentials.inviteCode.trim() } : {}),
+      ...(credentials.socialNetwork && credentials.socialUsername
+        ? { socialNetwork: credentials.socialNetwork, socialUsername: credentials.socialUsername }
+        : {}),
     });
     persistLoginPayload(data);
     const user = mapAuthUser(data.user as Parameters<typeof mapAuthUser>[0]);

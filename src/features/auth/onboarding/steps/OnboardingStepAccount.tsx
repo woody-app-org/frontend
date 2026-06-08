@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserRound } from "lucide-react";
+import { AtSign, Facebook, Instagram, Music2, Twitter, UserRound } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { WoodyPoliciesDialog } from "../components/WoodyPoliciesDialog";
 import { AuthInputField } from "../../components/AuthInputField";
 import { AuthPasswordField } from "../../components/AuthPasswordField";
@@ -13,6 +14,7 @@ import {
   formatCpfDisplay,
   stripCpfDigits,
   type OnboardingAccountFormData,
+  type OnboardingSocialNetwork,
 } from "../account.validation";
 import { useOnboardingDraftContext } from "../OnboardingContext";
 import { useOnboardingNavigation } from "../hooks/useOnboardingNavigation";
@@ -29,8 +31,25 @@ import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 import { isBetaClosed } from "@/config/beta";
-import { codeInputProps, cpfInputProps, identifierInputProps } from "@/components/forms";
+import { codeInputProps, cpfInputProps, identifierInputProps, HandleInput } from "@/components/forms";
 import { USERNAME_MAX_LENGTH, USERNAME_PERMANENT_EMPHASIS, USERNAME_PERMANENT_LEAD, filterUsernameInput } from "@/features/auth/lib/usernamePolicy";
+
+const SOCIAL_NETWORK_OPTIONS: Array<{
+  value: OnboardingSocialNetwork;
+  label: string;
+  placeholder: string;
+  icon: ReactNode;
+}> = [
+  { value: "instagram", label: "Instagram", placeholder: "seuinsta", icon: <Instagram className="size-4" /> },
+  { value: "tiktok", label: "TikTok", placeholder: "seutiktok", icon: <Music2 className="size-4" /> },
+  { value: "x", label: "X / Twitter", placeholder: "seuusuario", icon: <Twitter className="size-4" /> },
+  { value: "threads", label: "Threads", placeholder: "seuthreads", icon: <AtSign className="size-4" aria-hidden /> },
+  { value: "facebook", label: "Facebook", placeholder: "seuface", icon: <Facebook className="size-4" /> },
+];
+
+function getSocialOption(value: OnboardingSocialNetwork | "" | undefined) {
+  return SOCIAL_NETWORK_OPTIONS.find((o) => o.value === value) ?? null;
+}
 
 /**
  * Etapa 1 — dados iniciais da conta (validação pronta para espelhar no backend).
@@ -52,6 +71,8 @@ export function OnboardingStepAccount() {
       password: "",
       cpf: "",
       birthDate: "",
+      socialNetwork: "",
+      socialUsername: "",
     },
   });
 
@@ -246,6 +267,103 @@ export function OnboardingStepAccount() {
                 {...form.register("birthDate")}
                 error={errors.birthDate?.message}
               />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className={onboardingStyles.sectionLabel}>Rede social</p>
+          <div className={onboardingStyles.sectionCard}>
+            <p className="text-xs leading-relaxed text-[var(--auth-text-on-maroon)]/70">
+              Informe uma rede social sua: isso ajuda a validar sua conta mais rapidamente.
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 sm:items-start">
+              <Controller
+                name="socialNetwork"
+                control={form.control}
+                render={({ field }) => {
+                  const selected = getSocialOption(field.value as OnboardingSocialNetwork | "" | undefined);
+                  return (
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-wide text-[var(--auth-text-on-maroon)]/70">
+                        Rede social
+                      </label>
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={(value) => field.onChange(value)}
+                      >
+                        <SelectTrigger
+                          className="h-11 w-full rounded-xl border border-black/15 bg-white px-3.5 text-sm"
+                          aria-label="Selecione uma rede social"
+                        >
+                          {selected ? (
+                            <div className="flex min-w-0 flex-1 items-center gap-2.5 text-sm text-[var(--auth-text-on-maroon)]">
+                              <span className="flex shrink-0 items-center text-[var(--auth-text-on-maroon)]/70">
+                                {selected.icon}
+                              </span>
+                              <span className="min-w-0 truncate">{selected.label}</span>
+                            </div>
+                          ) : (
+                            <div className="text-sm font-normal text-muted-foreground">
+                              Selecione uma rede
+                            </div>
+                          )}
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl overflow-hidden">
+                          {SOCIAL_NETWORK_OPTIONS.map((opt) => (
+                            <SelectItem
+                              key={opt.value}
+                              value={opt.value}
+                              className="cursor-pointer rounded-xl"
+                            >
+                              <div className="flex w-full min-w-0 items-center gap-2.5">
+                                <span className="flex shrink-0 items-center text-[var(--auth-text-on-maroon)]/60">
+                                  {opt.icon}
+                                </span>
+                                <span className="min-w-0 truncate">{opt.label}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.socialNetwork ? (
+                        <p className="text-xs text-red-300">{errors.socialNetwork.message}</p>
+                      ) : null}
+                    </div>
+                  );
+                }}
+              />
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wide text-[var(--auth-text-on-maroon)]/70">
+                  Seu usuário nessa rede
+                </label>
+                <div
+                  className={cn(
+                    "flex h-11 min-w-0 items-stretch overflow-hidden rounded-xl border bg-white transition-colors",
+                    errors.socialUsername
+                      ? "border-red-400 ring-red-400/30"
+                      : "border-black/15 focus-within:ring-[3px] focus-within:ring-[var(--auth-button)]/20"
+                  )}
+                >
+                  <span
+                    className="flex shrink-0 items-center border-r border-black/10 bg-black/5 px-3 text-base font-semibold text-[var(--auth-text-on-maroon)]/55 select-none"
+                    aria-hidden
+                  >
+                    @
+                  </span>
+                  <HandleInput
+                    id="socialUsername"
+                    placeholder={getSocialOption(w.socialNetwork)?.placeholder ?? "seuusuario"}
+                    maxLength={80}
+                    {...register("socialUsername")}
+                    className="h-11 min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 text-[var(--auth-text-on-maroon)] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
+                {errors.socialUsername ? (
+                  <p className="text-xs text-red-300">{errors.socialUsername.message}</p>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
