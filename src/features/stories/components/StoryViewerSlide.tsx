@@ -42,17 +42,36 @@ export const StoryViewerSlide = forwardRef<StoryViewerSlideHandle, StoryViewerSl
       getVideoElement: () => videoRef.current,
     }));
 
+    // Reinicia do zero apenas quando o slide passa a ser o ativo (story novo) — nunca
+    // quando só se alterna pausa/retomada (ex.: focar/desfocar o campo de resposta),
+    // senão o vídeo "nunca avança" e a resposta ao story parece demorar uma eternidade.
+    useEffect(() => {
+      if (!isActive || story.mediaType !== "video") return;
+      const v = videoRef.current;
+      if (!v) return;
+      v.currentTime = 0;
+      if (!paused) void v.play().catch(() => undefined);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isActive, story.id, story.mediaType]);
+
     useEffect(() => {
       if (!isActive || story.mediaType !== "video") return;
       const v = videoRef.current;
       if (!v) return;
       if (paused) {
         v.pause();
-        return;
+      } else {
+        void v.play().catch(() => undefined);
       }
-      v.currentTime = 0;
-      void v.play().catch(() => undefined);
-    }, [isActive, paused, story.id, story.mediaType]);
+    }, [isActive, paused, story.mediaType]);
+
+    // O atributo JSX `muted` só define o estado inicial (`defaultMuted`) — o React não
+    // sincroniza a propriedade viva do elemento depois da montagem. Sem isto, tocar no
+    // botão de som não tem efeito nenhum sobre o áudio do vídeo.
+    useEffect(() => {
+      const v = videoRef.current;
+      if (v) v.muted = videoMuted;
+    }, [videoMuted, story.id]);
 
     if (story.mediaType === "text") {
       const bg = resolveStoryTextBackground(story.backgroundColor);
