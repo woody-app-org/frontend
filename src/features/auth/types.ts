@@ -53,6 +53,8 @@ export interface RegisterCredentials {
   birthDate: string;
   /** Opcional: URL pública após upload (ex. fluxo fora do onboarding). Não usar data URL. */
   avatarUrl?: string;
+  /** Confirmação de leitura e concordância com as Políticas da Woody (obrigatória no servidor). */
+  policiesAccepted: boolean;
   /** Obrigatório no servidor quando o beta fechado está ativo. */
   inviteCode?: string;
 }

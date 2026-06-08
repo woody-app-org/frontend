@@ -85,6 +85,7 @@ export async function registerMock(credentials: RegisterCredentials): Promise<Au
       password: credentials.password,
       cpf: credentials.cpf.trim(),
       birthDate: credentials.birthDate,
+      policiesAccepted: credentials.policiesAccepted,
       ...(credentials.avatarUrl ? { avatarUrl: credentials.avatarUrl } : {}),
       ...(credentials.inviteCode?.trim() ? { inviteCode: credentials.inviteCode.trim() } : {}),
     });

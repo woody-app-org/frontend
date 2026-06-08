@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserRound } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { WoodyPoliciesDialog } from "../components/WoodyPoliciesDialog";
 import { AuthInputField } from "../../components/AuthInputField";
 import { AuthPasswordField } from "../../components/AuthPasswordField";
 import { withPasswordAutofillSync } from "../../lib/passwordAutofillRegistration";
@@ -37,6 +39,8 @@ export function OnboardingStepAccount() {
   const { draft, updateDraft } = useOnboardingDraftContext();
   const { goNext } = useOnboardingNavigation();
   const [isSaving, setIsSaving] = useState(false);
+  const [policiesAccepted, setPoliciesAccepted] = useState(draft.policiesAccepted ?? false);
+  const [policiesDialogOpen, setPoliciesDialogOpen] = useState(false);
 
   const form = useForm<OnboardingAccountFormData>({
     resolver: zodResolver(onboardingAccountSchema),
@@ -76,11 +80,13 @@ export function OnboardingStepAccount() {
   };
 
   const onSubmit = form.handleSubmit(async (data) => {
+    if (!policiesAccepted) return;
     setIsSaving(true);
     try {
       await persistAccountStep(data);
       updateDraft({
         account: data,
+        policiesAccepted: true,
         ...(isBetaClosed() ? { inviteCode: draft.inviteCode?.trim() || undefined } : {}),
       });
       goNext();
@@ -98,7 +104,8 @@ export function OnboardingStepAccount() {
     }
   });
 
-  const canAdvance = form.formState.isValid && !form.formState.isSubmitting && !isSaving;
+  const canAdvance =
+    form.formState.isValid && !form.formState.isSubmitting && !isSaving && policiesAccepted;
 
   return (
     <div>
@@ -243,6 +250,34 @@ export function OnboardingStepAccount() {
           </div>
         </div>
 
+        <div>
+          <p className={onboardingStyles.sectionLabel}>Antes de avançar</p>
+          <div className={onboardingStyles.sectionCard}>
+            <p className="text-sm leading-relaxed text-[var(--auth-text-on-maroon)]/85">
+              Antes de avançar, leia e aceite as Políticas da Woody. Ao continuar, você confirma
+              que leu, compreendeu e concorda com os Termos de Uso, a Política de Privacidade, as
+              Diretrizes da Comunidade e demais regras da plataforma.{" "}
+              <button
+                type="button"
+                onClick={() => setPoliciesDialogOpen(true)}
+                className={cn(onboardingStyles.ghostBtn, "font-semibold")}
+              >
+                Ler as Políticas da Woody
+              </button>
+            </p>
+            <label className="flex items-start gap-2.5 cursor-pointer select-none">
+              <Checkbox
+                checked={policiesAccepted}
+                onCheckedChange={(checked) => setPoliciesAccepted(checked === true)}
+                className="mt-0.5"
+              />
+              <span className="text-sm text-[var(--auth-text-on-maroon)]">
+                Li e concordo com as Políticas da Woody.
+              </span>
+            </label>
+          </div>
+        </div>
+
         <div className={onboardingStyles.footerRow}>
           <span className="hidden sm:block" />
           <button
@@ -255,6 +290,8 @@ export function OnboardingStepAccount() {
           </button>
         </div>
       </form>
+
+      <WoodyPoliciesDialog open={policiesDialogOpen} onOpenChange={setPoliciesDialogOpen} />
     </div>
   );
 }

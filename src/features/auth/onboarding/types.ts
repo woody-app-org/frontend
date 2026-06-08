@@ -15,6 +15,8 @@ export type OnboardingDraft = {
   /** Espelha convite validado (sessionStorage); enviado em POST /Auth/register como inviteCode. */
   inviteCode?: string;
   account?: OnboardingAccountFormData;
+  /** Confirmação de leitura e concordância com as Políticas da Woody (etapa 1). */
+  policiesAccepted?: boolean;
   emailVerified?: boolean;
   /** Usuária optou por pular foto nesta sessão */
   skippedProfilePhoto?: boolean;

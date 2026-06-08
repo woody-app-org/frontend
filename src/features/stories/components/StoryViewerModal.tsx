@@ -28,6 +28,7 @@ import {
 } from "../lib/storyUtils";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { fetchUserStories, markStoryViewed } from "../services/stories.service";
+import { resolveDeezerPreviewUrl } from "../services/deezer.service";
 import { dispatchStoriesChanged } from "../lib/storyEvents";
 import { StoryViewerSlide, type StoryViewerSlideHandle } from "./StoryViewerSlide";
 import { StoryViewerMoreMenu } from "./StoryViewerMoreMenu";
@@ -264,7 +265,9 @@ export function StoryViewerModal({
     return () => document.removeEventListener("visibilitychange", onVis);
   }, [open]);
 
-  // Gestão de áudio da música — gerida no modal para ter o z-index correto no badge
+  // Gestão de áudio da música — gerida no modal para ter o z-index correto no badge.
+  // Os URLs de preview do Deezer expiram (~1h), por isso resolvemos sempre um URL
+  // fresco junto ao backend antes de reproduzir, em vez de confiar no valor persistido.
   useEffect(() => {
     const music = currentStory?.music;
 
@@ -276,24 +279,34 @@ export function StoryViewerModal({
     setAudioBlocked(false);
     setMuted(false);
 
-    if (!music?.previewUrl || !open) return;
+    if (!music?.trackId || !open) return;
 
-    const audio = new Audio(music.previewUrl);
-    audio.currentTime = music.startTime ?? 0;
-    audio.muted = false;
-    audioRef.current = audio;
+    let cancelled = false;
 
-    if (!isPaused) {
-      audio.play().catch(() => setAudioBlocked(true));
-    }
+    void resolveDeezerPreviewUrl(music.trackId).then((freshUrl) => {
+      const url = freshUrl ?? music.previewUrl;
+      if (cancelled || !url) return;
+
+      const audio = new Audio(url);
+      audio.currentTime = music.startTime ?? 0;
+      audio.muted = false;
+      audioRef.current = audio;
+
+      if (!isPaused) {
+        audio.play().catch(() => setAudioBlocked(true));
+      }
+    });
 
     return () => {
-      audio.pause();
-      audio.src = "";
-      audioRef.current = null;
+      cancelled = true;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStory?.id, currentStory?.music?.previewUrl, open]);
+  }, [currentStory?.id, currentStory?.music?.trackId, open]);
 
   useEffect(() => {
     const audio = audioRef.current;
