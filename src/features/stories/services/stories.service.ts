@@ -57,6 +57,8 @@ export function mapStoryFromApi(raw: ApiRecord): Story {
     expiresAt: asString(raw.expiresAt),
     viewCount: Number(raw.viewCount ?? 0),
     hasViewedByMe: Boolean(raw.hasViewedByMe),
+    likesCount: Number(raw.likesCount ?? 0),
+    likedByCurrentUser: Boolean(raw.likedByCurrentUser),
     music: raw.musicTrackId
       ? {
           provider: asString(raw.musicProvider),
@@ -151,5 +153,63 @@ export async function markStoryViewed(storyId: string): Promise<void> {
     await api.post(`/stories/${encodeURIComponent(storyId)}/view`);
   } catch {
     // idempotente no servidor; não bloquear o viewer
+  }
+}
+
+export interface StoryLikeMutationResult {
+  likesCount: number;
+  likedByCurrentUser: boolean;
+}
+
+function mapStoryLikeMutationFromApi(raw: ApiRecord): StoryLikeMutationResult {
+  return {
+    likesCount: Number(raw.likesCount ?? 0),
+    likedByCurrentUser: Boolean(raw.likedByCurrentUser),
+  };
+}
+
+/** Curte o story (idempotente no servidor; um segundo like não duplica). */
+export async function likeStory(storyId: string): Promise<StoryLikeMutationResult> {
+  try {
+    const { data } = await api.post(`/stories/${encodeURIComponent(storyId)}/like`);
+    return mapStoryLikeMutationFromApi(data as ApiRecord);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível curtir este story."));
+  }
+}
+
+/** Remove o like do story (idempotente no servidor). */
+export async function unlikeStory(storyId: string): Promise<StoryLikeMutationResult> {
+  try {
+    const { data } = await api.delete(`/stories/${encodeURIComponent(storyId)}/like`);
+    return mapStoryLikeMutationFromApi(data as ApiRecord);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível remover a curtida deste story."));
+  }
+}
+
+export interface ShareStoryToConversationPayload {
+  recipientUserId?: number;
+  conversationId?: number;
+  message?: string;
+}
+
+export interface ShareStoryToConversationResult {
+  conversationId: number;
+  message: ApiRecord;
+}
+
+const GENERIC_STORY_SHARE_ERROR = "Não foi possível enviar este story.";
+
+/** Envia o story por mensagem direta (referenciando-o como preview no chat). */
+export async function shareStoryToConversation(
+  storyId: string,
+  payload: ShareStoryToConversationPayload
+): Promise<ShareStoryToConversationResult> {
+  try {
+    const { data } = await api.post(`/stories/${encodeURIComponent(storyId)}/share-to-conversation`, payload);
+    return data as ShareStoryToConversationResult;
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, GENERIC_STORY_SHARE_ERROR));
   }
 }

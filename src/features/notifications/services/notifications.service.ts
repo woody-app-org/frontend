@@ -16,6 +16,8 @@ export type NotificationType =
   | "community_request"
   | "community_request_approved"
   | "post_shared"
+  | "story_like"
+  | "story_shared"
   | "new_direct_message"
   | string;
 

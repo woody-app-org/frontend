@@ -37,5 +37,7 @@ export interface Story {
   expiresAt: string;
   viewCount: number;
   hasViewedByMe: boolean;
+  likesCount: number;
+  likedByCurrentUser: boolean;
   music: StoryMusic | null;
 }

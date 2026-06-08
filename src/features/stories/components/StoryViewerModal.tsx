@@ -7,14 +7,17 @@
 } from "react";
 import { Link } from "react-router-dom";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
-import { ChevronLeft, ChevronRight, Music, Volume2, VolumeX, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Music, Send, Volume2, VolumeX, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { StoryRing } from "@/components/ui/StoryRing";
+import { PostLikeIcon } from "@/features/feed/components/PostLikeIcon";
+import { usePostLikeTapAnimation } from "@/features/feed/hooks/usePostLikeTapAnimation";
 import { formatRelativeTimeUtc } from "@/lib/formatRelativeTimeUtc";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
@@ -30,8 +33,15 @@ import { useAuth } from "@/features/auth/context/AuthContext";
 import { fetchUserStories, markStoryViewed } from "../services/stories.service";
 import { resolveDeezerPreviewUrl } from "../services/deezer.service";
 import { dispatchStoriesChanged } from "../lib/storyEvents";
+import { useStoryLikeToggle } from "../hooks/useStoryLikeToggle";
+import { useStorySendMessage } from "../hooks/useStorySendMessage";
 import { StoryViewerSlide, type StoryViewerSlideHandle } from "./StoryViewerSlide";
 import { StoryViewerMoreMenu } from "./StoryViewerMoreMenu";
+
+function formatStoryCount(count: number): string {
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+  return String(count);
+}
 
 export interface StoryViewerModalProps {
   open: boolean;
@@ -60,6 +70,7 @@ export function StoryViewerModal({
   const [paused, setPaused] = useState(false);
   const [holding, setHolding] = useState(false);
   const [menuBlocked, setMenuBlocked] = useState(false);
+  const [composerActive, setComposerActive] = useState(false);
 
   const slideRef = useRef<StoryViewerSlideHandle>(null);
   const storiesRef = useRef<Story[]>([]);
@@ -71,7 +82,7 @@ export function StoryViewerModal({
   const [muted, setMuted] = useState(false);
 
   const currentStory = stories[currentIndex] ?? null;
-  const isPaused = paused || holding || menuBlocked;
+  const isPaused = paused || holding || menuBlocked || composerActive;
   const hasPrev = currentIndex > 0;
 
   const canDeleteCurrent = Boolean(
@@ -80,6 +91,12 @@ export function StoryViewerModal({
       (isSameUserId(currentStory.authorUserId, authUser.id) ||
         isSameUserId(currentStory.author.id, authUser.id))
   );
+
+  const isOwnCurrentStory = canDeleteCurrent;
+
+  const { tapPhase, triggerTap } = usePostLikeTapAnimation();
+  const { toggleStoryLike, isStoryLikePending } = useStoryLikeToggle(setStories);
+  const { message, setMessage, canSend, isSending, sendMessage } = useStorySendMessage(currentStory);
 
   useEffect(() => {
     storiesRef.current = stories;
@@ -93,6 +110,7 @@ export function StoryViewerModal({
     setPaused(false);
     setHolding(false);
     setMenuBlocked(false);
+    setComposerActive(false);
     markedViewRef.current.clear();
   }, []);
 
@@ -266,16 +284,26 @@ export function StoryViewerModal({
   }, [open]);
 
   // Gestão de áudio da música — gerida no modal para ter o z-index correto no badge.
-  // Os URLs de preview do Deezer expiram (~1h), por isso resolvemos sempre um URL
-  // fresco junto ao backend antes de reproduzir, em vez de confiar no valor persistido.
+  // Os URLs de preview da Deezer expiram (~1h) e ficam vinculados ao IP de quem os pediu,
+  // por isso o backend faz streaming dos bytes (proxy) e aqui criamos um Object URL local —
+  // que precisa de ser revogado para não acumular memória.
   useEffect(() => {
     const music = currentStory?.music;
+    let objectUrl: string | null = null;
 
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
-      audioRef.current = null;
-    }
+    const teardown = () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+        objectUrl = null;
+      }
+    };
+
+    teardown();
     setAudioBlocked(false);
     setMuted(false);
 
@@ -283,9 +311,9 @@ export function StoryViewerModal({
 
     let cancelled = false;
 
-    void resolveDeezerPreviewUrl(music.trackId).then((freshUrl) => {
-      const url = freshUrl ?? music.previewUrl;
+    void resolveDeezerPreviewUrl(music.trackId).then((url) => {
       if (cancelled || !url) return;
+      objectUrl = url;
 
       const audio = new Audio(url);
       audio.currentTime = music.startTime ?? 0;
@@ -299,11 +327,7 @@ export function StoryViewerModal({
 
     return () => {
       cancelled = true;
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current = null;
-      }
+      teardown();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStory?.id, currentStory?.music?.trackId, open]);
@@ -533,6 +557,70 @@ export function StoryViewerModal({
                   }
                 }}
               />
+            ) : null}
+
+            {currentStory && !isOwnCurrentStory && authUser ? (
+              <div className="relative z-20 flex shrink-0 items-center gap-2 border-t border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm sm:px-4">
+                <form
+                  className="flex min-w-0 flex-1 items-center gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void sendMessage();
+                  }}
+                >
+                  <Input
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onFocus={() => setComposerActive(true)}
+                    onBlur={() => setComposerActive(false)}
+                    placeholder={`Enviar mensagem para ${displayName}…`}
+                    aria-label={`Enviar mensagem para ${displayName} sobre este story`}
+                    disabled={isSending}
+                    className="h-10 min-w-0 flex-1 border-white/20 bg-white/10 text-sm text-white placeholder:text-white/50 focus-visible:border-white/40 focus-visible:ring-white/20"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!canSend}
+                    aria-label="Enviar mensagem"
+                    className={cn(
+                      "flex size-10 shrink-0 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur-sm transition-colors",
+                      "hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-40",
+                      woodyFocus.ring
+                    )}
+                  >
+                    <Send className="size-[1.05em]" aria-hidden />
+                  </button>
+                </form>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isStoryLikePending(currentStory.id)) return;
+                    triggerTap(!currentStory.likedByCurrentUser);
+                    void toggleStoryLike(currentStory);
+                  }}
+                  disabled={isStoryLikePending(currentStory.id)}
+                  aria-pressed={currentStory.likedByCurrentUser}
+                  aria-label={currentStory.likedByCurrentUser ? "Remover curtida do story" : "Curtir story"}
+                  className={cn(
+                    "flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium backdrop-blur-sm transition-colors",
+                    currentStory.likedByCurrentUser
+                      ? "bg-[var(--woody-accent)] text-white hover:bg-[var(--woody-accent)]/90"
+                      : "bg-white/12 text-white hover:bg-white/20",
+                    "disabled:cursor-not-allowed disabled:opacity-60",
+                    woodyFocus.ring
+                  )}
+                >
+                  <PostLikeIcon
+                    liked={currentStory.likedByCurrentUser}
+                    tapPhase={tapPhase}
+                    sizeClassName="size-[1.05em]"
+                  />
+                  {currentStory.likesCount > 0 ? (
+                    <span>{formatStoryCount(currentStory.likesCount)}</span>
+                  ) : null}
+                </button>
+              </div>
             ) : null}
 
             <div className="pointer-events-none h-[env(safe-area-inset-bottom)] shrink-0" />

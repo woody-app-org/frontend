@@ -98,6 +98,7 @@ export interface MessageResponseDto {
   isDeleted: boolean;
   attachments: MessageAttachmentResponseDto[];
   sharedPost?: SharedPostPreviewDto | null;
+  sharedStory?: SharedStoryPreviewDto | null;
 }
 
 export interface SharedPostPreviewDto {
@@ -110,6 +111,19 @@ export interface SharedPostPreviewDto {
   firstMediaUrl?: string | null;
   firstMediaType?: string | null;
   communityName?: string | null;
+  isUnavailable: boolean;
+}
+
+export interface SharedStoryPreviewDto {
+  id?: string | null;
+  authorDisplayName?: string | null;
+  authorUsername?: string | null;
+  authorProfilePic?: string | null;
+  mediaType?: string | null;
+  mediaUrl?: string | null;
+  thumbnailUrl?: string | null;
+  textPreview?: string | null;
+  backgroundColor?: string | null;
   isUnavailable: boolean;
 }
 

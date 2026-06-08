@@ -124,6 +124,12 @@ export function getNotificationTargetRoute(
     case "comment_reply":
       return postWithCommentsFocusFromMetadata(ctx, commentId);
 
+    case "story_like":
+    case "story_shared":
+      // Sem rota de permalink para stories — leva ao perfil de quem interagiu,
+      // de onde o anel de stories pode ser aberto.
+      return profileRouteFromMetadata(ctx, item.actor);
+
     case "new_follower":
       return profileRouteFromMetadata(ctx, item.actor);
 

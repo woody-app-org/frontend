@@ -63,6 +63,10 @@ export function notificationSummaryFromItem(item: NotificationItem): string {
       return `${name} comentou no seu post`;
     case "post_shared":
       return `${name} compartilhou sua publicação`;
+    case "story_like":
+      return `${name} curtiu o seu story`;
+    case "story_shared":
+      return `${name} respondeu ao seu story`;
     case "comment_reply":
       return `${name} respondeu seu comentário`;
     case "new_follower":

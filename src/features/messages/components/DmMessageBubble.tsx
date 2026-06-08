@@ -10,6 +10,7 @@ import { DM_MESSAGE_BODY_MAX_LENGTH } from "../lib/dmLimits";
 import { DmMessageActionsMenu } from "./DmMessageActionsMenu";
 import { MessageAttachmentRenderer } from "./MessageAttachmentRenderer";
 import { SharedPostPreviewCard } from "./SharedPostPreviewCard";
+import { SharedStoryPreviewCard } from "./SharedStoryPreviewCard";
 
 function senderInitials(sender: MessageResponseDto["sender"]): string {
   const raw = (sender.displayName || sender.username || "?").trim();
@@ -144,6 +145,12 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
                 </div>
               ) : (
                 <>
+                  {message.sharedStory && !message.isDeleted ? (
+                    <SharedStoryPreviewCard
+                      preview={message.sharedStory}
+                      className={message.body ? "mb-2" : undefined}
+                    />
+                  ) : null}
                   {message.body ? (
                     <p className="whitespace-pre-wrap break-words text-[var(--woody-text)]">{message.body}</p>
                   ) : null}
