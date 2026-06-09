@@ -7,14 +7,13 @@ const landingAnchor = (id: string) => `/landing#${id}`;
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-black/[0.08] bg-[#f0efe8] py-14">
+    <footer className="border-t border-black/[0.08] bg-white py-14">
       <div className="mx-auto max-w-[var(--layout-max-width)] px-[var(--layout-gutter)]">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div>
             <WoodyLogo className="h-8 w-auto max-w-[min(220px,70vw)] md:h-9" />
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-[var(--woody-muted)]">
-              Rede social orientada por comunidades, pensada para mulheres — com conversas mais contextualizadas e
-              acolhimento real.
+            Menos ruído, mais troca. Woody é uma rede para mulheres se reconhecerem do próprio jeito.
             </p>
           </div>
           <div className="grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3 md:max-w-xl">

@@ -67,7 +67,7 @@ export function OnboardingStepInterests() {
       <OnboardingStepHeader
         icon={Sparkles}
         title="O que mais te move?"
-        lead={`Escolha entre 1 e ${ONBOARDING_MAX_INTERESTS} temas. Isso ajuda a sugerir comunidades e conteúdo com mais acerto para você.`}
+        lead={`Escolha entre 1 a ${ONBOARDING_MAX_INTERESTS} temas. Isso ajuda a sugerir comunidades e conteúdo com mais acerto para você.`}
         trustNote="Você pode mudar seus interesses depois nas configurações do perfil."
       />
 

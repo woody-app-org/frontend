@@ -1,5 +1,6 @@
 import { useRef, useCallback, type KeyboardEvent, type ClipboardEvent } from "react";
 import { cn } from "@/lib/utils";
+import { otpCellProps } from "@/components/forms";
 
 export interface OnboardingCodeInputProps {
   value: string;
@@ -97,8 +98,7 @@ export function OnboardingCodeInput({
           ref={(el) => {
             refs.current[i] = el;
           }}
-          type="text"
-          inputMode="numeric"
+          {...otpCellProps(i)}
           autoComplete={i === 0 ? "one-time-code" : "off"}
           maxLength={1}
           disabled={disabled}

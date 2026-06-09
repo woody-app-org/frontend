@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 import { useCallback, useEffect, useId, useLayoutEffect, useState } from "react";
 import { Loader2, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,6 @@ export interface GifStickerPickerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPick: (item: StickerGifSearchItemDto) => void;
-  onRequestLocalFile: () => void;
   disabled?: boolean;
 }
 
@@ -50,7 +49,6 @@ export function GifStickerPickerDialog({
   open,
   onOpenChange,
   onPick,
-  onRequestLocalFile,
   disabled,
 }: GifStickerPickerDialogProps) {
   const idBase = useId();
@@ -157,11 +155,11 @@ export function GifStickerPickerDialog({
               <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-[var(--woody-divider)]/60 bg-[var(--woody-bg)]/40 px-4 py-5 text-center">
                 <div className="flex items-center gap-2 text-sm font-medium text-[var(--woody-text)]">
                   <Sparkles className="size-4 shrink-0 text-[var(--woody-nav)]" aria-hidden />
-                  A carregar pré-visualizações…
+                  Carregando pré-visualizações…
                 </div>
                 <div className="flex items-center gap-2 text-xs text-[var(--woody-muted)]">
                   <Loader2 className="size-4 animate-spin text-[var(--woody-nav)]" aria-hidden />
-                  <span>{q.trim() ? "A pesquisar na biblioteca…" : "A carregar tendências…"}</span>
+                  <span>{q.trim() ? "Pesquisando na biblioteca…" : "Carregando tendências…"}</span>
                 </div>
               </div>
               <GifStickerSkeletonGrid cellCount={12} />
@@ -219,24 +217,8 @@ export function GifStickerPickerDialog({
           )}
         </div>
 
-        <div
-          className={cn(
-            "flex shrink-0 flex-col gap-2 border-t border-[var(--woody-divider)]/80 px-3 py-3 sm:flex-row sm:px-4",
-            "sm:justify-end"
-          )}
-        >
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-xl border-[var(--woody-divider)] sm:w-auto"
-            onClick={() => {
-              onOpenChange(false);
-              onRequestLocalFile();
-            }}
-          >
-            Carregar ficheiro local…
-          </Button>
-          <Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={() => onOpenChange(false)}>
+        <div className="flex shrink-0 justify-end border-t border-[var(--woody-divider)]/80 px-3 py-3 sm:px-4">
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             Fechar
           </Button>
         </div>

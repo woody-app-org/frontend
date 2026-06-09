@@ -6,7 +6,7 @@ const styles = {
   root:
     "min-h-screen w-full flex flex-col items-center md:justify-center pt-6 pb-8 px-3 md:py-8 md:px-6 bg-[var(--auth-bg)] relative overflow-x-hidden",
   logo:
-    "shrink-0 mb-2 md:mb-0 md:absolute md:top-5 md:left-8 [&_img]:h-7 [&_img]:w-auto md:[&_img]:h-8",
+    "shrink-0 mb-2 md:mb-0 md:absolute md:top-5 md:left-8",
   ornament:
     "hidden",
   ornamentTopLeft: "top-4 left-4 md:top-6 md:left-6",
@@ -24,7 +24,7 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
   return (
     <div className={cn(styles.root, className)}>
       <div className={styles.logo} aria-hidden>
-        <WoodyLogo alt="" />
+        <WoodyLogo alt="" className="h-7 w-auto md:h-8" />
       </div>
       {children}
     </div>

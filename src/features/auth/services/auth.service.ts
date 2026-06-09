@@ -16,6 +16,12 @@ import { showInfoToast } from "@/lib/toast";
 import { ensureFreshAccessToken } from "../authRefresh";
 import { mapAuthUser, mapSubscription, normalizeStoredUser } from "../authMapper";
 import { persistLoginPayload } from "../authSessionPersist";
+import {
+  AccountBannedLoginError,
+  parseAccountBannedLoginError,
+} from "../errors/accountBannedLogin";
+import { stripPasswordWhitespace } from "../lib/passwordPolicy";
+import { normalizeUsername } from "../lib/usernamePolicy";
 
 function getStoredUser(): AuthUser | null {
   try {
@@ -42,16 +48,30 @@ export async function loginMock(credentials: LoginCredentials): Promise<AuthUser
       refreshToken: string;
       user: AuthUser;
     }>("/Auth/login", {
-      username: credentials.username.trim(),
-      password: credentials.password,
+      username: normalizeUsername(credentials.username),
+      password: stripPasswordWhitespace(credentials.password),
     });
     persistLoginPayload(data);
     const user = mapAuthUser(data.user as Parameters<typeof mapAuthUser>[0]);
     return user;
   } catch (e) {
+    const banned = parseAccountBannedLoginError(e);
+    if (banned) throw banned;
+
+    if (axios.isAxiosError(e)) {
+      if (e.response?.status === 429) {
+        throw new Error("Muitas tentativas. Aguarde um momento e tente novamente.");
+      }
+      if (!e.response) {
+        throw new Error("Não foi possível conectar. Verifique sua internet e tente novamente.");
+      }
+    }
+
     throw new Error(getApiErrorMessage(e, "Falha no login."));
   }
 }
+
+export { AccountBannedLoginError };
 
 export async function registerMock(credentials: RegisterCredentials): Promise<AuthUser> {
   try {
@@ -60,13 +80,17 @@ export async function registerMock(credentials: RegisterCredentials): Promise<Au
       refreshToken: string;
       user: AuthUser;
     }>("/Auth/register", {
-      username: credentials.username.trim(),
+      username: normalizeUsername(credentials.username),
       email: credentials.email.trim(),
       password: credentials.password,
       cpf: credentials.cpf.trim(),
       birthDate: credentials.birthDate,
+      policiesAccepted: credentials.policiesAccepted,
       ...(credentials.avatarUrl ? { avatarUrl: credentials.avatarUrl } : {}),
       ...(credentials.inviteCode?.trim() ? { inviteCode: credentials.inviteCode.trim() } : {}),
+      ...(credentials.socialNetwork && credentials.socialUsername
+        ? { socialNetwork: credentials.socialNetwork, socialUsername: credentials.socialUsername }
+        : {}),
     });
     persistLoginPayload(data);
     const user = mapAuthUser(data.user as Parameters<typeof mapAuthUser>[0]);
@@ -123,6 +147,11 @@ export async function fetchAuthUserFromMe(): Promise<AuthUser> {
   const raw = data as Record<string, unknown>;
   const id = raw.id != null ? String(raw.id) : "";
   if (!id) throw new Error("Resposta inválida de /users/me.");
+  const trimOrUndef = (v: unknown): string | undefined => {
+    const s = v != null ? String(v).trim() : "";
+    return s || undefined;
+  };
+
   const user: AuthUser = {
     id,
     username: raw.username != null ? String(raw.username) : id,
@@ -134,6 +163,11 @@ export async function fetchAuthUserFromMe(): Promise<AuthUser> {
         ? (raw.verificationStatus as VerificationStatus)
         : "PendingDocument",
     role: raw.role != null ? (raw.role as UserRole) : "User",
+    // Campos de perfil estendido — mapeados do UserProfileDto já retornado por /users/me.
+    bannerUrl: raw.bannerUrl != null ? String(raw.bannerUrl) : null,
+    bio: trimOrUndef(raw.bio),
+    location: trimOrUndef(raw.location),
+    pronouns: trimOrUndef(raw.pronouns),
   };
   return normalizeStoredUser(user);
 }
@@ -164,11 +198,20 @@ export async function bootstrapAuthSession(): Promise<AuthUser | null> {
     syncAuthUserToDisplayPatch(user);
     return user;
   } catch (e) {
-    if (axios.isAxiosError(e) && e.response?.status === 401) {
-      if (getStoredToken() || getStoredRefreshToken()) {
+    if (axios.isAxiosError(e)) {
+      const code = (e.response?.data as Record<string, unknown> | undefined)?.code;
+      if (e.response?.status === 403 && code === "ACCOUNT_BANNED") {
         clearAuthPersistence();
         dispatchAuthLogoutEvent();
-        showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+        showInfoToast("Não foi possível acessar esta conta.");
+        return null;
+      }
+      if (e.response?.status === 401) {
+        if (getStoredToken() || getStoredRefreshToken()) {
+          clearAuthPersistence();
+          dispatchAuthLogoutEvent();
+          showInfoToast("Sua sessão expirou. Entre novamente para continuar.");
+        }
       }
     }
     return null;

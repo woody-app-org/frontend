@@ -14,10 +14,7 @@ export interface ProfileSignalButtonProps {
 }
 
 function eligibilityHint(code: string | null): string {
-  if (code === "blocked") {
-    return "Não foi possível enviar agora. Tenta novamente mais tarde.";
-  }
-  if (code === "receiver_unavailable" || code === "social_mismatch") {
+  if (code === "blocked" || code === "receiver_unavailable" || code === "social_mismatch") {
     return "Essa pessoa não está recebendo sinais no momento.";
   }
   return "Não foi possível usar os sinais com esta pessoa.";

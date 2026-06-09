@@ -25,7 +25,7 @@ export function LandingShowcase() {
             <span className="h-px w-8 bg-[var(--woody-lime)]" aria-hidden />
             Produto
           </p>
-          <h2 className="mt-5 font-serif text-[clamp(2rem,4vw,3.15rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
+          <h2 className="font-heading mt-5 text-[clamp(2rem,4vw,3.15rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
             A interface como promessa.
           </h2>
           <p className="mt-6 text-[1.05rem] font-medium leading-relaxed text-white/65 md:text-lg">
@@ -126,7 +126,7 @@ export function LandingShowcase() {
             >
               <div className="h-24 bg-[linear-gradient(135deg,rgba(139,195,74,0.35),rgba(10,10,10,0.55))]" />
               <div className="space-y-3 px-5 pb-5 pt-4">
-                <p className="font-serif text-lg font-semibold tracking-tight text-[var(--woody-ink)]">
+                <p className="font-heading text-lg font-semibold tracking-tight text-[var(--woody-ink)]">
                   Mulheres em movimento
                 </p>
                 <p className="text-[12px] font-medium leading-relaxed text-[var(--woody-muted)]">

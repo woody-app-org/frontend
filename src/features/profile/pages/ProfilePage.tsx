@@ -1,5 +1,5 @@
 import { startTransition, useCallback, useEffect, useState, type ReactNode } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Activity, Bookmark } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { useCreatePostComposer } from "@/features/feed/context/CreatePostComposerContext";
@@ -20,7 +20,16 @@ import { useProfilePermissions } from "@/features/auth/hooks/useProfilePermissio
 import type { UserProfile } from "../types";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout } from "@/lib/woody-ui";
-import { dispatchSocialGraphChanged } from "@/lib/socialGraphEvents";
+import { dispatchSocialGraphChanged, dispatchBlockRelationshipChanged } from "@/lib/socialGraphEvents";
+import { showActionErrorToast, showSuccessToast } from "@/lib/toast/woodyToast";
+import { blockUser } from "@/features/users/services/userBlock.service";
+import { BlockUserConfirmationDialog } from "@/features/users/components/BlockUserConfirmationDialog";
+import {
+  StoryComposerModal,
+  StoryViewerModal,
+  dispatchStoriesChanged,
+  useStoryViewerState,
+} from "@/features/stories";
 import { StartConversationButton } from "@/features/messages/components/StartConversationButton";
 import { ProfileSignalButton } from "../components/ProfileSignalButton";
 import { ProfileSignalsTab } from "../components/ProfileSignalsTab";
@@ -62,14 +71,17 @@ function ProfileEmptyTab({
 }
 
 function ProfilePageInner() {
-  const { userId } = useParams<{ userId: string }>();
+  const { username: routeHandle } = useParams<{ username: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user: authUser, patchUser, isAuthenticated } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("posts");
   const [editOpen, setEditOpen] = useState(false);
   const [followList, setFollowList] = useState<ProfileFollowListKind | null>(null);
   const [followListsRevision, setFollowListsRevision] = useState(0);
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [blockPending, setBlockPending] = useState(false);
   const {
     profile,
     pinnedPosts,
@@ -90,9 +102,12 @@ function ProfilePageInner() {
     applyFollowPatch,
     togglePostLike,
     isPostLikePending,
-  } = useUserProfile(userId);
+    profileUrlRedirect,
+  } = useUserProfile(routeHandle);
   const { registerProfilePostIngest } = useCreatePostComposer();
-  const { isOwnProfile } = useProfilePermissions(userId);
+  const { isOwnProfile } = useProfilePermissions(profile?.id);
+  const storyViewer = useStoryViewerState();
+  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
 
   useEffect(() => {
     registerProfilePostIngest(prependCreatedProfilePost);
@@ -102,6 +117,13 @@ function ProfilePageInner() {
   const { unreadCount: unreadSignalsCount } = useProfileSignalsUnreadCount(
     Boolean(isOwnProfile && authUser?.id)
   );
+
+  useEffect(() => {
+    if (!profileUrlRedirect) return;
+    const next = `${profileUrlRedirect}${location.search}${location.hash ?? ""}`;
+    if (`${location.pathname}${location.search}${location.hash ?? ""}` === next) return;
+    navigate(next, { replace: true });
+  }, [profileUrlRedirect, navigate, location.pathname, location.search, location.hash]);
 
   useEffect(() => {
     if (!isOwnProfile) return;
@@ -139,12 +161,27 @@ function ProfilePageInner() {
     [applyFollowPatch, bumpFollowLists]
   );
 
+  const handleConfirmBlock = useCallback(async () => {
+    if (!profile) return;
+    const targetId = Number.parseInt(profile.id, 10);
+    if (!Number.isFinite(targetId) || targetId <= 0) return;
+    setBlockPending(true);
+    try {
+      await blockUser(targetId);
+      showSuccessToast("Usuária bloqueada.");
+      dispatchBlockRelationshipChanged(profile.id);
+      dispatchSocialGraphChanged();
+      setBlockDialogOpen(false);
+      navigate("/feed", { replace: true });
+    } catch (e) {
+      showActionErrorToast(e, "Não foi possível bloquear esta usuária.");
+    } finally {
+      setBlockPending(false);
+    }
+  }, [navigate, profile]);
+
   const handleFollowListOpenChange = useCallback((open: boolean) => {
     if (!open) setFollowList(null);
-  }, []);
-
-  const handleFollowListKindChange = useCallback((kind: ProfileFollowListKind) => {
-    setFollowList(kind);
   }, []);
 
   const handleProfileSaved = useCallback(
@@ -161,7 +198,7 @@ function ProfilePageInner() {
     [authUser?.id, patchUser, refetch]
   );
 
-  if (!userId) {
+  if (!routeHandle) {
     navigate("/feed", { replace: true });
     return null;
   }
@@ -189,7 +226,16 @@ function ProfilePageInner() {
               profile={profile}
               className="mb-6"
               isOwnProfile={isOwnProfile}
+              onViewStories={
+                profile.hasActiveStories ? () => storyViewer.open(profile.id) : undefined
+              }
+              onAddStory={isOwnProfile ? () => setStoryComposerOpen(true) : undefined}
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
+              onBlockUser={
+                !isOwnProfile && isAuthenticated && profile
+                  ? () => setBlockDialogOpen(true)
+                  : undefined
+              }
               followStats={
                 <ProfileFollowStats
                   followersCount={profile.followersCount ?? 0}
@@ -231,11 +277,7 @@ function ProfilePageInner() {
               open={followList !== null}
               onOpenChange={handleFollowListOpenChange}
               profileUserId={profile.id}
-              profileName={profile.name}
               kind={followList ?? "followers"}
-              onKindChange={handleFollowListKindChange}
-              followersCount={profile.followersCount ?? 0}
-              followingCount={profile.followingCount ?? 0}
               refreshEpoch={followListsRevision}
             />
             {isOwnProfile ? (
@@ -245,8 +287,15 @@ function ProfilePageInner() {
                 profile={profile}
                 onSaved={handleProfileSaved}
               />
-            ) : null}
-
+            ) : (
+              <BlockUserConfirmationDialog
+                open={blockDialogOpen}
+                onOpenChange={setBlockDialogOpen}
+                displayName={profile.name}
+                isPending={blockPending}
+                onConfirm={handleConfirmBlock}
+              />
+            )}
             <div
               className={cn(
                 "mb-4 overflow-x-auto border-b border-[var(--woody-divider)]/90 bg-transparent",
@@ -313,6 +362,7 @@ function ProfilePageInner() {
                   pinningPostId={pinningPostId}
                   onLike={togglePostLike}
                   isLikePending={isPostLikePending}
+                  onViewAuthorStories={(authorId) => storyViewer.open(authorId)}
                 />
               ) : null}
 
@@ -354,7 +404,7 @@ function ProfilePageInner() {
 
         {!isLoading && !error && !profile && (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <p className="text-[var(--woody-muted)]">Perfil não encontrado.</p>
+            <p className="text-[var(--woody-muted)]">Este perfil não está disponível.</p>
             <button
               type="button"
               onClick={() => navigate("/feed")}
@@ -364,6 +414,28 @@ function ProfilePageInner() {
             </button>
           </div>
         )}
+
+        <StoryViewerModal
+          {...storyViewer.modalProps}
+          onStoriesConsumed={() => {
+            dispatchStoriesChanged();
+            void refetch();
+          }}
+          onStoryDeleted={() => {
+            dispatchStoriesChanged();
+            void refetch();
+          }}
+        />
+        {isOwnProfile && profile ? (
+          <StoryComposerModal
+            open={storyComposerOpen}
+            onOpenChange={setStoryComposerOpen}
+            onPublished={() => {
+              void refetch();
+              storyViewer.open(profile.id);
+            }}
+          />
+        ) : null}
       </div>
   );
 }

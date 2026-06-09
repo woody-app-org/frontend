@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+﻿import { cn } from "@/lib/utils";
 import { woodySection } from "@/lib/woody-ui";
 import type { ConversationResponseDto } from "../types";
 import { ConversationListItem } from "./ConversationListItem";
@@ -26,7 +26,7 @@ export function ConversationList({
     <section className={cn("flex flex-col gap-2", className)}>
       <h2 className={cn(woodySection.eyebrow, "px-1")}>{title}</h2>
       {loading ? (
-        <p className="px-3 py-4 text-sm text-[var(--woody-muted)]">A carregar…</p>
+        <p className="px-3 py-4 text-sm text-[var(--woody-muted)]">Carregando…</p>
       ) : items.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-[var(--woody-divider)] bg-[var(--woody-bg)]/60 px-3 py-6 text-center text-sm text-[var(--woody-muted)]">
           {emptyLabel}

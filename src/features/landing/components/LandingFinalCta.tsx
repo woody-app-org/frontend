@@ -27,7 +27,7 @@ export function LandingFinalCta() {
 
           <div className="relative mx-auto max-w-3xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45">Woody</p>
-            <h2 className="mt-5 font-serif text-[clamp(2.1rem,4.8vw,3.35rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-white">
+            <h2 className="font-heading mt-5 text-[clamp(2.1rem,4.8vw,3.35rem)] font-semibold leading-[1.05] tracking-[-0.03em] text-white">
               Entra num espaço feito para{" "}
               <span className="relative inline-block text-[var(--woody-lime)]">
                 conversar com calma

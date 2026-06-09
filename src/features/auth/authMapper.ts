@@ -15,8 +15,11 @@ const defaultSubscription = (): AuthUserSubscription => ({
 export function mapSubscription(raw: unknown): AuthUserSubscription {
   if (!raw || typeof raw !== "object") return defaultSubscription();
   const o = raw as Record<string, unknown>;
+  const badge =
+    o.subscriptionBadge === "max" ? "max" : o.subscriptionBadge === "pro" ? "pro" : null;
   return {
-    effectivePlan: o.effectivePlan === "pro" ? "pro" : "free",
+    effectivePlan:
+      o.effectivePlan === "max" ? "max" : o.effectivePlan === "pro" ? "pro" : "free",
     billingPlan:
       o.billingPlan === "max" ? "max" : o.billingPlan === "pro" ? "pro" : "free",
     planCode: o.planCode != null ? String(o.planCode) : null,
@@ -24,6 +27,7 @@ export function mapSubscription(raw: unknown): AuthUserSubscription {
     currentPeriodEnd: o.currentPeriodEnd != null ? String(o.currentPeriodEnd) : null,
     cancelAtPeriodEnd: Boolean(o.cancelAtPeriodEnd),
     showProBadge: Boolean(o.showProBadge),
+    subscriptionBadge: badge,
     canOpenBillingPortal: Boolean(o.canOpenBillingPortal),
   };
 }

@@ -10,9 +10,10 @@ import type {
 } from "@/domain/types";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
 import { isWoodyMediaType } from "@/domain/mediaAttachment";
-import type { SocialLink, UserProfile } from "@/features/profile/types";
+import type { SocialLink, UserBadge, UserProfile } from "@/features/profile/types";
 import { mapSubscription } from "@/features/auth/authMapper";
 import { formatDisplayDateTimeFromIso } from "@/lib/formatIsoDate";
+import { formatPostCardTimestamp } from "@/features/feed/lib/formatPostCardTimestamp";
 
 const PLATFORMS = new Set(["instagram", "facebook", "twitter", "tiktok", "linkedin", "other"]);
 
@@ -65,6 +66,7 @@ export function mapUserFromApi(raw: ApiRecord): User {
     bio: raw.bio ?? undefined,
     pronouns: raw.pronouns ?? undefined,
     showProBadge: Boolean(raw.showProBadge),
+    hasActiveStories: Boolean(raw.hasActiveStories),
   };
 }
 
@@ -134,6 +136,8 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
         durationSeconds,
         durationMs:
           o.durationMs != null && Number.isFinite(Number(o.durationMs)) ? Number(o.durationMs) : null,
+        width: o.width != null && Number.isFinite(Number(o.width)) ? Number(o.width) : null,
+        height: o.height != null && Number.isFinite(Number(o.height)) ? Number(o.height) : null,
       });
     }
     if (list.length > 0) mediaAttachments = list;
@@ -146,6 +150,10 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
         : null;
   return {
     id: asString(raw.id),
+    publicId:
+      typeof raw.publicId === "string" && raw.publicId.trim()
+        ? raw.publicId.trim()
+        : undefined,
     publicationContext,
     communityId,
     authorId: asString(raw.authorId),
@@ -155,7 +163,7 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
     imageUrls: imageUrls && imageUrls.length > 0 ? imageUrls : undefined,
     mediaAttachments,
     tags: Array.isArray(raw.tags) ? raw.tags.map((t: unknown) => String(t)) : undefined,
-    createdAt: formatDisplayDateTimeFromIso(asString(raw.createdAt)),
+    createdAt: formatPostCardTimestamp(asString(raw.createdAt)),
     updatedAt: raw.updatedAt ?? null,
     deletedAt: raw.deletedAt ?? null,
     likesCount: Number(raw.likesCount ?? 0),
@@ -184,6 +192,7 @@ function mapCommunityPreviewFromApi(raw: ApiRecord): NonNullable<Post["community
     avatarUrl: raw.avatarUrl ?? null,
     category: safeCategory,
     communityPlan: mapCommunityBillingPlan(raw.communityPlan ?? "free"),
+    visibility: raw.visibility === "private" ? "private" : "public",
   };
 }
 
@@ -228,6 +237,18 @@ export function mapCommentFromApi(raw: ApiRecord): Comment {
   };
 }
 
+function mapUserBadgeFromApi(raw: ApiRecord): UserBadge {
+  return {
+    slug: asString(raw.slug),
+    name: asString(raw.name),
+    description: asString(raw.description),
+    iconAssetKey: raw.iconAssetKey ?? null,
+    category: raw.category ?? null,
+    rarity: raw.rarity ?? null,
+    earnedAt: raw.earnedAt != null ? asString(raw.earnedAt) : null,
+  };
+}
+
 export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
   const socialLinks: SocialLink[] = Array.isArray(raw.socialLinks)
     ? raw.socialLinks.map((s: ApiRecord) => ({
@@ -256,6 +277,8 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
     bio: asString(raw.bio ?? ""),
     location: raw.location ?? undefined,
     profession: raw.profession ?? undefined,
+    genderIdentity: raw.genderIdentity ?? undefined,
+    sexualOrientation: raw.sexualOrientation ?? undefined,
     socialLinks,
     interests,
     suggestions: Array.isArray(raw.suggestions) ? raw.suggestions : [],
@@ -269,6 +292,12 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
         ? Number(raw.followingCount)
         : undefined,
     showProBadge: Boolean(raw.showProBadge),
+    hasActiveStories: Boolean(raw.hasActiveStories),
     subscription: raw.subscription != null ? mapSubscription(raw.subscription) : undefined,
+    canonicalUsername:
+      typeof raw.canonicalUsername === "string" && raw.canonicalUsername.trim()
+        ? raw.canonicalUsername.trim()
+        : undefined,
+    badges: Array.isArray(raw.badges) ? raw.badges.map(mapUserBadgeFromApi) : [],
   };
 }

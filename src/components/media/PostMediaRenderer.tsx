@@ -198,6 +198,12 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
 
   const v = variant === "detail" ? "detail" : "feed";
   return (
-    <PostAdaptiveStill src={item.url} variant={v} className={className} />
+    <PostAdaptiveStill
+      src={item.url}
+      variant={v}
+      width={item.width}
+      height={item.height}
+      className={className}
+    />
   );
 }

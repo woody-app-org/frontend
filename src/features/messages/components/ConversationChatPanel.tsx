@@ -1,9 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+﻿import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, MessagesSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import type { ConversationPeerPreviewDto, MessageResponseDto, OutgoingMessageAttachment } from "../types";
 import { DmComposer } from "./DmComposer";
 import { DmMessageList } from "./DmMessageList";
@@ -83,7 +84,7 @@ export function ConversationChatPanel({
         </button>
         {peer ? (
           <Link
-            to={`/profile/${peer.id}`}
+            to={profilePathForUser(peer)}
             aria-label={`Perfil de ${label}`}
             className={cn(
               woodyFocus.ring,
@@ -115,7 +116,7 @@ export function ConversationChatPanel({
           <p className="truncate font-semibold text-[var(--woody-text)]">{label}</p>
           {peer ? (
             <Link
-              to={`/profile/${peer.id}`}
+              to={profilePathForUser(peer)}
               className="text-xs font-medium text-[var(--woody-nav)] underline-offset-2 hover:underline"
             >
               Ver perfil
@@ -161,7 +162,7 @@ export function ConversationChatPanel({
 
       {loadingMessages ? (
         <div className="flex min-h-0 flex-1 items-center justify-center p-6">
-          <p className="text-sm text-[var(--woody-muted)]">A carregar mensagens…</p>
+          <p className="text-sm text-[var(--woody-muted)]">Carregando mensagens…</p>
         </div>
       ) : messagesLoadError ? (
         <div className="min-h-0 flex-1 bg-[var(--woody-bg)]/50" aria-hidden />
@@ -177,9 +178,9 @@ export function ConversationChatPanel({
             <MessagesSquare className="size-7 text-[var(--woody-nav)] opacity-90" strokeWidth={1.75} />
           </div>
           <div className="flex max-w-sm flex-col gap-2">
-            <p className="text-[0.9375rem] font-semibold tracking-tight text-[var(--woody-text)]">Começa a conversa</p>
+            <p className="text-[0.9375rem] font-semibold tracking-tight text-[var(--woody-text)]">Comece a conversa</p>
             <p className="text-sm leading-relaxed text-[var(--woody-muted)]">
-              Escreve uma mensagem em baixo ou usa o botão + para foto, vídeo, GIF ou sticker.
+              Mande uma mensagem, uma pic ou um GIF para iniciar a conversa com {peer ? label : "seu contacto"}.
             </p>
           </div>
         </div>

@@ -27,16 +27,23 @@ export function adaptiveMediaShellClass(
 ): string {
   const rounded = baseRounding(placement);
   const fill = tint(surface);
-  const k = kind ?? "portrait";
+  const k = kind ?? "feed_4_5";
 
   if (placement === "feed") {
     switch (k) {
-      case "portrait":
+      case "feed_4_5":
         return cn(
           "relative mx-auto w-full overflow-hidden",
           fill,
           rounded,
           "aspect-[4/5] max-h-[min(42rem,84dvh)] min-h-[min(280px,78vw)]"
+        );
+      case "phone_3_4":
+        return cn(
+          "relative mx-auto w-full overflow-hidden",
+          fill,
+          rounded,
+          "aspect-[3/4] max-h-[min(44rem,86dvh)] min-h-[min(300px,82vw)]"
         );
       case "square":
         return cn(
@@ -63,12 +70,19 @@ export function adaptiveMediaShellClass(
   }
 
   switch (k) {
-    case "portrait":
+    case "feed_4_5":
       return cn(
         "relative mx-auto w-full overflow-hidden",
         fill,
         rounded,
         "aspect-[4/5] max-h-[min(min(560px,96vw),88dvh)] min-h-[min(300px,82vw)] sm:max-h-[min(min(620px,96vw),90dvh)]"
+      );
+    case "phone_3_4":
+      return cn(
+        "relative mx-auto w-full overflow-hidden",
+        fill,
+        rounded,
+        "aspect-[3/4] max-h-[min(min(580px,96vw),90dvh)] min-h-[min(320px,84vw)] sm:max-h-[min(min(640px,96vw),92dvh)]"
       );
     case "square":
       return cn(
@@ -96,20 +110,18 @@ export function adaptiveMediaShellClass(
 
 export function adaptiveStillImageClass(
   kind: PostMediaIntrinsicKind | null,
-  placement: Placement,
+  _placement: Placement,
 ): string {
   const base = "absolute inset-0 size-full transition-opacity duration-150";
-  if (placement === "detail") {
-    if (kind === "portrait" || kind === null) return cn(base, "object-contain object-center");
-    if (kind === "square") return cn(base, "object-contain object-center");
-    return cn(base, "object-cover object-center");
-  }
-  return cn(base, "object-cover object-center");
+  // Landscape usa cover em qualquer placement (faz sentido visual preencher width).
+  // Todos os formatos verticais e quadrados usam contain para nunca cortar a imagem.
+  if (kind === "landscape") return cn(base, "object-cover object-center");
+  return cn(base, "object-contain object-center");
 }
 
 export function adaptiveVideoClass(kind: PostMediaIntrinsicKind | null, placement: Placement): string {
   const base = "absolute inset-0 size-full bg-black";
-  if (placement === "detail" && kind === "portrait") {
+  if (placement === "detail" && (kind === "feed_4_5" || kind === "phone_3_4")) {
     return cn(base, "object-contain object-center");
   }
   return cn(base, "object-cover object-center");

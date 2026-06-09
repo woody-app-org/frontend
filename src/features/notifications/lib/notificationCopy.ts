@@ -58,31 +58,39 @@ export function notificationSummaryFromItem(item: NotificationItem): string {
 
   switch (item.type) {
     case "post_like":
-      return `${name} gostou da tua publicação`;
+      return `${name} curtiu o seu post`;
     case "post_comment":
-      return `${name} comentou no teu post`;
+      return `${name} comentou no seu post`;
+    case "post_shared":
+      return `${name} compartilhou sua publicação`;
+    case "story_like":
+      return `${name} curtiu o seu story`;
+    case "story_shared":
+      return `${name} respondeu ao seu story`;
     case "comment_reply":
-      return `${name} respondeu ao teu comentário`;
+      return `${name} respondeu seu comentário`;
     case "new_follower":
-      return `${name} começou a seguir-te`;
+      return `${name} começou a seguir você`;
     case "profile_signal": {
       const bit = profileSignalSnippet(ctx);
-      return bit ? `${name} enviou-te um sinal: ${bit}` : `${name} enviou-te um sinal`;
+      return bit ? `${name} enviou um sinal: ${bit}` : `${name} enviou um sinal`;
     }
     case "message_request":
-      return `${name} quer conversar contigo`;
+      return `${name} quer conversar com você`;
+    case "new_direct_message":
+      return `${name} enviou uma mensagem`;
     case "community_request": {
       const cname = communityNameFromSlug(str(ctx.communitySlug));
       return cname
-        ? `${name} pediu para entrar em «${cname}» (comunidade que moderas)`
-        : `${name} pediu para entrar numa comunidade que moderas`;
+        ? `${name} pediu para entrar em "${cname}" (comunidade que você modera)`
+        : `${name} pediu para entrar em uma comunidade que você modera`;
     }
     case "community_request_approved": {
       const cname = communityNameFromSlug(str(ctx.communitySlug));
       if (name && name !== "Alguém") {
-        return cname ? `${name} aceitou o teu pedido para «${cname}»` : `${name} aceitou o teu pedido de entrada`;
+        return cname ? `${name} aceitou o seu pedido para "${cname}"` : `${name} aceitou o seu pedido de entrada`;
       }
-      return cname ? `O teu pedido para «${cname}» foi aceite` : "O teu pedido de entrada na comunidade foi aceite";
+      return cname ? `O seu pedido para "${cname}" foi aceito` : "O seu pedido de entrada na comunidade foi aceito";
     }
     default:
       return `${name} — nova atividade`;

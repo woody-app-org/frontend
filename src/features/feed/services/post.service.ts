@@ -8,7 +8,10 @@ import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 export const readImageFileAsDataUrlIfSmall = readImageAsDataUrlIfSmall;
 
 /** Alinhado a `InputValidationLimits.PostContentMaxLength` no backend. */
-export const POST_COMPOSER_CONTENT_MAX_LENGTH = 20_000;
+export const POST_COMPOSER_CONTENT_MAX_LENGTH = 500;
+
+/** Alinhado a `InputValidationLimits.CommentContentMaxLength` no backend. */
+export const COMMENT_CONTENT_MAX_LENGTH = 500;
 
 /**
  * Corpo de `POST /posts`. Campos estáveis para evoluções futuras (rascunhos, edição) sem mudar o contrato base.
@@ -34,6 +37,9 @@ export type CreatePostMediaAttachmentPayload = {
   storageKey?: string;
   mimeType?: string;
   fileSize?: number;
+  /** Dimensões reais (eco do upload); usadas para classificar o formato oficial Woody. */
+  width?: number;
+  height?: number;
   /** Poster de vídeo (URL de imagem após upload). */
   thumbnailUrl?: string;
 };

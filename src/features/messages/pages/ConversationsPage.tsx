@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MessageSquareDashed } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -28,6 +29,7 @@ import { ConversationStartHints } from "../components/ConversationStartHints";
 import { sortConversationsByActivity } from "../lib/sortConversations";
 import { sortMessagesChronological } from "../lib/sortMessages";
 import { DM_MESSAGES_MAX_PAGE_SIZE } from "../lib/dmLimits";
+import { BLOCK_RELATIONSHIP_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 
 export function ConversationsPage() {
   const navigate = useNavigate();
@@ -114,6 +116,25 @@ export function ConversationsPage() {
     }
     void reloadMessages(selectedId);
   }, [selectedId, reloadMessages]);
+
+  useEffect(() => {
+    const onBlockChanged = () => {
+      scheduleReloadLists();
+    };
+    window.addEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onBlockChanged);
+    return () => window.removeEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onBlockChanged);
+  }, [scheduleReloadLists]);
+
+  useEffect(() => {
+    if (loadingLists || selectedId == null) return;
+    const stillExists =
+      conversations.some((c) => c.id === selectedId) ||
+      pendingReceived.some((c) => c.id === selectedId);
+    if (!stillExists) {
+      setMessages([]);
+      navigate("/messages", { replace: true });
+    }
+  }, [conversations, loadingLists, navigate, pendingReceived, selectedId]);
 
   const mergeMessage = useCallback((next: MessageResponseDto) => {
     if (!next || next.id < 1) return;
@@ -307,7 +328,7 @@ export function ConversationsPage() {
               selectedId={selectedId}
               onSelect={openConversation}
               loading={loadingLists}
-              emptyLabel="Ainda não tens conversas aceites."
+              emptyLabel="Não há conversas ativas."
             />
 
             {outgoingPending.length > 0 ? (
@@ -333,11 +354,11 @@ export function ConversationsPage() {
             )}
           >
             {selectedId == null ? (
-              <div className="flex h-full min-h-[min(40dvh,280px)] flex-col items-center justify-center gap-2 p-8 text-center">
-                <p className="text-sm font-medium text-[var(--woody-text)]">Escolhe uma conversa</p>
-                <p className="max-w-md text-sm text-[var(--woody-muted)]">
-                  No telemóvel, toca num contacto na lista. No desktop, vê a lista à esquerda e o chat aqui.
-                </p>
+              <div className="flex h-full min-h-[min(40dvh,280px)] flex-col items-center justify-center gap-4 p-8 text-center">
+                <div className="flex size-20 items-center justify-center rounded-2xl bg-[var(--woody-nav)]/10">
+                  <MessageSquareDashed className="size-10 text-[var(--woody-nav)]" strokeWidth={1.5} aria-hidden />
+                </div>
+                <p className="text-sm font-medium text-[var(--woody-text)]">Escolha uma conversa</p>
               </div>
             ) : (
               <ConversationChatPanel

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Community, Post, User } from "@/domain/types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { searchByMode, type SearchMode } from "../services/search.service";
+import { BLOCK_RELATIONSHIP_CHANGED_EVENT } from "@/lib/socialGraphEvents";
 
 export interface UseSearchParams {
   query: string;
@@ -25,6 +26,13 @@ export function useSearch({ query, mode, debounceMs = 200 }: UseSearchParams): U
   const lastReq = useRef(0);
 
   const effectiveQuery = useMemo(() => query.trim(), [query]);
+  const [blockRefreshTick, setBlockRefreshTick] = useState(0);
+
+  useEffect(() => {
+    const onBlockChanged = () => setBlockRefreshTick((n) => n + 1);
+    window.addEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onBlockChanged);
+    return () => window.removeEventListener(BLOCK_RELATIONSHIP_CHANGED_EVENT, onBlockChanged);
+  }, []);
 
   useEffect(() => {
     const reqId = ++lastReq.current;
@@ -61,7 +69,7 @@ export function useSearch({ query, mode, debounceMs = 200 }: UseSearchParams): U
     }, debounceMs);
 
     return () => window.clearTimeout(t);
-  }, [debounceMs, effectiveQuery, mode, viewerId]);
+  }, [debounceMs, effectiveQuery, mode, viewerId, blockRefreshTick]);
 
   return { isLoading, posts, people, communities };
 }

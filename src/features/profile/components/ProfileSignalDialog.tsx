@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+﻿import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Send, Sparkles, X } from "lucide-react";
 import {
   Dialog,
@@ -88,7 +88,7 @@ export function ProfileSignalDialog({
                 Enviar sinal
               </DialogTitle>
               <DialogDescription className="mt-1.5 text-left text-sm leading-relaxed text-[var(--woody-muted)]">
-                Escolhe um gesto leve. Ela recebe isto em privado — não aparece no perfil público.
+                Escolhe um sinal para enviar a {recipientName}. Só tu e {recipientName} veem este sinal.
               </DialogDescription>
             </div>
             <DialogClose asChild>
@@ -174,7 +174,7 @@ export function ProfileSignalDialog({
                 {busy ? (
                   <>
                     <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
-                    <span>A enviar…</span>
+                    <span>Enviando…</span>
                   </>
                 ) : lockedAfterSend ? (
                   <>

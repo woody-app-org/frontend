@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import woodyCat from "@/assets/new-cat.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { HandleInput } from "@/components/forms";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -146,13 +147,13 @@ export function WaitlistFormPage() {
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-10">
         <div className="w-full max-w-[480px]">
           <div className="mb-5 px-1 text-left">
-            <p className="text-base font-bold text-[var(--woody-ink)]/75 leading-snug">
+            <p className="font-display text-base font-semibold text-[var(--woody-ink)]/75 leading-snug">
               {WAITLIST_INTRO_FORM}
             </p>
           </div>
 
           <div className="mb-8 text-center px-2">
-            <h1 className="text-[1.75rem] font-bold text-[var(--woody-ink)] leading-[1.2] tracking-tight">
+            <h1 className="font-heading text-[1.75rem] font-bold text-[var(--woody-ink)] leading-[1.2] tracking-tight">
               Preencha seus dados aqui!
             </h1>
           </div>
@@ -165,6 +166,9 @@ export function WaitlistFormPage() {
                   placeholder="Seu nome completo"
                   maxLength={120}
                   {...register("name")}
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  spellCheck
                   className={inputCls(!!errors.name)}
                 />
               </Field>
@@ -239,7 +243,7 @@ export function WaitlistFormPage() {
                   >
                     @
                   </span>
-                  <Input
+                  <HandleInput
                     id="socialUsername"
                     placeholder={currentOption?.placeholder ?? "seuusuario"}
                     maxLength={80}

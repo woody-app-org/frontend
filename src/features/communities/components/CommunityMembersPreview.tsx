@@ -4,6 +4,7 @@ import { Loader2, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { cn } from "@/lib/utils";
 import { woodyDialogScroll, woodyFocus, woodySurface } from "@/lib/woody-ui";
 import type { CommunityMemberListItem } from "@/domain/types";
@@ -11,7 +12,7 @@ import { CommunityMemberRoleIndicator } from "@/features/communities/components/
 import { fetchCommunityMembersPage } from "../services/community.service";
 
 export interface CommunityMembersPreviewProps {
-  communityId: string;
+  communitySlug: string;
   memberCount: number;
   /** Ordem esperada: criadora, admins, membros (ex.: `getCommunityMemberListItems`). */
   members: CommunityMemberListItem[];
@@ -22,17 +23,8 @@ export interface CommunityMembersPreviewProps {
 
 const panel = cn(woodySurface.card, "p-4 sm:p-5");
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 export function CommunityMembersPreview({
-  communityId,
+  communitySlug,
   memberCount,
   members,
   maxVisible = 6,
@@ -52,7 +44,7 @@ export function CommunityMembersPreview({
     setModalError(null);
     try {
       const nextPage = modalPage + 1;
-      const chunk = await fetchCommunityMembersPage(communityId, nextPage, 30);
+      const chunk = await fetchCommunityMembersPage(communitySlug, nextPage, 30);
       setModalMembers((prev) => (nextPage === 1 ? chunk.items : [...prev, ...chunk.items]));
       setModalPage(nextPage);
       setModalHasNext(chunk.hasNextPage);
@@ -61,7 +53,7 @@ export function CommunityMembersPreview({
     } finally {
       setModalLoading(false);
     }
-  }, [communityId, modalHasNext, modalLoading, modalPage]);
+  }, [communitySlug, modalHasNext, modalLoading, modalPage]);
 
   useEffect(() => {
     if (!allMembersOpen) return;
@@ -69,7 +61,7 @@ export function CommunityMembersPreview({
     setModalPage(0);
     setModalHasNext(true);
     setModalError(null);
-  }, [allMembersOpen, communityId]);
+  }, [allMembersOpen, communitySlug]);
 
   useEffect(() => {
     if (!allMembersOpen || modalPage > 0) return;
@@ -105,21 +97,20 @@ export function CommunityMembersPreview({
           {visible.map(({ user, role }) => (
             <li key={user.id}>
               <Link
-                to={`/profile/${user.id}`}
+                to={profilePathForUser(user)}
                 className="flex min-w-0 items-center gap-3 rounded-xl p-1.5 -m-1.5 transition-colors hover:bg-[var(--woody-nav)]/6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
               >
                 <Avatar className="size-9 shrink-0">
                   <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
                   <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xs text-[var(--woody-text)]">
-                    {initials(user.name)}
+                    {user.username.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                    <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
+                    <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.username}</p>
                     <CommunityMemberRoleIndicator role={role} variant="participant" />
                   </div>
-                  <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
                 </div>
               </Link>
             </li>
@@ -157,23 +148,22 @@ export function CommunityMembersPreview({
             {modalMembers.map(({ user, role }) => (
               <li key={user.id}>
                 <Link
-                  to={`/profile/${user.id}`}
+                  to={profilePathForUser(user)}
                   className="flex min-w-0 items-center gap-3 rounded-xl p-2 transition-colors hover:bg-[var(--woody-nav)]/6 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
                   onClick={() => setAllMembersOpen(false)}
                 >
                   <Avatar className="size-10 shrink-0">
                     <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
                     <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xs text-[var(--woody-text)]">
-                      {initials(user.name)}
+                      {user.username.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                      <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
+                      <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.username}</p>
                       <CommunityMemberRoleIndicator role={role} variant="participant" />
                     </div>
-                    <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
-                  </div>
+                    </div>
                 </Link>
               </li>
             ))}

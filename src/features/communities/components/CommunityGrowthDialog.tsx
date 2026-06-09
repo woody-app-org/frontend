@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BarChart3, Lock, Sparkles } from "lucide-react";
 import {
@@ -49,7 +49,7 @@ export function CommunityGrowthDialog({
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchCommunityPremiumAnalytics(communityId);
+      const data = await fetchCommunityPremiumAnalytics(communitySlug);
       setAnalytics(data);
     } catch (e) {
       setAnalytics(null);
@@ -57,7 +57,7 @@ export function CommunityGrowthDialog({
     } finally {
       setLoading(false);
     }
-  }, [canSeeAnalytics, communityId]);
+  }, [canSeeAnalytics, communitySlug]);
 
   useEffect(() => {
     if (!open) return;
@@ -125,7 +125,7 @@ export function CommunityGrowthDialog({
         ) : (
           <div className="space-y-4">
             {loading ? (
-              <p className="text-sm text-[var(--woody-muted)]">A carregar resumo…</p>
+              <p className="text-sm text-[var(--woody-muted)]">Carregando resumo…</p>
             ) : error ? (
               <div className="space-y-3">
                 <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">

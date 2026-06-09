@@ -28,7 +28,7 @@ const DURATION_OPTIONS = [
 export interface CommunityPostBoostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  communityId: string;
+  communitySlug: string;
   post: Post | null;
   onApplied: () => void | Promise<void>;
 }
@@ -36,7 +36,7 @@ export interface CommunityPostBoostDialogProps {
 export function CommunityPostBoostDialog({
   open,
   onOpenChange,
-  communityId,
+  communitySlug,
   post,
   onApplied,
 }: CommunityPostBoostDialogProps) {
@@ -56,7 +56,7 @@ export function CommunityPostBoostDialog({
     setBusy(true);
     setError(null);
     try {
-      await boostCommunityPost(communityId, post.id, durationDays);
+      await boostCommunityPost(communitySlug, post.id, durationDays);
       await onApplied();
       handleClose(false);
     } catch (e) {
@@ -71,7 +71,7 @@ export function CommunityPostBoostDialog({
     setBusy(true);
     setError(null);
     try {
-      await unboostCommunityPost(communityId, post.id);
+      await unboostCommunityPost(communitySlug, post.id);
       await onApplied();
       handleClose(false);
     } catch (e) {

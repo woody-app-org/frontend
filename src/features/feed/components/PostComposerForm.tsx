@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { ImagePlus, Loader2, UserRound, Users, Video } from "lucide-react";
+import { Hash, ImagePlus, Loader2, UserRound, Users, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,9 @@ import {
   formatFileSize,
 } from "@/domain/postMediaLimits";
 import { MediaPicker } from "@/components/media/MediaPicker";
+import { ImageCropDialog, type ImageCropFormatOption } from "@/components/media/ImageCropDialog";
 import { MediaPreviewGrid, type MediaPreviewItem } from "@/components/media/MediaPreviewGrid";
-import { showSuccessToast, showActionErrorToast } from "@/lib/toast";
+import { showPostCreatedToast, showActionErrorToast } from "@/lib/toast";
 import { HashtagChipsField } from "./HashtagChipsField";
 
 const selectClass = cn(
@@ -35,6 +36,13 @@ const selectClass = cn(
 );
 
 const VIDEO_MIME_OK = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+
+/** Formatos oficiais do feed oferecidos no passo de ajuste/crop. */
+const POST_CROP_FORMATS: ImageCropFormatOption[] = [
+  { key: "feed_4_5", label: "4:5", aspect: 4 / 5, outputWidth: 1080, outputHeight: 1350 },
+  { key: "phone_3_4", label: "3:4", aspect: 3 / 4, outputWidth: 1080, outputHeight: 1440 },
+  { key: "square_1_1", label: "1:1", aspect: 1, outputWidth: 1080, outputHeight: 1080 },
+];
 
 function targetOptionClass(selected: boolean) {
   return cn(
@@ -137,9 +145,16 @@ export function PostComposerForm({
   const [communityId, setCommunityId] = useState(forcedCommunity?.id ?? "");
   const [content, setContent] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
+  // Controla visibilidade do input de hashtag no modal (aberto via botão na toolbar)
+  const [hashtagOpen, setHashtagOpen] = useState(false);
 
   const [imageItems, setImageItems] = useState<ComposerImageItem[]>([]);
   const [videoItem, setVideoItem] = useState<ComposerVideoItem | null>(null);
+
+  // Passo de ajuste/crop: fila de imagens a enquadrar nos formatos oficiais.
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const cropSrcRef = useRef<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -183,6 +198,7 @@ export function PostComposerForm({
         URL.revokeObjectURL(videoItem.previewUrl);
         if (videoItem.posterUrl) URL.revokeObjectURL(videoItem.posterUrl);
       }
+      if (cropSrcRef.current) URL.revokeObjectURL(cropSrcRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -268,13 +284,22 @@ export function PostComposerForm({
       const toAdd = files.slice(0, remaining);
       const skipped = files.length - toAdd.length;
 
-      const newItems: ComposerImageItem[] = toAdd.map((f) => ({
-        id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        file: f,
-        previewUrl: URL.createObjectURL(f),
-      }));
+      // GIFs entram diretos (o crop em canvas perderia a animação); restantes vão ao passo de ajuste.
+      const gifs = toAdd.filter((f) => f.type === "image/gif");
+      const croppable = toAdd.filter((f) => f.type !== "image/gif");
 
-      setImageItems((prev) => [...prev, ...newItems]);
+      if (gifs.length > 0) {
+        const gifItems: ComposerImageItem[] = gifs.map((f) => ({
+          id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          file: f,
+          previewUrl: URL.createObjectURL(f),
+        }));
+        setImageItems((prev) => [...prev, ...gifItems]);
+      }
+
+      if (croppable.length > 0) {
+        setCropQueue((prev) => [...prev, ...croppable]);
+      }
 
       if (skipped > 0) {
         setFormError(
@@ -286,6 +311,45 @@ export function PostComposerForm({
     },
     [imageItems.length, videoItem]
   );
+
+  // Abre o próximo item da fila de crop quando não há nenhum diálogo ativo.
+  useEffect(() => {
+    if (cropSrc || cropQueue.length === 0) return;
+    const next = cropQueue[0];
+    const url = URL.createObjectURL(next);
+    cropSrcRef.current = url;
+    setCropSrc(url);
+  }, [cropQueue, cropSrc]);
+
+  const closeCurrentCrop = useCallback(() => {
+    if (cropSrcRef.current) {
+      URL.revokeObjectURL(cropSrcRef.current);
+      cropSrcRef.current = null;
+    }
+    setCropSrc(null);
+  }, []);
+
+  const handleCropConfirm = useCallback(
+    async (file: File) => {
+      setImageItems((prev) => [
+        ...prev,
+        {
+          id: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        },
+      ]);
+      closeCurrentCrop();
+      setCropQueue((prev) => prev.slice(1));
+    },
+    [closeCurrentCrop]
+  );
+
+  const handleCropCancel = useCallback(() => {
+    // Cancelar descarta o item atual e o resto da fila.
+    closeCurrentCrop();
+    setCropQueue([]);
+  }, [closeCurrentCrop]);
 
   const removeImage = useCallback((id: string) => {
     setImageItems((prev) => {
@@ -479,6 +543,8 @@ export function PostComposerForm({
               storageKey: uploaded.storageKey,
               mimeType: uploaded.contentType,
               fileSize: uploaded.sizeBytes,
+              ...(uploaded.width != null && uploaded.width > 0 ? { width: uploaded.width } : {}),
+              ...(uploaded.height != null && uploaded.height > 0 ? { height: uploaded.height } : {}),
             };
           })
         );
@@ -512,7 +578,7 @@ export function PostComposerForm({
         return null;
       });
 
-      showSuccessToast("Publicação criada com sucesso.", { id: "woody-post-created" });
+      showPostCreatedToast(post);
       onPostCreated?.(post);
     } catch (err) {
       showActionErrorToast(err, "Falha ao publicar.");
@@ -534,7 +600,7 @@ export function PostComposerForm({
   const submitDisabled =
     submitting || communityBlocking || (!hasText && !hasMediaQueued) || content.length > POST_COMPOSER_CONTENT_MAX_LENGTH;
 
-  const mainPlaceholder = "O que está acontecendo?";
+  const mainPlaceholder = "Publique uma foto, um pensamento, um caos";
 
   const hasImages = imageItems.length > 0;
   const hasVideo = videoItem !== null;
@@ -599,7 +665,7 @@ export function PostComposerForm({
           {loadingCommunities ? (
             <div className="flex h-10 items-center gap-2 rounded-2xl border border-black/[0.06] bg-black/[0.02] px-3 text-sm text-[var(--woody-muted)]">
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              A carregar…
+              Carregando…
             </div>
           ) : communityLoadError ? (
             <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-950 dark:text-amber-100">
@@ -654,6 +720,7 @@ export function PostComposerForm({
   );
 
   return (
+    <>
     <div
       className={cn(isModalEmbed ? "flex min-h-0 flex-1 flex-col" : "flex flex-col gap-3", className)}
       aria-busy={submitting}
@@ -734,6 +801,7 @@ export function PostComposerForm({
               disabled={fieldsDisabled}
               compact
               composerBare={isModalEmbed}
+              showInput={isModalEmbed ? (hashtagOpen || hashtags.length > 0) : true}
             />
 
             <MediaPreviewGrid
@@ -757,6 +825,8 @@ export function PostComposerForm({
                 Até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos ({formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} cada) ou 1
                 vídeo até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} / {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s ·{" "}
                 {content.length}/{POST_COMPOSER_CONTENT_MAX_LENGTH}
+                <br />
+                Escolha o melhor formato da sua mídia.
               </p>
             )}
             {isModalEmbed ? (
@@ -825,7 +895,41 @@ export function PostComposerForm({
               {imageItems.length}/{POST_COMPOSER_IMAGES_MAX_COUNT}
             </span>
           ) : null}
+
+          {/* Botão hashtag — só no modal; fora do modal o campo já aparece inline */}
+          {isModalEmbed && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setHashtagOpen((v) => !v)}
+              disabled={fieldsDisabled}
+              aria-label="Adicionar hashtag"
+              className={cn(
+                toolbarIconBtn,
+                (hashtagOpen || hashtags.length > 0) && "bg-[var(--woody-accent)]/14"
+              )}
+            >
+              <Hash className="size-[1.15rem] sm:size-5" aria-hidden />
+            </Button>
+          )}
         </div>
+
+        {/* Contador de caracteres — visível no modal quando há texto */}
+        {isModalEmbed && content.trim().length > 0 && (() => {
+          const charsLeft = POST_COMPOSER_CONTENT_MAX_LENGTH - content.trim().length;
+          return (
+            <span
+              className={cn(
+                "shrink-0 text-xs tabular-nums text-[var(--woody-muted)]",
+                charsLeft < 50 && "text-amber-500",
+                charsLeft < 0 && "font-semibold text-red-500"
+              )}
+            >
+              {charsLeft}
+            </span>
+          );
+        })()}
 
         <Button
           type="button"
@@ -857,5 +961,21 @@ export function PostComposerForm({
         </Button>
       </div>
     </div>
+
+    <ImageCropDialog
+      open={cropSrc !== null}
+      onOpenChange={(o) => {
+        if (!o) handleCropCancel();
+      }}
+      imageSrc={cropSrc}
+      title="Ajustar enquadramento"
+      description="Escolha o melhor formato da sua mídia."
+      cropShape="rect"
+      layout="wide"
+      formatOptions={POST_CROP_FORMATS}
+      initialFormatKey="feed_4_5"
+      onConfirm={handleCropConfirm}
+    />
+    </>
   );
 }

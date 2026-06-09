@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Sparkles, User } from "lucide-react";
+import { LifeBuoy, LogOut, ScrollText, Sparkles, User, UserX } from "lucide-react";
+import { BlockedUsersDialog } from "@/features/users/components/BlockedUsersDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { LogoutConfirmationDialog } from "@/features/auth/components/LogoutConfirmationDialog";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { resolvePublicMediaUrl } from "@/lib/api";
@@ -37,6 +39,7 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);
   const [menuAvatarFailed, setMenuAvatarFailed] = useState(false);
+  const [blockedUsersOpen, setBlockedUsersOpen] = useState(false);
 
   useEffect(() => {
     setMenuAvatarFailed(false);
@@ -132,7 +135,7 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           <DropdownMenuItem asChild className="cursor-pointer focus:bg-[var(--woody-nav)]/10">
-            <Link to={`/profile/${user.id}`} className="flex items-center gap-2">
+            <Link to={profilePathForUser(user)} className="flex items-center gap-2">
               <User className="size-4 opacity-80" aria-hidden />
               Meu perfil
             </Link>
@@ -142,6 +145,25 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
               <Sparkles className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
               Planos e assinatura
             </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer focus:bg-[var(--woody-nav)]/10">
+            <Link to="/support" className="flex items-center gap-2">
+              <LifeBuoy className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
+              Suporte
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer focus:bg-[var(--woody-nav)]/10">
+            <Link to="/institutional/politicas" className="flex items-center gap-2">
+              <ScrollText className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
+              Políticas
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer focus:bg-[var(--woody-nav)]/10"
+            onClick={() => setBlockedUsersOpen(true)}
+          >
+            <UserX className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
+            Usuárias bloqueadas
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           <DropdownMenuItem
@@ -154,6 +176,7 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
         </DropdownMenuContent>
       </DropdownMenu>
 
+      <BlockedUsersDialog open={blockedUsersOpen} onOpenChange={setBlockedUsersOpen} />
       <LogoutConfirmationDialog
         open={logoutOpen}
         onOpenChange={setLogoutOpen}

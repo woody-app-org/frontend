@@ -1,14 +1,21 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type { Post, UseUserProfileReturn } from "../types";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
-import { getProfile, getProfilePosts } from "../services/profile.service";
+import { getProfile, getProfileByUsername, getProfilePosts } from "../services/profile.service";
+import { isLegacyNumericProfileParam, profilePath } from "../lib/profilePaths";
 import { pinPostOnProfile, unpinPostFromProfile } from "@/features/feed/services/postPin.service";
 import { usePostListLikeToggle } from "@/features/feed/hooks/usePostListLikeToggle";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
-export function useUserProfile(userId: string | undefined): UseUserProfileReturn {
+export type UseUserProfileReturnExtended = UseUserProfileReturn & {
+  /** Quando definido, o cliente deve `replace` para a URL canónica por username. */
+  profileUrlRedirect: string | null;
+};
+
+export function useUserProfile(routeHandle: string | undefined): UseUserProfileReturnExtended {
   const viewerId = useViewerId();
   const [profile, setProfile] = useState<UseUserProfileReturn["profile"]>(null);
+  const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
   const [pinnedPosts, setPinnedPosts] = useState<Post[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,8 +39,9 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
   );
 
   const fetchProfile = useCallback(async () => {
-    if (!userId) {
+    if (!routeHandle) {
       setProfile(null);
+      setResolvedUserId(null);
       setPinnedPosts([]);
       setPosts([]);
       setIsLoading(false);
@@ -41,34 +49,71 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     }
     setIsLoading(true);
     setError(null);
+    setProfile(null);
+    setResolvedUserId(null);
+    setPinnedPosts([]);
+    setPosts([]);
     try {
-      const [profileData] = await Promise.all([getProfile(userId), loadPosts(userId, 1)]);
+      const profileData = isLegacyNumericProfileParam(routeHandle)
+        ? await getProfile(routeHandle)
+        : await getProfileByUsername(routeHandle);
+
       setProfile(profileData);
+      setResolvedUserId(profileData?.id ?? null);
       setPage(1);
+
+      if (profileData?.id) {
+        await loadPosts(profileData.id, 1);
+      } else {
+        setPinnedPosts([]);
+        setPosts([]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Falha ao carregar perfil"));
     } finally {
       setIsLoading(false);
     }
-  }, [userId, loadPosts]);
+  }, [routeHandle, loadPosts]);
 
   useEffect(() => {
     void fetchProfile();
   }, [fetchProfile]);
 
   const fetchPostsPage = useCallback(async () => {
-    if (!userId) return;
+    if (!resolvedUserId) return;
     try {
-      await loadPosts(userId, page);
+      await loadPosts(resolvedUserId, page);
     } catch {
       // mantém listas atuais em caso de erro de paginação
     }
-  }, [userId, page, loadPosts]);
+  }, [resolvedUserId, page, loadPosts]);
 
   useEffect(() => {
-    if (!userId || page === 1) return;
+    if (!resolvedUserId || page === 1) return;
     void fetchPostsPage();
-  }, [userId, page, fetchPostsPage]);
+  }, [resolvedUserId, page, fetchPostsPage]);
+
+  const profileUrlRedirect = useMemo(() => {
+    if (!profile || isLoading) return null;
+
+    const handle = routeHandle?.trim() ?? "";
+    const profileId = profile.id.trim();
+    const profileUsername = profile.username?.trim() ?? "";
+    const canonical = profile.canonicalUsername?.trim();
+
+    if (handle && isLegacyNumericProfileParam(handle)) {
+      if (profileId !== handle) return null;
+      if (canonical) return profilePath(canonical);
+      if (profileUsername) return profilePath(profileUsername);
+      return null;
+    }
+
+    if (canonical && canonical !== handle && canonical !== profileUsername) {
+      return profilePath(canonical);
+    }
+
+    return null;
+  }, [profile, routeHandle, isLoading]);
 
   const nextPage = useCallback(() => setPage((p) => p + 1), []);
   const previousPage = useCallback(() => setPage((p) => Math.max(1, p - 1)), []);
@@ -86,15 +131,15 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
 
   const prependCreatedProfilePost = useCallback(
     (post: Post) => {
-      if (!userId) return;
+      if (!resolvedUserId) return;
       if (post.publicationContext !== "profile") return;
-      if (post.author.id !== userId) return;
+      if (post.author.id !== resolvedUserId) return;
       setPosts((prev) => {
         if (prev.some((p) => p.id === post.id)) return prev;
         return [post, ...prev];
       });
     },
-    [userId]
+    [resolvedUserId]
   );
 
   const toggleProfilePin = useCallback(
@@ -107,7 +152,7 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
         } else {
           await pinPostOnProfile(post.id);
         }
-        if (userId) await loadPosts(userId, page);
+        if (resolvedUserId) await loadPosts(resolvedUserId, page);
         showSuccessToast(
           wasPinned ? "Publicação removida dos destaques." : "Publicação fixada no perfil.",
           { id: `woody-profile-pin-${post.id}` }
@@ -121,7 +166,7 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
         setPinningPostId(null);
       }
     },
-    [userId, page, loadPosts]
+    [resolvedUserId, page, loadPosts]
   );
 
   const applyFollowPatch = useCallback((patch: { isFollowing: boolean; followersCount: number }) => {
@@ -156,5 +201,6 @@ export function useUserProfile(userId: string | undefined): UseUserProfileReturn
     applyFollowPatch,
     togglePostLike,
     isPostLikePending,
+    profileUrlRedirect,
   };
 }

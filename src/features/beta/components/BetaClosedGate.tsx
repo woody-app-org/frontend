@@ -33,8 +33,12 @@ export function BetaClosedGate({ children }: BetaClosedGateProps) {
     return <>{children}</>;
   }
 
-  /** Login continua público com beta fechado (contas já existentes). */
-  if (pathname === "/auth/login") {
+  /** Login, recuperação de senha e apelo de banimento continuam públicos com beta fechado. */
+  if (
+    pathname === "/auth/login"
+    || pathname.startsWith("/auth/forgot-password")
+    || pathname === "/support/ban-appeal"
+  ) {
     return <>{children}</>;
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FeedLayout } from "../components/FeedLayout";
 import { FeedTabs } from "../components/FeedTabs";
@@ -16,6 +16,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { FeedFilter } from "../types";
 import { useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import {
+  StoriesBar,
+  StoryComposerModal,
+  StoryViewerModal,
+  dispatchStoriesChanged,
+  useStoriesFeed,
+  useStoryViewerState,
+} from "@/features/stories";
 
 const linkClass = "font-semibold text-[var(--woody-nav)] underline-offset-2 hover:underline";
 
@@ -32,13 +40,13 @@ const FEED_HEADLINES: Record<
   forYou: {
     title: "Para você",
     subtitle:
-      "Mistura exploratória: comunidades públicas, contas que segues e grupos dos quais participas — a ordem vem do servidor, diferente de “Em destaque”.",
+      "Você verá por aqui conteúdos de criadoras que ainda não segue, baseada nas suas preferências, interesses e histórico de interações dentro da Woody.",
     icon: Compass,
   },
   following: {
     title: "Seguindo",
     subtitle:
-      "Só posts de pessoas que segues ou de comunidades em que és membra — o mais recente primeiro.",
+      "Fique por dentro do que está rolando agora entre as pessoas que você segue e as comunidades que fazem parte da sua Woody",
     icon: UserRoundCheck,
   },
 };
@@ -104,7 +112,10 @@ function feedEmptyState(filter: FeedFilter, isAuthenticated: boolean): { title: 
 function FeedPageContent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user: authUser } = useAuth();
+  const storyViewer = useStoryViewerState();
+  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
+  const storiesFeed = useStoriesFeed(isAuthenticated);
 
   const {
     posts,
@@ -151,6 +162,28 @@ function FeedPageContent() {
 
   const emptyState = useMemo(() => feedEmptyState(filter, isAuthenticated), [filter, isAuthenticated]);
 
+  const selfFeedItem = useMemo(() => {
+    if (!authUser?.id) return null;
+    return storiesFeed.items.find((item) => item.userId === authUser.id || item.isSelf) ?? null;
+  }, [authUser, storiesFeed.items]);
+
+  const othersFeedItems = useMemo(() => {
+    if (!authUser?.id) return storiesFeed.items;
+    return storiesFeed.items.filter((item) => item.userId !== authUser.id && !item.isSelf);
+  }, [authUser, storiesFeed.items]);
+
+  const selfUserForBar = authUser
+    ? {
+        id: authUser.id,
+        displayName: authUser.name?.trim() || authUser.username,
+        username: authUser.username,
+        avatarUrl: authUser.avatarUrl ?? null,
+      }
+    : null;
+
+  const showStoriesBar =
+    isAuthenticated && !storiesFeed.isError && (storiesFeed.isLoading || Boolean(selfUserForBar));
+
   return (
     <div
       className={cn(
@@ -163,6 +196,22 @@ function FeedPageContent() {
       <div className="overflow-hidden rounded-[1.5rem] border border-black/[0.07] bg-[#ebebed] shadow-[0_1px_4px_rgba(10,10,10,0.05)]">
         <FeedTabs activeFilter={filter} onFilterChange={setFilter} className="w-full min-w-0 rounded-[inherit]" />
       </div>
+
+      {showStoriesBar ? (
+        <StoriesBar
+          className="-mt-2 md:-mt-1"
+          isLoading={storiesFeed.isLoading}
+          selfUser={selfUserForBar}
+          selfFeedItem={selfFeedItem}
+          others={othersFeedItems}
+          onOpenUserStories={(userId) => {
+            // Atualiza o aro visualmente na hora, sem esperar pelo re-fetch
+            storiesFeed.markUserViewed(userId);
+            storyViewer.open(userId);
+          }}
+          onAddStory={() => setStoryComposerOpen(true)}
+        />
+      ) : null}
 
       <div className="pt-1">
         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-[var(--woody-text)] md:text-[1.25rem]">
@@ -205,6 +254,7 @@ function FeedPageContent() {
                     onLike={togglePostLike}
                     isLikePending={isPostLikePending(post.id)}
                     onPin={(id) => console.log("Pin", id)}
+                    onViewAuthorStories={(authorId) => storyViewer.open(authorId)}
                   />
                 </li>
               ))}
@@ -258,6 +308,27 @@ function FeedPageContent() {
       </section>
 
       <FeedCommunityContextStrip className="mt-2" />
+
+      <StoryViewerModal
+        {...storyViewer.modalProps}
+        onStoriesConsumed={() => {
+          dispatchStoriesChanged();
+        }}
+        onStoryDeleted={() => {
+          dispatchStoriesChanged();
+        }}
+      />
+
+      {isAuthenticated ? (
+        <StoryComposerModal
+          open={storyComposerOpen}
+          onOpenChange={setStoryComposerOpen}
+          onPublished={() => {
+            dispatchStoriesChanged();
+            if (authUser?.id) storyViewer.open(authUser.id);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

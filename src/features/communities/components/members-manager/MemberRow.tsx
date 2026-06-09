@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import {
   getCommunityMemberRoleManagementBadgeClass,
   getCommunityMemberRoleManagementLabel,
@@ -61,7 +62,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
     <li className="rounded-xl border border-[var(--woody-accent)]/12 bg-[var(--woody-bg)]/60 p-3 sm:p-3.5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
-          to={`/profile/${user.id}`}
+          to={profilePathForUser(user)}
           className={cn(
             "flex min-w-0 items-center gap-3 rounded-lg transition-colors hover:bg-[var(--woody-nav)]/6",
             woodyFocus.ring
@@ -76,9 +77,9 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
           <div className="min-w-0 text-left">
             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
               <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
-              {user.showProBadge ? <ProBadge variant="inline" /> : null}
+              {user.subscriptionBadge ? <ProBadge variant="inline" tier={user.subscriptionBadge} /> : null}
             </div>
-            <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
+            <p className="truncate text-xs text-[var(--woody-muted)]">{user.username}</p>
             <span
               className={cn(
                 "mt-1 inline-flex rounded-md px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide",
@@ -136,8 +137,8 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
                   void run(async () => {
                     const r =
                       kind === "remove"
-                        ? await removeMember(viewerId, community.id, user.id)
-                        : await banMember(viewerId, community.id, user.id);
+                        ? await removeMember(viewerId, community.slug, user.id)
+                        : await banMember(viewerId, community.slug, user.id);
                     if (r.ok) setConfirmDestructive(null);
                     return r;
                   });
@@ -157,7 +158,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
                 disabled={busy}
                 className="min-h-10 rounded-lg text-xs"
                 onClick={() =>
-                  run(() => setCommunityMemberRole(viewerId, community.id, user.id, "admin"))
+                  run(() => setCommunityMemberRole(viewerId, community.slug, user.id, "admin"))
                 }
               >
                 Promover a admin
@@ -171,7 +172,7 @@ export function MemberRow({ community, membership, user, viewerId, actorIsOwner,
                 disabled={busy}
                 className="min-h-10 rounded-lg text-xs"
                 onClick={() =>
-                  run(() => setCommunityMemberRole(viewerId, community.id, user.id, "member"))
+                  run(() => setCommunityMemberRole(viewerId, community.slug, user.id, "member"))
                 }
               >
                 Rebaixar para membro

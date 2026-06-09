@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCheck, Inbox, RefreshCw } from "lucide-react";
+﻿import { AlertCircle, CheckCheck, Inbox, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ export interface NotificationsListProps {
   markingAll: boolean;
   onMarkAll: () => void | Promise<void>;
   viewerUserId: string;
+  viewerUsername?: string;
   onActivateRow: (n: NotificationItem) => void | Promise<void>;
 }
 
@@ -40,6 +41,7 @@ export function NotificationsList({
   markingAll,
   onMarkAll,
   viewerUserId,
+  viewerUsername,
   onActivateRow,
 }: NotificationsListProps) {
   const hasAny = items.length > 0;
@@ -52,7 +54,6 @@ export function NotificationsList({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h2 className="truncate text-base font-semibold tracking-tight text-[var(--woody-text)]">Notificações</h2>
-            <p className="truncate text-xs text-[var(--woody-muted)]">Gostos, comentários e pedidos — num só sítio</p>
           </div>
           <Button
             type="button"
@@ -97,7 +98,7 @@ export function NotificationsList({
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {loading ? (
-          <div className="space-y-3 p-3" aria-busy="true" aria-label="A carregar notificações">
+          <div className="space-y-3 p-3" aria-busy="true" aria-label="Carregando notificações">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex gap-3">
                 <Skeleton className="size-11 shrink-0 rounded-full" />
@@ -145,7 +146,7 @@ export function NotificationsList({
         {!loading && !error && filteredItems.length > 0 ? (
           <ul className="divide-y divide-[var(--woody-divider)]">
             {filteredItems.map((n) => {
-              const route = getNotificationTargetRoute(n, viewerUserId);
+              const route = getNotificationTargetRoute(n, { userId: viewerUserId, username: viewerUsername });
               const summary = notificationSummaryFromItem(n);
               return (
                 <NotificationListItem

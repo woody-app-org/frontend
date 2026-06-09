@@ -1,5 +1,6 @@
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Clock, ChevronLeft } from "lucide-react";
+import { ChevronLeft, TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { Post } from "@/domain/types";
@@ -8,6 +9,7 @@ import { PostCommunityContextBar } from "../PostCommunityContextBar";
 import { PostProfileContextBar } from "../PostProfileContextBar";
 import { PostOverflowMenu } from "../PostOverflowMenu";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { resolvePostDetailBackTarget } from "../../lib/postDetailNavState";
 
 export interface PostDetailHeaderProps {
@@ -15,6 +17,8 @@ export interface PostDetailHeaderProps {
   /** Após excluir no detalhe, navegar para esta rota. */
   postDeleteRedirectTo?: string;
   onPostUpdated?: (post: Post) => void;
+  /** Conteúdo renderizado dentro da coluna direita (abaixo do username) */
+  children?: React.ReactNode;
 }
 
 const menuTriggerClass =
@@ -24,6 +28,7 @@ export function PostDetailHeader({
   post,
   postDeleteRedirectTo = "/feed",
   onPostUpdated,
+  children,
 }: PostDetailHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,12 +42,7 @@ export function PostDetailHeader({
     }
     navigate(-1);
   };
-  const initials = post.author.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = post.author.username.slice(0, 2).toUpperCase();
 
   return (
     <header className="space-y-4">
@@ -67,6 +67,7 @@ export function PostDetailHeader({
       ) : post.publicationContext === "profile" ? (
         <PostProfileContextBar
           authorId={post.author.id}
+          authorUsername={post.author.username}
           authorDisplayName={post.author.name}
           variant="community"
         />
@@ -74,7 +75,7 @@ export function PostDetailHeader({
 
       <div className="flex items-start gap-3">
         <Link
-          to={`/profile/${post.author.id}`}
+          to={profilePathForUser(post.author)}
           className="shrink-0 overflow-hidden rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]"
         >
           <Avatar size="default" className="size-10 ring-0">
@@ -84,15 +85,27 @@ export function PostDetailHeader({
             </AvatarFallback>
           </Avatar>
         </Link>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <p className="text-sm font-semibold text-[var(--woody-text)]">{post.author.name}</p>
-            {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
+        <div className="min-w-0 flex-1 pr-8">
+          <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+            <Link
+              to={profilePathForUser(post.author)}
+              className="inline-flex items-baseline gap-1 min-w-0 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
+              aria-label={`Ver perfil de ${post.author.name}`}
+            >
+              <span className="text-[1.2rem] font-semibold text-[var(--woody-text)] truncate">{post.author.username}</span>
+              {post.author.subscriptionBadge ? <ProBadge variant="inline" tier={post.author.subscriptionBadge} /> : null}
+            </Link>
+            <span className="text-[var(--woody-muted)] text-[0.8rem] leading-tight shrink-0">· {post.createdAt}</span>
           </div>
-          <div className="mt-0.5 flex items-center gap-1 text-xs text-[var(--woody-muted)]">
-            <Clock className="size-3" />
-            <span>{post.createdAt}</span>
-          </div>
+          {(post.communityBoostActive && post.publicationContext === "community") ? (
+            <div className="flex flex-wrap items-center gap-1 mt-1">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20">
+                <TrendingUp className="size-3" aria-hidden />
+                Impulsionado
+              </span>
+            </div>
+          ) : null}
+          {children}
         </div>
       </div>
     </header>

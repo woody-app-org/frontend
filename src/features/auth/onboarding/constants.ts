@@ -29,7 +29,7 @@ export const ONBOARDING_STEP_LABELS: Record<number, string> = {
 
 export const ONBOARDING_DRAFT_STORAGE_KEY = "woody_onboarding_draft";
 
-export const ONBOARDING_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+export const ONBOARDING_MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 /** Máximo de interesses selecionáveis na etapa 4. */
 export const ONBOARDING_MAX_INTERESTS = 5;

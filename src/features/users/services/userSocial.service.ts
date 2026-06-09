@@ -25,9 +25,18 @@ export async function fetchUserCommunityMemberships(userId: string): Promise<Use
   }
 }
 
-export async function fetchMyFollowing(page = 1, pageSize = 50): Promise<User[]> {
+export async function fetchMyFollowing(
+  page = 1,
+  pageSize = 50,
+  search?: string
+): Promise<User[]> {
+  const trimmed = search?.trim();
   const { data } = await api.get("/users/me/following", {
-    params: { page, pageSize: Math.min(Math.max(pageSize, 1), 50) },
+    params: {
+      page,
+      pageSize: Math.min(Math.max(pageSize, 1), 50),
+      ...(trimmed ? { search: trimmed } : {}),
+    },
   });
   const raw = data as Record<string, unknown> | unknown[];
   const list = Array.isArray(raw) ? raw : ((raw?.items as unknown[]) ?? []);

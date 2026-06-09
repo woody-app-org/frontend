@@ -7,6 +7,8 @@ import { AuthPromoPanel } from "../components/AuthPromoPanel";
 import { LoginForm } from "../components/LoginForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/AuthContext";
+import { AccountBannedLoginError } from "../errors/accountBannedLogin";
+import type { AccountBannedLoginDetails } from "../errors/accountBannedLogin";
 import type { LoginFormData } from "../lib/validation";
 import { resolveVerificationRoute } from "@/features/verification/services/verification.service";
 
@@ -18,16 +20,26 @@ export function LoginPage() {
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [accountBanned, setAccountBanned] = useState<AccountBannedLoginDetails | null>(null);
 
   const handleSubmit = useCallback(
     async (data: LoginFormData) => {
       setErrorMessage(null);
+      setAccountBanned(null);
       setIsSubmitting(true);
       try {
         const loggedUser = await login(data);
         const destination = resolveVerificationRoute(loggedUser.verificationStatus);
         navigate(destination, { replace: true });
       } catch (err) {
+        if (err instanceof AccountBannedLoginError) {
+          setAccountBanned({
+            message: err.message,
+            reason: err.reason,
+            bannedAt: err.bannedAt,
+          });
+          return;
+        }
         setErrorMessage(
           err instanceof Error ? err.message : "Erro ao entrar. Tente novamente."
         );
@@ -67,6 +79,7 @@ export function LoginPage() {
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             errorMessage={errorMessage}
+            accountBanned={accountBanned}
           />
         }
       />

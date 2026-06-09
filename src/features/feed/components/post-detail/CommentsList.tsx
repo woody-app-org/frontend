@@ -1,9 +1,10 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { Comment, CommentGifDraft, Post } from "@/domain/types";
+import type { Comment, Post } from "@/domain/types";
 import { getRootCommentsByPostId } from "@/domain/lib/commentThreads";
 import { CommentThread } from "./CommentThread";
 import { CommentsEmptyState } from "./CommentsEmptyState";
+import type { CommentComposerModalContext } from "./CommentComposerModal";
 
 function CommentsListSkeleton({ rows = 3 }: { rows?: number }) {
   return (
@@ -30,9 +31,7 @@ export interface CommentsListProps {
   isLoading: boolean;
   error: string | null;
   className?: string;
-  replyingToCommentId: string | null;
-  onReplyingToChange: (commentId: string | null) => void;
-  onReplySubmit: (body: string, parentCommentId: string, gif?: CommentGifDraft | null) => Promise<boolean>;
+  onOpenReplyModal: (commentId: string, context: CommentComposerModalContext) => void;
   isCreatingComment: boolean;
   onToggleCommentLike: (commentId: string) => void;
   commentLikePendingIds: ReadonlySet<string>;
@@ -46,9 +45,7 @@ export function CommentsList({
   isLoading,
   error,
   className,
-  replyingToCommentId,
-  onReplyingToChange,
-  onReplySubmit,
+  onOpenReplyModal,
   isCreatingComment,
   onToggleCommentLike,
   commentLikePendingIds,
@@ -88,9 +85,7 @@ export function CommentsList({
       postId={postId}
       comments={comments}
       onCommentsReload={onCommentsReload}
-      replyingToCommentId={replyingToCommentId}
-      onReplyingToChange={onReplyingToChange}
-      onReplySubmit={onReplySubmit}
+      onOpenReplyModal={onOpenReplyModal}
       isCreatingComment={isCreatingComment}
       onToggleCommentLike={onToggleCommentLike}
       commentLikePendingIds={commentLikePendingIds}

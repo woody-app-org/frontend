@@ -1,6 +1,6 @@
 import { type KeyboardEvent, useCallback, useId, useState } from "react";
 import { Hash, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { HandleInput } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { showInfoToast, showWarningToast } from "@/lib/toast";
@@ -19,6 +19,11 @@ export interface HashtagChipsFieldProps {
   compact?: boolean;
   /** Sem caixa cinzenta nem botão “Adicionar”: campo de hashtag minimalista (ex.: modal). */
   composerBare?: boolean;
+  /**
+   * Controla se o input de digitação é visível (modo composerBare).
+   * Se false, apenas as chips existentes são renderizadas.
+   */
+  showInput?: boolean;
 }
 
 export function HashtagChipsField({
@@ -28,6 +33,7 @@ export function HashtagChipsField({
   className,
   compact = false,
   composerBare = false,
+  showInput = true,
 }: HashtagChipsFieldProps) {
   const baseId = useId();
   const [draft, setDraft] = useState("");
@@ -121,22 +127,25 @@ export function HashtagChipsField({
 
       {hashtags.length < POST_COMPOSER_HASHTAGS_MAX ? (
         composerBare ? (
-          <div className="flex min-h-[1.75rem] flex-wrap items-center gap-x-2 gap-y-1">
-            <Input
-              id={`${baseId}-hashtag-draft`}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={onKeyDown}
-              onBlur={() => {
-                if (draft.trim()) commitDraft();
-              }}
-              disabled={disabled}
-              placeholder="Adicionar hashtag"
-              aria-label="Adicionar hashtag (Enter para confirmar)"
-              className="h-8 min-w-[10rem] flex-1 border-0 bg-transparent px-0 py-0 text-[0.8125rem] text-[var(--woody-text)] shadow-none ring-0 placeholder:text-[var(--woody-muted)]/75 outline-none focus-visible:ring-0"
-              autoComplete="off"
-            />
-          </div>
+          showInput ? (
+            <div className="flex min-h-[1.75rem] flex-wrap items-center gap-x-1.5 gap-y-1">
+              <Hash className="size-4 shrink-0 text-[var(--woody-muted)]/60" aria-hidden />
+              <HandleInput
+                id={`${baseId}-hashtag-draft`}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={onKeyDown}
+                onBlur={() => {
+                  if (draft.trim()) commitDraft();
+                }}
+                disabled={disabled}
+                placeholder="hashtag"
+                aria-label="Adicionar hashtag (Enter para confirmar)"
+                autoFocus
+                className="h-8 min-w-[8rem] flex-1 border-0 bg-transparent px-0 py-0 text-[0.8125rem] text-[var(--woody-text)] shadow-none ring-0 placeholder:text-[var(--woody-muted)]/50 outline-none focus-visible:ring-0"
+              />
+            </div>
+          ) : null
         ) : (
         <div
           className={cn(
@@ -153,7 +162,7 @@ export function HashtagChipsField({
               )}
               aria-hidden
             />
-            <Input
+            <HandleInput
               id={`${baseId}-hashtag-draft`}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
@@ -170,7 +179,6 @@ export function HashtagChipsField({
                   ? "h-8 rounded-xl border-0 bg-black/[0.035] shadow-none ring-0 placeholder:text-[var(--woody-muted)]/75 focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/22"
                   : "h-9 rounded-xl border-[var(--woody-accent)]/18 bg-[var(--woody-bg)]"
               )}
-              autoComplete="off"
             />
           </div>
           <Button

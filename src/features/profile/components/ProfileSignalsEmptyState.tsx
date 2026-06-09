@@ -19,9 +19,6 @@ export function ProfileSignalsEmptyState() {
         <Sparkles className="size-6" aria-hidden />
       </div>
       <h3 className="text-sm font-semibold text-[var(--woody-text)]">Nenhum sinal recebido ainda</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[var(--woody-muted)]">
-        Quando alguém demonstrar interesse, aparece aqui — só tu vês.
-      </p>
     </div>
   );
 }

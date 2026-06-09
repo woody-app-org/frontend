@@ -84,7 +84,7 @@ export function LandingFeatures() {
               <span className="h-px w-8 bg-[var(--woody-lime)]" aria-hidden />
               Recursos
             </p>
-            <h2 className="mt-5 font-serif text-[clamp(2rem,4vw,3.15rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[var(--woody-ink)]">
+            <h2 className="font-heading mt-5 text-[clamp(2rem,4vw,3.15rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[var(--woody-ink)]">
               O produto, em camadas claras.
             </h2>
             <p className="mt-6 text-[1.05rem] font-medium leading-relaxed text-[var(--woody-muted)] md:text-lg">
@@ -109,7 +109,7 @@ export function LandingFeatures() {
                 aria-hidden
               />
               <div className="flex shrink-0 items-center gap-4 md:block md:w-44">
-                <span className="font-serif text-4xl font-semibold leading-none text-black/[0.08] transition-colors group-hover:text-[var(--woody-lime)]/35 md:text-5xl">
+                <span className="font-heading text-4xl font-semibold leading-none text-black/[0.08] transition-colors group-hover:text-[var(--woody-lime)]/35 md:text-5xl">
                   {String(idx + 1).padStart(2, "0")}
                 </span>
                 <div className="flex size-14 items-center justify-center rounded-2xl bg-[var(--woody-ink)] text-[var(--woody-lime)] shadow-[0_0_0_1px_rgba(139,195,74,0.22),0_14px_40px_rgba(10,10,10,0.18)] md:size-[3.75rem] md:rounded-[1.1rem]">
@@ -117,7 +117,7 @@ export function LandingFeatures() {
                 </div>
               </div>
               <div className="mt-6 min-w-0 md:mt-0 md:flex-1">
-                <h3 className="font-serif text-xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-2xl">
+                <h3 className="font-heading text-xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-2xl">
                   {title}
                 </h3>
                 <p className="mt-3 max-w-2xl text-[15px] font-medium leading-relaxed text-[var(--woody-muted)] md:text-base">

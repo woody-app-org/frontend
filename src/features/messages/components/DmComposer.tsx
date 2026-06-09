@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, Plus, Send, Smile, SmilePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
@@ -535,7 +535,7 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
 
         <div
           className={cn(
-            "flex flex-col md:flex-row md:items-end",
+            "flex flex-col md:flex-row md:items-center",
             "transition-[gap] duration-[220ms] ease-out",
             "gap-2 md:gap-2",
             isExpanded ? "max-md:gap-2.5" : "max-md:gap-2"
@@ -568,7 +568,8 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
               "flex min-w-0 flex-1",
               "transition-[gap] duration-[220ms] ease-out",
               "gap-2",
-              isExpanded ? "max-md:items-end max-md:gap-2.5" : "max-md:items-center max-md:gap-2"
+              "md:items-center",
+          isExpanded ? "max-md:items-end max-md:gap-2.5" : "max-md:items-center max-md:gap-2"
             )}
           >
             <div className="shrink-0 md:hidden">
@@ -696,7 +697,7 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
               variant="outline"
               size="icon"
               className={cn(
-                "hidden shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)] md:inline-flex",
+                "hidden shrink-0 border-[var(--woody-divider)] bg-[var(--woody-card)] leading-[0] md:inline-flex",
                 "size-11"
               )}
               disabled={blocked || attachmentSlotsFull}
@@ -751,7 +752,7 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
               )}
               onClick={() => void submit()}
               disabled={!canSend || blocked}
-              aria-label={busy ? "A enviar…" : "Enviar mensagem"}
+              aria-label={busy ? "Enviando…" : "Enviar mensagem"}
             >
               {busy ? (
                 <Loader2 className="size-[1.125rem] animate-spin" aria-hidden strokeWidth={2.25} />
@@ -766,7 +767,7 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
             onClick={() => void submit()}
             disabled={!canSend || blocked}
           >
-            {busy ? "A enviar…" : "Enviar"}
+            {busy ? "Enviando…" : "Enviar"}
           </Button>
         </div>
       </div>
@@ -791,7 +792,6 @@ export function DmComposer({ conversationId, disabled, onSend, onMobileComposerE
         open={stickerPickerOpen}
         onOpenChange={setStickerPickerOpen}
         onPick={(item) => addFromCatalog(item)}
-        onRequestLocalFile={() => stickerRef.current?.click()}
         disabled={busy || disabled}
       />
     </div>

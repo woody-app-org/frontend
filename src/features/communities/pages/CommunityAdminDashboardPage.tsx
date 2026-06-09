@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, BarChart3, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
@@ -89,7 +89,6 @@ export function CommunityAdminDashboardPage() {
   const location = useLocation();
   const slug = communitySlug ?? "";
 
-  const [communityId, setCommunityId] = useState<string | null>(null);
   const [communityName, setCommunityName] = useState<string>("");
   const [loadState, setLoadState] = useState<"loading" | "ready" | "notfound" | "forbidden">("loading");
   const [forbiddenReason, setForbiddenReason] = useState<string | null>(null);
@@ -127,9 +126,8 @@ export function CommunityAdminDashboardPage() {
         setLoadState("notfound");
         return;
       }
-      setCommunityId(c.id);
       setCommunityName(c.name);
-      const membership = await fetchMyCommunityMembership(c.id);
+      const membership = await fetchMyCommunityMembership(slug);
       if (cancelled) return;
       if (!membership.premiumCapabilities?.canAccessCommunityAnalytics) {
         setForbiddenReason(
@@ -150,14 +148,14 @@ export function CommunityAdminDashboardPage() {
   }, [slug]);
 
   const loadDashboard = useCallback(async () => {
-    if (!communityId) return;
+    if (!slug) return;
     setDashLoading(true);
     setDashError(null);
     try {
-      const data = await fetchCommunityPremiumAnalytics(communityId, periodDays);
+      const data = await fetchCommunityPremiumAnalytics(slug, periodDays);
       setDashboard(data);
       try {
-        setActiveBoosts(await fetchCommunityPostBoosts(communityId));
+        setActiveBoosts(await fetchCommunityPostBoosts(slug));
       } catch {
         setActiveBoosts([]);
       }
@@ -172,12 +170,12 @@ export function CommunityAdminDashboardPage() {
     } finally {
       setDashLoading(false);
     }
-  }, [communityId, periodDays]);
+  }, [slug, periodDays]);
 
   useEffect(() => {
-    if (loadState !== "ready" || !communityId) return;
+    if (loadState !== "ready" || !slug) return;
     void loadDashboard();
-  }, [loadState, communityId, loadDashboard]);
+  }, [loadState, slug, loadDashboard]);
 
   const chartSeries = useMemo(() => {
     if (!dashboard?.dailyActivity?.length) return [];
@@ -307,7 +305,7 @@ export function CommunityAdminDashboardPage() {
         {dashLoading && !dashboard ? (
           <div className="flex items-center gap-2 text-sm text-[var(--woody-muted)]">
             <Loader2 className="size-4 animate-spin" aria-hidden />
-            A carregar métricas…
+            Carregando métricas…
           </div>
         ) : null}
 

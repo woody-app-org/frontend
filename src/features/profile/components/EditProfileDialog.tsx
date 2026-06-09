@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import { ImagePlus, Loader2, Pencil, User } from "lucide-react";
+import { AlertCircle, ImagePlus, Loader2, Pencil, User } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -13,6 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { InterestTag, UserProfile } from "../types";
 import { updateProfile, validateProfileUpdatePayload } from "../services/profile.service";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -28,7 +34,19 @@ const inputClass =
   "rounded-xl border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] " +
   "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20 shadow-none";
 
-const fileMaxBytes = 2_500_000;
+const fileMaxBytes = 10 * 1024 * 1024;
+
+const formAlertClass =
+  "flex gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm font-medium text-red-800 dark:text-red-200";
+
+function ProfileFormAlert({ message }: { message: string }) {
+  return (
+    <p role="alert" className={formAlertClass}>
+      <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+      <span>{message}</span>
+    </p>
+  );
+}
 
 /**
  * Proporção da área de crop da capa, alinhada ao banner do `ProfileHeader` (faixa larga e baixa).
@@ -80,13 +98,17 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const formId = useId();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const formAlertRef = useRef<HTMLDivElement>(null);
+  const bannerSectionRef = useRef<HTMLDivElement>(null);
+  const avatarSectionRef = useRef<HTMLDivElement>(null);
 
   const [name, setName] = useState(profile.name);
-  const [username, setUsername] = useState(profile.username ?? "");
   const [bio, setBio] = useState(profile.bio);
   const [pronouns, setPronouns] = useState(profile.pronouns ?? "");
   const [location, setLocation] = useState(profile.location ?? "");
   const [profession, setProfession] = useState(profile.profession ?? "");
+  const [genderIdentity, setGenderIdentity] = useState(profile.genderIdentity ?? "");
+  const [sexualOrientation, setSexualOrientation] = useState(profile.sexualOrientation ?? "");
   const [interestsRaw, setInterestsRaw] = useState(interestsToField(profile.interests));
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl);
   const [bannerUrl, setBannerUrl] = useState<string | null>(profile.bannerUrl);
@@ -109,30 +131,83 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     setBannerPreviewFailed(false);
   }, [bannerUrl]);
 
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [bannerError, setBannerError] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const clearFieldErrors = useCallback(() => {
+    setBannerError(null);
+    setAvatarError(null);
+  }, []);
+
+  const showFormError = useCallback(
+    (message: string) => {
+      clearFieldErrors();
+      setFormError(message);
+    },
+    [clearFieldErrors]
+  );
+
+  const showBannerError = useCallback(
+    (message: string) => {
+      setFormError(null);
+      setAvatarError(null);
+      setBannerError(message);
+    },
+    []
+  );
+
+  const showAvatarError = useCallback(
+    (message: string) => {
+      setFormError(null);
+      setBannerError(null);
+      setAvatarError(message);
+    },
+    []
+  );
 
   const profileRef = useRef(profile);
   profileRef.current = profile;
 
   useEffect(() => {
     if (!open) {
-      setSubmitError(null);
+      setFormError(null);
+      setBannerError(null);
+      setAvatarError(null);
       setIsSubmitting(false);
       return;
     }
     const p = profileRef.current;
     setName(p.name);
-    setUsername(p.username ?? "");
     setBio(p.bio);
     setPronouns(p.pronouns ?? "");
     setLocation(p.location ?? "");
     setProfession(p.profession ?? "");
+    setGenderIdentity(p.genderIdentity ?? "");
+    setSexualOrientation(p.sexualOrientation ?? "");
     setInterestsRaw(interestsToField(p.interests));
     setAvatarUrl(p.avatarUrl);
     setBannerUrl(p.bannerUrl);
-    setSubmitError(null);
+    setFormError(null);
+    setBannerError(null);
+    setAvatarError(null);
   }, [open]);
+
+  useEffect(() => {
+    if (!formError) return;
+    formAlertRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [formError]);
+
+  useEffect(() => {
+    if (!bannerError) return;
+    bannerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [bannerError]);
+
+  useEffect(() => {
+    if (!avatarError) return;
+    avatarSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [avatarError]);
 
   const dismissAvatarCrop = useCallback(() => {
     setAvatarCropSrc((prev) => {
@@ -169,15 +244,16 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       return;
     }
     if (file.size > fileMaxBytes) {
-      setSubmitError("Imagem muito grande (máx. ~2,5 MB).");
+      showAvatarError("Imagem muito grande (máx. ~2,5 MB).");
       return;
     }
-    setSubmitError(null);
+    clearFieldErrors();
+    setFormError(null);
     dismissBannerCrop();
     const objectUrl = URL.createObjectURL(file);
     setAvatarCropSrc(objectUrl);
     setAvatarCropOpen(true);
-  }, [dismissBannerCrop]);
+  }, [dismissBannerCrop, showAvatarError, clearFieldErrors]);
 
   const handleAvatarCropConfirm = useCallback(
     async (file: File) => {
@@ -187,16 +263,17 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
           publicationContext: "profile",
         });
         setAvatarUrl(uploaded.url);
+        setAvatarError(null);
         dismissAvatarCrop();
       } catch (err) {
-        showErrorToast(
-          err instanceof Error ? err.message : "Não foi possível enviar a foto. Tente novamente.",
-          { id: "woody-profile-avatar-upload" }
-        );
+        const message =
+          err instanceof Error ? err.message : "Não foi possível enviar a foto. Tente novamente.";
+        showAvatarError(message);
+        showErrorToast(message, { id: "woody-profile-avatar-upload" });
         throw err;
       }
     },
-    [dismissAvatarCrop]
+    [dismissAvatarCrop, showAvatarError]
   );
 
   const handleBannerCropConfirm = useCallback(
@@ -207,16 +284,17 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
           publicationContext: "profile",
         });
         setBannerUrl(uploaded.url);
+        setBannerError(null);
         dismissBannerCrop();
       } catch (err) {
-        showErrorToast(
-          err instanceof Error ? err.message : "Não foi possível enviar a capa. Tente novamente.",
-          { id: "woody-profile-banner-upload" }
-        );
+        const message =
+          err instanceof Error ? err.message : "Não foi possível enviar a capa. Tente novamente.";
+        showBannerError(message);
+        showErrorToast(message, { id: "woody-profile-banner-upload" });
         throw err;
       }
     },
-    [dismissBannerCrop]
+    [dismissBannerCrop, showBannerError]
   );
 
   const handleBannerFile = useCallback(
@@ -232,30 +310,34 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
         return;
       }
       if (file.size > fileMaxBytes) {
-        setSubmitError("Banner muito grande (máx. ~2,5 MB).");
+        showBannerError("Banner muito grande (máx. ~2,5 MB).");
         return;
       }
-      setSubmitError(null);
+      clearFieldErrors();
+      setFormError(null);
       dismissAvatarCrop();
       const objectUrl = URL.createObjectURL(file);
       setBannerCropSrc(objectUrl);
       setBannerCropOpen(true);
     },
-    [dismissAvatarCrop]
+    [dismissAvatarCrop, showBannerError, clearFieldErrors]
   );
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      setSubmitError(null);
+      setFormError(null);
+      setBannerError(null);
+      setAvatarError(null);
       const interests = parseInterestsField(interestsRaw, profile.interests);
       const payload = {
         name: name.trim(),
-        username: username.trim(),
         bio: bio.trim(),
         pronouns: pronouns.trim() || undefined,
         location: location.trim() || undefined,
         profession: profession.trim() || undefined,
+        genderIdentity: genderIdentity.trim() || undefined,
+        sexualOrientation: sexualOrientation.trim() || undefined,
         avatarUrl,
         bannerUrl,
         interests,
@@ -263,7 +345,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
 
       const v = validateProfileUpdatePayload(payload);
       if (!v.ok) {
-        setSubmitError(v.error);
+        showFormError(v.error);
         return;
       }
 
@@ -271,7 +353,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       try {
         const result = await updateProfile(profile.id, payload);
         if (!result.ok) {
-          setSubmitError(result.error);
+          showFormError(result.error);
           return;
         }
         showSuccessToast("Perfil atualizado.", { id: `woody-profile-updated-${profile.id}` });
@@ -283,11 +365,12 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     },
     [
       name,
-      username,
       bio,
       pronouns,
       location,
       profession,
+      genderIdentity,
+      sexualOrientation,
       interestsRaw,
       avatarUrl,
       bannerUrl,
@@ -295,6 +378,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       profile.interests,
       onOpenChange,
       onSaved,
+      showFormError,
     ]
   );
 
@@ -317,18 +401,30 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
             <Pencil className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
             Ajustar meu perfil
           </DialogTitle>
-          <DialogDescription>
-            Só o seu perfil pessoal — não altera comunidades. No demo os dados ficam neste navegador; ao ligar a API,
-            substitua a função em profile.service (mapa de rotas em lib/backendIntegrationHints).
-          </DialogDescription>
         </DialogHeader>
 
         <form id={formId} onSubmit={handleSubmit} className="mt-2 space-y-5" aria-busy={isSubmitting}>
-          <div className="space-y-3">
+          {formError ? (
+            <div
+              ref={formAlertRef}
+              className="sticky top-0 z-10 -mx-0.5 scroll-mt-3 bg-[var(--woody-card)]/95 pb-2 backdrop-blur-sm"
+            >
+              <ProfileFormAlert message={formError} />
+            </div>
+          ) : null}
+
+          <div ref={bannerSectionRef} className="space-y-3 scroll-mt-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--woody-muted)]">
               Banner
             </p>
-            <div className="relative overflow-hidden rounded-xl border border-[var(--woody-accent)]/15 bg-[var(--woody-nav)]/5">
+            <div
+              className={cn(
+                "relative overflow-hidden rounded-xl border bg-[var(--woody-nav)]/5",
+                bannerError
+                  ? "border-red-500/40 ring-2 ring-red-500/20"
+                  : "border-[var(--woody-accent)]/15"
+              )}
+            >
               <div className="h-24 sm:h-28 w-full">
                 {bannerUrl && displayBannerUrl && !bannerPreviewFailed ? (
                   <img
@@ -380,19 +476,33 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                     variant="ghost"
                     size="sm"
                     className="text-[var(--woody-muted)]"
-                    onClick={() => setBannerUrl(null)}
+                    onClick={() => {
+                      setBannerUrl(null);
+                      setBannerError(null);
+                    }}
                   >
                     Remover
                   </Button>
                 ) : null}
               </div>
-              <p className="border-t border-[var(--woody-accent)]/5 px-3 pb-3 pt-2 text-xs text-[var(--woody-muted)]">
+              <p className="border-t border-[var(--woody-accent)]/5 px-3 pt-2 pb-3 text-xs leading-relaxed text-[var(--woody-muted)]">
                 PNG ou JPG até ~2,5 MB. Ajuste o enquadramento panorâmico antes de enviar.
               </p>
+              {bannerError ? (
+                <div className="border-t border-red-500/15 px-3 pb-3 pt-2">
+                  <ProfileFormAlert message={bannerError} />
+                </div>
+              ) : null}
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
+          <div
+            ref={avatarSectionRef}
+            className={cn(
+              "flex flex-col items-center gap-3 scroll-mt-3 sm:flex-row sm:items-start",
+              avatarError && "rounded-xl ring-2 ring-red-500/20"
+            )}
+          >
             <input
               ref={avatarInputRef}
               type="file"
@@ -429,9 +539,12 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                 <Pencil className="size-4" />
               </Button>
             </div>
-            <p className="text-center text-xs text-[var(--woody-muted)] sm:mt-2 sm:flex-1 sm:text-left">
-              PNG ou JPG até ~2,5 MB. Você ajusta o enquadramento e enviamos a foto de forma segura para o servidor.
-            </p>
+            <div className="space-y-2 sm:mt-2 sm:flex-1">
+              <p className="text-center text-xs text-[var(--woody-muted)] sm:text-left">
+                PNG ou JPG até ~2,5 MB. Você ajusta o enquadramento e enviamos a foto de forma segura para o servidor.
+              </p>
+              {avatarError ? <ProfileFormAlert message={avatarError} /> : null}
+            </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -449,18 +562,21 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor={`${formId}-username`} className="text-sm font-medium text-[var(--woody-text)]">
-                Nome de usuário
-              </label>
-              <Input
-                id={`${formId}-username`}
-                value={username}
-                onChange={(ev) => setUsername(ev.target.value)}
-                className={inputClass}
-                autoComplete="username"
-                required
-              />
-              <p className="text-xs text-[var(--woody-muted)]">Apenas letras minúsculas, números, . e _</p>
+              <p className="text-sm font-medium text-[var(--woody-text)]">Username permanente</p>
+              <div
+                className={cn(
+                  "flex min-h-10 cursor-not-allowed select-none items-center rounded-xl border border-[var(--woody-accent)]/15",
+                  "bg-[var(--woody-muted)]/12 px-3 text-sm text-[var(--woody-muted)] shadow-none"
+                )}
+                aria-readonly="true"
+                aria-disabled="true"
+                title="Seu username não pode ser alterado"
+              >
+                @{profile.username ?? "—"}
+              </div>
+              <p className="text-xs text-[var(--woody-muted)]">
+                Seu @ é permanente e não pode ser alterado.
+              </p>
             </div>
             <div className="space-y-1.5">
               <label htmlFor={`${formId}-pronouns`} className="text-sm font-medium text-[var(--woody-text)]">
@@ -498,6 +614,60 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                 placeholder="Cidade, UF"
               />
             </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--woody-text)]">
+                Identidade de gênero
+              </label>
+              <Select
+                value={genderIdentity || "none"}
+                onValueChange={(v) => setGenderIdentity(v === "none" ? "" : v)}
+                disabled={isSubmitting}
+              >
+                <SelectTrigger
+                  className={cn(
+                    inputClass,
+                    "h-10 w-full",
+                    "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20"
+                  )}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[200]">
+                  <SelectItem value="none">Prefiro não informar</SelectItem>
+                  <SelectItem value="Mulher cis">Mulher cis</SelectItem>
+                  <SelectItem value="Mulher trans">Mulher trans</SelectItem>
+                  <SelectItem value="Travesti">Travesti</SelectItem>
+                  <SelectItem value="Não binária (espectro feminino)">Não binária (espectro feminino)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--woody-text)]">
+                Orientação sexual
+              </label>
+              <Select
+                value={sexualOrientation || "none"}
+                onValueChange={(v) => setSexualOrientation(v === "none" ? "" : v)}
+                disabled={isSubmitting}
+              >
+                <SelectTrigger
+                  className={cn(
+                    inputClass,
+                    "h-10 w-full",
+                    "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20"
+                  )}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[200]">
+                  <SelectItem value="none">Prefiro não informar</SelectItem>
+                  <SelectItem value="Lésbica">Lésbica</SelectItem>
+                  <SelectItem value="Bi">Bi</SelectItem>
+                  <SelectItem value="Pan">Pan</SelectItem>
+                  <SelectItem value="Hétero">Hétero</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -526,12 +696,6 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
               placeholder="Ex.: leitura, maternidade, comunidades seguras (separados por vírgula)"
             />
           </div>
-
-          {submitError ? (
-            <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
-              {submitError}
-            </p>
-          ) : null}
 
           <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
             <Button

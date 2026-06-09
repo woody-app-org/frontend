@@ -54,9 +54,6 @@ export function ProPlanCheckoutActions({
           )}
         </Button>
       </div>
-      <p className="text-xs leading-relaxed text-[var(--woody-muted)]">
-        Valor final e IVA aparecem no checkout Stripe conforme a tua região.
-      </p>
       {error ? (
         <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-200" role="alert">
           {error}

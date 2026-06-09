@@ -42,7 +42,7 @@ export function LandingPricing() {
             Planos
             <span className="h-px w-8 bg-[var(--woody-lime)]" aria-hidden />
           </p>
-          <h2 className="mt-6 font-serif text-[clamp(2rem,4.2vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[var(--woody-ink)]">
+          <h2 className="font-heading mt-6 text-[clamp(2rem,4.2vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[var(--woody-ink)]">
             Free para integrar.
             <br />
             <span className="text-[var(--woody-ink)]/78">Pro para liderar espaços.</span>
@@ -63,7 +63,7 @@ export function LandingPricing() {
             <div className="flex items-baseline justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--woody-muted)]">Free</p>
-                <p className="mt-3 font-serif text-5xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-[3.25rem]">
+                <p className="font-display mt-3 text-5xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-[3.25rem]">
                   0€
                 </p>
               </div>
@@ -111,7 +111,7 @@ export function LandingPricing() {
                     Recomendado
                   </span>
                 </div>
-                <p className="mt-4 max-w-[16rem] font-serif text-[1.65rem] font-semibold leading-[1.15] tracking-[-0.02em] md:text-[1.85rem]">
+                <p className="font-editorial mt-4 max-w-[16rem] text-[1.65rem] font-semibold leading-[1.15] tracking-[-0.02em] md:text-[1.85rem]">
                   Para quem cria ecossistema na Woody.
                 </p>
               </div>

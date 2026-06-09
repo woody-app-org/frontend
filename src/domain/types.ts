@@ -8,7 +8,7 @@ export type CommunityCategory = "bemestar" | "carreira" | "cultura" | "seguranca
 export type CommunityVisibility = "public" | "private";
 
 /** Plano de comunidade no catálogo / efetivo após regras de período (API `billing.*`). */
-export type CommunityBillingPlan = "free" | "premium";
+export type CommunityBillingPlan = "free" | "premium" | "max";
 
 /**
  * Estado de cobrança **desta comunidade** (Stripe / `billing.*` na API).
@@ -39,6 +39,10 @@ export interface CommunityPremiumCapabilities {
   canAccessCommunityAnalytics: boolean;
   /** Staff + espaço premium (impulsionamento). */
   canBoostCommunityPosts: boolean;
+  /** Staff + espaço Max (gestão avançada: moderação em massa, relatórios, ferramentas de crescimento). */
+  canAccessCommunityMaxFeatures: boolean;
+  /** Dono com plano pessoal Max ativo — pode colocar a comunidade em modo privado. */
+  canSetCommunityPrivate: boolean;
 }
 
 /** Papéis dentro da comunidade (criadora = owner). */
@@ -63,6 +67,10 @@ export interface User {
   pronouns?: string;
   /** Benefício Pro visível em posts/comentários (API `showProBadge`). */
   showProBadge?: boolean;
+  /** Tier do badge de assinatura: `null` = free, `"pro"` = Pro, `"max"` = Max (API `subscriptionBadge`). */
+  subscriptionBadge?: "pro" | "max" | null;
+  /** Stories ativos nas últimas 24h (API `hasActiveStories`). */
+  hasActiveStories?: boolean;
 }
 
 export interface Community {
@@ -120,6 +128,8 @@ export interface PostCommunityPreview {
   category: CommunityCategory;
   /** Plano efetivo da comunidade (`free` | `premium`) para gates no feed. */
   communityPlan?: CommunityBillingPlan;
+  /** Visibilidade do espaço (`public` | `private`) para partilha externa. */
+  visibility?: CommunityVisibility;
 }
 
 /** Onde o post foi publicado (alinhado à API: `publicationContext`). */
@@ -190,6 +200,8 @@ export interface PostInteractionState {
 
 export interface Post {
   id: string;
+  /** Identificador público opaco para URLs (`pst_…`). */
+  publicId?: string;
   publicationContext: PostPublicationContext;
   /** Comunidade quando o post é de comunidade; `null` no perfil. */
   communityId: string | null;

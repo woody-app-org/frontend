@@ -7,12 +7,15 @@ export interface CommunityAccessSectionProps {
   formId: string;
   visibility: CommunityVisibility;
   onVisibilityChange: (v: CommunityVisibility) => void;
+  /** Se `false`, a opção Privada fica desativada (requer plano Max do dono). Padrão: false. */
+  canSetPrivate?: boolean;
 }
 
 export function CommunityAccessSection({
   formId,
   visibility,
   onVisibilityChange,
+  canSetPrivate = false,
 }: CommunityAccessSectionProps) {
   return (
     <section className="space-y-3" aria-labelledby={`${formId}-access`}>
@@ -50,20 +53,31 @@ export function CommunityAccessSection({
           type="button"
           role="radio"
           aria-checked={visibility === "private"}
-          onClick={() => onVisibilityChange("private")}
+          disabled={!canSetPrivate}
+          onClick={() => canSetPrivate && onVisibilityChange("private")}
           className={cn(
             woodyFocus.ring,
             "flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors",
-            visibility === "private"
+            !canSetPrivate && "cursor-not-allowed opacity-50",
+            visibility === "private" && canSetPrivate
               ? "border-[var(--woody-nav)] bg-[var(--woody-nav)]/10 ring-1 ring-[var(--woody-nav)]/25"
               : "border-[var(--woody-accent)]/20 bg-[var(--woody-bg)] hover:bg-[var(--woody-nav)]/5"
           )}
         >
           <Lock className="size-5 shrink-0 text-[var(--woody-accent)]" aria-hidden />
           <div>
-            <p className="text-sm font-semibold text-[var(--woody-text)]">Privada</p>
+            <p className="text-sm font-semibold text-[var(--woody-text)]">
+              Privada
+              {!canSetPrivate && (
+                <span className="ml-1.5 rounded-full bg-violet-500/15 px-1.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-violet-500">
+                  Max
+                </span>
+              )}
+            </p>
             <p className="mt-0.5 text-xs text-[var(--woody-muted)] leading-snug">
-              Novas entradas podem exigir aprovação da moderadora — alinhado ao fluxo de pedidos (mock).
+              {canSetPrivate
+                ? "Novas entradas podem exigir aprovação da moderadora."
+                : "Requer plano Woody Max pessoal ativo."}
             </p>
           </div>
         </button>

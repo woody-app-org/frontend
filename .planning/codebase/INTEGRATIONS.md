@@ -28,7 +28,7 @@
   - Redirect behavior: `window.location.assign(url)` in `src/features/subscription/hooks/useProCheckout.ts` and `src/features/subscription/hooks/useStripeCustomerPortal.ts`.
 
 **External assets/CDNs:**
-- Google Fonts - `Lora` and `Plus Jakarta Sans` loaded in `index.html`.
+- Web fonts are bundled with the app (Fontsource in `src/index.css`); the browser does not fetch Google Fonts for Woody typography.
 - Unsplash image URLs - mock/seed image data in `src/domain/mocks/seed-data.ts` and `src/features/profile/mocks/profile.mock.ts`.
 
 ## Backend Endpoint Surface

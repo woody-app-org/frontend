@@ -12,6 +12,7 @@ import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useMatchMedia } from "@/lib/useMatchMedia";
 import { cn } from "@/lib/utils";
+import { profileSignalsPath } from "@/features/profile/lib/profilePaths";
 
 export interface PrivateNotificationsBellProps {
   variant: "toolbar" | "mobileHeader";
@@ -33,7 +34,7 @@ export function PrivateNotificationsBell({ variant }: PrivateNotificationsBellPr
   const isMobile = useMatchMedia("(max-width: 767px)");
   const [open, setOpen] = useState(false);
 
-  const signalsHref = user?.id ? `/profile/${user.id}?tab=signals` : "/feed";
+  const signalsHref = user ? profileSignalsPath(user) : "/feed";
   const hasSignalsUnread = signalsUnreadCount > 0;
   const label =
     notifUnread > 0
@@ -54,6 +55,7 @@ export function PrivateNotificationsBell({ variant }: PrivateNotificationsBellPr
     <NotificationsPanel
       isOpen={open}
       viewerUserId={user.id}
+      viewerUsername={user.username}
       signalsHref={signalsHref}
       signalsUnreadCount={signalsUnreadCount}
       onAfterRead={onAfterRead}

@@ -52,15 +52,25 @@ function mapPaginatedUsers(data: unknown): PaginatedUsersResult {
 
 const listPageSizeClamp = (n: number) => Math.min(50, Math.max(1, Math.floor(n)));
 
+function listQueryParams(page: number, pageSize: number, search?: string) {
+  const trimmed = search?.trim();
+  return {
+    page,
+    pageSize: listPageSizeClamp(pageSize),
+    ...(trimmed ? { search: trimmed } : {}),
+  };
+}
+
 /** `GET /users/:userId/followers` */
 export async function fetchUserFollowersPage(
   userId: string,
   page: number,
-  pageSize: number = 30
+  pageSize: number = 30,
+  search?: string
 ): Promise<PaginatedUsersResult> {
   try {
     const { data } = await api.get(`/users/${encodeURIComponent(userId)}/followers`, {
-      params: { page, pageSize: listPageSizeClamp(pageSize) },
+      params: listQueryParams(page, pageSize, search),
     });
     return mapPaginatedUsers(data);
   } catch (e) {
@@ -72,15 +82,32 @@ export async function fetchUserFollowersPage(
 export async function fetchUserFollowingPage(
   userId: string,
   page: number,
-  pageSize: number = 30
+  pageSize: number = 30,
+  search?: string
 ): Promise<PaginatedUsersResult> {
   try {
     const { data } = await api.get(`/users/${encodeURIComponent(userId)}/following`, {
-      params: { page, pageSize: listPageSizeClamp(pageSize) },
+      params: listQueryParams(page, pageSize, search),
     });
     return mapPaginatedUsers(data);
   } catch (e) {
     throw new Error(getApiErrorMessage(e, "Falha ao carregar quem segue."));
+  }
+}
+
+/** `GET /users/me/following` — lista paginada da utilizadora autenticada. */
+export async function fetchMeFollowingPage(
+  page: number,
+  pageSize: number = 30,
+  search?: string
+): Promise<PaginatedUsersResult> {
+  try {
+    const { data } = await api.get("/users/me/following", {
+      params: listQueryParams(page, pageSize, search),
+    });
+    return mapPaginatedUsers(data);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar quem segues."));
   }
 }
 

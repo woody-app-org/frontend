@@ -1,7 +1,7 @@
 /** Estilos compartilhados das etapas (alinhados ao LoginForm / auth e às superfícies Woody). */
 export const onboardingStyles = {
   stepTitle:
-    "text-[1.35rem] leading-tight sm:text-2xl md:text-[1.65rem] font-bold text-[var(--auth-text-on-maroon)] tracking-tight",
+    "font-heading text-[1.35rem] leading-tight sm:text-2xl md:text-[1.65rem] font-bold text-[var(--auth-text-on-maroon)] tracking-tight",
   stepLead:
     "text-sm md:text-[0.95rem] text-[var(--auth-text-on-maroon)]/82 mt-0 leading-relaxed max-w-prose",
   trustNote:

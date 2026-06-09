@@ -42,6 +42,7 @@ export interface ProfilePostsSectionProps {
   /** Curtir/descurtir na lista (sincroniza com `togglePostLikeMock`). */
   onLike?: (postId: string) => void | Promise<void>;
   isLikePending?: (postId: string) => boolean;
+  onViewAuthorStories?: (authorId: string) => void;
 }
 
 const headerStyles = {
@@ -70,6 +71,7 @@ export function ProfilePostsSection({
   pinningPostId,
   onLike,
   isLikePending,
+  onViewAuthorStories,
 }: ProfilePostsSectionProps) {
   const viewerId = useViewerId();
 
@@ -130,6 +132,7 @@ export function ProfilePostsSection({
                 onPostDeleted={onPostDeleted}
                 onLike={onLike}
                 isLikePending={isLikePending?.(post.id) ?? false}
+                onViewAuthorStories={onViewAuthorStories}
               />
             </li>
           ))}
@@ -187,6 +190,7 @@ export function ProfilePostsSection({
                     onPostDeleted={onPostDeleted}
                     onLike={onLike}
                     isLikePending={isLikePending?.(post.id) ?? false}
+                    onViewAuthorStories={onViewAuthorStories}
                   />
                 </li>
               ))}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { HeartHandshake, Plus, Search, Sparkles } from "lucide-react";
+import { Plus, Search, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodyFocus, woodyLayout, woodySurface } from "@/lib/woody-ui";
 import type { Community, CommunityCategory } from "@/domain/types";
@@ -129,8 +129,7 @@ export function CommunitiesPage() {
               <span className="text-[var(--woody-nav)]">conversas que importam</span>
             </h1>
             <p className="text-sm leading-relaxed text-[var(--woody-muted)] sm:text-base md:max-w-2xl">
-              Explore por tema, encontre grupos com propósito claro e entre quando se sentir à vontade —
-              tudo permanece centrado em segurança e curadoria.
+            Explore grupos por interesse, e se bater, participe. A Woody cuida da moderação para que cada espaço continue seguro, leve, dinâmico e acolhedor
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <CreateCommunityEntry
@@ -154,13 +153,7 @@ export function CommunitiesPage() {
               </Link>
               <span className="flex max-sm:w-full flex-wrap items-center gap-1.5 text-xs text-[var(--woody-muted)] sm:pl-1">
                 <ProBadge variant="inline" />
-                <span>{isProUser ? "Tens criação de comunidades ativa." : "Criação de comunidades é Pro — o botão abre o resumo e checkout."}</span>
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 pt-1 text-sm text-[var(--woody-text)]/90">
-              <span className="inline-flex items-center gap-2 rounded-xl bg-[var(--woody-bg)]/80 px-3 py-2 ring-1 ring-[var(--woody-accent)]/10">
-                <HeartHandshake className="size-4 shrink-0 text-[var(--woody-accent)]" aria-hidden />
-                Escalável à medida que a rede cresce
+                <span>{isProUser ? "Tens criação de comunidades ativa." : "Criação de comunidades é Pro."}</span>
               </span>
             </div>
           </div>
@@ -177,9 +170,8 @@ export function CommunitiesPage() {
             <div className="flex items-end justify-between gap-3">
               <div>
                 <h2 id="my-communities-heading" className="text-lg font-bold text-[var(--woody-text)]">
-                  Minhas comunidades
+                  Comunidades que você faz parte
                 </h2>
-                <p className="text-sm text-[var(--woody-muted)]">Acesso rápido aos grupos em que você já está.</p>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -196,9 +188,6 @@ export function CommunitiesPage() {
               <h2 id="discover-heading" className="text-lg font-bold text-[var(--woody-text)]">
                 Descobrir comunidades
               </h2>
-              <p className="text-sm text-[var(--woody-muted)]">
-                Busca e filtros locais — ideal quando a lista crescer.
-              </p>
             </div>
           </div>
 

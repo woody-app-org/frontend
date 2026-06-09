@@ -1,7 +1,19 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { AtSign, BookOpen, BriefcaseBusiness, Heart, Luggage, MapPin, MoreHorizontal, Pencil, Sparkles } from "lucide-react";
+import {
+  AtSign,
+  BookOpen,
+  BriefcaseBusiness,
+  Heart,
+  Luggage,
+  MapPin,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  ShieldBan,
+  Sparkles,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StoryRing } from "@/components/ui/StoryRing";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +26,7 @@ import { woodyFocus } from "@/lib/woody-ui";
 import type { UserProfile } from "../types";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { resolvePublicMediaUrl } from "@/lib/api";
+import { ProfileBadgesSection } from "./ProfileBadgesSection";
 
 const styles = {
   card:
@@ -30,7 +43,7 @@ const styles = {
   actionsCol: "flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end",
   meta: "min-w-0 flex-1",
   nameBlock: "min-w-0",
-  name: "truncate text-2xl font-bold tracking-[-0.03em] text-[var(--woody-text)] sm:text-[1.7rem]",
+  name: "font-heading truncate text-2xl font-semibold tracking-[-0.02em] text-[var(--woody-text)] sm:text-[1.7rem]",
   pronouns: "text-sm font-medium text-[var(--woody-muted)]",
   details: "mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[var(--woody-muted)]",
   detailItem: "inline-flex min-w-0 max-w-full items-center gap-1",
@@ -47,15 +60,6 @@ const styles = {
     "size-10 rounded-xl border border-[var(--woody-accent)]/14 bg-[var(--woody-card)] p-0 text-[var(--woody-text)] shadow-[0_1px_2px_rgba(10,10,10,0.04)] hover:bg-[var(--woody-nav)]/8",
   bio: "mt-5 max-w-3xl whitespace-pre-wrap break-words text-[0.95rem] leading-7 text-[var(--woody-text)]/92",
 };
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 function InterestIcon({ label }: { label: string }) {
   const normalized = label.toLocaleLowerCase("pt-PT");
@@ -79,6 +83,12 @@ export interface ProfileHeaderProps {
   followSlot?: ReactNode;
   /** Contadores seguidores / a seguir (clicáveis). */
   followStats?: ReactNode;
+  /** Abrir visualizador de stories (quando `profile.hasActiveStories`). */
+  onViewStories?: () => void;
+  /** Abrir compositor de story (próprio perfil). */
+  onAddStory?: () => void;
+  /** Iniciar fluxo de bloqueio (perfil alheio autenticado). */
+  onBlockUser?: () => void;
 }
 
 export function ProfileHeader({
@@ -88,11 +98,10 @@ export function ProfileHeader({
   onEditProfile,
   followSlot,
   followStats,
+  onViewStories,
+  onAddStory,
+  onBlockUser,
 }: ProfileHeaderProps) {
-  const resolvedAvatarUrl = useMemo(
-    () => (profile.avatarUrl ? resolvePublicMediaUrl(profile.avatarUrl) : ""),
-    [profile.avatarUrl]
-  );
   const resolvedBannerUrl = useMemo(
     () => (profile.bannerUrl ? resolvePublicMediaUrl(profile.bannerUrl) : ""),
     [profile.bannerUrl]
@@ -135,23 +144,61 @@ export function ProfileHeader({
       <CardContent className={styles.content}>
         <div className={styles.topRow}>
           <div className={styles.avatarWrap}>
-            <Avatar className={styles.avatar}>
-              <AvatarImage
-                src={resolvedAvatarUrl || undefined}
-                alt={profile.name}
-                onError={() => {
-                  if (import.meta.env.DEV) {
-                    console.warn("[Woody] Profile avatar failed to load", resolvedAvatarUrl);
-                  }
-                }}
+            <div className="relative inline-flex">
+              <StoryRing
+                avatarUrl={profile.avatarUrl}
+                displayName={profile.name}
+                hasActiveStories={profile.hasActiveStories ?? false}
+                size="lg"
+                avatarClassName={styles.avatar}
+                onClick={
+                  profile.hasActiveStories && onViewStories
+                    ? (event) => {
+                        event.preventDefault();
+                        onViewStories();
+                      }
+                    : undefined
+                }
               />
-              <AvatarFallback className="bg-[var(--woody-nav)]/10 text-xl font-bold text-[var(--woody-text)]">
-                {getInitials(profile.name)}
-              </AvatarFallback>
-            </Avatar>
+              {isOwnProfile && onAddStory ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onAddStory();
+                  }}
+                  className={cn(
+                    "absolute -bottom-0.5 -right-0.5 flex size-9 items-center justify-center rounded-full",
+                    "border-[3px] border-[var(--woody-card)] bg-[var(--woody-nav)] text-white shadow-[0_4px_12px_rgba(10,10,10,0.2)]",
+                    "transition-transform hover:scale-105 active:scale-95",
+                    woodyFocus.ring
+                  )}
+                  aria-label="Adicionar story"
+                >
+                  <Plus className="size-4 stroke-[2.5]" aria-hidden />
+                </button>
+              ) : null}
+            </div>
           </div>
           {isOwnProfile && onEditProfile ? (
             <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>
+              {onAddStory ? (
+                <Button
+                  type="button"
+                  className={cn(
+                    styles.editBtn,
+                    woodyFocus.ring,
+                    "touch-manipulation min-h-10 border-[var(--woody-nav)]/28 bg-[var(--woody-nav)]/10"
+                  )}
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddStory}
+                >
+                  <Plus className="size-4 text-[var(--woody-nav)]" aria-hidden />
+                  Adicionar story
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 className={cn(styles.editBtn, woodyFocus.ring, "touch-manipulation min-h-10")}
@@ -162,28 +209,40 @@ export function ProfileHeader({
                 <Pencil className="size-4 text-[var(--woody-nav)]" />
                 Editar perfil
               </Button>
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className={cn(styles.menuBtn, woodyFocus.ring)}
-                    aria-label="Mais ações do perfil"
-                  >
-                    <MoreHorizontal className="size-4" aria-hidden />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[11rem] border-[var(--woody-accent)]/20 bg-[var(--woody-card)]">
-                  <DropdownMenuItem onSelect={onEditProfile} className="cursor-pointer">
-                    <Pencil className="size-4 text-[var(--woody-nav)]" aria-hidden />
-                    Editar perfil
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
-          ) : !isOwnProfile && followSlot ? (
-            <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>{followSlot}</div>
+          ) : !isOwnProfile && (followSlot || onBlockUser) ? (
+            <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>
+              <div className="flex w-full items-start gap-2 sm:justify-end">
+                {followSlot ? <div className="min-w-0 flex-1">{followSlot}</div> : null}
+                {onBlockUser ? (
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className={cn(styles.menuBtn, woodyFocus.ring, "shrink-0 touch-manipulation")}
+                        aria-label="Mais ações do perfil"
+                      >
+                        <MoreHorizontal className="size-4" aria-hidden />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="min-w-[12rem] border-[var(--woody-accent)]/20 bg-[var(--woody-card)]"
+                    >
+                      <DropdownMenuItem
+                        onSelect={onBlockUser}
+                        className="cursor-pointer text-red-700 focus:text-red-700"
+                      >
+                        <ShieldBan className="size-4" aria-hidden />
+                        Bloquear usuária
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
+              </div>
+            </div>
           ) : null}
         </div>
         <div className={styles.infoRow}>
@@ -191,7 +250,7 @@ export function ProfileHeader({
             <div className={styles.nameBlock}>
               <div className="flex flex-wrap items-baseline gap-1.5">
                 <h1 className={styles.name}>{profile.name}</h1>
-                {profile.showProBadge ? <ProBadge variant="profile" /> : null}
+                {profile.showProBadge ? <ProBadge variant="profile" tier={profile.subscriptionBadge ?? "pro"} /> : null}
                 {profile.pronouns && (
                   <>
                     <span className={styles.pronouns}>•</span>
@@ -214,6 +273,22 @@ export function ProfileHeader({
                       <MapPin />
                     </span>
                     <span className={styles.detailText}>{profile.location}</span>
+                  </span>
+                ) : null}
+                {profile.genderIdentity ? (
+                  <span className={styles.detailItem}>
+                    <span className={styles.detailIconWrap} aria-hidden>
+                      <Sparkles />
+                    </span>
+                    <span className={styles.detailText}>{profile.genderIdentity}</span>
+                  </span>
+                ) : null}
+                {profile.sexualOrientation ? (
+                  <span className={styles.detailItem}>
+                    <span className={styles.detailIconWrap} aria-hidden>
+                      <Heart />
+                    </span>
+                    <span className={styles.detailText}>{profile.sexualOrientation}</span>
                   </span>
                 ) : null}
                 {profile.username ? (
@@ -243,6 +318,7 @@ export function ProfileHeader({
           </div>
         </div>
         {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
+        <ProfileBadgesSection badges={profile.badges} />
       </CardContent>
     </Card>
   );

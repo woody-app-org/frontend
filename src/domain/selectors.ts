@@ -71,7 +71,7 @@ export function postCommunityPreviewFromCommunity(c: Community): PostCommunityPr
     name: c.name,
     avatarUrl: c.avatarUrl,
     category: c.category,
-    communityPlan: plan === "premium" ? "premium" : "free",
+    communityPlan: plan === "max" ? "max" : plan === "premium" ? "premium" : "free",
   };
 }
 

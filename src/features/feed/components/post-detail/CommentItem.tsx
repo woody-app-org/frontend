@@ -11,6 +11,7 @@ import { HiddenCommentPlaceholder } from "./HiddenCommentPlaceholder";
 import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { PostLikeIcon } from "@/features/feed/components/PostLikeIcon";
 import { usePostLikeTapAnimation } from "@/features/feed/hooks/usePostLikeTapAnimation";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { useAuth } from "@/features/auth/context/AuthContext";
 
 function formatLikeCount(count: number): string {
@@ -45,12 +46,7 @@ export function CommentItem({
   const { isAuthenticated } = useAuth();
   const { tapPhase, triggerTap } = usePostLikeTapAnimation();
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const initials = author.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = author.username.slice(0, 2).toUpperCase();
 
   return (
     <article
@@ -62,7 +58,7 @@ export function CommentItem({
       )}
     >
       <Link
-        to={`/profile/${author.id}`}
+        to={profilePathForUser(author)}
         className="mt-0.5 shrink-0 rounded-full overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--woody-card)]"
         aria-label={`Ver perfil de ${author.name}`}
       >
@@ -81,23 +77,15 @@ export function CommentItem({
           <header className="flex min-w-0 flex-1 flex-wrap content-start items-start gap-x-2 gap-y-1 sm:items-baseline">
             <span className="inline-flex min-w-0 max-w-full items-center gap-1">
               <Link
-                to={`/profile/${author.id}`}
+                to={profilePathForUser(author)}
                 className={cn(
                   "min-w-0 truncate font-semibold text-[var(--woody-text)] hover:underline underline-offset-2",
                   nested ? "text-[0.8125rem] sm:text-sm" : "text-sm"
                 )}
               >
-                {author.name}
+                {author.username}
               </Link>
-              {author.showProBadge ? <ProBadge variant="inline" /> : null}
-            </span>
-            <span
-              className={cn(
-                "truncate text-[var(--woody-muted)]",
-                nested ? "text-[0.6875rem] sm:text-xs" : "text-xs"
-              )}
-            >
-              @{author.username}
+              {author.subscriptionBadge ? <ProBadge variant="inline" tier={author.subscriptionBadge} /> : null}
             </span>
             <span
               className={cn(
@@ -156,7 +144,7 @@ export function CommentItem({
             {comment.gifUrl ? (
               <div className="max-w-[min(100%,240px)]">
                 <img
-                  src={comment.gifThumbnailUrl || comment.gifUrl}
+                  src={comment.gifUrl}
                   alt={comment.gifTitle ? `GIF: ${comment.gifTitle}` : "GIF do comentário"}
                   className="max-h-[200px] w-full rounded-lg border border-[var(--woody-accent)]/10 object-contain sm:max-h-[220px]"
                   loading="lazy"

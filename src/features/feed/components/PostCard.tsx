@@ -1,12 +1,10 @@
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { MessageCircle, Clock, Loader2, Lock, TrendingUp } from "lucide-react";
+import { MessageCircle, Loader2, Lock, TrendingUp } from "lucide-react";
 import {
   Card,
-  CardContent,
-  CardHeader,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StoryRing } from "@/components/ui/StoryRing";
 import { cn } from "@/lib/utils";
 import { woodyMotion, woodyPinPill } from "@/lib/woody-ui";
 import type { Post } from "../types";
@@ -20,6 +18,9 @@ import { PostOverflowMenu, type PostProfilePinMenuProps } from "./PostOverflowMe
 import { ProBadge } from "@/features/subscription/components/ProBadge";
 import { PostLikeIcon } from "./PostLikeIcon";
 import { usePostLikeTapAnimation } from "../hooks/usePostLikeTapAnimation";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
+import { postPathForPost, postCommentsFocusPath } from "@/features/feed/lib/postPaths";
+import { PostShareButton } from "./share/PostShareButton";
 import { buildPostDetailNavState } from "../lib/postDetailNavState";
 import {
   isBackgroundNavigationSuppressed,
@@ -48,7 +49,9 @@ const styles = {
   headerMeta: "min-w-0 flex-1",
   authorName: "font-semibold text-[var(--woody-text)] text-[0.98rem] leading-tight truncate md:text-[1.02rem]",
   authorPronouns: "text-[var(--woody-muted)] text-[0.75rem]",
-  timestamp: "flex items-center gap-1 text-[var(--woody-muted)] text-[0.75rem] mt-0.5",
+  authorHandle: "text-[0.8125rem] leading-tight text-[var(--woody-muted)] truncate mt-0.5",
+  postMeta:
+    "text-[0.8125rem] leading-snug text-[var(--woody-muted)] mt-3 first:mt-0",
   menuTrigger:
     "shrink-0 touch-manipulation text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/10 rounded-md p-2 min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 sm:p-1.5",
   metaRow:
@@ -56,10 +59,10 @@ const styles = {
   pill:
     "inline-flex items-center rounded-full px-2.5 py-[0.1875rem] text-[0.75rem] font-semibold tracking-[0.01em] bg-[var(--woody-tag-bg)] text-[var(--woody-tag-text)] ring-1 ring-[rgba(139,195,74,0.28)]",
   content:
-    "text-[var(--woody-text)]/92 text-[0.9375rem] leading-[1.65] whitespace-pre-wrap break-words",
+    "text-[var(--woody-text)]/92 text-[0.9375rem] leading-[1.45] whitespace-pre-wrap break-words",
   contentBlock: "relative z-[1] p-0 pt-1 pb-0",
   footer:
-    "relative z-[1] flex items-center gap-7 mt-4 pt-0.5 text-[var(--woody-muted)]",
+    "relative z-[1] flex items-center gap-24 mt-3 pt-0.5 text-[var(--woody-muted)]",
   footerItem:
     "flex items-center gap-1.5 text-xs transition-colors rounded-md py-1 px-1.5 -mx-1.5 hover:text-[var(--woody-text)] hover:bg-[var(--woody-nav)]/5 [&_svg]:size-3.5",
 };
@@ -96,9 +99,11 @@ export interface PostCardProps {
     isBoosting?: boolean;
     onBoost?: () => void | Promise<void>;
   };
+  /** Abre stories da autora quando `post.author.hasActiveStories`. */
+  onViewAuthorStories?: (authorId: string) => void;
 }
 
-export function PostCard({
+function PostCardInner({
   post,
   profilePinHighlight = false,
   profilePinMenu,
@@ -111,6 +116,7 @@ export function PostCard({
   postListingContext = "feed",
   postSurface = "feed",
   communityBoost,
+  onViewAuthorStories,
 }: PostCardProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -121,16 +127,9 @@ export function PostCard({
   const suppressNextCardOpenFromMenu = () => {
     ignoreNextCardClickRef.current = true;
   };
-  const initials = post.author.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  const openPost = () => navigate(`/posts/${post.id}`, { state: buildPostDetailNavState(location) });
+  const openPost = () => navigate(postPathForPost(post), { state: buildPostDetailNavState(location) });
   const openPostComments = () =>
-    navigate(`/posts/${post.id}?focus=comments`, { state: buildPostDetailNavState(location) });
+    navigate(postCommentsFocusPath(post), { state: buildPostDetailNavState(location) });
 
   const imageGalleryRaw =
     post.imageUrls && post.imageUrls.length > 0
@@ -161,10 +160,11 @@ export function PostCard({
   const showProfileContext =
     post.publicationContext === "profile" && !post.community && postSurface !== "profile";
 
-  const showMetaRow =
-    (post.communityBoostActive && post.publicationContext === "community") ||
-    Boolean(post.pinnedOnProfileAt && postSurface === "profile") ||
-    (post.tags?.length ?? 0) > 0;
+  // "Em destaque" fica no content (indicador de pin no perfil)
+  const showMetaRow = Boolean(post.pinnedOnProfileAt && postSurface === "profile");
+  // Tags e badge "Impulsionado" sobem para o header, logo abaixo do username
+  const hasTags = (post.tags?.length ?? 0) > 0;
+  const showBoostBadge = Boolean(post.communityBoostActive && post.publicationContext === "community");
 
   const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     if (ignoreNextCardClickRef.current) {
@@ -217,97 +217,105 @@ export function PostCard({
       ) : showProfileContext ? (
         <PostProfileContextBar
           authorId={post.author.id}
+          authorUsername={post.author.username}
           authorDisplayName={post.author.name}
           variant={postListingContext}
         />
       ) : null}
-      <CardHeader className={cn(styles.header, hasContextBar && "pt-1 sm:pt-2")}>
-        <div className={styles.headerLeft}>
-          <Link
-            to={`/profile/${post.author.id}`}
-            data-post-ignore-open="true"
-            className="flex min-w-0 flex-1 items-start gap-3 rounded-md -m-1.5 p-1.5 hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
-            aria-label={`Ver perfil de ${post.author.name}`}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <Avatar size="default" className={styles.avatar}>
-              <AvatarImage src={post.author.avatarUrl ?? undefined} alt={post.author.name} />
-              <AvatarFallback className="bg-[var(--woody-nav)]/10 text-[var(--woody-text)] text-xs">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className={styles.headerMeta}>
-              <div className="flex flex-wrap items-baseline gap-1">
-                <span className={styles.authorName}>{post.author.name}</span>
-                {post.author.showProBadge ? <ProBadge variant="inline" /> : null}
-                {post.author.pronouns && (
-                  <>
-                    <span className={styles.authorPronouns}>•</span>
-                    <span className={cn(styles.authorPronouns, "truncate")}>
-                      {post.author.pronouns}
-                    </span>
-                  </>
-                )}
-              </div>
-              <div className={styles.timestamp}>
-                <Clock className="size-3 shrink-0" aria-hidden />
-                <span>
-                  {post.createdAt}
-                  <span className="text-[var(--woody-muted)]/80"> · #{post.id}</span>
-                </span>
-              </div>
-            </div>
-          </Link>
+      {/* Layout de duas colunas: avatar fixo à esquerda, todo conteúdo à direita */}
+      <div className={cn("flex items-start gap-3", hasContextBar && "pt-1 sm:pt-2")}>
+        {/* Coluna esquerda: avatar */}
+        <div
+          data-post-ignore-open="true"
+          className="shrink-0"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <StoryRing
+            avatarUrl={post.author.avatarUrl}
+            displayName={post.author.username}
+            hasActiveStories={post.author.hasActiveStories ?? false}
+            size="md"
+            onClick={
+              post.author.hasActiveStories
+                ? (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onViewAuthorStories?.(post.author.id);
+                  }
+                : undefined
+            }
+          />
         </div>
-        <PostOverflowMenu
-          post={post}
-          viewerId={viewerId}
-          profilePinMenu={profilePinMenu}
-          onPin={profilePinMenu ? undefined : onPin}
-          onPostUpdated={onPostUpdated}
-          onPostDeleted={onPostDeleted}
-          onBeforeMenuActionPointerDown={suppressNextCardOpenFromMenu}
-          triggerClassName={styles.menuTrigger}
-        />
-      </CardHeader>
-      <CardContent className={styles.contentBlock}>
-        {showMetaRow ? (
-          <div className={styles.metaRow}>
-            {post.communityBoostActive && post.publicationContext === "community" ? (
-              <span
-                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
-                title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
-              >
-                <TrendingUp className="size-3" aria-hidden />
-                Impulsionado
-              </span>
-            ) : null}
-            {post.pinnedOnProfileAt && postSurface === "profile" ? (
-              <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
-                Em destaque
-              </span>
-            ) : null}
-            {post.tags?.map((tag) => (
-              <span key={tag} className={styles.pill}>
-                #{tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
-        <p className={cn(styles.content, showMetaRow && "mt-2")}>
-          {post.content}
-        </p>
-        {galleryItems ? (
+
+        {/* Coluna direita: username + conteúdo completo */}
+        <div className="relative min-w-0 flex-1 pr-8">
           <div
             data-post-ignore-open="true"
-            className={cn("mt-4 sm:mt-5", mediaBleedClass)}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
+            className="min-w-0"
+            onClick={(event) => event.stopPropagation()}
           >
-            <PostMediaGallery items={galleryItems} className="mt-0 sm:mt-1" />
+            <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+              <Link
+                to={profilePathForUser(post.author)}
+                className="inline-flex items-baseline gap-1 min-w-0 rounded-md hover:bg-[var(--woody-nav)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-accent)]/30"
+                aria-label={`Ver perfil de ${post.author.name}`}
+              >
+                <span className={styles.authorName}>{post.author.username}</span>
+                {post.author.subscriptionBadge ? <ProBadge variant="inline" tier={post.author.subscriptionBadge} /> : null}
+              </Link>
+              <span className="text-[var(--woody-muted)] text-[0.8rem] leading-tight shrink-0">· {post.createdAt}</span>
+            </div>
+            {showBoostBadge ? (
+              <div className="flex flex-wrap items-center gap-1 mt-1">
+                <span
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--woody-nav)]/10 px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--woody-nav)] ring-1 ring-[var(--woody-nav)]/20"
+                  title={post.communityBoostEndsAt ? `Até ${post.communityBoostEndsAt}` : "Impulsionado"}
+                >
+                  <TrendingUp className="size-3" aria-hidden />
+                  Impulsionado
+                </span>
+              </div>
+            ) : null}
           </div>
-        ) : null}
-        <div className={styles.footer}>
+
+          {/* Conteúdo: destaque + texto + tags + mídia */}
+          <div>
+            {showMetaRow ? (
+              <div className={styles.metaRow}>
+                <span className={woodyPinPill} aria-label="Publicação em destaque no perfil">
+                  Em destaque
+                </span>
+              </div>
+            ) : null}
+            <p className={cn(styles.content, showMetaRow && "mt-2")}>
+              {post.content}
+            </p>
+            {hasTags ? (
+              <div
+                data-post-ignore-open="true"
+                className="flex flex-wrap gap-1 mt-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {post.tags?.map((tag) => (
+                  <span key={tag} className={styles.pill}>
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            {galleryItems ? (
+              <div
+                data-post-ignore-open="true"
+                className={cn("mt-4 sm:mt-5", mediaBleedClass)}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+              >
+                <PostMediaGallery items={galleryItems} className="mt-0 sm:mt-1" />
+              </div>
+            ) : null}
+          </div>
+
+          <div className={styles.footer}>
           <button
             type="button"
             data-post-ignore-open="true"
@@ -345,6 +353,7 @@ export function PostCard({
             <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
             {formatCount(post.commentsCount)}
           </button>
+          <PostShareButton post={post} variant="card" className={styles.footerItem} />
           {communityBoost ? (
             <button
               type="button"
@@ -383,8 +392,28 @@ export function PostCard({
               <span className="min-[380px]:hidden">Boost</span>
             </button>
           ) : null}
+          </div>
+          {/* Menu absoluto no canto superior direito da coluna — alinha com username independente da context bar */}
+          <div className="absolute top-0 right-0 z-10">
+            <PostOverflowMenu
+              post={post}
+              viewerId={viewerId}
+              profilePinMenu={profilePinMenu}
+              onPin={profilePinMenu ? undefined : onPin}
+              onPostUpdated={onPostUpdated}
+              onPostDeleted={onPostDeleted}
+              onBeforeMenuActionPointerDown={suppressNextCardOpenFromMenu}
+              triggerClassName={styles.menuTrigger}
+            />
+          </div>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }
+
+/**
+ * Memoizado: só re-renderiza quando as suas próprias props mudam.
+ * Evita que curtir/comentar um post re-renderize todos os outros cards na lista.
+ */
+export const PostCard = memo(PostCardInner);

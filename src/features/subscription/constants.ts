@@ -1,3 +1,10 @@
+/**
+ * Promoção de lançamento: planos pagos gratuitos pelos primeiros 12 dias.
+ * Mude para `false` quando o período terminar.
+ */
+export const LAUNCH_PROMO_ACTIVE = true;
+export const LAUNCH_PROMO_DAYS = 12;
+
 /** Código de plano reconhecido pelo backend (`BillingPlanCodes.ProMonthly`). */
 export const PRO_MONTHLY_CHECKOUT_PLAN_CODE = "pro_monthly";
 

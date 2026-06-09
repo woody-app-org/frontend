@@ -28,7 +28,7 @@ export function InstitutionalSectionHeader({
       ) : null}
       <h1
         className={cn(
-          "mt-3 font-serif text-[clamp(1.85rem,4.2vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-[var(--woody-ink)]",
+          "font-heading mt-3 text-balance text-[clamp(1.85rem,4.2vw,3rem)] font-bold leading-[1.08] tracking-[-0.02em] text-[var(--woody-ink)]",
           eyebrow && "mt-2"
         )}
       >

@@ -8,9 +8,12 @@ import { withPasswordAutofillSync } from "../lib/passwordAutofillRegistration";
 import { loginSchema } from "../lib/validation";
 import type { LoginFormData } from "../lib/validation";
 import { cn } from "@/lib/utils";
+import { identifierInputProps } from "@/components/forms";
+import { AccountBannedNotice } from "./AccountBannedNotice";
+import type { AccountBannedLoginDetails } from "../errors/accountBannedLogin";
 
 const styles = {
-  formTitle: "text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center md:text-left",
+  formTitle: "font-heading text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center md:text-left",
   form: "space-y-4",
   link:
     "text-sm text-[var(--auth-text-on-beige)] hover:underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/50 rounded",
@@ -27,6 +30,7 @@ export interface LoginFormProps {
   onSubmit: (data: LoginFormData) => Promise<void>;
   isSubmitting: boolean;
   errorMessage: string | null;
+  accountBanned?: AccountBannedLoginDetails | null;
   /** Rota para cadastro (footer só em mobile; no desktop o painel bege cobre isso) */
   createAccountTo?: string;
   className?: string;
@@ -36,6 +40,7 @@ export function LoginForm({
   onSubmit,
   isSubmitting,
   errorMessage,
+  accountBanned = null,
   createAccountTo = "/auth/onboarding/1",
   className,
 }: LoginFormProps) {
@@ -54,22 +59,23 @@ export function LoginForm({
     <div className={cn("w-full max-w-sm mx-auto md:mx-0 px-0", className)}>
       <h2 className={styles.formTitle}>Entrar</h2>
 
+      {accountBanned ? <AccountBannedNotice details={accountBanned} className="mb-4" /> : null}
+
       <form onSubmit={handleSubmitForm} className={styles.form} noValidate>
-        {errorMessage && (
+        {errorMessage && !accountBanned ? (
           <p
             className="text-sm text-red-600 md:text-red-200 bg-red-100 md:bg-red-900/30 rounded-lg px-3 py-2"
             role="alert"
           >
             {errorMessage}
           </p>
-        )}
+        ) : null}
 
         <AuthInputField
           label="Usuário"
           placeholder="Usuário ou e-mail"
-          type="text"
-          autoComplete="username"
           variant="maroon"
+          {...identifierInputProps}
           {...register("username")}
           error={formState.errors.username?.message}
         />
@@ -83,17 +89,22 @@ export function LoginForm({
             disabled={isSubmitting}
             error={formState.errors.password?.message}
           />
-          <button
-            type="button"
-            className={cn(
-              styles.link,
-              "self-end mt-1 text-right bg-transparent border-none cursor-pointer font-inherit p-0 disabled:opacity-50"
-            )}
-            disabled={isSubmitting}
-            title="Em breve"
-          >
-            Esqueci minha senha
-          </button>
+          <div className="flex flex-col items-end gap-1 mt-1">
+            <Link
+              to="/auth/forgot-password"
+              className={cn(
+                styles.link,
+                "text-right disabled:opacity-50 pointer-events-auto"
+              )}
+              aria-disabled={isSubmitting}
+              tabIndex={isSubmitting ? -1 : undefined}
+            >
+              Esqueci minha senha
+            </Link>
+            <p className="text-xs text-[var(--auth-text-on-beige)]/80 md:text-white/70 text-right max-w-[16rem]">
+              Redefinir a senha não reativa uma conta desativada.
+            </p>
+          </div>
         </div>
 
         <button

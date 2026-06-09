@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import woodyCat from "@/assets/cat.svg";
+import { codeInputProps } from "@/components/forms";
+import woodyCat from "@/assets/new-cat.png";
 import { postValidateInvite } from "@/features/beta/betaInvite.api";
 import { setValidatedBetaInvite } from "@/features/beta/betaInvite.storage";
 
@@ -89,17 +90,16 @@ export function BetaGatePage() {
           <div className="mb-6 flex justify-center">
             <img
               src={woodyCat}
-              alt=""
-              width={213}
-              height={180}
+              alt="Woody"
+              width={1598}
+              height={1443}
               className="h-[7rem] w-auto max-w-[min(94vw,22rem)] object-contain object-center select-none sm:h-[8rem] md:h-[8.5rem]"
               decoding="async"
               draggable={false}
-              aria-hidden
             />
           </div>
 
-          <h1 className="text-center font-sans text-[1.65rem] font-semibold leading-tight tracking-tight text-[var(--woody-ink)] sm:text-[1.85rem]">
+          <h1 className="font-heading text-center text-[1.65rem] font-semibold leading-tight tracking-tight text-[var(--woody-ink)] sm:text-[1.85rem]">
             {COPY.title}
           </h1>
           <p className="mt-4 max-w-[26rem] text-center text-[0.9375rem] leading-relaxed text-[var(--woody-muted)] sm:text-base">
@@ -124,9 +124,7 @@ export function BetaGatePage() {
             </label>
             <input
               id="beta-invite-code"
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
+              {...codeInputProps}
               disabled={isBusy}
               value={code}
               onChange={(ev) => {

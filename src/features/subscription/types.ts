@@ -1,5 +1,5 @@
 /** Plano com benefícios ativos (espelha `effectivePlan` da API). */
-export type EffectiveSubscriptionPlan = "free" | "pro";
+export type EffectiveSubscriptionPlan = "free" | "pro" | "max";
 
 /** Plano de faturação na API (`billingPlan`); Max partilha benefícios de Pro em `effectivePlan`. */
 export type BillingSubscriptionPlan = "free" | "pro" | "max";
@@ -14,6 +14,8 @@ export interface AuthUserSubscription {
   currentPeriodEnd?: string | null;
   cancelAtPeriodEnd?: boolean;
   showProBadge?: boolean;
+  /** Tier do badge: `null` = free, `"pro"` = Pro, `"max"` = Max (API `subscriptionBadge`). */
+  subscriptionBadge?: "pro" | "max" | null;
   /** Indica se o backend expôs `cus_…` Stripe — permite abrir o Customer Billing Portal. */
   canOpenBillingPortal?: boolean;
 }

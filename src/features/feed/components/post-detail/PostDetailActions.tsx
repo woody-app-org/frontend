@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import type { Post } from "@/domain/types";
 import { cn } from "@/lib/utils";
 import { PostLikeIcon } from "../PostLikeIcon";
+import { PostShareButton } from "../share/PostShareButton";
 import { usePostLikeTapAnimation } from "../../hooks/usePostLikeTapAnimation";
 
 function formatCount(count: number): string {
@@ -26,7 +27,7 @@ export function PostDetailActions({
   const { tapPhase, triggerTap } = usePostLikeTapAnimation();
 
   return (
-    <div className="flex flex-wrap items-center gap-2 pt-2">
+    <div className="flex items-center gap-24 pt-2">
       <Button
         type="button"
         variant={post.likedByCurrentUser ? "default" : "ghost"}
@@ -50,6 +51,7 @@ export function PostDetailActions({
         <MessageCircle className="size-4" />
         <span>{formatCount(post.commentsCount)}</span>
       </Button>
+      <PostShareButton post={post} variant="detail" />
     </div>
   );
 }

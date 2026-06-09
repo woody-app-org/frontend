@@ -1,9 +1,29 @@
 import { rules } from "../institutional/content";
 
-/** Título hero das regras com sublinhado editorial na palavra «legal». */
-export function RulesHeroTitle() {
+export interface RulesHeroTitleProps {
+  /** Quebras editoriais como no mockup (4 linhas). */
+  multiline?: boolean;
+}
+
+/** Título das regras — sublinha a palavra «legal» independentemente de caixa. */
+export function RulesHeroTitle({ multiline = false }: RulesHeroTitleProps) {
   const t = rules.title;
   const idx = t.toLowerCase().indexOf("legal");
+
+  if (multiline) {
+    return (
+      <>
+        O que não
+        <br />é{" "}
+        <span className="underline decoration-2 underline-offset-[0.18em]">legal</span>
+        <br />
+        fazer na
+        <br />
+        Woody
+      </>
+    );
+  }
+
   if (idx === -1) {
     return <span>{t}</span>;
   }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Compass, Sparkles } from "lucide-react";
 import type { Community } from "@/domain/types";
@@ -76,7 +76,7 @@ export function OnboardingStepCommunities() {
           className="rounded-2xl border border-black/12 bg-[var(--auth-panel-beige)] px-5 py-10 text-center text-sm text-[var(--auth-text-on-maroon)]/80"
           role="status"
         >
-          A carregar comunidades…
+          Carregando comunidades…
         </p>
       ) : loadState.status === "error" ? (
         <div

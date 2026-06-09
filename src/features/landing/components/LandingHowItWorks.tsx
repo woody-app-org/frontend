@@ -15,7 +15,7 @@ export function LandingHowItWorks() {
       <div className="mx-auto max-w-[var(--layout-max-width)] px-[var(--layout-gutter)]">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--woody-muted)]">Como funciona</p>
-          <h2 className="mt-4 font-serif text-3xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-4xl">
+          <h2 className="font-heading mt-4 text-3xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-4xl">
             Cinco passos. Uma linha clara.
           </h2>
         </div>
@@ -29,7 +29,7 @@ export function LandingHowItWorks() {
                 i > 0 && "lg:border-l lg:border-black/[0.08] lg:pl-8"
               )}
             >
-              <span className="font-serif text-2xl font-semibold text-[var(--woody-lime)]">{s.step}</span>
+              <span className="font-heading text-2xl font-semibold text-[var(--woody-lime)]">{s.step}</span>
               <h3 className="mt-3 font-semibold text-[var(--woody-text)]">{s.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-[var(--woody-muted)]">{s.text}</p>
             </li>

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
 import { resolvePublicMediaUrl } from "@/lib/api";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import type { UserProfile } from "../types";
 import { ProfileAbout } from "./ProfileAbout";
 
@@ -85,7 +86,7 @@ export function ProfileOverviewTab({ profile, className }: ProfileOverviewTabPro
               {profile.suggestions.map((user) => (
                 <li key={user.id}>
                   <Link
-                    to={`/profile/${user.id}`}
+                    to={profilePathForUser(user)}
                     className="flex items-center gap-3 rounded-lg py-2 transition-colors hover:bg-[var(--woody-nav)]/8"
                   >
                     <Avatar className="size-9 shrink-0">

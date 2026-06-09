@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { Link2, Users } from "lucide-react";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import type { UserProfile } from "../types";
 
 const styles = {
@@ -82,7 +83,7 @@ export function ProfileSidebar({ profile, className }: ProfileSidebarProps) {
               {profile.suggestions.map((user) => (
                 <li key={user.id}>
                   <Link
-                    to={`/profile/${user.id}`}
+                    to={profilePathForUser(user)}
                     className={styles.suggestionRow}
                     aria-label={`Ver perfil de ${user.name}`}
                   >

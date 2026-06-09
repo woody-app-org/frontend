@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Inbox } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import {
   Dialog,
   DialogContent,
@@ -98,7 +99,7 @@ function JoinRequestModerationCard({ row, viewerId, onChanged }: JoinRequestCard
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <Link
-          to={`/profile/${user.id}`}
+          to={profilePathForUser(user)}
           className={cn(
             "flex min-w-0 items-center gap-3 rounded-xl transition-colors hover:bg-[var(--woody-nav)]/6",
             woodyFocus.ring
@@ -112,7 +113,7 @@ function JoinRequestModerationCard({ row, viewerId, onChanged }: JoinRequestCard
           </Avatar>
           <div className="min-w-0 text-left">
             <p className="truncate font-semibold text-[var(--woody-text)]">{user.name}</p>
-            <p className="truncate text-sm text-[var(--woody-muted)]">@{user.username}</p>
+            <p className="truncate text-sm text-[var(--woody-muted)]">{user.username}</p>
             <p className="mt-1 text-xs text-[var(--woody-muted)]">Pedido em {formatRequestedAt(request.requestedAt)}</p>
             <span
               className={cn(
@@ -139,7 +140,7 @@ function JoinRequestModerationCard({ row, viewerId, onChanged }: JoinRequestCard
                 void run(() => approveJoinRequest(viewerId, request.id), "Solicitação aprovada.")
               }
             >
-              {busy ? "A processar…" : "Aprovar"}
+              {busy ? "Processando…" : "Aprovar"}
             </Button>
             <Button
               type="button"
@@ -208,7 +209,7 @@ function JoinRequestModerationCard({ row, viewerId, onChanged }: JoinRequestCard
                 }, "Solicitação recusada.")
               }
             >
-              {busy ? "A processar…" : "Confirmar recusa"}
+              {busy ? "Processando…" : "Confirmar recusa"}
             </Button>
           </div>
         </DialogContent>

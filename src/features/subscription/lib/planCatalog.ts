@@ -65,26 +65,55 @@ export interface PaidPlanPriceDisplay {
   secondary?: string;
 }
 
-export function getProPriceDisplay(modality: BillingModality): PaidPlanPriceDisplay {
+/** Preços mensais em reais (exibição na página de planos). */
+const PRO_MONTHLY_BRL = 19.7;
+const MAX_MONTHLY_BRL = 26;
+
+/** Anual = 10× o mensal (equivalente a ~2 meses grátis), como na oferta anterior. */
+const ANNUAL_MONTHS_BILLED = 10;
+
+/** Desconto no pagamento à vista sobre o valor anual equivalente. */
+const UPFRONT_DISCOUNT_RATE = 0.15;
+
+function formatBrl(value: number): string {
+  return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function annualPriceFromMonthly(monthly: number): number {
+  return monthly * ANNUAL_MONTHS_BILLED;
+}
+
+function upfrontPriceFromAnnual(annual: number): number {
+  return annual * (1 - UPFRONT_DISCOUNT_RATE);
+}
+
+function getPaidPriceDisplay(
+  monthly: number,
+  modality: BillingModality,
+): PaidPlanPriceDisplay {
+  const annual = annualPriceFromMonthly(monthly);
+
   switch (modality) {
     case "monthly":
-      return { primary: "R$ 9,99/mês" };
+      return { primary: `R$ ${formatBrl(monthly)}/mês` };
     case "annual":
-      return { primary: "R$ 99,99/ano" };
-    case "upfront":
-      return { primary: "R$ 99,99", secondary: "em pagamento único" };
+      return { primary: `R$ ${formatBrl(annual)}/ano` };
+    case "upfront": {
+      const upfront = upfrontPriceFromAnnual(annual);
+      return {
+        primary: `R$ ${formatBrl(upfront)}`,
+        secondary: "em pagamento único · 15% de desconto",
+      };
+    }
   }
 }
 
+export function getProPriceDisplay(modality: BillingModality): PaidPlanPriceDisplay {
+  return getPaidPriceDisplay(PRO_MONTHLY_BRL, modality);
+}
+
 export function getMaxPriceDisplay(modality: BillingModality): PaidPlanPriceDisplay {
-  switch (modality) {
-    case "monthly":
-      return { primary: "R$ 14,99/mês" };
-    case "annual":
-      return { primary: "R$ 149,99/ano" };
-    case "upfront":
-      return { primary: "R$ 149,99", secondary: "em pagamento único" };
-  }
+  return getPaidPriceDisplay(MAX_MONTHLY_BRL, modality);
 }
 
 /**

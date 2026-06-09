@@ -132,8 +132,14 @@ export function OnboardingStepComplete() {
       )}
 
       <div className="rounded-2xl border border-black/10 bg-[var(--auth-panel-beige)] px-4 py-5 sm:px-6 text-sm text-[var(--auth-text-on-maroon)]/84 leading-relaxed shadow-sm">
-        Ao entrar, você verá o feed e poderá ajustar perfil, notificações e privacidade. As comunidades que
-        escolheu são associadas à sua conta neste momento (entradas diretas nas públicas e pedidos nas privadas).
+        <p>
+          Seu username será <strong>@{account.username}</strong>. Confirme: ele é permanente na Woody e não poderá ser
+          alterado depois.
+        </p>
+        <p className="mt-3">
+          Ao entrar, você verá o feed e poderá ajustar perfil, notificações e privacidade. As comunidades que escolheu
+          são associadas à sua conta neste momento (entradas diretas nas públicas e pedidos nas privadas).
+        </p>
       </div>
 
       <div className={cn(onboardingStyles.footerRow, "mt-8 justify-center sm:justify-end border-t-0 pt-2")}>

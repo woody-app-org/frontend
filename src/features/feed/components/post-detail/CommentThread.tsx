@@ -1,19 +1,17 @@
 import { useCallback, useMemo, useState } from "react";
-import type { Comment, CommentGifDraft, Post } from "@/domain/types";
+import type { Comment, Post } from "@/domain/types";
 import { buildCommentThreadTree } from "@/domain/lib/commentThreads";
 import { cn } from "@/lib/utils";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { CommentThreadItem } from "./CommentThreadItem";
+import type { CommentComposerModalContext } from "./CommentComposerModal";
 
 export interface CommentThreadProps {
   post: Post;
   postId: string;
   comments: Comment[];
   onCommentsReload?: () => Promise<void>;
-  replyingToCommentId: string | null;
-  onReplyingToChange: (commentId: string | null) => void;
-  /** Resposta a comentário (`parentCommentId` sempre definido). */
-  onReplySubmit: (body: string, parentCommentId: string, gif?: CommentGifDraft | null) => Promise<boolean>;
+  onOpenReplyModal: (commentId: string, context: CommentComposerModalContext) => void;
   isCreatingComment: boolean;
   className?: string;
   onToggleCommentLike: (commentId: string) => void;
@@ -25,9 +23,7 @@ export function CommentThread({
   postId,
   comments,
   onCommentsReload,
-  replyingToCommentId,
-  onReplyingToChange,
-  onReplySubmit,
+  onOpenReplyModal,
   isCreatingComment,
   className,
   onToggleCommentLike,
@@ -70,9 +66,7 @@ export function CommentThread({
             depth={0}
             expandedIds={expandedIds}
             onToggleExpand={onToggleExpand}
-            replyingToCommentId={replyingToCommentId}
-            onReplyingToChange={onReplyingToChange}
-            onReplySubmit={onReplySubmit}
+            onOpenReplyModal={onOpenReplyModal}
             isCreatingComment={isCreatingComment}
             ensureRepliesExpanded={ensureRepliesExpanded}
             onToggleCommentLike={onToggleCommentLike}

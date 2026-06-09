@@ -1,4 +1,4 @@
-/** Alinhado aos DTOs da API Woody (mensagens diretas). */
+﻿/** Alinhado aos DTOs da API Woody (mensagens diretas). */
 
 export interface ConversationPeerPreviewDto {
   id: number;
@@ -73,7 +73,7 @@ export interface StickerGifSearchResponseDto {
   providerKey: string;
 }
 
-/** Anexo na mensagem a enviar (alinhado a <c>MessageAttachmentItemRequestDto</c>). */
+/** Anexo na mensagem Enviando (alinhado a <c>MessageAttachmentItemRequestDto</c>). */
 export interface OutgoingMessageAttachment {
   url: string;
   mediaType: string;
@@ -97,6 +97,34 @@ export interface MessageResponseDto {
   isEdited: boolean;
   isDeleted: boolean;
   attachments: MessageAttachmentResponseDto[];
+  sharedPost?: SharedPostPreviewDto | null;
+  sharedStory?: SharedStoryPreviewDto | null;
+}
+
+export interface SharedPostPreviewDto {
+  id?: string | null;
+  publicId?: string | null;
+  authorDisplayName?: string | null;
+  authorUsername?: string | null;
+  authorProfilePic?: string | null;
+  contentPreview?: string | null;
+  firstMediaUrl?: string | null;
+  firstMediaType?: string | null;
+  communityName?: string | null;
+  isUnavailable: boolean;
+}
+
+export interface SharedStoryPreviewDto {
+  id?: string | null;
+  authorDisplayName?: string | null;
+  authorUsername?: string | null;
+  authorProfilePic?: string | null;
+  mediaType?: string | null;
+  mediaUrl?: string | null;
+  thumbnailUrl?: string | null;
+  textPreview?: string | null;
+  backgroundColor?: string | null;
+  isUnavailable: boolean;
 }
 
 export interface ConversationMessagesPageDto {

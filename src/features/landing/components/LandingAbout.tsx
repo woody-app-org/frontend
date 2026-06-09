@@ -4,7 +4,7 @@ export function LandingAbout() {
       <div className="mx-auto max-w-[var(--layout-max-width)] px-[var(--layout-gutter)]">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--woody-muted)]">O que é a Woody</p>
-          <h2 className="mt-4 font-serif text-3xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-4xl">
+          <h2 className="font-heading mt-4 text-3xl font-semibold tracking-tight text-[var(--woody-ink)] md:text-4xl">
             Uma rede social orientada por comunidades.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-[var(--woody-muted)] md:text-xl">

@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import type { JoinRequest, User } from "@/domain/types";
 import type { CommunityMembershipActionResult } from "../../services/communityMembership.service";
 import { approveJoinRequest, rejectJoinRequest } from "../../services/communityMembership.service";
@@ -45,7 +46,7 @@ export function PendingRequestRow({ request, user, viewerId, onChanged }: Pendin
     <li className="rounded-xl border border-amber-500/25 bg-amber-500/5 p-3 sm:p-3.5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
-          to={`/profile/${user.id}`}
+          to={profilePathForUser(user)}
           className={cn(
             "flex min-w-0 items-center gap-3 rounded-lg transition-colors hover:bg-[var(--woody-nav)]/6",
             woodyFocus.ring
@@ -59,7 +60,7 @@ export function PendingRequestRow({ request, user, viewerId, onChanged }: Pendin
           </Avatar>
           <div className="min-w-0 text-left">
             <p className="truncate text-sm font-semibold text-[var(--woody-text)]">{user.name}</p>
-            <p className="truncate text-xs text-[var(--woody-muted)]">@{user.username}</p>
+            <p className="truncate text-xs text-[var(--woody-muted)]">{user.username}</p>
             <span className="mt-1 inline-flex rounded-md bg-amber-500/15 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-amber-900 dark:text-amber-100">
               Pendente
             </span>

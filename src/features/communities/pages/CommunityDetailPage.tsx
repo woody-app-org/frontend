@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import type {
@@ -14,6 +14,7 @@ import { woodyLayout, woodyFocus } from "@/lib/woody-ui";
 import { getStoredToken } from "@/lib/api";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 import { useCommunityPermissions } from "@/features/auth/hooks/useCommunityPermissions";
 import {
   fetchAllCommunityMembers,
@@ -110,6 +111,7 @@ function CommunityDetailLoaded({
   const [detailTab, setDetailTab] = useState<"feed" | "join-requests">("feed");
 
   const isOwner = community.ownerUserId === viewerId;
+  const { canSetOwnedCommunityPrivate } = useSubscriptionCapabilities();
   const isAdminRole = viewerMembershipRole === "admin";
   const isMember = viewerIsMember;
   const canMod = isOwner || isAdminRole;
@@ -196,7 +198,7 @@ function CommunityDetailLoaded({
     setCtaBusy(true);
     setAccessNotice(null);
     try {
-      const r = await cancelMyCommunityJoinRequest(viewerId, community.id);
+      const r = await cancelMyCommunityJoinRequest(viewerId, community.slug);
       if (!r.ok) setAccessNotice(r.error);
       else {
         showSuccessToast("Pedido cancelado.", { id: "woody-community-membership" });
@@ -205,7 +207,7 @@ function CommunityDetailLoaded({
     } finally {
       setCtaBusy(false);
     }
-  }, [community.id, onDataChanged, viewerId]);
+  }, [community.slug, onDataChanged, viewerId]);
 
   const handleSavedSettings = useCallback(() => {
     onDataChanged();
@@ -253,7 +255,7 @@ function CommunityDetailLoaded({
         onOpenChange={(o) => {
           if (!o) setBoostPostId(null);
         }}
-        communityId={community.id}
+        communitySlug={community.slug}
         post={boostTargetPost}
         onApplied={onDataChanged}
       />
@@ -268,19 +270,19 @@ function CommunityDetailLoaded({
         joinRejectionReason={myJoin.status === "rejected" ? myJoin.rejectionReason : null}
         onLeave={() =>
           runAccess(async () => {
-            const r = await leaveCommunity(viewerId, community.id);
+            const r = await leaveCommunity(viewerId, community.slug);
             return r;
-          }, "Saíste desta comunidade.")
+          }, "Você saiu desta comunidade.")
         }
         onJoinPublic={() =>
           runAccess(async () => {
-            const r = await joinCommunityPublic(viewerId, community.id);
+            const r = await joinCommunityPublic(viewerId, community.slug);
             return r;
-          }, "Agora participas nesta comunidade.")
+          }, "Agora faz parte dessa comunidade.")
         }
         onRequestJoin={() =>
           runAccess(async () => {
-            const r = await requestJoinCommunity(viewerId, community.id);
+            const r = await requestJoinCommunity(viewerId, community.slug);
             return r;
           }, "Solicitação enviada.")
         }
@@ -308,6 +310,7 @@ function CommunityDetailLoaded({
           viewerId={viewerId}
           adminRoleLabel={isOwner ? "dona" : "administradora"}
           onSaved={handleSavedSettings}
+          canSetPrivate={isOwner && canSetOwnedCommunityPrivate}
         />
       ) : null}
 
@@ -387,7 +390,7 @@ function CommunityDetailLoaded({
                       ctaBusy,
                       loginReturnTo: `/communities/${encodeURIComponent(community.slug)}`,
                       onRequestJoin: async () => {
-                        await runAccess(async () => requestJoinCommunity(viewerId, community.id), "Solicitação enviada.");
+                        await runAccess(async () => requestJoinCommunity(viewerId, community.slug), "Solicitação enviada.");
                       },
                       onCancelJoin: handleCancelJoinRequest,
                     }
@@ -432,7 +435,7 @@ function CommunityDetailLoaded({
             guestDiscovery={community.visibility === "private" && !isMember}
           />
           <CommunityMembersPreview
-            communityId={community.id}
+            communitySlug={community.slug}
             memberCount={memberCount}
             members={previewMembers}
           />
@@ -503,7 +506,7 @@ function CommunityDetailPageContent() {
 
         const postsPromise = (async () => {
           try {
-            return { posts: await fetchCommunityPosts(c.id, viewerId, 1, 200), denied: false as const };
+            return { posts: await fetchCommunityPosts(c.slug, viewerId, 1, 200), denied: false as const };
           } catch (e) {
             if (e instanceof CommunityPostsForbiddenError) {
               return { posts: [] as Post[], denied: true as const };
@@ -513,25 +516,25 @@ function CommunityDetailPageContent() {
         })();
 
         const joinMePromise = getStoredToken()
-          ? fetchMyCommunityJoinRequestStatus(c.id)
+          ? fetchMyCommunityJoinRequestStatus(c.slug)
           : Promise.resolve(null);
 
         const [postsResult, previewPage, myMembership, joinMeRaw] = await Promise.all([
           postsPromise,
-          fetchCommunityMembersPage(c.id, 1, 8),
-          fetchMyCommunityMembership(c.id),
+          fetchCommunityMembersPage(c.slug, 1, 8),
+          fetchMyCommunityMembership(c.slug),
           joinMePromise,
         ]);
         if (cancelled) return;
 
         const isOwner = c.ownerUserId === viewerId;
         const isMod = isOwner || myMembership.role === "admin" || myMembership.role === "owner";
-        const fullMembers = isMod ? await fetchAllCommunityMembers(c.id) : previewPage.items;
+        const fullMembers = isMod ? await fetchAllCommunityMembers(c.slug) : previewPage.items;
         let jrows: JoinRequestWithUser[] = [];
         let joinForbidden: string | null = null;
         if (isMod) {
           try {
-            jrows = await fetchCommunityJoinRequestRows(c.id);
+            jrows = await fetchCommunityJoinRequestRows(c.slug);
           } catch (e) {
             if (e instanceof CommunityJoinRequestsForbiddenError) {
               joinForbidden =
@@ -589,7 +592,7 @@ function CommunityDetailPageContent() {
           woodyLayout.pagePadWide
         )}
       >
-        A carregar comunidade…
+        Carregando comunidade…
       </div>
     );
   }

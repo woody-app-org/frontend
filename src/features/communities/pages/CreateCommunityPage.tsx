@@ -11,6 +11,7 @@ import { useProCheckout } from "@/features/subscription/hooks/useProCheckout";
 import { ProPlanCheckoutActions } from "@/features/subscription/components/ProPlanCheckoutActions";
 import {
   createCommunity,
+  CommunityLimitReachedError,
   ProSubscriptionRequiredError,
   validateCommunityUpdatePayload,
 } from "../services/community.service";
@@ -34,7 +35,7 @@ function parseTagsRaw(raw: string): string[] {
 export function CreateCommunityPage() {
   const navigate = useNavigate();
   const formId = useId();
-  const { canCreateCommunity } = useSubscriptionCapabilities();
+  const { canCreateCommunity, canSetOwnedCommunityPrivate } = useSubscriptionCapabilities();
   const { startCheckout, loadingCode, error } = useProCheckout();
 
   const [name, setName] = useState("");
@@ -73,7 +74,9 @@ export function CreateCommunityPage() {
         showSuccessToast("Comunidade criada.", { id: `woody-community-created-${created.id}` });
         navigate(`/communities/${encodeURIComponent(created.slug)}`, { replace: true });
       } catch (err) {
-        if (err instanceof ProSubscriptionRequiredError) {
+        if (err instanceof CommunityLimitReachedError) {
+          setSubmitError(err.message);
+        } else if (err instanceof ProSubscriptionRequiredError) {
           setSubmitError(err.message);
         } else if (err instanceof Error) {
           setSubmitError(err.message);
@@ -171,7 +174,12 @@ export function CreateCommunityPage() {
                 onTagsChange={setTagsRaw}
                 onRulesChange={setRules}
               />
-              <CommunityAccessSection formId={formId} visibility={visibility} onVisibilityChange={setVisibility} />
+              <CommunityAccessSection
+                formId={formId}
+                visibility={visibility}
+                onVisibilityChange={setVisibility}
+                canSetPrivate={canSetOwnedCommunityPrivate}
+              />
 
               {submitError ? (
                 <p className="rounded-lg border border-[var(--woody-accent)]/20 bg-[var(--woody-nav)]/5 px-3 py-2 text-sm text-[var(--woody-text)]">

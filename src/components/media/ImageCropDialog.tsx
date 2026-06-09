@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState } from "react";
+﻿import { useCallback, useEffect, useId, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { Loader2, RotateCcw } from "lucide-react";
 import {
@@ -19,6 +19,15 @@ import {
   getPreferredCoverOutput,
 } from "@/lib/image/canvasCropImage";
 
+/** Opção de formato oficial selecionável dentro do diálogo de crop. */
+export type ImageCropFormatOption = {
+  key: string;
+  label: string;
+  aspect: number;
+  outputWidth: number;
+  outputHeight: number;
+};
+
 export type ImageCropDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,6 +37,13 @@ export type ImageCropDialogProps = {
   description?: string;
   aspect?: number;
   cropShape?: "rect" | "round";
+  /**
+   * Quando definido, mostra chips para a utilizadora escolher o formato oficial
+   * (ex.: 4:5 / 3:4 / 1:1). Substitui `aspect`/`outputWidth`/`outputHeight`.
+   */
+  formatOptions?: ImageCropFormatOption[];
+  /** Chave do formato pré-selecionado (default: primeira opção). */
+  initialFormatKey?: string;
   /** Exportação quadrada (avatar); ignorado se `outputWidth` e `outputHeight` estiverem definidos. */
   outputSize?: number;
   /** Exportação retangular (ex. capa); requer ambos. */
@@ -50,6 +66,8 @@ export function ImageCropDialog({
   outputWidth,
   outputHeight,
   layout = "square",
+  formatOptions,
+  initialFormatKey,
   onConfirm,
 }: ImageCropDialogProps) {
   const zoomFieldId = useId();
@@ -58,11 +76,24 @@ export function ImageCropDialog({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [confirming, setConfirming] = useState(false);
 
+  const hasFormats = !!formatOptions && formatOptions.length > 0;
+  const [selectedFormatKey, setSelectedFormatKey] = useState<string>(
+    () => initialFormatKey ?? formatOptions?.[0]?.key ?? ""
+  );
+  const selectedFormat = hasFormats
+    ? formatOptions!.find((f) => f.key === selectedFormatKey) ?? formatOptions![0]
+    : null;
+
+  // Formato selecionado tem prioridade sobre as props fixas.
+  const effectiveAspect = selectedFormat ? selectedFormat.aspect : aspect;
+  const effectiveOutputWidth = selectedFormat ? selectedFormat.outputWidth : outputWidth;
+  const effectiveOutputHeight = selectedFormat ? selectedFormat.outputHeight : outputHeight;
+
   const isRectExport =
-    typeof outputWidth === "number" &&
-    typeof outputHeight === "number" &&
-    outputWidth > 0 &&
-    outputHeight > 0;
+    typeof effectiveOutputWidth === "number" &&
+    typeof effectiveOutputHeight === "number" &&
+    effectiveOutputWidth > 0 &&
+    effectiveOutputHeight > 0;
 
   const resetAdjustment = useCallback(() => {
     setCrop({ x: 0, y: 0 });
@@ -73,7 +104,8 @@ export function ImageCropDialog({
     if (!open || !imageSrc) return;
     resetAdjustment();
     setCroppedAreaPixels(null);
-  }, [open, imageSrc, resetAdjustment]);
+    setSelectedFormatKey(initialFormatKey ?? formatOptions?.[0]?.key ?? "");
+  }, [open, imageSrc, resetAdjustment, initialFormatKey, formatOptions]);
 
   const onCropComplete = useCallback((_area: Area, areaPixels: Area) => {
     setCroppedAreaPixels(areaPixels);
@@ -90,8 +122,8 @@ export function ImageCropDialog({
         const { mimeType, fileName: fn, quality } = getPreferredCoverOutput();
         fileName = fn;
         blob = await cropImageToRectBlob(imageSrc, croppedAreaPixels, {
-          outputWidth: outputWidth!,
-          outputHeight: outputHeight!,
+          outputWidth: effectiveOutputWidth!,
+          outputHeight: effectiveOutputHeight!,
           mimeType,
           quality,
         });
@@ -107,6 +139,7 @@ export function ImageCropDialog({
 
       const file = blobToImageFile(blob, fileName);
       await onConfirm(file);
+      onOpenChange(false);
     } finally {
       setConfirming(false);
     }
@@ -115,9 +148,10 @@ export function ImageCropDialog({
     imageSrc,
     isRectExport,
     onConfirm,
-    outputHeight,
+    onOpenChange,
+    effectiveOutputHeight,
     outputSize,
-    outputWidth,
+    effectiveOutputWidth,
   ]);
 
   const isWideLayout = layout === "wide";
@@ -161,13 +195,13 @@ export function ImageCropDialog({
                       isWideLayout ? "max-h-[min(44dvh,300px)]" : "max-h-[min(40dvh,260px)]"
                     )
               )}
-              style={cropShape === "round" ? undefined : { aspectRatio: `${aspect}` }}
+              style={cropShape === "round" ? undefined : { aspectRatio: `${effectiveAspect}` }}
             >
               <Cropper
                 image={imageSrc}
                 crop={crop}
                 zoom={zoom}
-                aspect={aspect}
+                aspect={effectiveAspect}
                 cropShape={cropShape}
                 showGrid={false}
                 roundCropAreaPixels={cropShape === "round"}
@@ -177,6 +211,35 @@ export function ImageCropDialog({
                 onCropComplete={onCropComplete}
                 classes={{ containerClassName: "rounded-2xl" }}
               />
+            </div>
+          ) : null}
+
+          {hasFormats ? (
+            <div className="mt-4">
+              <span className="mb-2 block text-xs font-medium text-[var(--woody-muted)]">Formato</span>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Formato da imagem">
+                {formatOptions!.map((opt) => {
+                  const active = opt.key === selectedFormat?.key;
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      disabled={confirming}
+                      onClick={() => setSelectedFormatKey(opt.key)}
+                      aria-pressed={active}
+                      className={cn(
+                        "min-h-9 rounded-full px-3.5 text-sm font-medium transition-colors",
+                        woodyFocus.ring,
+                        active
+                          ? "bg-[var(--woody-nav)] text-white"
+                          : "bg-[var(--woody-nav)]/8 text-[var(--woody-text)] hover:bg-[var(--woody-accent)]/12"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           ) : null}
 
@@ -246,7 +309,7 @@ export function ImageCropDialog({
             {confirming ? (
               <>
                 <Loader2 className="size-4 animate-spin" aria-hidden />
-                A enviar…
+                Enviando…
               </>
             ) : (
               "Aplicar"

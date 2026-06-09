@@ -1,9 +1,10 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { woodySurface } from "@/lib/woody-ui";
 import { startOrGetConversation } from "@/features/messages/services/messages.service";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { useReceivedProfileSignals } from "../hooks/useReceivedProfileSignals";
 import type { ProfileSignal } from "../services/profile-signals.service";
 import { ProfileSignalReceivedCard } from "./ProfileSignalReceivedCard";
@@ -18,7 +19,7 @@ export function ProfileSignalsInbox() {
   const openProfile = async (signal: ProfileSignal) => {
     setActionError(null);
     await markRead(signal.id);
-    navigate(`/profile/${signal.sender.id}`);
+    navigate(profilePathForUser(signal.sender));
   };
 
   const reply = async (signal: ProfileSignal) => {
@@ -48,7 +49,7 @@ export function ProfileSignalsInbox() {
         role="status"
       >
         <Loader2 className="size-8 animate-spin text-[var(--woody-nav)]" aria-hidden />
-        <p className="text-sm">A carregar sinais...</p>
+        <p className="text-sm">Carregando sinais...</p>
       </div>
     );
   }
@@ -64,7 +65,7 @@ export function ProfileSignalsInbox() {
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--woody-nav)]/85">Privado</p>
             <h2 className="mt-1 text-lg font-bold tracking-tight text-[var(--woody-text)]">Sinais recebidos</h2>
             <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--woody-muted)]">
-              Flertes enviados para ti aparecem só aqui. Lê, responde ou arquiva sem expor nada no teu perfil público.
+              Flertes enviados para ti aparecem só aqui.
             </p>
           </div>
         </div>

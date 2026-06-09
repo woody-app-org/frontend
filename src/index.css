@@ -2,17 +2,70 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 /* Tipografia self-hosted (OFL via Fontsource — sem Google Fonts na rede) */
-@import "@fontsource-variable/plus-jakarta-sans/index.css";
-@import "@fontsource-variable/plus-jakarta-sans/wght-italic.css";
-@import "@fontsource-variable/lora/index.css";
-@import "@fontsource-variable/lora/wght-italic.css";
+@import "@fontsource-variable/public-sans/index.css";
+@import "@fontsource-variable/public-sans/wght-italic.css";
+@import "@fontsource-variable/raleway/index.css";
+@import "@fontsource-variable/raleway/wght-italic.css";
+@import "@fontsource-variable/space-grotesk/index.css";
+@import "@fontsource/instrument-serif/index.css";
+@import "@fontsource/instrument-serif/400-italic.css";
 
 @custom-variant dark (&:is(.dark *));
 
+
+/* Baron Neue — fonte display editorial. Arquivos em src/assets/fonts/ */
+@font-face {
+  font-family: "Baron Neue";
+  src: url("./assets/fonts/Baron Neue.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baron Neue";
+  src: url("./assets/fonts/Baron Neue Italic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baron Neue";
+  src: url("./assets/fonts/Baron Neue Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baron Neue";
+  src: url("./assets/fonts/Baron Neue Bold Italic.otf") format("opentype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baron Neue";
+  src: url("./assets/fonts/Baron Neue Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baron Neue";
+  src: url("./assets/fonts/Baron Neue Black Italic.otf") format("opentype");
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+
 @theme inline {
-    --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    --font-serif: "Lora Variable", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-sans: "Public Sans Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-body: "Public Sans Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-heading: "Raleway Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-editorial: "Instrument Serif", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+    /* Baron — fallback até o arquivo ser adicionado; trocar para: "Baron", <fallbacks> */
+    --font-baron: "Baron Neue", ui-sans-serif, system-ui, sans-serif;
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -214,7 +267,7 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
-    font-weight: 500;
+    font-weight: 400;
     min-height: 100%;
   }
   #root {
@@ -341,6 +394,54 @@ input.woody-auth-input:autofill:focus {
   .woody-rules-marquee-track {
     animation: none;
   }
+}
+
+/*
+ * Molduras oficiais de mídia Woody — proporções padronizadas.
+ * Mapeadas por `getMediaContainerClass` (lib/media/woodyMediaFormats).
+ * Use em conjunto com object-fit nos filhos para não deformar.
+ */
+.mediaFrame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.mediaFrame > img,
+.mediaFrame > video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.mediaFrame--contain > img,
+.mediaFrame--contain > video {
+  object-fit: contain;
+}
+.mediaFrame--4x5 {
+  aspect-ratio: 4 / 5;
+}
+.mediaFrame--3x4 {
+  aspect-ratio: 3 / 4;
+}
+.mediaFrame--1x1 {
+  aspect-ratio: 1 / 1;
+}
+.mediaFrame--9x16 {
+  aspect-ratio: 9 / 16;
+}
+
+/* Esconde o botão nativo de revelar senha do Edge/IE e do Chrome,
+   pois o app usa ícone próprio em todos os campos de password. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button {
+  display: none !important;
+  pointer-events: none;
 }
 
 /* Toasts (Sonner) — reduzir movimento sem remover feedback */

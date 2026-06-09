@@ -34,9 +34,8 @@ export function ProCreateCommunityPaywallDialog({ open, onOpenChange }: ProCreat
               Woody <ProBadge variant="inline" className="translate-y-px" />
             </span>
           </DialogTitle>
-          <DialogDescription className="text-left text-[var(--woody-muted)]">
-            A moderação do grupo continua a ser tua após a criação. O plano Pro desbloqueia este passo com pagamento
-            seguro via Stripe — o estado oficial da conta vem sempre da API após o checkout.
+          <DialogDescription className="text-left text-[var(--woody-muted)] border-bottom border-[var(--woody-accent)]/10 pb-2">
+            Quer criar um espaço com a sua cara dentro da Woody? <br></br>Com o plano Pro, você pode abrir sua própria comunidade, exibir o badge Pro no perfil e participar mais de perto da construção da plataforma. <br></br>O pagamento é seguro via Stripe e a liberação acontece automaticamente após a confirmação
           </DialogDescription>
         </DialogHeader>
 
@@ -45,7 +44,7 @@ export function ProCreateCommunityPaywallDialog({ open, onOpenChange }: ProCreat
           <ProUpgradeBenefitsList />
         </div>
 
-        <ProPlanCheckoutActions startCheckout={startCheckout} loadingCode={loadingCode} error={error} />
+        <ProPlanCheckoutActions startCheckout={startCheckout} loadingCode={loadingCode} error={error} className="mt-2" />
 
         <div className="flex flex-col-reverse gap-2 border-t border-[var(--woody-accent)]/10 pt-3 sm:flex-row sm:justify-between sm:items-center">
           <Button type="button" variant="ghost" className={cn(woodyFocus.ring, "text-[var(--woody-muted)]")} asChild>

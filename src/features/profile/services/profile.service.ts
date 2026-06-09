@@ -10,13 +10,6 @@ export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { o
   if (name.length < 1) return { ok: false, error: "Informe um nome de exibição." };
   if (name.length > 80) return { ok: false, error: "Nome muito longo (máx. 80 caracteres)." };
 
-  const usernameRaw = (payload.username ?? "").trim().toLowerCase();
-  if (usernameRaw.length < 3) return { ok: false, error: "Nome de usuário muito curto (mín. 3 caracteres)." };
-  if (usernameRaw.length > 30) return { ok: false, error: "Nome de usuário muito longo." };
-  if (!/^[a-z0-9._]+$/.test(usernameRaw)) {
-    return { ok: false, error: "Use apenas letras minúsculas, números, ponto e sublinhado." };
-  }
-
   const bio = payload.bio ?? "";
   if (bio.length > 500) return { ok: false, error: "Bio muito longa (máx. 500 caracteres)." };
 
@@ -28,6 +21,12 @@ export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { o
 
   const profession = payload.profession?.trim() ?? "";
   if (profession.length > 60) return { ok: false, error: "Título ou profissão muito longos." };
+
+  const genderIdentity = payload.genderIdentity?.trim() ?? "";
+  if (genderIdentity.length > 60) return { ok: false, error: "Identidade de gênero muito longa." };
+
+  const sexualOrientation = payload.sexualOrientation?.trim() ?? "";
+  if (sexualOrientation.length > 60) return { ok: false, error: "Orientação sexual muito longa." };
 
   const interestList = (payload.interests ?? []).map((t) => ({ ...t, label: t.label.trim() })).filter((t) => t.label.length > 0);
   if (interestList.length > 24) {
@@ -43,6 +42,17 @@ export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { o
 export async function getProfile(userId: string): Promise<UserProfile | null> {
   try {
     const { data } = await api.get(`/users/${encodeURIComponent(userId)}`);
+    return mapUserProfileFromApi(data);
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) return null;
+    throw new Error(getApiErrorMessage(e, "Falha ao carregar perfil."));
+  }
+}
+
+/** Perfil público por username (preferido). Suporta username antigo via `canonicalUsername`. */
+export async function getProfileByUsername(username: string): Promise<UserProfile | null> {
+  try {
+    const { data } = await api.get(`/users/by-username/${encodeURIComponent(username)}`);
     return mapUserProfileFromApi(data);
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 404) return null;
@@ -66,11 +76,12 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
   try {
     const { data } = await api.patch("/users/me", {
       name: payload.name!.trim(),
-      username: payload.username!.trim(),
       bio: (payload.bio ?? "").trim(),
       pronouns: payload.pronouns?.trim() || undefined,
       location: payload.location?.trim() || undefined,
       profession: payload.profession?.trim() || undefined,
+      genderIdentity: payload.genderIdentity?.trim() || undefined,
+      sexualOrientation: payload.sexualOrientation?.trim() || undefined,
       avatarUrl: payload.avatarUrl,
       bannerUrl: payload.bannerUrl,
       interests: payload.interests?.map((i) => ({ id: i.id, label: i.label.trim() })),
@@ -104,11 +115,12 @@ export async function updateMyAvatarFromUploadedUrl(
     const p = mapUserProfileFromApi(data as Record<string, unknown>);
     return updateProfile(session.id, {
       name: p.name,
-      username: (p.username ?? session.username).trim(),
       bio: p.bio,
       pronouns: p.pronouns,
       location: p.location,
       profession: p.profession,
+      genderIdentity: p.genderIdentity,
+      sexualOrientation: p.sexualOrientation,
       avatarUrl: newAvatarUrl,
       bannerUrl: p.bannerUrl,
       interests: p.interests,

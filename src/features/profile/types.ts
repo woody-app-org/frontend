@@ -23,6 +23,17 @@ export interface ProfileSuggestion {
   avatarUrl: string | null;
 }
 
+/** Insígnia/conquista exibida no perfil (distinta de plano Pro/Max). */
+export interface UserBadge {
+  slug: string;
+  name: string;
+  description: string;
+  iconAssetKey?: string | null;
+  category?: string | null;
+  rarity?: string | null;
+  earnedAt?: string | null;
+}
+
 /** Dados completos do perfil do usuário (para futura API) */
 export interface UserProfile {
   id: string;
@@ -35,6 +46,10 @@ export interface UserProfile {
   location?: string;
   /** Título ou profissão (campo do perfil; não é o papel da conta na plataforma). */
   profession?: string;
+  /** Identidade de gênero (valor da lista curada). */
+  genderIdentity?: string;
+  /** Orientação sexual (valor da lista curada). */
+  sexualOrientation?: string;
   socialLinks: SocialLink[];
   interests: InterestTag[];
   suggestions: ProfileSuggestion[];
@@ -42,18 +57,26 @@ export interface UserProfile {
   followersCount?: number;
   followingCount?: number;
   showProBadge?: boolean;
+  subscriptionBadge?: "pro" | "max" | null;
+  /** Stories ativos nas últimas 24h (API `hasActiveStories`). */
+  hasActiveStories?: boolean;
   /** Presente em `GET /users/me` quando a API envia o estado de assinatura. */
   subscription?: AuthUserSubscription;
+  /** Username actual quando o handle pedido era um username antigo (histórico). */
+  canonicalUsername?: string;
+  /** Insígnias conquistadas (API `badges`). */
+  badges: UserBadge[];
 }
 
-/** Payload para `updateProfile` / futura API REST. */
+/** Payload para `updateProfile` / API REST. Username é imutável após criação. */
 export interface ProfileUpdatePayload {
   name: string;
-  username: string;
   bio: string;
   pronouns?: string;
   location?: string;
   profession?: string;
+  genderIdentity?: string;
+  sexualOrientation?: string;
   avatarUrl?: string | null;
   bannerUrl?: string | null;
   interests?: InterestTag[];

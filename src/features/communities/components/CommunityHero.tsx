@@ -78,7 +78,7 @@ const styles = {
   /** Bloco do título ocupa toda a largura restante; nunca parteilha linha com botões. */
   titleColumn: "w-full min-w-0 flex-1",
   title:
-    "w-full break-words text-xl font-bold leading-tight tracking-tight text-[var(--woody-text)] sm:text-2xl md:text-3xl",
+    "font-heading w-full break-words text-xl font-bold leading-tight tracking-tight text-[var(--woody-text)] sm:text-2xl md:text-3xl",
   meta: "mt-2 flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-[var(--woody-muted)] sm:text-sm",
   metaSep: "hidden text-[var(--woody-accent)]/35 sm:inline",
   metaChip: cn(

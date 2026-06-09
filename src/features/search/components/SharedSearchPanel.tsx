@@ -6,6 +6,7 @@ import type { Community, Post, User } from "@/domain/types";
 import { SearchModeSegment, type SearchMode } from "@/features/feed/components/SearchModeSegment";
 import { getCommunityCategoryLabel } from "@/domain/categoryLabels";
 import { useSearch } from "../hooks/useSearch";
+import { profilePathForUser } from "@/features/profile/lib/profilePaths";
 import { firstLineOfPost } from "@/features/feed/lib/postTextPreview";
 
 export interface SharedSearchPanelProps {
@@ -173,7 +174,7 @@ function PostsResults({ posts }: { posts: Post[] }) {
             {firstLineOfPost(p.content, 140)}
           </div>
           <div className="mt-0.5 text-xs text-[var(--woody-muted)] line-clamp-1">
-            {p.author?.name ? `por ${p.author.name}` : " "}
+            {p.author?.username ? `por ${p.author.username}` : " "}
           </div>
           {p.content ? (
             <div className="mt-1 text-sm text-[var(--woody-text)]/80 line-clamp-2">{p.content}</div>
@@ -190,15 +191,14 @@ function PeopleResults({ people }: { people: User[] }) {
       {people.slice(0, 14).map((u) => (
         <li key={u.id}>
           <Link
-            to={`/profile/${u.id}`}
+            to={profilePathForUser(u)}
             className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/55 px-4 py-3 transition-colors hover:bg-white/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/30"
           >
             <div className="size-9 rounded-full bg-black/10 overflow-hidden shrink-0">
-              {u.avatarUrl ? <img src={u.avatarUrl} alt="" className="size-9 object-cover" /> : null}
+              {u.avatarUrl ? <img src={u.avatarUrl} alt="" className="size-9 object-cover" loading="lazy" decoding="async" /> : null}
             </div>
             <div className="min-w-0 text-left">
-              <div className="text-sm font-semibold text-[var(--woody-text)] truncate">{u.name}</div>
-              <div className="text-xs text-[var(--woody-muted)] truncate">@{u.username}</div>
+              <div className="text-sm font-semibold text-[var(--woody-text)] truncate">{u.username}</div>
             </div>
           </Link>
         </li>
@@ -218,7 +218,7 @@ function CommunitiesResults({ communities }: { communities: Community[] }) {
           >
             <div className="size-10 rounded-xl bg-black/10 overflow-hidden shrink-0 mt-0.5">
               {c.avatarUrl ? (
-                <img src={c.avatarUrl} alt="" className="size-10 object-cover" />
+                <img src={c.avatarUrl} alt="" className="size-10 object-cover" loading="lazy" decoding="async" />
               ) : null}
             </div>
             <div className="min-w-0 text-left">
