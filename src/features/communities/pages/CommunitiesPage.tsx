@@ -129,7 +129,7 @@ export function CommunitiesPage() {
               <span className="text-[var(--woody-nav)]">conversas que importam</span>
             </h1>
             <p className="text-sm leading-relaxed text-[var(--woody-muted)] sm:text-base md:max-w-2xl">
-            Explore comunidades por interesse, e se bater, participe. A Woody cuida da moderação para que cada espaço continue seguro, leve, dinâmico e acolhedor.
+            Explore grupos por interesse, e se bater, participe. A Woody cuida da moderação para que cada espaço continue seguro, leve, dinâmico e acolhedor
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <CreateCommunityEntry

@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { LazyRouteSuspense } from "./LazyRouteSuspense";
+import { RouteErrorBoundary } from "./RouteErrorBoundary";
 import { ScrollToTop } from "./ScrollToTop";
 import { WoodyToaster } from "@/components/ui/woody-toaster";
 import { AuthProvider } from "@/features/auth/context/AuthContext";
@@ -174,6 +175,7 @@ export const router = createBrowserRouter([
         <Outlet />
       </AuthProvider>
     ),
+    errorElement: <RouteErrorBoundary />,
     children: [
       { path: "invite", element: <LazyRouteSuspense><BetaGatePage /></LazyRouteSuspense> },
       { path: "beta", element: <Navigate to="/invite" replace /> },

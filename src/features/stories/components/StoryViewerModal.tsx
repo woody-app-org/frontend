@@ -22,7 +22,7 @@ import { formatRelativeTimeUtc } from "@/lib/formatRelativeTimeUtc";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { usePrefersReducedMotion } from "@/features/landing/motion/usePrefersReducedMotion";
-import type { Story, StoryMusic } from "../types";
+import type { Story } from "../types";
 import {
   filterActiveStories,
   isSameUserId,
@@ -410,31 +410,72 @@ export function StoryViewerModal({
 
             <header className="relative z-20 flex items-center gap-3 px-3 pb-2 pt-5 sm:px-4 sm:pt-6">
               {author ? (
-                <Link
-                  to={profilePathForUser(author)}
-                  className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl py-1 pr-2 transition-colors hover:bg-white/8"
-                  onClick={closeViewer}
-                >
-                  <StoryRing
-                    avatarUrl={author.avatarUrl}
-                    displayName={displayName}
-                    hasActiveStories
-                    size="sm"
-                    className="shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">{displayName}</p>
-                    <p className="truncate text-xs text-white/70">
-                      {username}
-                      {currentStory?.createdAt ? (
-                        <>
-                          {" · "}
-                          {formatRelativeTimeUtc(currentStory.createdAt)}
-                        </>
-                      ) : null}
-                    </p>
-                  </div>
-                </Link>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <Link
+                    to={profilePathForUser(author)}
+                    className="flex min-w-0 items-center gap-2.5 rounded-xl py-1 pr-2 transition-colors hover:bg-white/8"
+                    onClick={closeViewer}
+                  >
+                    <StoryRing
+                      avatarUrl={author.avatarUrl}
+                      displayName={displayName}
+                      hasActiveStories
+                      size="sm"
+                      className="shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-white">{displayName}</p>
+                      <p className="truncate text-xs text-white/70">
+                        {username}
+                        {currentStory?.createdAt ? (
+                          <>
+                            {" · "}
+                            {formatRelativeTimeUtc(currentStory.createdAt)}
+                          </>
+                        ) : null}
+                      </p>
+                    </div>
+                  </Link>
+
+                  {currentStory?.music ? (
+                    <div className="flex min-w-0 items-center gap-1.5 py-0.5 pl-[3.125rem] pr-2">
+                      <Music className="size-3 shrink-0 text-white/45" aria-hidden />
+                      <p className="min-w-0 truncate text-[11px] leading-tight text-white/55">
+                        <span className="font-medium text-white/80">{currentStory.music.title}</span>
+                        {" — "}
+                        {currentStory.music.artist}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const audio = audioRef.current;
+                          if (audioBlocked) {
+                            audio?.play().catch(() => undefined);
+                            setAudioBlocked(false);
+                            setMuted(false);
+                          } else {
+                            const next = !muted;
+                            if (audio) audio.muted = next;
+                            setMuted(next);
+                          }
+                        }}
+                        className={cn(
+                          "flex size-6 shrink-0 items-center justify-center rounded-full transition-colors",
+                          audioBlocked || muted
+                            ? "bg-white/15 text-white hover:bg-white/25"
+                            : "text-white/55 hover:text-white"
+                        )}
+                        aria-label={audioBlocked || muted ? "Ativar som da música" : "Mutar música"}
+                      >
+                        {audioBlocked || muted ? (
+                          <VolumeX className="size-3.5" aria-hidden />
+                        ) : (
+                          <Volume2 className="size-3.5 animate-pulse" aria-hidden />
+                        )}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               ) : null}
               <div className="flex shrink-0 items-center gap-1">
                 {currentStory?.mediaType === "video" && !currentStory?.music ? (
@@ -561,26 +602,6 @@ export function StoryViewerModal({
               ) : null}
             </div>
 
-            {currentStory?.music ? (
-              <StoryMusicBar
-                music={currentStory.music}
-                audioBlocked={audioBlocked}
-                muted={muted}
-                onToggleMute={() => {
-                  const audio = audioRef.current;
-                  if (audioBlocked) {
-                    audio?.play().catch(() => undefined);
-                    setAudioBlocked(false);
-                    setMuted(false);
-                  } else {
-                    const next = !muted;
-                    if (audio) audio.muted = next;
-                    setMuted(next);
-                  }
-                }}
-              />
-            ) : null}
-
             {currentStory && !isOwnCurrentStory && authUser ? (
               <div className="relative z-20 flex shrink-0 items-center gap-2 border-t border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm sm:px-4">
                 <form
@@ -650,47 +671,5 @@ export function StoryViewerModal({
         ) : null}
       </DialogContent>
     </Dialog>
-  );
-}
-
-function StoryMusicBar({
-  music,
-  audioBlocked,
-  muted,
-  onToggleMute,
-}: {
-  music: StoryMusic;
-  audioBlocked: boolean;
-  muted: boolean;
-  onToggleMute: () => void;
-}) {
-  const silenced = audioBlocked || muted;
-  return (
-    <div className="flex shrink-0 items-center gap-2 border-t border-white/10 bg-black/60 px-3 py-1 backdrop-blur-sm">
-      {music.coverUrl ? (
-        <img src={music.coverUrl} alt="" className="size-6 shrink-0 rounded object-cover" />
-      ) : (
-        <Music className="size-3.5 shrink-0 text-white/60" aria-hidden />
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[11px] font-semibold leading-tight text-white">{music.title}</p>
-        <p className="truncate text-[10px] leading-tight text-white/60">{music.artist}</p>
-      </div>
-      <button
-        type="button"
-        onClick={onToggleMute}
-        className={cn(
-          "flex size-7 shrink-0 items-center justify-center rounded-full transition-colors",
-          silenced ? "bg-white/15 text-white hover:bg-white/25" : "text-white/70 hover:text-white"
-        )}
-        aria-label={silenced ? "Ativar som" : "Mutar"}
-      >
-        {silenced ? (
-          <VolumeX className="size-3.5" aria-hidden />
-        ) : (
-          <Volume2 className="size-3.5 animate-pulse" aria-hidden />
-        )}
-      </button>
-    </div>
   );
 }

@@ -144,7 +144,7 @@ export function CommentItem({
             {comment.gifUrl ? (
               <div className="max-w-[min(100%,240px)]">
                 <img
-                  src={comment.gifThumbnailUrl || comment.gifUrl}
+                  src={comment.gifUrl}
                   alt={comment.gifTitle ? `GIF: ${comment.gifTitle}` : "GIF do comentário"}
                   className="max-h-[200px] w-full rounded-lg border border-[var(--woody-accent)]/10 object-contain sm:max-h-[220px]"
                   loading="lazy"
