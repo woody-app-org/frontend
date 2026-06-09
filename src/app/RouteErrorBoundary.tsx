@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouteError, isRouteErrorResponse } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import woodyCat from "@/assets/new-cat.png";
@@ -28,22 +28,20 @@ function isStaleChunkError(error: unknown): boolean {
  * automaticamente uma vez) e mostra um ecrã amigável para os restantes erros. */
 export function RouteErrorBoundary() {
   const error = useRouteError();
-  const [isReloading, setIsReloading] = useState(false);
-
   const isNotFound = isRouteErrorResponse(error) && error.status === 404;
   const isStaleChunk = !isNotFound && isStaleChunkError(error);
 
+  let alreadyTriedReload = false;
+  try {
+    alreadyTriedReload = sessionStorage.getItem(RELOAD_GUARD_KEY) === "1";
+  } catch {
+    // sessionStorage indisponível (ex.: modo privado)
+  }
+
+  const isReloading = isStaleChunk && !alreadyTriedReload;
+
   useEffect(() => {
-    if (!isStaleChunk) return;
-
-    let alreadyTried = false;
-    try {
-      alreadyTried = sessionStorage.getItem(RELOAD_GUARD_KEY) === "1";
-    } catch {
-      // sessionStorage indisponível (ex.: modo privado) — segue sem guarda.
-    }
-
-    if (alreadyTried) return;
+    if (!isReloading) return;
 
     try {
       sessionStorage.setItem(RELOAD_GUARD_KEY, "1");
@@ -51,9 +49,8 @@ export function RouteErrorBoundary() {
       // ignora — pior caso é tentar recarregar mais que uma vez.
     }
 
-    setIsReloading(true);
     window.location.reload();
-  }, [isStaleChunk]);
+  }, [isReloading]);
 
   useEffect(() => {
     if (!isStaleChunk) {
@@ -65,7 +62,7 @@ export function RouteErrorBoundary() {
     }
   }, [isStaleChunk]);
 
-  if (isStaleChunk && isReloading) {
+  if (isReloading) {
     return (
       <div className="min-h-screen bg-[var(--woody-sand)] flex items-center justify-center px-4">
         <p className="text-sm text-[var(--woody-ink)]/50">A atualizar a aplicação…</p>
