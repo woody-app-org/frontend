@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AtSign, Facebook, Instagram, Music2, Twitter, UserRound } from "lucide-react";
@@ -28,6 +29,7 @@ import {
   type RegistrationField,
 } from "../services/registrationAvailability.service";
 import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
+import { INSTITUTIONAL_PATHS } from "@/features/landing/institutional/routes";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 import { isBetaClosed } from "@/config/beta";
@@ -373,15 +375,24 @@ export function OnboardingStepAccount() {
           <div className={onboardingStyles.sectionCard}>
             <p className="text-sm leading-relaxed text-[var(--auth-text-on-maroon)]/85">
               Antes de avançar, leia e aceite as Políticas da Woody. Ao continuar, você confirma
-              que leu, compreendeu e concorda com os Termos de Uso, a Política de Privacidade, as
-              Diretrizes da Comunidade e demais regras da plataforma.{" "}
+              que leu, compreendeu e concorda com os{" "}
               <button
                 type="button"
                 onClick={() => setPoliciesDialogOpen(true)}
                 className={cn(onboardingStyles.ghostBtn, "font-semibold")}
               >
-                Ler as Políticas da Woody
+                Termos de Uso e a Política de Privacidade
               </button>
+              , as Diretrizes da Comunidade e demais regras da plataforma, além da{" "}
+              <Link
+                to={INSTITUTIONAL_PATHS.privacidadeCookies}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(onboardingStyles.ghostBtn, "font-semibold")}
+              >
+                Política de Cookies e Tecnologias Locais
+              </Link>
+              .
             </p>
             <label className="flex items-start gap-2.5 cursor-pointer select-none">
               <Checkbox

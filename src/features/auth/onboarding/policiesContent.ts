@@ -341,11 +341,6 @@ export const WOODY_COOKIES_SECTIONS: PolicyContentSection[] = [
       "A Woody pode atualizar esta política para refletir mudanças técnicas, legais, operacionais ou de produto.",
       "Se forem adicionadas tecnologias não essenciais, como analytics, anúncios, pixels ou fornecedores de rastreamento, a Woody deverá atualizar as informações desta página e, quando necessário, disponibilizar escolhas adequadas às usuárias.",
       "A versão mais recente desta política deve ficar disponível em local acessível dentro da aplicação ou do site da Woody.",
-      "16. Contato",
-      "Para dúvidas sobre esta política, privacidade ou tratamento de dados pessoais, a usuária pode entrar em contato com a Woody pelo canal oficial informado na aplicação.",
-      "Contato para privacidade: [inserir e-mail oficial da Woody].",
-      "Controladora: [inserir razão social ou nome da responsável pela Woody, quando definido].",
-      "Nota de uso: este documento foi estruturado para informar as usuárias com clareza e reduzir riscos de inconsistência na comunicação da Woody. Antes de publicação definitiva, recomenda-se revisar os campos pendentes e alinhar esta política com a Política de Privacidade, Termos de Uso e implementação técnica real da aplicação.",
     ],
   },
 ];

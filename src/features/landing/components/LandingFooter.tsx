@@ -112,10 +112,34 @@ export function LandingFooter() {
                 </li>
                 <li>
                   <Link
+                    to={INSTITUTIONAL_PATHS.politicas}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Política de Privacidade
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to={INSTITUTIONAL_PATHS.privacidadeCookies}
                     className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
                   >
-                    Privacidade e cookies
+                    Política de Cookies e Tecnologias Locais
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.politicas}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Termos de Uso
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={INSTITUTIONAL_PATHS.regras}
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Diretrizes da Comunidade
                   </Link>
                 </li>
                 <li>
@@ -142,11 +166,30 @@ export function LandingFooter() {
                     Evitar banimento
                   </Link>
                 </li>
+                <li>
+                  <a
+                    href="mailto:contato@thewoody.co"
+                    className="text-[var(--woody-text)]/80 transition-colors duration-200 ease-out hover:text-[var(--woody-ink)]"
+                  >
+                    Contato
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
         </div>
-        <p className="mt-12 border-t border-black/[0.08] pt-8 text-center text-xs text-[var(--woody-muted)]">
+        <p className="mt-10 max-w-3xl text-xs leading-relaxed text-[var(--woody-muted)]">
+          A Woody usa tecnologias essenciais do navegador para login, segurança e funcionamento. Não usamos cookies
+          de marketing no cenário atual.{" "}
+          <Link
+            to={INSTITUTIONAL_PATHS.privacidadeCookies}
+            className="font-semibold text-[var(--woody-text)] underline-offset-2 hover:underline"
+          >
+            Saiba mais
+          </Link>
+          .
+        </p>
+        <p className="mt-4 border-t border-black/[0.08] pt-8 text-center text-xs text-[var(--woody-muted)]">
           © {new Date().getFullYear()} Woody. Todos os direitos reservados.
         </p>
       </div>

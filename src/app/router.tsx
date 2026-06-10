@@ -183,6 +183,7 @@ export const router = createBrowserRouter([
       { path: "invite/:code", element: <LazyRouteSuspense><BetaInviteLinkPage /></LazyRouteSuspense> },
       { index: true, element: <IntroPage /> },
       { path: "landing", element: <LazyRouteSuspense><LandingPage /></LazyRouteSuspense> },
+      { path: "cookies-e-tecnologias-locais", element: <Navigate to="/institutional/privacidade-e-cookies" replace /> },
       { path: "install", element: <LazyRouteSuspense><InstallPage /></LazyRouteSuspense> },
       {
         path: "institutional",
