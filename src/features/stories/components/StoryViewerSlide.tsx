@@ -29,6 +29,15 @@ function StoryLayerRenderer({
     transform: `rotate(${layer.rotation}deg)`,
   };
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !isActive || layer.type !== "video") return;
+    v.currentTime = 0;
+    void v.play().catch(() => undefined);
+  }, [isActive, layer.type]);
+
   if (layer.type === "text") {
     return (
       <div
@@ -58,16 +67,6 @@ function StoryLayerRenderer({
   const setVideoRef: RefCallback<HTMLVideoElement> = (el) => {
     if (el) el.muted = videoMuted;
   };
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !isActive) return;
-    v.currentTime = 0;
-    void v.play().catch(() => undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive]);
 
   return (
     <video

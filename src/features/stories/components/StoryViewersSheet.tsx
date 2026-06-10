@@ -27,7 +27,9 @@ export function StoryViewersSheet({ open, onOpenChange, storyId }: StoryViewersS
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    setLoadState("loading");
+    const timer = setTimeout(() => {
+      if (!cancelled) setLoadState("loading");
+    }, 0);
     void fetchStoryViewers(storyId)
       .then((list) => {
         if (cancelled) return;
@@ -39,6 +41,7 @@ export function StoryViewersSheet({ open, onOpenChange, storyId }: StoryViewersS
       });
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [open, storyId]);
 

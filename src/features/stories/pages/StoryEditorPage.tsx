@@ -251,7 +251,7 @@ export function StoryEditorPage() {
     !publishing &&
     (sharedPost != null ||
       backgroundKind === "color" ||
-      (backgroundKind !== "color" && backgroundFile != null) ||
+      backgroundFile != null ||
       layers.some((l) => (l.type === "text" && l.text?.trim()) || l.type !== "text"));
 
   const handlePublish = useCallback(async () => {

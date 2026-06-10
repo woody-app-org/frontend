@@ -3,7 +3,6 @@ import { Loader2, Shield } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -50,7 +49,6 @@ export function CommunityEditDialog({
   onOpenChange,
   community,
   viewerId,
-  adminRoleLabel,
   onSaved,
   canSetPrivate = false,
 }: CommunityEditDialogProps) {

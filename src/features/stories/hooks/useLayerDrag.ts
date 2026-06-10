@@ -1,4 +1,4 @@
-import { useCallback, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 
 export type LayerDragMode = "move" | "resize";
 
@@ -31,7 +31,9 @@ export function useLayerDrag(
 ) {
   const stateRef = useRef<DragState | null>(null);
   const geometryRef = useRef(geometry);
-  geometryRef.current = geometry;
+  useEffect(() => {
+    geometryRef.current = geometry;
+  }, [geometry]);
 
   const onPointerDown = useCallback(
     (e: ReactPointerEvent<HTMLElement>, mode: LayerDragMode) => {
