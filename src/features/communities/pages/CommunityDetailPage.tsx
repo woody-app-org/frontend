@@ -538,7 +538,7 @@ function CommunityDetailPageContent() {
           } catch (e) {
             if (e instanceof CommunityJoinRequestsForbiddenError) {
               joinForbidden =
-                "Não tens permissão para gerir solicitações nesta comunidade. Se achas que deverias, contacta a equipa.";
+                "Você não tem permissão para gerir solicitações nesta comunidade. Se acha que esse aviso é um erro, entre em contato com a equipe.";
             } else {
               throw e;
             }

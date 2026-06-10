@@ -158,10 +158,6 @@ export function CommunityEditDialog({
             Administrativo · comunidade
           </div>
           <DialogTitle className="text-[var(--woody-text)]">Editar dados da comunidade</DialogTitle>
-          <DialogDescription>
-            Como <strong>{adminRoleLabel}</strong>, você altera nome, aparência, regras e visibilidade do espaço — não o
-            perfil pessoal. Mock local até integrar community.service com a API (ver lib/backendIntegrationHints).
-          </DialogDescription>
         </DialogHeader>
 
         <form

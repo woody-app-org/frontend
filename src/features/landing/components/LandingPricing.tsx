@@ -144,7 +144,7 @@ export function LandingPricing() {
               <Link to="/auth/onboarding/1">Subir para Pro</Link>
             </Button>
             <p className="relative mt-3 text-center text-[11px] font-medium text-white/42">
-              Depois de entrares, geres a subscrição na área de planos da conta.
+              Depois de entrar, gere a inscrição na área de planos da conta.
             </p>
           </article>
         </div>

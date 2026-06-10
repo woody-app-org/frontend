@@ -1,6 +1,6 @@
 import type { Story, StoryMediaType } from "../types";
 
-const MEDIA_TYPES = new Set<StoryMediaType>(["image", "video", "text"]);
+const MEDIA_TYPES = new Set<StoryMediaType>(["image", "video", "text", "shared_post"]);
 
 export function parseStoryMediaType(raw: unknown): StoryMediaType {
   const v = String(raw ?? "").toLowerCase();

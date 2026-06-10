@@ -33,7 +33,7 @@ export const rules = {
 };
 
 export const policyConfidentiality = {
-  title: "POLITICA DE CONFIDENCIALIDADE",
+  title: "POLÍTICA DE CONFIDENCIALIDADE",
   badge: "01",
   excerpt:
     "Ao participar da Woody, você concorda que mensagens, imagens, áudios, arquivos e informações compartilhadas neste espaço são confidenciais e restritas às pessoas envolvidas. É proibido copiar, gravar, divulgar, encaminhar ou fazer capturas de tela para terceiros ou redes sociais.",

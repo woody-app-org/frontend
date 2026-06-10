@@ -1,4 +1,4 @@
-import { Copy, Send, Share2 } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,34 +17,22 @@ export interface PostShareDialogProps {
   onOpenChange: (open: boolean) => void;
   shareStep: "menu" | "woody";
   onShareStepChange: (step: "menu" | "woody") => void;
-  shareUrl: string;
-  canShareExternally: boolean;
-  nativeShareAvailable: boolean;
-  isCopying: boolean;
-  isSharing: boolean;
   isSendingToWoody: boolean;
-  onCopyLink: () => void;
-  onShareOutside: () => void;
+  onShareToStory: () => void;
   onSendToWoody: (target: ShareToWoodyTarget, message: string) => void;
 }
 
 export function PostShareDialog({
-  post,
+  post: _post,
   open,
   onOpenChange,
   shareStep,
   onShareStepChange,
-  shareUrl,
-  canShareExternally,
-  nativeShareAvailable,
-  isCopying,
-  isSharing,
   isSendingToWoody,
-  onCopyLink,
-  onShareOutside,
+  onShareToStory,
   onSendToWoody,
 }: PostShareDialogProps) {
-  const busy = isCopying || isSharing || isSendingToWoody;
+  const busy = isSendingToWoody;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -57,10 +45,8 @@ export function PostShareDialog({
         {shareStep === "menu" ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-[var(--woody-text)]">Compartilhar publicação</DialogTitle>
-              <DialogDescription className="text-[var(--woody-muted)]">
-                Partilha esta publicação com quem quiseres.
-              </DialogDescription>
+              <DialogTitle className="text-[var(--woody-text)] mb-3">Compartilhar publicação</DialogTitle>
+              <DialogDescription className="sr-only">Escolha como compartilhar esta publicação</DialogDescription>
             </DialogHeader>
 
             <div className="flex flex-col gap-2">
@@ -73,53 +59,29 @@ export function PostShareDialog({
               >
                 <Send className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
                 <span className="flex flex-col gap-0.5">
-                  <span className="font-medium text-[var(--woody-text)]">Enviar dentro da Woody</span>
+                  <span className="font-medium text-[var(--woody-text)]">Compartilhar com amigos</span>
                   <span className="text-xs font-normal text-[var(--woody-muted)]">
-                    Partilha por mensagem directa
+                    Enviar para uma pessoa ou conversa
                   </span>
                 </span>
               </Button>
-
-              {canShareExternally ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-auto justify-start gap-3 px-4 py-3 text-left"
-                  disabled={busy}
-                  onClick={() => void onShareOutside()}
-                >
-                  <Share2 className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
-                  <span className="flex flex-col gap-0.5">
-                    <span className="font-medium text-[var(--woody-text)]">Compartilhar fora da Woody</span>
-                    <span className="text-xs font-normal text-[var(--woody-muted)]">
-                      {nativeShareAvailable
-                        ? "Abre as opções do teu dispositivo"
-                        : "Copia o link (partilha nativa indisponível)"}
-                    </span>
-                  </span>
-                </Button>
-              ) : null}
 
               <Button
                 type="button"
                 variant="outline"
                 className="h-auto justify-start gap-3 px-4 py-3 text-left"
                 disabled={busy}
-                onClick={() => void onCopyLink()}
+                onClick={() => onShareToStory()}
               >
-                <Copy className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
+                <Sparkles className="size-5 shrink-0 text-[var(--woody-nav)]" aria-hidden />
                 <span className="flex flex-col gap-0.5">
-                  <span className="font-medium text-[var(--woody-text)]">Copiar link</span>
-                  <span className="truncate text-xs font-normal text-[var(--woody-muted)]">{shareUrl}</span>
+                  <span className="font-medium text-[var(--woody-text)]">Compartilhar no story</span>
+                  <span className="text-xs font-normal text-[var(--woody-muted)]">
+                    Publicar no seu story por 24 horas
+                  </span>
                 </span>
               </Button>
             </div>
-
-            {!canShareExternally && post.publicationContext === "community" ? (
-              <p className="text-xs leading-relaxed text-[var(--woody-muted)]">
-                Podes copiar o link para partilhar com quem já tem acesso na Woody.
-              </p>
-            ) : null}
           </>
         ) : (
           <ShareToWoodyPanel

@@ -19,32 +19,25 @@ function samplePostSharedNotification(overrides: Partial<NotificationItem> = {})
 describe("post_shared notification", () => {
   it("renders friendly summary text", () => {
     const summary = notificationSummaryFromItem(samplePostSharedNotification());
-    expect(summary).toBe("Camila compartilhou sua publicação");
+    expect(summary).toBe("Camila repostou sua publicação no stories");
   });
 
-  it("navigates to post public id route", () => {
+  it("navigates to the actor's profile (where the story can be viewed)", () => {
     const route = getNotificationTargetRoute(samplePostSharedNotification());
-    expect(route).toBe("/posts/pst_abc123");
+    expect(route).toBe("/profile/camila");
   });
 
-  it("still resolves route when only postId is present", () => {
+  it("still resolves a profile route when only the actor id is present", () => {
     const route = getNotificationTargetRoute(
-      samplePostSharedNotification({ metadata: { postId: 10 }, targetId: 10 })
+      samplePostSharedNotification({ actor: { id: "5", displayName: "Camila", username: "" }, metadata: {} })
     );
-    expect(route).toBe("/posts/10");
+    expect(route).toBe("/profile/5");
   });
 
   it("does not break summary when actor is missing", () => {
     const summary = notificationSummaryFromItem(
       samplePostSharedNotification({ actor: null })
     );
-    expect(summary).toBe("Alguém compartilhou sua publicação");
-  });
-
-  it("returns null route when post metadata is missing", () => {
-    const route = getNotificationTargetRoute(
-      samplePostSharedNotification({ metadata: {}, targetId: null, targetType: "none" })
-    );
-    expect(route).toBeNull();
+    expect(summary).toBe("Alguém repostou sua publicação no stories");
   });
 });

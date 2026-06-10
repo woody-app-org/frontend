@@ -75,7 +75,7 @@ export function SubscriptionAccountPanel({
           </div>
         ) : (
           <p className="text-xs text-[var(--woody-muted)] sm:max-w-xs sm:text-right">
-            Sem cliente Stripe associado nesta conta — o portal abre após a primeira subscrição concluída.
+            Sem cliente Stripe associado nesta conta — o portal abre após a primeira inscrição concluída.
           </p>
         )}
       </div>

@@ -9,11 +9,11 @@ export function describeSubscriptionHeadline(sub: AuthUserSubscription): string 
   const paidBillingPaused =
     !pro && (sub.billingPlan === "pro" || sub.billingPlan === "max") && sub.status === "past_due";
   if (paidBillingPaused) {
-    return "Subscrição em pausa por pagamento — regulariza o método na área Stripe para reativar os benefícios.";
+    return "Inscrição em pausa por pagamento — regularize o método na área Stripe para reativar os benefícios.";
   }
 
   if (pro && sub.status === "past_due") {
-    return "Pagamento em falta — atualiza o método na área Stripe para manter os benefícios premium.";
+    return "Pagamento em falta — atualize o método na área Stripe para manter os benefícios premium.";
   }
   if (pro && canceling && sub.currentPeriodEnd) {
     const product = sub.billingPlan === "max" ? "Criador Max" : "Woody Pro";
@@ -26,9 +26,9 @@ export function describeSubscriptionHeadline(sub: AuthUserSubscription): string 
     return "Woody Pro ativo — benefícios premium disponíveis.";
   }
   if (sub.canOpenBillingPortal) {
-    return "Sem Pro ativo neste momento — tens conta de faturação na Stripe para rever ou reassumir.";
+    return "Sem Pro ativo neste momento — atualize o método de pagamento na área Stripe.";
   }
-  return "Plano Free — participa na rede sem subscrição paga.";
+  return "Plano Free — participe na rede sem inscrição paga.";
 }
 
 /** Detalhe secundário (período ou estado técnico). */

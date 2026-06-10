@@ -346,10 +346,10 @@ export function PlanosPage() {
                 {loadingCode === proCheckoutCode ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
-                    A abrir checkout…
+                    Abrindo checkout…
                   </>
                 ) : isProUser ? (
-                  "Já tens o Criador Pro"
+                  "Você já possuí o Criador Pro"
                 ) : (
                   "Escolher Pro"
                 )}
@@ -407,7 +407,7 @@ export function PlanosPage() {
               ) : null}
               {!MAX_PLAN_CHECKOUT_ENABLED ? (
                 <p className="mt-1.5 text-[0.7rem] leading-snug text-[var(--woody-muted)] sm:text-xs">
-                  O checkout do Criador Max ainda não está ligado às subscrições — os preços acima reflectem a oferta prevista.
+                  O checkout do Criador Max ainda não está ligado às inscrições — os preços acima reflectem a oferta prevista.
                 </p>
               ) : null}
               <Button
@@ -427,7 +427,7 @@ export function PlanosPage() {
                 {loadingCode === maxCheckoutCode ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
-                    A abrir checkout…
+                    Abrindo checkout…
                   </>
                 ) : isMaxPlanCurrent ? (
                   "É o teu plano atual"

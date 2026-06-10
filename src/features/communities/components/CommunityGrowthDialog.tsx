@@ -114,7 +114,7 @@ export function CommunityGrowthDialog({
               onClick={() => void handleUpgrade()}
             >
               <Sparkles className="size-4" aria-hidden />
-              {checkoutBusy ? "A redirecionar…" : "Subscrever premium do espaço"}
+              {checkoutBusy ? "Redirecionando…" : "Inscrever premium do espaço"}
             </Button>
             {error ? (
               <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">

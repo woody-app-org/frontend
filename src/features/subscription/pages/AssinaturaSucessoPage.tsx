@@ -27,7 +27,7 @@ export function AssinaturaSucessoPage() {
           setHint("O teu Woody Pro já está refletido nesta sessão.");
         } else {
           setHint(
-            "Se o pagamento foi concluído, o servidor pode ainda estar a confirmar a subscrição. Volta ao feed ou atualiza dentro de instantes — o estado oficial vem sempre da API, não desta página."
+            "Se o pagamento foi concluído, o servidor pode ainda estar confirmando a inscrição. Volte para o feed ou atualize dentro de instantes — o estado oficial vem sempre da API, não desta página."
           );
         }
         setPhase("ready");

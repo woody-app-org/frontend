@@ -109,6 +109,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
   const [profession, setProfession] = useState(profile.profession ?? "");
   const [genderIdentity, setGenderIdentity] = useState(profile.genderIdentity ?? "");
   const [sexualOrientation, setSexualOrientation] = useState(profile.sexualOrientation ?? "");
+  const [relationshipStatus, setRelationshipStatus] = useState(profile.relationshipStatus ?? "");
   const [interestsRaw, setInterestsRaw] = useState(interestsToField(profile.interests));
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl);
   const [bannerUrl, setBannerUrl] = useState<string | null>(profile.bannerUrl);
@@ -186,6 +187,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     setProfession(p.profession ?? "");
     setGenderIdentity(p.genderIdentity ?? "");
     setSexualOrientation(p.sexualOrientation ?? "");
+    setRelationshipStatus(p.relationshipStatus ?? "");
     setInterestsRaw(interestsToField(p.interests));
     setAvatarUrl(p.avatarUrl);
     setBannerUrl(p.bannerUrl);
@@ -338,6 +340,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
         profession: profession.trim() || undefined,
         genderIdentity: genderIdentity.trim() || undefined,
         sexualOrientation: sexualOrientation.trim() || undefined,
+        relationshipStatus: relationshipStatus.trim() || undefined,
         avatarUrl,
         bannerUrl,
         interests,
@@ -371,6 +374,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       profession,
       genderIdentity,
       sexualOrientation,
+      relationshipStatus,
       interestsRaw,
       avatarUrl,
       bannerUrl,
@@ -664,7 +668,46 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                   <SelectItem value="Lésbica">Lésbica</SelectItem>
                   <SelectItem value="Bi">Bi</SelectItem>
                   <SelectItem value="Pan">Pan</SelectItem>
-                  <SelectItem value="Hétero">Hétero</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[var(--woody-text)]">
+                Status
+              </label>
+              <Select
+                value={relationshipStatus || "none"}
+                onValueChange={(v) => setRelationshipStatus(v === "none" ? "" : v)}
+                disabled={isSubmitting}
+              >
+                <SelectTrigger
+                  className={cn(
+                    inputClass,
+                    "h-10 w-full",
+                    "focus-visible:border-[var(--woody-accent)]/35 focus-visible:ring-[var(--woody-accent)]/20"
+                  )}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[200]">
+                  <SelectItem value="none">Prefiro não informar</SelectItem>
+                  <SelectItem value="Solteira rolezeira">Solteira rolezeira</SelectItem>
+                  <SelectItem value="Solteira demi">Solteira demi</SelectItem>
+                  <SelectItem value="Solteira não mono">Solteira não mono</SelectItem>
+                  <SelectItem value="Solteira emocionada">Solteira emocionada</SelectItem>
+                  <SelectItem value="Solteira mono">Solteira mono</SelectItem>
+                  <SelectItem value="Solteira sapiossexual">Solteira sapiossexual</SelectItem>
+                  <SelectItem value="Solteira convicta">Solteira convicta</SelectItem>
+                  <SelectItem value="Enrolada">Enrolada</SelectItem>
+                  <SelectItem value="Explorando">Explorando</SelectItem>
+                  <SelectItem value="Amizades">Amizades</SelectItem>
+                  <SelectItem value="Namoro">Namoro</SelectItem>
+                  <SelectItem value="Casual">Casual</SelectItem>
+                  <SelectItem value="Flerte">Flerte</SelectItem>
+                  <SelectItem value="Casada">Casada</SelectItem>
+                  <SelectItem value="Noiva">Noiva</SelectItem>
+                  <SelectItem value="Poli amorosa">Poli amorosa</SelectItem>
+                  <SelectItem value="Não mono política">Não mono política</SelectItem>
                 </SelectContent>
               </Select>
             </div>

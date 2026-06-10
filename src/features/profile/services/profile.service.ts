@@ -28,6 +28,9 @@ export function validateProfileUpdatePayload(payload: ProfileUpdatePayload): { o
   const sexualOrientation = payload.sexualOrientation?.trim() ?? "";
   if (sexualOrientation.length > 60) return { ok: false, error: "Orientação sexual muito longa." };
 
+  const relationshipStatus = payload.relationshipStatus?.trim() ?? "";
+  if (relationshipStatus.length > 60) return { ok: false, error: "Status muito longo." };
+
   const interestList = (payload.interests ?? []).map((t) => ({ ...t, label: t.label.trim() })).filter((t) => t.label.length > 0);
   if (interestList.length > 24) {
     return { ok: false, error: "Muitos interesses (máx. 24)." };
@@ -82,6 +85,7 @@ export async function updateProfile(userId: string, payload: ProfileUpdatePayloa
       profession: payload.profession?.trim() || undefined,
       genderIdentity: payload.genderIdentity?.trim() || undefined,
       sexualOrientation: payload.sexualOrientation?.trim() || undefined,
+      relationshipStatus: payload.relationshipStatus?.trim() || undefined,
       avatarUrl: payload.avatarUrl,
       bannerUrl: payload.bannerUrl,
       interests: payload.interests?.map((i) => ({ id: i.id, label: i.label.trim() })),
@@ -121,6 +125,7 @@ export async function updateMyAvatarFromUploadedUrl(
       profession: p.profession,
       genderIdentity: p.genderIdentity,
       sexualOrientation: p.sexualOrientation,
+      relationshipStatus: p.relationshipStatus,
       avatarUrl: newAvatarUrl,
       bannerUrl: p.bannerUrl,
       interests: p.interests,

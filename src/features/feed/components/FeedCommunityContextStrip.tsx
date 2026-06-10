@@ -62,7 +62,7 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
           <p className="text-sm text-[var(--woody-text)]/90">
             {mode === "explore" && !isAuthenticated
               ? "Explorar na Woody"
-              : "Onde você conversa"}
+              : "Seu lugar para conversar, compartilhar e se conectar."}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -94,8 +94,8 @@ export function FeedCommunityContextStrip({ className }: { className?: string })
       ) : mode === "empty" ? (
         <p className="text-sm text-[var(--woody-muted)] py-2">
           {isAuthenticated
-            ? "Ainda não participa de nenhuma comunidade. Explore e entre num grupo."
-            : "Inicie sessão para ver as comunidades em que participa, ou explore a lista completa."}
+            ? "Você ainda não faz parte de nenhuma comunidade. Descubra espaços que combinam com você."
+            : "Inicie sessão para ver as comunidades em que você participa, ou explore a lista completa."}
         </p>
       ) : (
         <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
