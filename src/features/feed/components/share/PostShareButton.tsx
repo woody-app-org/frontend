@@ -18,14 +18,8 @@ export function PostShareButton({ post, variant = "card", className }: PostShare
     setDialogOpen,
     shareStep,
     setShareStep,
-    shareUrl,
-    canShareExternally,
-    nativeShareAvailable,
-    isCopying,
-    isSharing,
     isSendingToWoody,
-    copyLink,
-    shareOutside,
+    openStoryComposer,
     sendToWoody,
   } = usePostShare(post);
 
@@ -65,14 +59,8 @@ export function PostShareButton({ post, variant = "card", className }: PostShare
         onOpenChange={setDialogOpen}
         shareStep={shareStep}
         onShareStepChange={setShareStep}
-        shareUrl={shareUrl}
-        canShareExternally={canShareExternally}
-        nativeShareAvailable={nativeShareAvailable}
-        isCopying={isCopying}
-        isSharing={isSharing}
         isSendingToWoody={isSendingToWoody}
-        onCopyLink={() => void copyLink()}
-        onShareOutside={() => void shareOutside()}
+        onShareToStory={openStoryComposer}
         onSendToWoody={(target, message) => void sendToWoody(target, message)}
       />
     </>

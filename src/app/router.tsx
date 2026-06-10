@@ -162,6 +162,9 @@ const BanAppealPage = lazy(() =>
 const AdminSupportListPage = lazy(() =>
   import("@/features/admin/support/pages/AdminSupportListPage").then(m => ({ default: m.AdminSupportListPage }))
 );
+const StoryEditorPage = lazy(() =>
+  import("@/features/stories/pages/StoryEditorPage").then(m => ({ default: m.StoryEditorPage }))
+);
 const AdminSupportDetailPage = lazy(() =>
   import("@/features/admin/support/pages/AdminSupportDetailPage").then(m => ({ default: m.AdminSupportDetailPage }))
 );
@@ -183,6 +186,7 @@ export const router = createBrowserRouter([
       { path: "invite/:code", element: <LazyRouteSuspense><BetaInviteLinkPage /></LazyRouteSuspense> },
       { index: true, element: <IntroPage /> },
       { path: "landing", element: <LazyRouteSuspense><LandingPage /></LazyRouteSuspense> },
+      { path: "cookies-e-tecnologias-locais", element: <Navigate to="/institutional/privacidade-e-cookies" replace /> },
       { path: "install", element: <LazyRouteSuspense><InstallPage /></LazyRouteSuspense> },
       {
         path: "institutional",
@@ -302,6 +306,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ConversationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "stories/novo",
+        element: (
+          <ProtectedRoute requireVerified>
+            <LazyRouteSuspense><StoryEditorPage /></LazyRouteSuspense>
           </ProtectedRoute>
         ),
       },

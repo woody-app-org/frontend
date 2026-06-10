@@ -76,7 +76,7 @@ export async function createPost(payload: CreatePostPayload, viewerId: string): 
       if (fromBody) throw new Error(fromBody);
       const status = e.response?.status;
       if (status === 403) {
-        throw new Error("Não tens permissão para publicar nesta comunidade (é preciso ser membra ativa).");
+        throw new Error("Você não tem permissão para publicar nesta comunidade (é preciso ser membra ativa).");
       }
       if (status === 404) {
         throw new Error("Esta comunidade não existe ou já não está disponível.");

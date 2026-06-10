@@ -50,6 +50,8 @@ export interface UserProfile {
   genderIdentity?: string;
   /** Orientação sexual (valor da lista curada). */
   sexualOrientation?: string;
+  /** Status de relacionamento/flerte (valor da lista curada). */
+  relationshipStatus?: string;
   socialLinks: SocialLink[];
   interests: InterestTag[];
   suggestions: ProfileSuggestion[];
@@ -77,6 +79,7 @@ export interface ProfileUpdatePayload {
   profession?: string;
   genderIdentity?: string;
   sexualOrientation?: string;
+  relationshipStatus?: string;
   avatarUrl?: string | null;
   bannerUrl?: string | null;
   interests?: InterestTag[];

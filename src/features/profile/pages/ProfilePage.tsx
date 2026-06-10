@@ -25,7 +25,6 @@ import { showActionErrorToast, showSuccessToast } from "@/lib/toast/woodyToast";
 import { blockUser } from "@/features/users/services/userBlock.service";
 import { BlockUserConfirmationDialog } from "@/features/users/components/BlockUserConfirmationDialog";
 import {
-  StoryComposerModal,
   StoryViewerModal,
   dispatchStoriesChanged,
   useStoryViewerState,
@@ -107,7 +106,6 @@ function ProfilePageInner() {
   const { registerProfilePostIngest } = useCreatePostComposer();
   const { isOwnProfile } = useProfilePermissions(profile?.id);
   const storyViewer = useStoryViewerState();
-  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
 
   useEffect(() => {
     registerProfilePostIngest(prependCreatedProfilePost);
@@ -229,7 +227,7 @@ function ProfilePageInner() {
               onViewStories={
                 profile.hasActiveStories ? () => storyViewer.open(profile.id) : undefined
               }
-              onAddStory={isOwnProfile ? () => setStoryComposerOpen(true) : undefined}
+              onAddStory={isOwnProfile ? () => navigate("/stories/novo") : undefined}
               onEditProfile={isOwnProfile ? () => setEditOpen(true) : undefined}
               onBlockUser={
                 !isOwnProfile && isAuthenticated && profile
@@ -426,16 +424,6 @@ function ProfilePageInner() {
             void refetch();
           }}
         />
-        {isOwnProfile && profile ? (
-          <StoryComposerModal
-            open={storyComposerOpen}
-            onOpenChange={setStoryComposerOpen}
-            onPublished={() => {
-              void refetch();
-              storyViewer.open(profile.id);
-            }}
-          />
-        ) : null}
       </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FeedLayout } from "../components/FeedLayout";
 import { FeedTabs } from "../components/FeedTabs";
@@ -18,7 +18,6 @@ import { useCreatePostComposer } from "../context/CreatePostComposerContext";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import {
   StoriesBar,
-  StoryComposerModal,
   StoryViewerModal,
   dispatchStoriesChanged,
   useStoriesFeed,
@@ -92,13 +91,12 @@ function feedEmptyState(filter: FeedFilter, isAuthenticated: boolean): { title: 
     };
   }
   return {
-    title: "Nada em destaque por agora",
+    title: "Nada em destaque por enquanto",
     description: (
       <>
-        O feed “Em destaque” junta o que tem mais interação entre o que podes ver (perfil e comunidades públicas, ou
-        privadas onde participas).{" "}
+        Quando houver mais atividade entre os perfis e comunidades que você acompanha, ela aparecerá aqui. Enquanto isso, que tal {" "}
         <Link to="/communities" className={linkClass}>
-          Explorar comunidades
+          Explorar novas comunidades?
         </Link>
       </>
     ),
@@ -114,7 +112,6 @@ function FeedPageContent() {
   const navigate = useNavigate();
   const { isAuthenticated, user: authUser } = useAuth();
   const storyViewer = useStoryViewerState();
-  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
   const storiesFeed = useStoriesFeed(isAuthenticated);
 
   const {
@@ -209,7 +206,7 @@ function FeedPageContent() {
             storiesFeed.markUserViewed(userId);
             storyViewer.open(userId);
           }}
-          onAddStory={() => setStoryComposerOpen(true)}
+          onAddStory={() => navigate("/stories/novo")}
         />
       ) : null}
 
@@ -318,17 +315,6 @@ function FeedPageContent() {
           dispatchStoriesChanged();
         }}
       />
-
-      {isAuthenticated ? (
-        <StoryComposerModal
-          open={storyComposerOpen}
-          onOpenChange={setStoryComposerOpen}
-          onPublished={() => {
-            dispatchStoriesChanged();
-            if (authUser?.id) storyViewer.open(authUser.id);
-          }}
-        />
-      ) : null}
     </div>
   );
 }

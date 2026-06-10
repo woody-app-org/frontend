@@ -13,8 +13,8 @@ export async function pinPostOnProfile(postId: string): Promise<void> {
       const fromBody = getMessageFromApiResponseData(e.response?.data);
       if (fromBody) throw new Error(fromBody);
       const status = e.response?.status;
-      if (status === 403) throw new Error("Não tens permissão para fixar esta publicação.");
-      if (status === 409) throw new Error("Atingiste o número máximo de publicações fixas no perfil.");
+      if (status === 403) throw new Error("Você não tem permissão para fixar esta publicação.");
+      if (status === 409) throw new Error("Você atingiu o número máximo de publicações fixas no perfil.");
     }
     throw new Error(getApiErrorMessage(e, "Não foi possível fixar a publicação."));
   }
@@ -27,7 +27,7 @@ export async function unpinPostFromProfile(postId: string): Promise<void> {
     if (axios.isAxiosError(e)) {
       const fromBody = getMessageFromApiResponseData(e.response?.data);
       if (fromBody) throw new Error(fromBody);
-      if (e.response?.status === 403) throw new Error("Não tens permissão para desafixar esta publicação.");
+      if (e.response?.status === 403) throw new Error("Você não tem permissão para desafixar esta publicação.");
     }
     throw new Error(getApiErrorMessage(e, "Não foi possível desafixar a publicação."));
   }

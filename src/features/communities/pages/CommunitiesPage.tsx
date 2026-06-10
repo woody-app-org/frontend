@@ -153,7 +153,7 @@ export function CommunitiesPage() {
               </Link>
               <span className="flex max-sm:w-full flex-wrap items-center gap-1.5 text-xs text-[var(--woody-muted)] sm:pl-1">
                 <ProBadge variant="inline" />
-                <span>{isProUser ? "Tens criação de comunidades ativa." : "Criação de comunidades é Pro."}</span>
+                <span>{isProUser ? "Benefícios Pro ativos!" : "Criação de comunidades é Pro."}</span>
               </span>
             </div>
           </div>

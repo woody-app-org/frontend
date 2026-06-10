@@ -16,7 +16,7 @@ export function AssinaturaCanceladaPage() {
         >
           <h1 className="text-xl font-bold text-[var(--woody-text)] sm:text-2xl">Checkout cancelado</h1>
           <p className="text-sm leading-relaxed text-[var(--woody-muted)]">
-            Não foi feita qualquer alteração ao teu plano. Podes voltar a subscrever quando quiseres.
+            Não foi feita qualquer alteração ao teu plano. Pode voltar a tentar quando quiser.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" className={cn(woodyFocus.ring, "border-[var(--woody-accent)]/25")}>

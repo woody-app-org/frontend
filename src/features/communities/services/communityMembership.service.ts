@@ -94,21 +94,21 @@ function mapRequestJoinCommunityError(e: unknown): string {
   const fromBody = getMessageFromApiResponseData(e.response?.data);
 
   if (code === "membership_banned" || code === "MEMBERSHIP_BANNED") {
-    return "Estás restrita nesta comunidade e não podes solicitar entrada por este fluxo.";
+    return "Você foi banida desta comunidade e não pode voltar a entrar por este fluxo.";
   }
   if (code === "ACCOUNT_PENDING_VERIFICATION") {
-    return "Conclui a tua verificação para solicitar entrada.";
+    return "Aguarde a sua verificação para solicitar entrada.";
   }
   if (status === 403) {
     if (fromBody) return fromBody;
-    return "Não tens permissão para solicitar entrada nesta comunidade.";
+    return "Você não tem permissão para solicitar entrada nesta comunidade.";
   }
   if (status === 401) {
-    return "Inicia sessão para solicitar entrada.";
+    return "Faça login para solicitar entrada.";
   }
   if (status === 400) {
     if (fromBody) return fromBody;
-    return "Não foi possível concluir o pedido. Verifica os dados e tenta novamente.";
+    return "Não foi possível concluir o pedido. Verifique os dados e tente novamente.";
   }
   if (status === 409) {
     return "A tua solicitação já está em análise.";
@@ -130,7 +130,7 @@ export async function joinCommunityPublic(
     if (code === "membership_banned" || code === "MEMBERSHIP_BANNED") {
       return {
         ok: false,
-        error: "Estás restrita nesta comunidade e não podes voltar a entrar por este fluxo.",
+        error: "Você foi banida desta comunidade e não pode voltar a entrar por este fluxo.",
       };
     }
     return fail(e, "Não foi possível entrar na comunidade.");

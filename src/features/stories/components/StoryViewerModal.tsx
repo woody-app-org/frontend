@@ -7,7 +7,7 @@
 } from "react";
 import { Link } from "react-router-dom";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
-import { ChevronLeft, ChevronRight, Music, Send, Volume2, VolumeX, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Music, Send, Volume2, VolumeX, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,7 @@ import { useStoryLikeToggle } from "../hooks/useStoryLikeToggle";
 import { useStorySendMessage } from "../hooks/useStorySendMessage";
 import { StoryViewerSlide, type StoryViewerSlideHandle } from "./StoryViewerSlide";
 import { StoryViewerMoreMenu } from "./StoryViewerMoreMenu";
+import { StoryViewersSheet } from "./StoryViewersSheet";
 
 function formatStoryCount(count: number): string {
   if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
@@ -71,6 +72,7 @@ export function StoryViewerModal({
   const [holding, setHolding] = useState(false);
   const [menuBlocked, setMenuBlocked] = useState(false);
   const [composerActive, setComposerActive] = useState(false);
+  const [viewersOpen, setViewersOpen] = useState(false);
 
   const slideRef = useRef<StoryViewerSlideHandle>(null);
   const storiesRef = useRef<Story[]>([]);
@@ -82,10 +84,10 @@ export function StoryViewerModal({
   const [muted, setMuted] = useState(false);
   // Vídeos sem música própria têm áudio nativo — começam mutados (autoplay exige isso
   // na maioria dos browsers) e a pessoa pode tocar para ativar o som.
-  const [videoSoundOn, setVideoSoundOn] = useState(false);
+  const [videoSoundOn, setVideoSoundOn] = useState(true);
 
   const currentStory = stories[currentIndex] ?? null;
-  const isPaused = paused || holding || menuBlocked || composerActive;
+  const isPaused = paused || holding || menuBlocked || composerActive || viewersOpen;
   const hasPrev = currentIndex > 0;
 
   const canDeleteCurrent = Boolean(
@@ -114,6 +116,7 @@ export function StoryViewerModal({
     setHolding(false);
     setMenuBlocked(false);
     setComposerActive(false);
+    setViewersOpen(false);
     markedViewRef.current.clear();
   }, []);
 
@@ -309,7 +312,7 @@ export function StoryViewerModal({
     teardown();
     setAudioBlocked(false);
     setMuted(false);
-    setVideoSoundOn(false);
+    setVideoSoundOn(true);
 
     if (!music?.trackId || !open) return;
 
@@ -478,7 +481,9 @@ export function StoryViewerModal({
                 </div>
               ) : null}
               <div className="flex shrink-0 items-center gap-1">
-                {currentStory?.mediaType === "video" && !currentStory?.music ? (
+                {(currentStory?.mediaType === "video" ||
+                  (currentStory?.layers ?? []).some((l) => l.type === "video")) &&
+                !currentStory?.music ? (
                   <button
                     type="button"
                     onClick={() => setVideoSoundOn((prev) => !prev)}
@@ -522,20 +527,22 @@ export function StoryViewerModal({
                   <div
                     key={story.id}
                     className={cn(
-                      "absolute inset-0 transition-opacity duration-200",
+                      "absolute inset-0 flex items-center justify-center transition-opacity duration-200",
                       i === currentIndex ? "opacity-100" : "pointer-events-none opacity-0"
                     )}
                     aria-hidden={i !== currentIndex}
                   >
-                    <StoryViewerSlide
-                      ref={i === currentIndex ? slideRef : undefined}
-                      story={story}
-                      isActive={i === currentIndex}
-                      paused={isPaused}
-                      videoMuted={Boolean(story.music) || !videoSoundOn}
-                      onVideoEnded={() => advanceStory()}
-                      onVideoTimeUpdate={(p) => setSegmentProgress(p)}
-                    />
+                    <div className="relative aspect-[9/16] h-full max-h-full w-auto max-w-full overflow-hidden">
+                      <StoryViewerSlide
+                        ref={i === currentIndex ? slideRef : undefined}
+                        story={story}
+                        isActive={i === currentIndex}
+                        paused={isPaused}
+                        videoMuted={Boolean(story.music) || !videoSoundOn}
+                        onVideoEnded={() => advanceStory()}
+                        onVideoTimeUpdate={(p) => setSegmentProgress(p)}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -666,10 +673,38 @@ export function StoryViewerModal({
               </div>
             ) : null}
 
+            {currentStory && isOwnCurrentStory ? (
+              <div className="relative z-20 flex shrink-0 items-center border-t border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm sm:px-4">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setViewersOpen(true);
+                  }}
+                  className={cn(
+                    "flex h-10 items-center gap-2 rounded-full bg-white/12 px-3 text-sm font-medium text-white backdrop-blur-sm transition-colors",
+                    "hover:bg-white/20",
+                    woodyFocus.ring
+                  )}
+                >
+                  <Eye className="size-[1.05em]" aria-hidden />
+                  {formatStoryCount(currentStory.viewCount)}
+                </button>
+              </div>
+            ) : null}
+
             <div className="pointer-events-none h-[env(safe-area-inset-bottom)] shrink-0" />
           </>
         ) : null}
       </DialogContent>
+
+      {currentStory && isOwnCurrentStory ? (
+        <StoryViewersSheet
+          open={viewersOpen}
+          onOpenChange={setViewersOpen}
+          storyId={currentStory.id}
+        />
+      ) : null}
     </Dialog>
   );
 }

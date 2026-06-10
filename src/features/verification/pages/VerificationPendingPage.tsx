@@ -79,7 +79,11 @@ export function VerificationPendingPage() {
               </p>
               <p className="text-xs text-[var(--woody-muted)]">
                 O processo geralmente leva algumas horas. Se demorar mais de 72 horas, entre em
-                contato pelo suporte.
+                contato com o nosso suporte pelo e-mail{" "}
+                <a href="mailto:contato@thewoody.co" className="font-semibold underline underline-offset-2">
+                  contato@thewoody.co
+                </a>
+                .
               </p>
             </div>
 

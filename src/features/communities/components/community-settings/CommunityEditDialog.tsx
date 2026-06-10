@@ -3,7 +3,6 @@ import { Loader2, Shield } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -50,7 +49,6 @@ export function CommunityEditDialog({
   onOpenChange,
   community,
   viewerId,
-  adminRoleLabel,
   onSaved,
   canSetPrivate = false,
 }: CommunityEditDialogProps) {
@@ -158,10 +156,6 @@ export function CommunityEditDialog({
             Administrativo · comunidade
           </div>
           <DialogTitle className="text-[var(--woody-text)]">Editar dados da comunidade</DialogTitle>
-          <DialogDescription>
-            Como <strong>{adminRoleLabel}</strong>, você altera nome, aparência, regras e visibilidade do espaço — não o
-            perfil pessoal. Mock local até integrar community.service com a API (ver lib/backendIntegrationHints).
-          </DialogDescription>
         </DialogHeader>
 
         <form

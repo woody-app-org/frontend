@@ -4,8 +4,6 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { PostShareButton } from "./PostShareButton";
 import { makePost } from "@/test/fixtures/post";
 
-const copyLink = vi.fn();
-const shareOutside = vi.fn();
 const setDialogOpen = vi.fn();
 
 vi.mock("../../hooks/usePostShare", () => ({
@@ -24,14 +22,8 @@ describe("PostShareButton", () => {
       setDialogOpen,
       shareStep: "menu",
       setShareStep: vi.fn(),
-      shareUrl: "https://woody.test/posts/pst_test00000001",
-      canShareExternally: true,
-      nativeShareAvailable: true,
-      isCopying: false,
-      isSharing: false,
       isSendingToWoody: false,
-      copyLink,
-      shareOutside,
+      openStoryComposer: vi.fn(),
       sendToWoody: vi.fn(),
     });
   });
@@ -51,14 +43,8 @@ describe("PostShareButton", () => {
       setDialogOpen,
       shareStep: "menu",
       setShareStep: vi.fn(),
-      shareUrl: "https://woody.test/posts/pst_test00000001",
-      canShareExternally: true,
-      nativeShareAvailable: true,
-      isCopying: false,
-      isSharing: false,
       isSendingToWoody: false,
-      copyLink,
-      shareOutside,
+      openStoryComposer: vi.fn(),
       sendToWoody: vi.fn(),
     });
 

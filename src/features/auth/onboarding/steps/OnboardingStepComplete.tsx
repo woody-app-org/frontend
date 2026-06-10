@@ -43,24 +43,34 @@ export function OnboardingStepComplete() {
       const registeredUser = await registerUser(credentials);
 
       if (avatarPending) {
-        try {
-          const uploaded = await uploadImageMedia(avatarPending, {
-            scope: "post",
-            publicationContext: "profile",
-          });
-          const avatarResult = await updateMyAvatarFromUploadedUrl(uploaded.url);
-          if (avatarResult.ok) {
-            const url = avatarResult.profile.avatarUrl ?? uploaded.url;
-            if (url) patchUser({ avatarUrl: url });
-          } else {
-            showWarningToast(
-              `Conta criada! Não foi possível guardar a foto (${avatarResult.error}). Atualize-a em seu perfil quando quiser.`,
-              { id: "woody-onboarding-avatar-patch", duration: 7500 }
-            );
+        const ATTEMPTS = 3;
+        let lastError: unknown = null;
+        let saved = false;
+        for (let attempt = 1; attempt <= ATTEMPTS && !saved; attempt++) {
+          try {
+            if (attempt > 1) await new Promise((r) => setTimeout(r, 1500));
+            const uploaded = await uploadImageMedia(avatarPending, {
+              scope: "post",
+              publicationContext: "profile",
+            });
+            const avatarResult = await updateMyAvatarFromUploadedUrl(uploaded.url);
+            if (avatarResult.ok) {
+              const url = avatarResult.profile.avatarUrl ?? uploaded.url;
+              if (url) patchUser({ avatarUrl: url });
+              saved = true;
+            } else {
+              lastError = new Error(avatarResult.error);
+            }
+          } catch (e) {
+            lastError = e;
           }
-        } catch {
+        }
+        if (!saved) {
+          const detail = lastError instanceof Error ? lastError.message : null;
           showWarningToast(
-            "Conta criada! A foto não foi enviada agora — você pode adicioná-la em seu perfil.",
+            detail
+              ? `Conta criada! Não foi possível guardar a foto (${detail}). Atualize-a em seu perfil quando quiser.`
+              : "Conta criada! A foto não foi enviada agora — você pode adicioná-la em seu perfil.",
             { id: "woody-onboarding-avatar-upload", duration: 7500 }
           );
         }

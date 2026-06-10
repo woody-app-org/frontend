@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { resolvePublicMediaUrl } from "@/lib/api";
@@ -11,6 +12,7 @@ import { firstLineOfPost } from "@/features/feed/lib/postTextPreview";
 export interface SharedPostPreviewCardProps {
   preview: SharedPostPreviewDto;
   className?: string;
+  style?: CSSProperties;
 }
 
 function authorInitials(name: string): string {
@@ -19,7 +21,7 @@ function authorInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-export function SharedPostPreviewCard({ preview, className }: SharedPostPreviewCardProps) {
+export function SharedPostPreviewCard({ preview, className, style }: SharedPostPreviewCardProps) {
   if (preview.isUnavailable || !preview.publicId) {
     return (
       <div
@@ -27,6 +29,7 @@ export function SharedPostPreviewCard({ preview, className }: SharedPostPreviewC
           "rounded-xl border border-[var(--woody-divider)] bg-[var(--woody-bg)]/60 px-3 py-2.5 text-sm text-[var(--woody-muted)]",
           className
         )}
+        style={style}
       >
         Publicação indisponível.
       </div>
@@ -49,6 +52,7 @@ export function SharedPostPreviewCard({ preview, className }: SharedPostPreviewC
         "hover:border-[var(--woody-nav)]/25 hover:bg-[var(--woody-nav)]/5",
         className
       )}
+      style={style}
     >
       <div className="flex items-center gap-2 border-b border-[var(--woody-divider)]/80 px-3 py-2">
         <Avatar size="sm" className="ring-1 ring-[var(--woody-divider)]">

@@ -93,8 +93,8 @@ export function NotificationsPanel({
             <span className="text-xs leading-snug text-[var(--woody-muted)]">
               {signalsUnreadCount > 0
                 ? signalsUnreadCount === 1
-                  ? "Tens 1 sinal por ler."
-                  : `Tens ${signalsUnreadCount} sinais por ler.`
+                  ? "Você possui 1 sinal não lido."
+                  : `Você possui ${signalsUnreadCount} sinais não lidos.`
                 : "Flertes e reações no teu perfil."}
             </span>
           </span>

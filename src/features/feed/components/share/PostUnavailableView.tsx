@@ -22,7 +22,7 @@ export function PostUnavailableView({ showPublicShell = false, className }: Post
     >
       <h1 className="text-lg font-semibold text-[var(--woody-text)]">Este conteúdo não está disponível.</h1>
       <p className="mt-2 text-sm text-[var(--woody-muted)]">
-        Verifica se tens acesso ou tenta novamente mais tarde.
+        Verifique se você tem acesso ou tente novamente mais tarde.
       </p>
       {showPublicShell ? (
         <div className="mt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">

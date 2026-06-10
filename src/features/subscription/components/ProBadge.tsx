@@ -1,3 +1,4 @@
+import { Crown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ProBadgeVariant = "inline" | "profile";
@@ -12,22 +13,28 @@ export interface ProBadgeProps {
 }
 
 /**
- * Selo visual de assinatura (Pro ou Max). A regra de negócio vem de `subscriptionBadge` / sessão;
- * este componente é só apresentação.
+ * Selo visual de assinatura (Pro ou Max), inspirado em ícones de rank de jogos:
+ * Pro remete a um rank "Ouro" e Max a um rank "Mestre". A regra de negócio vem de
+ * `subscriptionBadge` / sessão; este componente é só apresentação.
  */
 export function ProBadge({ className, variant = "inline", tier = "pro" }: ProBadgeProps) {
-  const sizeClass = variant === "profile" ? "px-1.5 py-0.5 text-[10px]" : "px-1 py-px text-[9px] leading-tight";
+  const sizeClass =
+    variant === "profile"
+      ? "gap-1 px-1.5 py-0.5 text-[10px]"
+      : "gap-0.5 px-1 py-px text-[9px] leading-tight";
+  const iconSizeClass = variant === "profile" ? "size-3" : "size-2.5";
 
   if (tier === "max") {
     return (
       <span
         className={cn(
-          "inline-flex shrink-0 items-center rounded-md border border-violet-500/35 bg-violet-500/12 font-semibold uppercase tracking-wide text-violet-950 dark:text-violet-100",
+          "inline-flex shrink-0 items-center rounded-md border border-fuchsia-300/40 bg-gradient-to-br from-violet-600 via-fuchsia-600 to-purple-700 font-bold uppercase tracking-wide text-white shadow-[0_0_8px_rgba(192,38,211,0.55)]",
           sizeClass,
           className,
         )}
         title="Woody Max"
       >
+        <Crown className={cn(iconSizeClass, "text-fuchsia-200 drop-shadow-[0_0_2px_rgba(255,255,255,0.6)]")} />
         Max
       </span>
     );
@@ -36,12 +43,13 @@ export function ProBadge({ className, variant = "inline", tier = "pro" }: ProBad
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center rounded-md border border-amber-500/35 bg-amber-500/12 font-semibold uppercase tracking-wide text-amber-950 dark:text-amber-100",
+        "inline-flex shrink-0 items-center rounded-md border border-amber-200/50 bg-gradient-to-br from-amber-300 via-yellow-500 to-amber-600 font-bold uppercase tracking-wide text-amber-950 shadow-[0_0_8px_rgba(245,158,11,0.55)]",
         sizeClass,
         className,
       )}
       title="Woody Pro"
     >
+      <Star className={cn(iconSizeClass, "fill-amber-100 text-amber-100 drop-shadow-[0_0_2px_rgba(255,255,255,0.6)]")} />
       Pro
     </span>
   );

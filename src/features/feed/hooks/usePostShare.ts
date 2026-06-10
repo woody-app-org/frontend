@@ -1,65 +1,38 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Post } from "@/domain/types";
-import {
-  canSharePostExternally,
-  canUseNativeShare,
-  copyPostLinkToClipboard,
-  resolveShareUrl,
-  sharePostNatively,
-} from "../lib/postShare";
+import type { SharedPostPreviewDto } from "@/features/messages/types";
 import { sharePostToConversation } from "../services/postShare.service";
 import type { ShareToWoodyTarget } from "../components/share/ShareToWoodyPanel";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { postInternalApiId } from "@/domain/services/postMock.service";
 
+function buildSharedPostPreview(post: Post): SharedPostPreviewDto {
+  const firstMedia = post.mediaAttachments?.[0];
+  return {
+    id: post.id,
+    publicId: post.publicId ?? null,
+    authorDisplayName: post.author.name,
+    authorUsername: post.author.username,
+    authorProfilePic: post.author.avatarUrl,
+    contentPreview: post.content || null,
+    firstMediaUrl: firstMedia?.url ?? post.imageUrl ?? null,
+    firstMediaType: firstMedia?.mediaType ?? (post.imageUrl ? "image" : null),
+    communityName: post.community?.name ?? null,
+    isUnavailable: false,
+  };
+}
+
 export function usePostShare(post: Post) {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [shareStep, setShareStep] = useState<"menu" | "woody">("menu");
-  const [isCopying, setIsCopying] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   const [isSendingToWoody, setIsSendingToWoody] = useState(false);
-
-  const shareUrl = useMemo(() => resolveShareUrl(post), [post]);
-  const canShareExternally = useMemo(() => canSharePostExternally(post), [post]);
-  const nativeShareAvailable = canUseNativeShare();
 
   useEffect(() => {
     if (dialogOpen) return;
     setShareStep("menu");
   }, [dialogOpen]);
-
-  const copyLink = useCallback(async () => {
-    setIsCopying(true);
-    try {
-      await copyPostLinkToClipboard(post);
-      showSuccessToast("Link copiado.", { id: `woody-share-copy-${post.id}` });
-      setDialogOpen(false);
-    } catch {
-      showErrorToast("Não foi possível copiar o link.", { id: `woody-share-copy-err-${post.id}` });
-    } finally {
-      setIsCopying(false);
-    }
-  }, [post]);
-
-  const shareOutside = useCallback(async () => {
-    if (!canShareExternally) return;
-    if (!nativeShareAvailable) {
-      await copyLink();
-      return;
-    }
-    setIsSharing(true);
-    try {
-      const result = await sharePostNatively(post);
-      if (result === "shared") {
-        showSuccessToast("Post compartilhado.", { id: `woody-share-native-${post.id}` });
-        setDialogOpen(false);
-      }
-    } catch {
-      showErrorToast("Não foi possível compartilhar.", { id: `woody-share-native-err-${post.id}` });
-    } finally {
-      setIsSharing(false);
-    }
-  }, [post, canShareExternally, nativeShareAvailable, copyLink]);
 
   const sendToWoody = useCallback(
     async (target: ShareToWoodyTarget, message: string) => {
@@ -91,19 +64,25 @@ export function usePostShare(post: Post) {
     [post]
   );
 
+  const openStoryComposer = useCallback(() => {
+    setDialogOpen(false);
+    navigate("/stories/novo", {
+      state: {
+        sharedPost: {
+          postId: postInternalApiId(post),
+          preview: buildSharedPostPreview(post),
+        },
+      },
+    });
+  }, [navigate, post]);
+
   return {
     dialogOpen,
     setDialogOpen,
     shareStep,
     setShareStep,
-    shareUrl,
-    canShareExternally,
-    nativeShareAvailable,
-    isCopying,
-    isSharing,
     isSendingToWoody,
-    copyLink,
-    shareOutside,
+    openStoryComposer,
     sendToWoody,
   };
 }

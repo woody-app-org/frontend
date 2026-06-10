@@ -178,6 +178,10 @@ export function OnboardingStepProfilePhoto() {
         )}
       </div>
 
+      <p className="mt-3 text-xs text-[var(--auth-text-on-maroon)]/75 bg-[var(--auth-button)]/10 border border-[var(--auth-button)]/20 rounded-lg px-3 py-2">
+        Suba uma foto de rosto. Perfis com fotos reais são melhores avaliados pela plataforma e ajuda na segurança da comunidade.
+      </p>
+
       {error && (
         <p className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
           {error}

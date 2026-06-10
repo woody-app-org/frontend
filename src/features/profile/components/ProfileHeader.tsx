@@ -291,6 +291,14 @@ export function ProfileHeader({
                     <span className={styles.detailText}>{profile.sexualOrientation}</span>
                   </span>
                 ) : null}
+                {profile.relationshipStatus ? (
+                  <span className={styles.detailItem}>
+                    <span className={styles.detailIconWrap} aria-hidden>
+                      <Heart />
+                    </span>
+                    <span className={styles.detailText}>{profile.relationshipStatus}</span>
+                  </span>
+                ) : null}
                 {profile.username ? (
                   <span
                     className={styles.detailItem}

@@ -66,6 +66,7 @@ export function mapUserFromApi(raw: ApiRecord): User {
     bio: raw.bio ?? undefined,
     pronouns: raw.pronouns ?? undefined,
     showProBadge: Boolean(raw.showProBadge),
+    subscriptionBadge: raw.subscriptionBadge === "max" || raw.subscriptionBadge === "pro" ? raw.subscriptionBadge : null,
     hasActiveStories: Boolean(raw.hasActiveStories),
   };
 }
@@ -279,6 +280,7 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
     profession: raw.profession ?? undefined,
     genderIdentity: raw.genderIdentity ?? undefined,
     sexualOrientation: raw.sexualOrientation ?? undefined,
+    relationshipStatus: raw.relationshipStatus ?? undefined,
     socialLinks,
     interests,
     suggestions: Array.isArray(raw.suggestions) ? raw.suggestions : [],

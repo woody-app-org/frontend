@@ -63,7 +63,7 @@ export function CommunityAppearanceSection({
         Aparência
       </h3>
       <p className="text-xs text-[var(--woody-muted)] leading-relaxed">
-        Ícone e capa aparecem no topo da comunidade. Imagens são convertidas para visualização local (mock).
+        Como admin de uma comunidade, você pode personalizar sua aparência, regras e visibilidade.
       </p>
 
       <div className="overflow-hidden rounded-xl border border-[var(--woody-accent)]/15 bg-[var(--woody-nav)]/5">
@@ -104,6 +104,9 @@ export function CommunityAppearanceSection({
             </Button>
           ) : null}
         </div>
+        <p className="px-3 pb-3 text-xs text-[var(--woody-muted)]">
+          Tamanho recomendado: 1500 x 500px (proporção 3:1) · JPG ou PNG · até 2,5 MB.
+        </p>
       </div>
 
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
@@ -140,11 +143,16 @@ export function CommunityAppearanceSection({
             <ImagePlus className="size-4" />
           </Button>
         </div>
-        {avatarUrl ? (
-          <Button type="button" variant="ghost" size="sm" className="sm:mt-6" onClick={() => onAvatarChange(null)}>
-            Remover ícone
-          </Button>
-        ) : null}
+        <div className="flex flex-col items-center gap-1.5 sm:items-start sm:mt-1">
+          <p className="text-xs text-[var(--woody-muted)]">
+            Tamanho recomendado: 400 x 400px (quadrado) · JPG ou PNG · até 2,5 MB.
+          </p>
+          {avatarUrl ? (
+            <Button type="button" variant="ghost" size="sm" onClick={() => onAvatarChange(null)}>
+              Remover ícone
+            </Button>
+          ) : null}
+        </div>
       </div>
     </section>
   );
