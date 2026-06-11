@@ -116,6 +116,7 @@ export interface SharedPostPreviewDto {
 
 export interface SharedStoryPreviewDto {
   id?: string | null;
+  authorUserId?: number | null;
   authorDisplayName?: string | null;
   authorUsername?: string | null;
   authorProfilePic?: string | null;

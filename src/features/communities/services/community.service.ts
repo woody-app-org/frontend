@@ -512,6 +512,15 @@ export function getCommunityResolvedById(id: string): Community | undefined {
   return undefined;
 }
 
+/** Apaga permanentemente a comunidade e todo o seu conteúdo. Apenas a dona pode executar. */
+export async function deleteCommunity(communityId: string): Promise<void> {
+  try {
+    await api.delete(`/communities/${encodeURIComponent(communityId)}`);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível excluir a comunidade."));
+  }
+}
+
 export async function updateCommunity(
   _actorUserId: string,
   communitySlug: string,

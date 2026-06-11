@@ -1,6 +1,6 @@
 import { useCallback, useId, useRef, useState, type ChangeEvent, type RefObject } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ImageIcon, Loader2, Music, Palette, Trash2, Type, Video, Volume2, VolumeX, X } from "lucide-react";
+import { AtSign, ImageIcon, Loader2, Music, Palette, Trash2, Type, Video, Volume2, VolumeX, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
@@ -12,6 +12,7 @@ import { SharedPostPreviewCard } from "@/features/messages/components/SharedPost
 import type { SharedPostPreviewDto } from "@/features/messages/types";
 import { type DeezerTrack } from "../services/deezer.service";
 import { MusicPickerSheet } from "../components/MusicPickerSheet";
+import { MentionPickerSheet, type MentionPick } from "../components/MentionPickerSheet";
 import { StoryLayerItem } from "../components/StoryLayerItem";
 import { useLayerDrag } from "../hooks/useLayerDrag";
 import { STORY_MEDIA_UPLOAD_CONTEXT } from "../lib/storyUploadContext";
@@ -78,6 +79,7 @@ export function StoryEditorPage() {
 
   const [selectedTrack, setSelectedTrack] = useState<DeezerTrack | null>(null);
   const [musicPickerOpen, setMusicPickerOpen] = useState(false);
+  const [mentionPickerOpen, setMentionPickerOpen] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [backgroundVideoMuted, setBackgroundVideoMuted] = useState(true);
@@ -104,6 +106,29 @@ export function StoryEditorPage() {
     setLayers((prev) => [...prev, layer]);
     setSelectedLayerId(layer.id);
   }, [layers.length]);
+
+  const addMentionLayer = useCallback(
+    (pick: MentionPick) => {
+      if (layers.length >= MAX_LAYERS) {
+        setError(`Não é possível adicionar mais de ${MAX_LAYERS} elementos.`);
+        return;
+      }
+      const layer: StoryLayer = {
+        id: crypto.randomUUID(),
+        type: "mention",
+        x: 0.5,
+        y: 0.72,
+        width: 0.5,
+        height: 0.07,
+        rotation: 0,
+        text: `@${pick.username}`,
+        mentionUserId: pick.userId,
+      };
+      setLayers((prev) => [...prev, layer]);
+      setSelectedLayerId(layer.id);
+    },
+    [layers.length]
+  );
 
   const onLayerImagePick = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -536,6 +561,13 @@ export function StoryEditorPage() {
         <input id={layerVideoInputId} type="file" accept={STORY_VIDEO_ACCEPT} className="sr-only" onChange={onLayerVideoPick} />
         <ToolButton icon={Video} label="Vídeo" onClick={() => document.getElementById(layerVideoInputId)?.click()} />
 
+        <ToolButton
+          icon={AtSign}
+          label="Mencionar"
+          onClick={() => setMentionPickerOpen(true)}
+          active={layers.some((l) => l.type === "mention")}
+        />
+
         <ToolButton icon={Music} label="Música" onClick={() => setMusicPickerOpen(true)} active={!!selectedTrack} />
 
         <ToolButton
@@ -567,6 +599,7 @@ export function StoryEditorPage() {
       </div>
 
       <MusicPickerSheet open={musicPickerOpen} onOpenChange={setMusicPickerOpen} selected={selectedTrack} onSelect={setSelectedTrack} />
+      <MentionPickerSheet open={mentionPickerOpen} onOpenChange={setMentionPickerOpen} onSelect={addMentionLayer} />
     </div>
   );
 }

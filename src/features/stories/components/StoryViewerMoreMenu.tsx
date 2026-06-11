@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { Download, Loader2, MoreVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,45 +10,70 @@ import {
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { deleteStory } from "../services/stories.service";
+import { downloadStoryWithWatermark } from "../lib/storyDownload";
+import type { Story } from "../types";
 import { DeleteStoryConfirmationDialog } from "./DeleteStoryConfirmationDialog";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 export interface StoryViewerMoreMenuProps {
-  storyId: string;
+  story: Story;
+  /** Só a autora pode excluir; baixar está disponível para todas. */
+  canDelete: boolean;
   disabled?: boolean;
   onDeleted: () => void;
-  /** Pausa o progresso do story enquanto o menu/confirmação está aberto. */
+  /** Pausa o progresso do story enquanto o menu/confirmação/download está ativo. */
   onInteractionChange?: (blocked: boolean) => void;
 }
 
 export function StoryViewerMoreMenu({
-  storyId,
+  story,
+  canDelete,
   disabled = false,
   onDeleted,
   onInteractionChange,
 }: StoryViewerMoreMenuProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
-    onInteractionChange?.(confirmOpen || isDeleting);
-  }, [confirmOpen, isDeleting, onInteractionChange]);
+    onInteractionChange?.(confirmOpen || isDeleting || isDownloading);
+  }, [confirmOpen, isDeleting, isDownloading, onInteractionChange]);
 
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteStory(storyId);
+      await deleteStory(story.id);
       setConfirmOpen(false);
-      showSuccessToast("Story excluído.", { id: `woody-story-deleted-${storyId}` });
+      showSuccessToast("Story excluído.", { id: `woody-story-deleted-${story.id}` });
       onDeleted();
     } catch (e) {
       showErrorToast(e instanceof Error ? e.message : "Não foi possível excluir este story.", {
-        id: `woody-story-delete-err-${storyId}`,
+        id: `woody-story-delete-err-${story.id}`,
       });
     } finally {
       setIsDeleting(false);
     }
   };
+
+  const handleDownload = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    try {
+      await downloadStoryWithWatermark(story);
+      showSuccessToast("Story baixado.", { id: `woody-story-download-${story.id}` });
+    } catch (e) {
+      showErrorToast(e instanceof Error ? e.message : "Não foi possível baixar este story.", {
+        id: `woody-story-download-err-${story.id}`,
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const canDownload = story.mediaType !== "shared_post";
+
+  if (!canDelete && !canDownload) return null;
 
   return (
     <>
@@ -78,19 +103,40 @@ export function StoryViewerMoreMenu({
           )}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          <DropdownMenuItem
-            variant="destructive"
-            className="focus:bg-red-500/15 focus:text-red-300"
-            disabled={isDeleting}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setConfirmOpen(true);
-            }}
-          >
-            <Trash2 className="mr-2 size-4" aria-hidden />
-            Excluir story
-          </DropdownMenuItem>
+          {canDownload ? (
+            <DropdownMenuItem
+              className="focus:bg-white/10 focus:text-white"
+              disabled={isDownloading}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                void handleDownload();
+              }}
+            >
+              {isDownloading ? (
+                <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+              ) : (
+                <Download className="mr-2 size-4" aria-hidden />
+              )}
+              {isDownloading ? "Preparando…" : "Baixar story"}
+            </DropdownMenuItem>
+          ) : null}
+
+          {canDelete ? (
+            <DropdownMenuItem
+              variant="destructive"
+              className="focus:bg-red-500/15 focus:text-red-300"
+              disabled={isDeleting}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setConfirmOpen(true);
+              }}
+            >
+              <Trash2 className="mr-2 size-4" aria-hidden />
+              Excluir story
+            </DropdownMenuItem>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
 

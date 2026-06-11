@@ -7,7 +7,7 @@
 } from "react";
 import { Link } from "react-router-dom";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
-import { ChevronLeft, ChevronRight, Eye, Music, Send, Volume2, VolumeX, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Forward, Music, Send, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,8 @@ import {
   STORY_STATIC_DURATION_MS,
 } from "../lib/storyUtils";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { fetchUserStories, markStoryViewed } from "../services/stories.service";
+import { fetchUserStories, markStoryViewed, repostStory } from "../services/stories.service";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { resolveDeezerPreviewUrl } from "../services/deezer.service";
 import { dispatchStoriesChanged } from "../lib/storyEvents";
 import { useStoryLikeToggle } from "../hooks/useStoryLikeToggle";
@@ -38,6 +39,7 @@ import { useStorySendMessage } from "../hooks/useStorySendMessage";
 import { StoryViewerSlide, type StoryViewerSlideHandle } from "./StoryViewerSlide";
 import { StoryViewerMoreMenu } from "./StoryViewerMoreMenu";
 import { StoryViewersSheet } from "./StoryViewersSheet";
+import { StoryShareDialog } from "./StoryShareDialog";
 
 function formatStoryCount(count: number): string {
   if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
@@ -73,6 +75,7 @@ export function StoryViewerModal({
   const [menuBlocked, setMenuBlocked] = useState(false);
   const [composerActive, setComposerActive] = useState(false);
   const [viewersOpen, setViewersOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const slideRef = useRef<StoryViewerSlideHandle>(null);
   const storiesRef = useRef<Story[]>([]);
@@ -87,7 +90,7 @@ export function StoryViewerModal({
   const [videoSoundOn, setVideoSoundOn] = useState(true);
 
   const currentStory = stories[currentIndex] ?? null;
-  const isPaused = paused || holding || menuBlocked || composerActive || viewersOpen;
+  const isPaused = paused || holding || menuBlocked || composerActive || viewersOpen || shareOpen;
   const hasPrev = currentIndex > 0;
 
   const canDeleteCurrent = Boolean(
@@ -98,6 +101,33 @@ export function StoryViewerModal({
   );
 
   const isOwnCurrentStory = canDeleteCurrent;
+
+  const [isReposting, setIsReposting] = useState(false);
+
+  // Mencionada neste story → pode repostá-lo no próprio story (modelo do Instagram).
+  const isMentionedInCurrent = Boolean(
+    authUser?.id &&
+      !isOwnCurrentStory &&
+      (currentStory?.layers ?? []).some(
+        (l) => l.type === "mention" && l.mentionUserId != null && String(l.mentionUserId) === String(authUser.id)
+      )
+  );
+
+  const handleRepost = useCallback(async () => {
+    if (!currentStory || isReposting) return;
+    setIsReposting(true);
+    try {
+      await repostStory(currentStory.id);
+      dispatchStoriesChanged();
+      showSuccessToast("Adicionado ao seu story.", { id: `woody-story-repost-${currentStory.id}` });
+    } catch (e) {
+      showErrorToast(e instanceof Error ? e.message : "Não foi possível repostar este story.", {
+        id: `woody-story-repost-err-${currentStory.id}`,
+      });
+    } finally {
+      setIsReposting(false);
+    }
+  }, [currentStory, isReposting]);
 
   const { tapPhase, triggerTap } = usePostLikeTapAnimation();
   const { toggleStoryLike, isStoryLikePending } = useStoryLikeToggle(setStories);
@@ -117,6 +147,7 @@ export function StoryViewerModal({
     setMenuBlocked(false);
     setComposerActive(false);
     setViewersOpen(false);
+    setShareOpen(false);
     markedViewRef.current.clear();
   }, []);
 
@@ -500,9 +531,10 @@ export function StoryViewerModal({
                     )}
                   </button>
                 ) : null}
-                {canDeleteCurrent && currentStory ? (
+                {currentStory ? (
                   <StoryViewerMoreMenu
-                    storyId={currentStory.id}
+                    story={currentStory}
+                    canDelete={canDeleteCurrent}
                     onDeleted={handleCurrentStoryDeleted}
                     onInteractionChange={setMenuBlocked}
                   />
@@ -522,7 +554,8 @@ export function StoryViewerModal({
             </header>
 
             <div className="relative flex min-h-0 flex-1 flex-col">
-              <div className="relative z-0 min-h-0 flex-1">
+              {/* Sem z-index próprio: as pills de menção (z-30) precisam ficar acima das tap-zones (z-20). */}
+              <div className="relative min-h-0 flex-1">
                 {stories.map((story, i) => (
                   <div
                     key={story.id}
@@ -609,6 +642,27 @@ export function StoryViewerModal({
               ) : null}
             </div>
 
+            {currentStory && isMentionedInCurrent ? (
+              <div className="relative z-20 flex shrink-0 justify-center bg-black/60 px-3 pt-2 backdrop-blur-sm sm:px-4">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void handleRepost();
+                  }}
+                  disabled={isReposting}
+                  className={cn(
+                    "flex h-9 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black transition-colors",
+                    "hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60",
+                    woodyFocus.ring
+                  )}
+                >
+                  <Sparkles className="size-4" aria-hidden />
+                  {isReposting ? "Adicionando…" : "Adicionar ao seu story"}
+                </button>
+              </div>
+            ) : null}
+
             {currentStory && !isOwnCurrentStory && authUser ? (
               <div className="relative z-20 flex shrink-0 items-center gap-2 border-t border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm sm:px-4">
                 <form
@@ -644,6 +698,21 @@ export function StoryViewerModal({
 
                 <button
                   type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShareOpen(true);
+                  }}
+                  aria-label="Compartilhar story"
+                  className={cn(
+                    "flex size-10 shrink-0 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur-sm transition-colors hover:bg-white/20",
+                    woodyFocus.ring
+                  )}
+                >
+                  <Forward className="size-[1.15em]" aria-hidden />
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => {
                     if (isStoryLikePending(currentStory.id)) return;
                     triggerTap(!currentStory.likedByCurrentUser);
@@ -674,7 +743,23 @@ export function StoryViewerModal({
             ) : null}
 
             {currentStory && isOwnCurrentStory ? (
-              <div className="relative z-20 flex shrink-0 items-center border-t border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm sm:px-4">
+              <div className="relative z-20 flex shrink-0 items-center gap-2 border-t border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm sm:px-4">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShareOpen(true);
+                  }}
+                  aria-label="Compartilhar story"
+                  className={cn(
+                    "flex h-10 items-center gap-2 rounded-full bg-white/12 px-3 text-sm font-medium text-white backdrop-blur-sm transition-colors",
+                    "hover:bg-white/20",
+                    woodyFocus.ring
+                  )}
+                >
+                  <Forward className="size-[1.05em]" aria-hidden />
+                  Compartilhar
+                </button>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -697,6 +782,8 @@ export function StoryViewerModal({
           </>
         ) : null}
       </DialogContent>
+
+      <StoryShareDialog story={currentStory} open={shareOpen} onOpenChange={setShareOpen} />
 
       {currentStory && isOwnCurrentStory ? (
         <StoryViewersSheet

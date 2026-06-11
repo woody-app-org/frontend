@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LifeBuoy, LogOut, ScrollText, Sparkles, User, UserX } from "lucide-react";
+import { LifeBuoy, LogOut, ScrollText, Sparkles, Trash2, User, UserX } from "lucide-react";
 import { BlockedUsersDialog } from "@/features/users/components/BlockedUsersDialog";
+import { DeleteAccountDialog } from "@/features/auth/components/DeleteAccountDialog";
+import { deleteOwnAccount } from "@/features/auth/services/auth.service";
+import { showErrorToast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -40,6 +43,8 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
   const [logoutPending, setLogoutPending] = useState(false);
   const [menuAvatarFailed, setMenuAvatarFailed] = useState(false);
   const [blockedUsersOpen, setBlockedUsersOpen] = useState(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [deleteAccountPending, setDeleteAccountPending] = useState(false);
 
   useEffect(() => {
     setMenuAvatarFailed(false);
@@ -165,6 +170,13 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
             <UserX className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
             Usuárias bloqueadas
           </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600 dark:text-red-400 dark:focus:bg-red-950"
+            onClick={() => setDeleteAccountOpen(true)}
+          >
+            <Trash2 className="size-4 opacity-80" aria-hidden />
+            Excluir conta
+          </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           <DropdownMenuItem
             className="cursor-pointer text-[var(--woody-muted)] focus:bg-[var(--woody-nav)]/10 focus:text-[var(--woody-text)]"
@@ -177,6 +189,24 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
       </DropdownMenu>
 
       <BlockedUsersDialog open={blockedUsersOpen} onOpenChange={setBlockedUsersOpen} />
+      <DeleteAccountDialog
+        open={deleteAccountOpen}
+        onOpenChange={setDeleteAccountOpen}
+        username={user.username}
+        isPending={deleteAccountPending}
+        onConfirm={async () => {
+          setDeleteAccountPending(true);
+          try {
+            await deleteOwnAccount(user.username);
+            setDeleteAccountOpen(false);
+            navigate("/auth", { replace: true });
+          } catch (e) {
+            showErrorToast(e instanceof Error ? e.message : "Não foi possível excluir a conta.");
+          } finally {
+            setDeleteAccountPending(false);
+          }
+        }}
+      />
       <LogoutConfirmationDialog
         open={logoutOpen}
         onOpenChange={setLogoutOpen}

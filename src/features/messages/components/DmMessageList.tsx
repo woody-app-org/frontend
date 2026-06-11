@@ -9,6 +9,7 @@ export interface DmMessageListProps {
   onSaveEdit: (messageId: number, body: string) => Promise<void>;
   onDelete: (messageId: number) => Promise<void>;
   onMutationError: (message: string) => void;
+  onOpenStory?: (authorUserId: number) => void;
   scrollContainerRef?: RefObject<HTMLDivElement | null>;
 }
 
@@ -18,6 +19,7 @@ export function DmMessageList({
   onSaveEdit,
   onDelete,
   onMutationError,
+  onOpenStory,
   scrollContainerRef,
 }: DmMessageListProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -45,6 +47,7 @@ export function DmMessageList({
             onSaveEdit={onSaveEdit}
             onDelete={onDelete}
             onMutationError={onMutationError}
+            onOpenStory={onOpenStory}
           />
         ))}
         <div ref={bottomRef} className="h-1 shrink-0" aria-hidden />

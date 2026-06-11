@@ -147,6 +147,9 @@ const AdminReportsListPage = lazy(() =>
 const AdminReportDetailPage = lazy(() =>
   import("@/features/admin/reports/pages/AdminReportDetailPage").then(m => ({ default: m.AdminReportDetailPage }))
 );
+const AdminUsersListPage = lazy(() =>
+  import("@/features/admin/users/pages/AdminUsersListPage").then(m => ({ default: m.AdminUsersListPage }))
+);
 const SupportPage = lazy(() =>
   import("@/features/support/pages/SupportPage").then(m => ({ default: m.SupportPage }))
 );
@@ -431,6 +434,14 @@ export const router = createBrowserRouter([
         element: (
           <SuperAdminRoute>
             <LazyRouteSuspense><AdminVerificationDetailPage /></LazyRouteSuspense>
+          </SuperAdminRoute>
+        ),
+      },
+      {
+        path: "admin/users",
+        element: (
+          <SuperAdminRoute>
+            <LazyRouteSuspense><AdminUsersListPage /></LazyRouteSuspense>
           </SuperAdminRoute>
         ),
       },

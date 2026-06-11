@@ -7,6 +7,7 @@ import type { SharedStoryPreviewDto } from "@/features/messages/types";
 export interface SharedStoryPreviewCardProps {
   preview: SharedStoryPreviewDto;
   className?: string;
+  onOpenStory?: (authorUserId: number) => void;
 }
 
 function authorInitials(name: string): string {
@@ -16,7 +17,7 @@ function authorInitials(name: string): string {
 }
 
 /** Mirror compacto de `SharedPostPreviewCard` para stories — usado quando se responde a um story por DM. */
-export function SharedStoryPreviewCard({ preview, className }: SharedStoryPreviewCardProps) {
+export function SharedStoryPreviewCard({ preview, className, onOpenStory }: SharedStoryPreviewCardProps) {
   if (preview.isUnavailable) {
     return (
       <div
@@ -38,14 +39,10 @@ export function SharedStoryPreviewCard({ preview, className }: SharedStoryPrevie
   // só entra como último recurso, com a miniatura como pôster para não ficar em branco.
   const imagePreviewUrl = isVideo ? thumbnailUrl ?? null : mediaUrl ?? thumbnailUrl ?? null;
   const videoSrc = isVideo ? mediaUrl : null;
+  const canOpen = Boolean(onOpenStory && preview.authorUserId);
 
-  return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-xl border border-[var(--woody-divider)] bg-[var(--woody-bg)]/50 text-left",
-        className
-      )}
-    >
+  const content = (
+    <>
       <div className="flex items-center gap-2 border-b border-[var(--woody-divider)]/80 px-3 py-2">
         <Avatar size="sm" className="ring-1 ring-[var(--woody-divider)]">
           {preview.authorProfilePic ? (
@@ -78,19 +75,58 @@ export function SharedStoryPreviewCard({ preview, className }: SharedStoryPrevie
             ) : null}
           </>
         ) : videoSrc ? (
-          <video
-            src={videoSrc}
-            className="size-full object-cover"
-            muted
-            playsInline
-            preload="metadata"
-          />
+          <>
+            <video
+              src={videoSrc}
+              className="size-full object-cover"
+              muted
+              playsInline
+              preload="auto"
+              // Sem thumbnailUrl, navegadores deixam o frame em preto até dar play;
+              // forçamos a busca de um frame inicial para usar como capa.
+              onLoadedData={(e) => {
+                const v = e.currentTarget;
+                if (v.currentTime === 0) v.currentTime = 0.05;
+              }}
+            />
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15">
+              <span className="flex size-9 items-center justify-center rounded-full bg-black/45 text-white">
+                <Play className="size-4 translate-x-px" fill="currentColor" aria-hidden />
+              </span>
+            </span>
+          </>
         ) : preview.textPreview ? (
           <p className="flex size-full items-center justify-center break-words px-4 text-center text-sm font-medium text-white">
             {preview.textPreview}
           </p>
         ) : null}
       </div>
+    </>
+  );
+
+  if (canOpen) {
+    return (
+      <button
+        type="button"
+        onClick={() => onOpenStory!(preview.authorUserId!)}
+        className={cn(
+          "block w-full overflow-hidden rounded-xl border border-[var(--woody-divider)] bg-[var(--woody-bg)]/50 text-left transition-opacity hover:opacity-90",
+          className
+        )}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border border-[var(--woody-divider)] bg-[var(--woody-bg)]/50 text-left",
+        className
+      )}
+    >
+      {content}
     </div>
   );
 }

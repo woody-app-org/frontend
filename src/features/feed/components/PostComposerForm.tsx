@@ -9,10 +9,11 @@ import { cn } from "@/lib/utils";
 import type { Community, Post, PostPublicationContext, User } from "@/domain/types";
 import { fetchMyCommunitiesForComposer } from "@/features/communities/services/community.service";
 import {
-  POST_COMPOSER_CONTENT_MAX_LENGTH,
   createPost,
+  getPostContentMaxLength,
   type CreatePostMediaAttachmentPayload,
 } from "../services/post.service";
+import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 import { hashtagsToApiTags } from "../lib/postComposerHashtags";
 import { mediaTypeFromUpload, uploadImageMedia, uploadVideoMedia } from "@/lib/mediaUpload";
 import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
@@ -132,6 +133,9 @@ export function PostComposerForm({
   const videoInputRef = useRef<HTMLInputElement>(null);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const isModalEmbed = embedMode === "modal";
+
+  const { isProUser } = useSubscriptionCapabilities();
+  const contentMaxLength = getPostContentMaxLength(isProUser);
 
   const [publishTarget, setPublishTarget] = useState<PostPublicationContext>(() => {
     if (forcedCommunity) return "community";
@@ -479,8 +483,8 @@ export function PostComposerForm({
       setFormError("Escreve algo ou anexa uma imagem ou vídeo.");
       return;
     }
-    if (text.length > POST_COMPOSER_CONTENT_MAX_LENGTH) {
-      setFormError(`O texto pode ter no máximo ${POST_COMPOSER_CONTENT_MAX_LENGTH} caracteres.`);
+    if (text.length > contentMaxLength) {
+      setFormError(`O texto pode ter no máximo ${contentMaxLength} caracteres.`);
       return;
     }
 
@@ -561,7 +565,8 @@ export function PostComposerForm({
           tags: tags.length ? tags : undefined,
           mediaAttachments,
         },
-        viewerId
+        viewerId,
+        contentMaxLength
       );
 
       setContent("");
@@ -598,7 +603,7 @@ export function PostComposerForm({
   const fieldsDisabled = submitting || (isCommunityFlow && !forcedCommunity && loadingCommunities);
 
   const submitDisabled =
-    submitting || communityBlocking || (!hasText && !hasMediaQueued) || content.length > POST_COMPOSER_CONTENT_MAX_LENGTH;
+    submitting || communityBlocking || (!hasText && !hasMediaQueued) || content.length > contentMaxLength;
 
   const mainPlaceholder = "Publique uma foto, um pensamento, um caos";
 
@@ -768,7 +773,7 @@ export function PostComposerForm({
                   }}
                   disabled={fieldsDisabled}
                   className={cn(textareaSocial, textareaSocialModal)}
-                  maxLength={POST_COMPOSER_CONTENT_MAX_LENGTH}
+                  maxLength={contentMaxLength}
                   rows={1}
                   aria-label="Texto da publicação"
                 />
@@ -788,7 +793,7 @@ export function PostComposerForm({
                   }}
                   disabled={fieldsDisabled}
                   className={textareaSocial}
-                  maxLength={POST_COMPOSER_CONTENT_MAX_LENGTH}
+                  maxLength={contentMaxLength}
                   rows={1}
                   aria-label="Texto da publicação"
                 />
@@ -824,7 +829,7 @@ export function PostComposerForm({
               <p className="text-[0.65rem] leading-snug text-[var(--woody-muted)]/85">
                 Até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos ({formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)} cada) ou 1
                 vídeo até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} / {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s ·{" "}
-                {content.length}/{POST_COMPOSER_CONTENT_MAX_LENGTH}
+                {content.length}/{contentMaxLength}
                 <br />
                 Escolha o melhor formato da sua mídia.
               </p>
@@ -834,7 +839,7 @@ export function PostComposerForm({
                 Limite: até {POST_COMPOSER_IMAGES_MAX_COUNT} fotos ({formatFileSize(POST_COMPOSER_IMAGE_MAX_BYTES)}{" "}
                 cada) ou 1 vídeo até {formatFileSize(POST_COMPOSER_VIDEO_MAX_BYTES)} /{" "}
                 {POST_COMPOSER_VIDEO_MAX_DURATION_SEC}s. Caracteres: {content.length} de{" "}
-                {POST_COMPOSER_CONTENT_MAX_LENGTH}.
+                {contentMaxLength}.
               </p>
             ) : null}
           </div>
@@ -917,7 +922,7 @@ export function PostComposerForm({
 
         {/* Contador de caracteres — visível no modal quando há texto */}
         {isModalEmbed && content.trim().length > 0 && (() => {
-          const charsLeft = POST_COMPOSER_CONTENT_MAX_LENGTH - content.trim().length;
+          const charsLeft = contentMaxLength - content.trim().length;
           return (
             <span
               className={cn(

@@ -1,5 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, type RefCallback } from "react";
+import { Link } from "react-router-dom";
 import { Loader2, Pause } from "lucide-react";
+import { profilePath } from "@/features/profile/lib/profilePaths";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { SharedPostPreviewCard } from "@/features/messages/components/SharedPostPreviewCard";
@@ -48,6 +50,25 @@ function StoryLayerRenderer({
         style={{ ...style, color: layer.color ?? "#ffffff" }}
       >
         {layer.text}
+      </div>
+    );
+  }
+
+  if (layer.type === "mention") {
+    const username = (layer.text ?? "").replace(/^@/, "");
+    return (
+      <div className="absolute flex items-center justify-center" style={style}>
+        <Link
+          to={username ? profilePath(username) : "#"}
+          className={cn(
+            "pointer-events-auto z-30 inline-flex max-w-full items-center truncate rounded-full",
+            "bg-white/15 px-3.5 py-1.5 text-sm font-semibold uppercase tracking-wide text-white",
+            "shadow-[0_2px_10px_rgba(0,0,0,0.35)] backdrop-blur-sm transition-colors hover:bg-white/25"
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          @{username}
+        </Link>
       </div>
     );
   }

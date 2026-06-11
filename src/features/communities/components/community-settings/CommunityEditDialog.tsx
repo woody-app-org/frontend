@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Loader2, Shield } from "lucide-react";
+import { Loader2, Shield, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,12 +10,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyContext, woodyDialogScroll, woodyFocus } from "@/lib/woody-ui";
 import type { Community, CommunityCategory, CommunityVisibility } from "@/domain/types";
-import { updateCommunity, validateCommunityUpdatePayload } from "../../services/community.service";
+import { deleteCommunity, updateCommunity, validateCommunityUpdatePayload } from "../../services/community.service";
 import { CommunityAppearanceSection } from "./CommunityAppearanceSection";
 import { CommunityBasicInfoSection } from "./CommunityBasicInfoSection";
 import { CommunityTagsAndRulesSection } from "./CommunityTagsAndRulesSection";
 import { CommunityAccessSection } from "./CommunityAccessSection";
-import { showSuccessToast } from "@/lib/toast";
+import { DeleteCommunityDialog } from "./DeleteCommunityDialog";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 const fieldClass =
   "rounded-xl border-[var(--woody-accent)]/25 bg-[var(--woody-bg)] text-[var(--woody-text)] placeholder:text-[var(--woody-muted)] " +
@@ -42,6 +43,8 @@ export interface CommunityEditDialogProps {
   onSaved: (community: Community) => void;
   /** Viewer tem plano Max pessoal ativo e é dona → pode colocar em modo privado. Padrão: false. */
   canSetPrivate?: boolean;
+  /** Chamado após a comunidade ser excluída com sucesso (apenas dona). */
+  onDeleted?: () => void;
 }
 
 export function CommunityEditDialog({
@@ -49,8 +52,10 @@ export function CommunityEditDialog({
   onOpenChange,
   community,
   viewerId,
+  adminRoleLabel,
   onSaved,
   canSetPrivate = false,
+  onDeleted,
 }: CommunityEditDialogProps) {
   const formId = useId();
   const [name, setName] = useState(community.name);
@@ -65,6 +70,8 @@ export function CommunityEditDialog({
   const [fileError, setFileError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const communityRef = useRef(community);
   communityRef.current = community;
@@ -202,6 +209,25 @@ export function CommunityEditDialog({
             canSetPrivate={canSetPrivate}
           />
 
+          {adminRoleLabel === "dona" ? (
+            <div className="space-y-2 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/40">
+              <p className="text-sm font-semibold text-red-700 dark:text-red-400">Zona de perigo</p>
+              <p className="text-sm text-red-700/80 dark:text-red-400/80">
+                Excluir a comunidade remove permanentemente todas as publicações, comentários e
+                membros. Esta ação não pode ser desfeita.
+              </p>
+              <Button
+                type="button"
+                variant="destructive"
+                className={cn(woodyFocus.ring, "min-h-10")}
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2 className="size-4" aria-hidden />
+                Excluir comunidade
+              </Button>
+            </div>
+          ) : null}
+
           {fileError ? (
             <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
               {fileError}
@@ -246,6 +272,27 @@ export function CommunityEditDialog({
           </div>
         </form>
       </DialogContent>
+
+      <DeleteCommunityDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        communityName={community.name}
+        isPending={isDeleting}
+        onConfirm={async () => {
+          setIsDeleting(true);
+          try {
+            await deleteCommunity(community.id);
+            showSuccessToast("Comunidade excluída.");
+            setDeleteOpen(false);
+            onOpenChange(false);
+            onDeleted?.();
+          } catch (e) {
+            showErrorToast(e instanceof Error ? e.message : "Não foi possível excluir a comunidade.");
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+      />
     </Dialog>
   );
 }

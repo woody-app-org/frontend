@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import type { PostMediaAttachment } from "@/domain/mediaAttachment";
 import { PostAdaptiveStill } from "./PostAdaptiveStill";
 import { VideoPostPlayer } from "./VideoPostPlayer";
+import { preventMediaContextMenu } from "./mediaProtection";
 
 export type PostMediaRenderVariant = "feed" | "detail" | "message";
 
@@ -39,12 +40,15 @@ function GridVideoThumb({
     <video
       src={resolvedSrc}
       poster={resolvedPoster}
-      className={cn(gridMedia, className)}
+      className={cn(gridMedia, "protected-media", className)}
       muted
       playsInline
       preload="metadata"
       aria-hidden
       tabIndex={-1}
+      controlsList="nodownload noremoteplayback"
+      disablePictureInPicture
+      onContextMenu={preventMediaContextMenu}
     />
   );
 }
@@ -72,9 +76,11 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
         <img
           src={url}
           alt=""
-          className={cn("absolute inset-0 m-auto max-h-[85%] max-w-[85%] object-contain", className)}
+          className={cn("absolute inset-0 m-auto max-h-[85%] max-w-[85%] object-contain protected-media", className)}
           loading="lazy"
           decoding="async"
+          draggable={false}
+          onContextMenu={preventMediaContextMenu}
         />
       );
     }
@@ -82,9 +88,11 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
       <img
         src={url}
         alt=""
-        className={cn("absolute inset-0 size-full object-cover object-center", className)}
+        className={cn("absolute inset-0 size-full object-cover object-center protected-media", className)}
         loading="lazy"
         decoding="async"
+        draggable={false}
+        onContextMenu={preventMediaContextMenu}
       />
     );
   }
@@ -121,11 +129,14 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
         alt=""
         className={cn(
           gridMedia,
+          "protected-media",
           item.mediaType === "sticker" && "object-contain p-1.5",
           className
         )}
         loading="lazy"
         decoding="async"
+        draggable={false}
+        onContextMenu={preventMediaContextMenu}
       />
     );
   }
@@ -135,9 +146,11 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
       <img
         src={resolvePublicMediaUrl(item.url)}
         alt=""
-        className={cn(lightboxImg, item.mediaType === "sticker" && "object-contain p-4", className)}
+        className={cn(lightboxImg, "protected-media", item.mediaType === "sticker" && "object-contain p-4", className)}
         loading="eager"
         decoding="async"
+        draggable={false}
+        onContextMenu={preventMediaContextMenu}
       />
     );
   }
@@ -151,11 +164,13 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
           src={src}
           alt=""
           className={cn(
-            "mx-auto h-auto w-full max-w-[min(100%,min(11rem,62vw))] max-h-24 object-contain sm:max-h-28",
+            "mx-auto h-auto w-full max-w-[min(100%,min(11rem,62vw))] max-h-24 object-contain sm:max-h-28 protected-media",
             className
           )}
           loading="lazy"
           decoding="async"
+          draggable={false}
+          onContextMenu={preventMediaContextMenu}
         />
       );
     }
@@ -165,11 +180,13 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
           src={src}
           alt=""
           className={cn(
-            "mx-auto h-auto w-full max-w-[min(100%,min(20rem,88vw))] max-h-44 object-contain sm:max-h-48",
+            "mx-auto h-auto w-full max-w-[min(100%,min(20rem,88vw))] max-h-44 object-contain sm:max-h-48 protected-media",
             className
           )}
           loading="lazy"
           decoding="async"
+          draggable={false}
+          onContextMenu={preventMediaContextMenu}
         />
       );
     }
@@ -177,9 +194,11 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
       <img
         src={src}
         alt=""
-        className={cn(heroImgMessage, className)}
+        className={cn(heroImgMessage, "protected-media", className)}
         loading="lazy"
         decoding="async"
+        draggable={false}
+        onContextMenu={preventMediaContextMenu}
       />
     );
   }
@@ -189,9 +208,11 @@ export function PostMediaItem({ item, variant, displayMode = "hero", className }
       <img
         src={resolvePublicMediaUrl(item.url)}
         alt=""
-        className={cn("mx-auto max-h-48 bg-transparent object-contain", className)}
+        className={cn("mx-auto max-h-48 bg-transparent object-contain protected-media", className)}
         loading="lazy"
         decoding="async"
+        draggable={false}
+        onContextMenu={preventMediaContextMenu}
       />
     );
   }

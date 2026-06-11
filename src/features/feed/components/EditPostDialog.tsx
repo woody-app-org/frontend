@@ -12,10 +12,11 @@ import { cn } from "@/lib/utils";
 import type { Post } from "@/domain/types";
 import { updatePostMock } from "@/domain/services/contentModerationMock.service";
 import { showSuccessToast } from "@/lib/toast";
-import { POST_COMPOSER_CONTENT_MAX_LENGTH } from "../services/post.service";
+import { getPostContentMaxLength } from "../services/post.service";
 import { HashtagChipsField } from "./HashtagChipsField";
 import { hashtagsToApiTags } from "../lib/postComposerHashtags";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { useSubscriptionCapabilities } from "@/features/subscription/useSubscriptionCapabilities";
 
 export interface EditPostDialogProps {
   open: boolean;
@@ -36,6 +37,8 @@ export function EditPostDialog({ open, onOpenChange, post, viewerId, onSaved }: 
   const formId = useId();
   const viewer = useCurrentUser();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isProUser } = useSubscriptionCapabilities();
+  const contentMaxLength = getPostContentMaxLength(isProUser);
 
   const [content, setContent] = useState(post.content);
   const [hashtags, setHashtags] = useState<string[]>(post.tags ?? []);
@@ -64,8 +67,8 @@ export function EditPostDialog({ open, onOpenChange, post, viewerId, onSaved }: 
       setError("A publicação precisa de texto ou de mídia.");
       return;
     }
-    if (text.length > POST_COMPOSER_CONTENT_MAX_LENGTH) {
-      setError(`O texto pode ter no máximo ${POST_COMPOSER_CONTENT_MAX_LENGTH} caracteres.`);
+    if (text.length > contentMaxLength) {
+      setError(`O texto pode ter no máximo ${contentMaxLength} caracteres.`);
       return;
     }
 
@@ -86,9 +89,9 @@ export function EditPostDialog({ open, onOpenChange, post, viewerId, onSaved }: 
   };
 
   const trimmed = content.trim();
-  const charsLeft = POST_COMPOSER_CONTENT_MAX_LENGTH - trimmed.length;
+  const charsLeft = contentMaxLength - trimmed.length;
   const canSave =
-    (trimmed.length > 0 || hasMedia) && !isSaving && trimmed.length <= POST_COMPOSER_CONTENT_MAX_LENGTH;
+    (trimmed.length > 0 || hasMedia) && !isSaving && trimmed.length <= contentMaxLength;
 
   const viewerInitials = (viewer?.username ?? viewer?.name ?? "?").slice(0, 2).toUpperCase();
 
@@ -132,7 +135,7 @@ export function EditPostDialog({ open, onOpenChange, post, viewerId, onSaved }: 
               onChange={(e) => setContent(e.target.value)}
               placeholder="O que você quer dizer?"
               disabled={isSaving}
-              maxLength={POST_COMPOSER_CONTENT_MAX_LENGTH}
+              maxLength={contentMaxLength}
               className={cn(
                 "field-sizing-auto min-h-[6rem] w-full resize-none rounded-none border-0 bg-transparent py-1 pl-0 pr-0.5",
                 "text-[1.1rem] leading-[1.5] text-[var(--woody-text)]",

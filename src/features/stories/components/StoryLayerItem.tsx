@@ -48,7 +48,13 @@ export function StoryLayerItem({ layer, canvasRef, selected, muted = true, onSel
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
     >
-      {layer.type === "text" ? (
+      {layer.type === "mention" ? (
+        <div className="flex h-full w-full cursor-grab items-center justify-center active:cursor-grabbing">
+          <span className="inline-flex max-w-full items-center truncate rounded-full bg-white/15 px-3.5 py-1.5 text-sm font-semibold uppercase tracking-wide text-white shadow-[0_2px_10px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+            {layer.text || "@menção"}
+          </span>
+        </div>
+      ) : layer.type === "text" ? (
         <div
           className={cn(
             "flex h-full w-full cursor-grab items-center justify-center whitespace-pre-wrap break-words text-center font-semibold leading-snug active:cursor-grabbing",

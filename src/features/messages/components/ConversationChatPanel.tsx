@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { profilePathForUser } from "@/features/profile/lib/profilePaths";
+import { StoryViewerModal, useStoryViewerState } from "@/features/stories";
 import type { ConversationPeerPreviewDto, MessageResponseDto, OutgoingMessageAttachment } from "../types";
 import { DmComposer } from "./DmComposer";
 import { DmMessageList } from "./DmMessageList";
@@ -54,6 +55,11 @@ export function ConversationChatPanel({
   const [mutationHint, setMutationHint] = useState<string | null>(null);
   const composerBlocked = loadingMessages || Boolean(messagesLoadError);
   const messagesScrollRef = useRef<HTMLDivElement | null>(null);
+  const storyViewer = useStoryViewerState();
+  const handleOpenStory = useCallback(
+    (authorUserId: number) => storyViewer.open(String(authorUserId)),
+    [storyViewer]
+  );
 
   const scrollMessagesToBottom = useCallback(() => {
     const el = messagesScrollRef.current;
@@ -191,9 +197,12 @@ export function ConversationChatPanel({
           onSaveEdit={onEditMessage}
           onDelete={onDeleteMessage}
           onMutationError={(msg) => setMutationHint(msg)}
+          onOpenStory={handleOpenStory}
           scrollContainerRef={messagesScrollRef}
         />
       )}
+
+      <StoryViewerModal {...storyViewer.modalProps} />
 
       <DmComposer
         conversationId={conversationId}

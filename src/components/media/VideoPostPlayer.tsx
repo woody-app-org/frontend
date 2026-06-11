@@ -6,6 +6,7 @@ import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { classifyPostMediaIntrinsic, type PostMediaIntrinsicKind } from "./postMediaIntrinsicKind";
 import { adaptiveMediaShellClass, adaptiveVideoClass } from "./postAdaptivePresentation";
+import { preventMediaContextMenu } from "./mediaProtection";
 
 const messageVideo =
   "min-h-[88px] w-full max-w-[min(100%,min(18rem,85vw))] max-h-36 rounded-lg bg-black object-contain touch-manipulation sm:max-h-40";
@@ -166,9 +167,11 @@ export function VideoPostPlayer({
       <video
         src={resolvedSrc}
         poster={resolvedPoster}
-        className={cn(lightboxVideo, className)}
+        className={cn(lightboxVideo, "protected-media", className)}
         controls
-        controlsList="nodownload"
+        controlsList="nodownload noremoteplayback"
+        disablePictureInPicture
+        onContextMenu={preventMediaContextMenu}
         playsInline
         preload={preloadForVariant(variant, presentation)}
         aria-label={label}
@@ -181,9 +184,11 @@ export function VideoPostPlayer({
       <video
         src={resolvedSrc}
         poster={resolvedPoster}
-        className={cn(messageVideo, className)}
+        className={cn(messageVideo, "protected-media", className)}
         controls
-        controlsList="nodownload"
+        controlsList="nodownload noremoteplayback"
+        disablePictureInPicture
+        onContextMenu={preventMediaContextMenu}
         playsInline
         autoPlay={playing}
         preload={preloadForVariant(variant, presentation)}
@@ -201,9 +206,11 @@ export function VideoPostPlayer({
       <video
         src={resolvedSrc}
         poster={resolvedPoster}
-        className={fit}
+        className={cn(fit, "protected-media")}
         controls
-        controlsList="nodownload"
+        controlsList="nodownload noremoteplayback"
+        disablePictureInPicture
+        onContextMenu={preventMediaContextMenu}
         playsInline
         autoPlay={playing}
         preload={preloadForVariant(variant, presentation)}

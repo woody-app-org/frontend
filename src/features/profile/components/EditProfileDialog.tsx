@@ -691,23 +691,19 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
                 </SelectTrigger>
                 <SelectContent className="z-[200]">
                   <SelectItem value="none">Prefiro não informar</SelectItem>
-                  <SelectItem value="Solteira rolezeira">Solteira rolezeira</SelectItem>
-                  <SelectItem value="Solteira demi">Solteira demi</SelectItem>
-                  <SelectItem value="Solteira não mono">Solteira não mono</SelectItem>
-                  <SelectItem value="Solteira emocionada">Solteira emocionada</SelectItem>
-                  <SelectItem value="Solteira mono">Solteira mono</SelectItem>
-                  <SelectItem value="Solteira sapiossexual">Solteira sapiossexual</SelectItem>
-                  <SelectItem value="Solteira convicta">Solteira convicta</SelectItem>
+                  <SelectItem value="Solteira">Solteira</SelectItem>
                   <SelectItem value="Enrolada">Enrolada</SelectItem>
-                  <SelectItem value="Explorando">Explorando</SelectItem>
-                  <SelectItem value="Amizades">Amizades</SelectItem>
-                  <SelectItem value="Namoro">Namoro</SelectItem>
-                  <SelectItem value="Casual">Casual</SelectItem>
-                  <SelectItem value="Flerte">Flerte</SelectItem>
-                  <SelectItem value="Casada">Casada</SelectItem>
                   <SelectItem value="Noiva">Noiva</SelectItem>
-                  <SelectItem value="Poli amorosa">Poli amorosa</SelectItem>
-                  <SelectItem value="Não mono política">Não mono política</SelectItem>
+                  <SelectItem value="Casada">Casada</SelectItem>
+                  <SelectItem value="Explorando">Explorando</SelectItem>
+                  <SelectItem value="Não mono">Não mono</SelectItem>
+                  <SelectItem value="Poliamor">Poliamor</SelectItem>
+                  <SelectItem value="Demi">Demi</SelectItem>
+                  <SelectItem value="Sapiossexual">Sapiossexual</SelectItem>
+                  <SelectItem value="Assexual">Assexual</SelectItem>
+                  <SelectItem value="Em busca">Em busca</SelectItem>
+                  <SelectItem value="Grayssexual">Grayssexual</SelectItem>
+                  <SelectItem value="Fraysexual">Fraysexual</SelectItem>
                 </SelectContent>
               </Select>
             </div>

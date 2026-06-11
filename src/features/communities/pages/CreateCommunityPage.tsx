@@ -146,7 +146,7 @@ export function CreateCommunityPage() {
             <header className="space-y-1">
               <h1 className="text-xl font-bold text-[var(--woody-text)] sm:text-2xl">Criar comunidade</h1>
               <p className="text-sm text-[var(--woody-muted)]">
-                Define o propósito do grupo. Depois de criar, podes ajustar imagens e detalhes nas definições.
+                Após definir o propósito do grupo, ajuste imagens e detalhes das definições.
               </p>
             </header>
 

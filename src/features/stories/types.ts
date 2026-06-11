@@ -33,7 +33,7 @@ export interface StoryViewer {
   viewedAt: string;
 }
 
-export type StoryLayerType = "text" | "image" | "video";
+export type StoryLayerType = "text" | "image" | "video" | "mention";
 export type StoryLayerFontSize = "sm" | "md" | "lg";
 
 export interface StoryLayer {
@@ -49,6 +49,8 @@ export interface StoryLayer {
   color?: string;
   fontSize?: StoryLayerFontSize;
   mediaUrl?: string;
+  /** type === "mention" — id da usuária mencionada; `text` guarda o snapshot "@username". */
+  mentionUserId?: number;
 }
 
 export interface Story {

@@ -25,9 +25,10 @@ export interface DmMessageBubbleProps {
   onSaveEdit: (messageId: number, body: string) => Promise<void>;
   onDelete: (messageId: number) => Promise<void>;
   onMutationError: (message: string) => void;
+  onOpenStory?: (authorUserId: number) => void;
 }
 
-export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutationError }: DmMessageBubbleProps) {
+export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutationError, onOpenStory }: DmMessageBubbleProps) {
   const [editing, setEditing] = useState(false);
   const [editDraft, setEditDraft] = useState(message.body ?? "");
   const [busy, setBusy] = useState(false);
@@ -149,6 +150,7 @@ export function DmMessageBubble({ message, isMine, onSaveEdit, onDelete, onMutat
                     <SharedStoryPreviewCard
                       preview={message.sharedStory}
                       className={message.body ? "mb-2" : undefined}
+                      onOpenStory={onOpenStory}
                     />
                   ) : null}
                   {message.body ? (

@@ -57,6 +57,7 @@ function mapStoryLayerFromApi(raw: ApiRecord): StoryLayer {
     color: raw.color != null ? asString(raw.color) : undefined,
     fontSize: raw.fontSize != null ? (asString(raw.fontSize) as StoryLayer["fontSize"]) : undefined,
     mediaUrl: raw.mediaUrl != null ? asString(raw.mediaUrl) : undefined,
+    mentionUserId: raw.mentionUserId != null ? Number(raw.mentionUserId) : undefined,
   };
 }
 
@@ -320,6 +321,16 @@ export interface ShareStoryToConversationPayload {
 export interface ShareStoryToConversationResult {
   conversationId: number;
   message: ApiRecord;
+}
+
+/** Reposta um story em que a usuária atual foi mencionada (atribuição automática à autora). */
+export async function repostStory(storyId: string): Promise<Story> {
+  try {
+    const { data } = await api.post(`/stories/${encodeURIComponent(storyId)}/repost`);
+    return mapStoryFromApi(data as ApiRecord);
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível repostar este story."));
+  }
 }
 
 const GENERIC_STORY_SHARE_ERROR = "Não foi possível enviar este story.";

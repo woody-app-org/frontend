@@ -183,22 +183,7 @@ export function ProfileHeader({
           </div>
           {isOwnProfile && onEditProfile ? (
             <div className={cn(styles.actionsCol, "pt-4 sm:pt-5")}>
-              {onAddStory ? (
-                <Button
-                  type="button"
-                  className={cn(
-                    styles.editBtn,
-                    woodyFocus.ring,
-                    "touch-manipulation min-h-10 border-[var(--woody-nav)]/28 bg-[var(--woody-nav)]/10"
-                  )}
-                  variant="outline"
-                  size="sm"
-                  onClick={onAddStory}
-                >
-                  <Plus className="size-4 text-[var(--woody-nav)]" aria-hidden />
-                  Adicionar story
-                </Button>
-              ) : null}
+              
               <Button
                 type="button"
                 className={cn(styles.editBtn, woodyFocus.ring, "touch-manipulation min-h-10")}

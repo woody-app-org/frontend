@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FeedLayout } from "@/features/feed/components/FeedLayout";
 import type {
   Community,
@@ -99,6 +99,7 @@ function CommunityDetailLoaded({
   joinRequestsForbiddenMessage,
 }: CommunityDetailLoadedProps) {
   const viewerId = useViewerId();
+  const navigate = useNavigate();
   const { setPageComposerCommunity } = useCreatePostComposer();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -311,6 +312,7 @@ function CommunityDetailLoaded({
           adminRoleLabel={isOwner ? "dona" : "administradora"}
           onSaved={handleSavedSettings}
           canSetPrivate={isOwner && canSetOwnedCommunityPrivate}
+          onDeleted={() => navigate("/communities", { replace: true })}
         />
       ) : null}
 

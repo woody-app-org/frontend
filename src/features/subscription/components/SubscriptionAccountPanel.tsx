@@ -46,9 +46,8 @@ export function SubscriptionAccountPanel({
           <p className="text-sm leading-relaxed text-[var(--woody-text)]/95">{describeSubscriptionHeadline(sub)}</p>
           {detail ? <p className="text-xs leading-relaxed text-[var(--woody-muted)]">{detail}</p> : null}
           <p className="text-xs leading-relaxed text-[var(--woody-muted)]">
-            Cartão, faturas e cancelamento são tratados na{" "}
-            <span className="font-medium text-[var(--woody-text)]">área hospedada da Stripe</span> — a Woody aplica
-            alterações quando o servidor recebe os eventos oficiais.
+            Cartão, faturas e cancelamento são gerenciados em{" "}
+            <span className="font-medium text-[var(--woody-text)]">uma área segura de pagamento</span>. As alterações são atualizadas automaticamente na Woody após a confirmação do pagamento.
           </p>
         </div>
         {canOpenBillingPortal ? (

@@ -5,6 +5,7 @@ import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { classifyPostMediaIntrinsic, type PostMediaIntrinsicKind } from "./postMediaIntrinsicKind";
 import { adaptiveMediaShellClass, adaptiveStillImageClass } from "./postAdaptivePresentation";
+import { preventMediaContextMenu } from "./mediaProtection";
 
 export function PostAdaptiveStill({
   src,
@@ -42,8 +43,9 @@ export function PostAdaptiveStill({
         src={resolved}
         alt=""
         draggable={false}
+        onContextMenu={preventMediaContextMenu}
         onLoad={onLoad}
-        className={imgFit}
+        className={cn(imgFit, "protected-media")}
         loading="lazy"
         decoding="async"
       />

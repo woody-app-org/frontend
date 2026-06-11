@@ -225,6 +225,17 @@ export async function fetchMySubscriptionState(): Promise<AuthUserSubscription> 
   return mapSubscription(raw.subscription);
 }
 
+/** Apaga permanentemente a conta da utilizadora autenticada e todos os dados associados. */
+export async function deleteOwnAccount(username: string): Promise<void> {
+  try {
+    await api.delete("/users/me", { data: { username } });
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, "Não foi possível excluir a conta."));
+  }
+  clearAuthPersistence();
+  dispatchAuthLogoutEvent();
+}
+
 export function patchStoredUser(patch: Partial<AuthUser>): AuthUser | null {
   const cur = getStoredUser();
   if (!cur) return null;
