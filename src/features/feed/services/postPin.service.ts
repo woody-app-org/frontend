@@ -33,6 +33,22 @@ export async function unpinPostFromProfile(postId: string): Promise<void> {
   }
 }
 
+/**
+ * Liga/desliga comentários numa publicação. Apenas SuperAdmin (`PATCH /posts/:id/comments-toggle`).
+ */
+export async function setPostCommentsEnabled(postId: string, commentsEnabled: boolean): Promise<void> {
+  try {
+    await api.patch(`posts/${encodeURIComponent(postId)}/comments-toggle`, { commentsEnabled });
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      const fromBody = getMessageFromApiResponseData(e.response?.data);
+      if (fromBody) throw new Error(fromBody);
+      if (e.response?.status === 403) throw new Error("Você não tem permissão para alterar os comentários desta publicação.");
+    }
+    throw new Error(getApiErrorMessage(e, "Não foi possível alterar os comentários da publicação."));
+  }
+}
+
 export async function pinCommentOnPost(postId: string, commentId: string): Promise<void> {
   try {
     await api.post(`posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}/pin`);

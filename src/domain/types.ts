@@ -236,4 +236,6 @@ export interface Post {
   communityBoostActive?: boolean;
   /** Fim do impulsionamento em ISO UTC quando activo. */
   communityBoostEndsAt?: string | null;
+  /** `false` quando um SuperAdmin desativou novos comentários nesta publicação. */
+  commentsEnabled?: boolean;
 }

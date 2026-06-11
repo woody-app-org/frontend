@@ -1,14 +1,27 @@
-import { useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
-import { COMMUNITY_MOCK_IMAGE_MAX_BYTES, readFileAsDataUrl } from "../../lib/communityImageMock";
+import { resolvePublicMediaUrl } from "@/lib/api";
+import { uploadImageMedia } from "@/lib/mediaUpload";
+import { ImageCropDialog } from "@/components/media/ImageCropDialog";
+import {
+  PROFILE_IMAGE_ACCEPT_ATTR,
+  validateProfileImageForCrop,
+} from "@/features/profile/lib/profileImageValidation";
+import { showErrorToast } from "@/lib/toast";
+
+const COVER_CROP_ASPECT = 3 / 1;
+const COVER_OUTPUT_W = 1500;
+const COVER_OUTPUT_H = Math.round(COVER_OUTPUT_W / COVER_CROP_ASPECT);
 
 export interface CommunityAppearanceSectionProps {
   formId: string;
   /** Título atual para iniciais no avatar. */
   communityName: string;
+  /** ID da comunidade, usado para enviar a imagem ao backend. */
+  communityId: string;
   avatarUrl: string | null;
   coverUrl: string | null;
   onAvatarChange: (url: string | null) => void;
@@ -28,6 +41,7 @@ function initials(name: string): string {
 export function CommunityAppearanceSection({
   formId,
   communityName,
+  communityId,
   avatarUrl,
   coverUrl,
   onAvatarChange,
@@ -36,26 +50,89 @@ export function CommunityAppearanceSection({
 }: CommunityAppearanceSectionProps) {
   const avatarRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState<"avatar" | "cover" | null>(null);
 
-  const handleFile = async (file: File | undefined, kind: "avatar" | "cover") => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      onFileError("Use uma imagem (JPG, PNG, etc.).");
-      return;
-    }
-    if (file.size > COMMUNITY_MOCK_IMAGE_MAX_BYTES) {
-      onFileError("Arquivo grande demais (máx. ~2,5 MB neste mock).");
-      return;
-    }
-    try {
-      const url = await readFileAsDataUrl(file);
-      if (kind === "avatar") onAvatarChange(url);
-      else onCoverChange(url);
+  const [avatarCropSrc, setAvatarCropSrc] = useState<string | null>(null);
+  const [avatarCropOpen, setAvatarCropOpen] = useState(false);
+  const [coverCropSrc, setCoverCropSrc] = useState<string | null>(null);
+  const [coverCropOpen, setCoverCropOpen] = useState(false);
+
+  const displayAvatarUrl = useMemo(
+    () => (avatarUrl ? resolvePublicMediaUrl(avatarUrl) : ""),
+    [avatarUrl]
+  );
+  const displayCoverUrl = useMemo(
+    () => (coverUrl ? resolvePublicMediaUrl(coverUrl) : ""),
+    [coverUrl]
+  );
+
+  const dismissAvatarCrop = useCallback(() => {
+    setAvatarCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setAvatarCropOpen(false);
+  }, []);
+
+  const dismissCoverCrop = useCallback(() => {
+    setCoverCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setCoverCropOpen(false);
+  }, []);
+
+  const pickFile = useCallback(
+    (file: File | undefined, kind: "avatar" | "cover") => {
+      if (!file) return;
+      const check = validateProfileImageForCrop(file);
+      if (!check.ok) {
+        showErrorToast(check.message, { id: `woody-community-${kind}-format` });
+        return;
+      }
       onFileError(null);
-    } catch {
-      onFileError("Não foi possível carregar a imagem.");
-    }
-  };
+      const objectUrl = URL.createObjectURL(file);
+      if (kind === "avatar") {
+        dismissCoverCrop();
+        setAvatarCropSrc(objectUrl);
+        setAvatarCropOpen(true);
+      } else {
+        dismissAvatarCrop();
+        setCoverCropSrc(objectUrl);
+        setCoverCropOpen(true);
+      }
+    },
+    [dismissAvatarCrop, dismissCoverCrop, onFileError]
+  );
+
+  const handleCropConfirm = useCallback(
+    async (file: File, kind: "avatar" | "cover") => {
+      setUploading(kind);
+      try {
+        const result = await uploadImageMedia(file, {
+          scope: "post",
+          publicationContext: "community",
+          communityId,
+        });
+        if (kind === "avatar") {
+          onAvatarChange(result.url);
+          dismissAvatarCrop();
+        } else {
+          onCoverChange(result.url);
+          dismissCoverCrop();
+        }
+        onFileError(null);
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Não foi possível carregar a imagem.";
+        onFileError(message);
+        showErrorToast(message, { id: `woody-community-${kind}-upload` });
+        throw e;
+      } finally {
+        setUploading(null);
+      }
+    },
+    [communityId, dismissAvatarCrop, dismissCoverCrop, onAvatarChange, onCoverChange, onFileError]
+  );
 
   return (
     <section className="space-y-4" aria-labelledby={`${formId}-appearance`}>
@@ -69,7 +146,7 @@ export function CommunityAppearanceSection({
       <div className="overflow-hidden rounded-xl border border-[var(--woody-accent)]/15 bg-[var(--woody-nav)]/5">
         <div className="h-24 sm:h-28 w-full">
           {coverUrl ? (
-            <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+            <img src={displayCoverUrl} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center bg-[var(--woody-nav)]/10 text-xs text-[var(--woody-muted)]">
               Sem capa
@@ -80,12 +157,12 @@ export function CommunityAppearanceSection({
           <input
             ref={coverRef}
             type="file"
-            accept="image/*"
+            accept={PROFILE_IMAGE_ACCEPT_ATTR}
             className="sr-only"
             onChange={(e) => {
               const f = e.target.files?.[0];
               e.target.value = "";
-              void handleFile(f, "cover");
+              pickFile(f, "cover");
             }}
           />
           <Button
@@ -94,9 +171,10 @@ export function CommunityAppearanceSection({
             size="sm"
             className={cn("rounded-lg border-[var(--woody-accent)]/25 bg-[var(--woody-bg)]", woodyFocus.ring)}
             onClick={() => coverRef.current?.click()}
+            disabled={uploading !== null}
           >
             <ImagePlus className="size-4" />
-            Capa
+            {uploading === "cover" ? "Enviando..." : "Capa"}
           </Button>
           {coverUrl ? (
             <Button type="button" variant="ghost" size="sm" onClick={() => onCoverChange(null)}>
@@ -113,17 +191,17 @@ export function CommunityAppearanceSection({
         <input
           ref={avatarRef}
           type="file"
-          accept="image/*"
+          accept={PROFILE_IMAGE_ACCEPT_ATTR}
           className="sr-only"
           onChange={(e) => {
             const f = e.target.files?.[0];
             e.target.value = "";
-            void handleFile(f, "avatar");
+            pickFile(f, "avatar");
           }}
         />
         <div className="relative size-20 shrink-0 sm:size-24">
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="size-full rounded-2xl border-4 border-[var(--woody-card)] object-cover shadow-md" />
+            <img src={displayAvatarUrl} alt="" className="size-full rounded-2xl border-4 border-[var(--woody-card)] object-cover shadow-md" />
           ) : (
             <div className="flex size-full items-center justify-center rounded-2xl border-4 border-[var(--woody-card)] bg-[var(--woody-nav)]/15 text-lg font-bold text-[var(--woody-text)] shadow-md">
               {initials(communityName)}
@@ -139,6 +217,7 @@ export function CommunityAppearanceSection({
             )}
             onClick={() => avatarRef.current?.click()}
             aria-label="Alterar ícone da comunidade"
+            disabled={uploading !== null}
           >
             <ImagePlus className="size-4" />
           </Button>
@@ -154,6 +233,39 @@ export function CommunityAppearanceSection({
           ) : null}
         </div>
       </div>
+
+      <ImageCropDialog
+        open={avatarCropOpen}
+        onOpenChange={(next) => {
+          if (!next) dismissAvatarCrop();
+          else setAvatarCropOpen(true);
+        }}
+        imageSrc={avatarCropSrc}
+        title="Ajustar ícone"
+        description="Escolha o enquadramento que aparecerá como ícone da comunidade."
+        cropShape="round"
+        aspect={1}
+        layout="square"
+        outputSize={512}
+        onConfirm={(file) => handleCropConfirm(file, "avatar")}
+      />
+
+      <ImageCropDialog
+        open={coverCropOpen}
+        onOpenChange={(next) => {
+          if (!next) dismissCoverCrop();
+          else setCoverCropOpen(true);
+        }}
+        imageSrc={coverCropSrc}
+        title="Ajustar capa"
+        description="Veja como a imagem ficará na faixa de capa da comunidade antes de guardar."
+        cropShape="rect"
+        aspect={COVER_CROP_ASPECT}
+        layout="wide"
+        outputWidth={COVER_OUTPUT_W}
+        outputHeight={COVER_OUTPUT_H}
+        onConfirm={(file) => handleCropConfirm(file, "cover")}
+      />
     </section>
   );
 }

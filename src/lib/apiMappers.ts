@@ -177,6 +177,7 @@ export function mapPostFromApi(raw: ApiRecord, _viewerId: string): Post {
       raw.communityBoostEndsAt != null && String(raw.communityBoostEndsAt).length > 0
         ? asString(raw.communityBoostEndsAt)
         : null,
+    commentsEnabled: raw.commentsEnabled !== false,
   };
 }
 
@@ -294,6 +295,7 @@ export function mapUserProfileFromApi(raw: ApiRecord): UserProfile {
         ? Number(raw.followingCount)
         : undefined,
     showProBadge: Boolean(raw.showProBadge),
+    subscriptionBadge: raw.subscriptionBadge === "max" || raw.subscriptionBadge === "pro" ? raw.subscriptionBadge : null,
     hasActiveStories: Boolean(raw.hasActiveStories),
     subscription: raw.subscription != null ? mapSubscription(raw.subscription) : undefined,
     canonicalUsername:

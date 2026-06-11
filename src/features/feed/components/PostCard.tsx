@@ -1,6 +1,7 @@
-import { memo, useRef } from "react";
+import { memo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { MessageCircle, Loader2, Lock, TrendingUp } from "lucide-react";
+import { MessageCircle, MessageCircleOff, Loader2, Lock, TrendingUp } from "lucide-react";
+import { showErrorToast, showSuccessToast } from "@/lib/toast/woodyToast";
 import {
   Card,
 } from "@/components/ui/card";
@@ -11,6 +12,8 @@ import type { Post } from "../types";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { legacyImageUrlsToPostMediaAttachments } from "@/domain/mediaAttachment";
 import { useViewerId } from "@/features/auth/hooks/useViewerId";
+import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { setPostCommentsEnabled } from "../services/postPin.service";
 import { PostMediaGallery } from "@/components/media/PostMediaGallery";
 import { PostCommunityContextBar } from "./PostCommunityContextBar";
 import { PostProfileContextBar } from "./PostProfileContextBar";
@@ -121,8 +124,29 @@ function PostCardInner({
   const navigate = useNavigate();
   const location = useLocation();
   const viewerId = useViewerId();
+  const currentUser = useCurrentUser();
+  const isSuperAdmin = currentUser?.role === "SuperAdmin";
+  const [commentsEnabled, setCommentsEnabled] = useState(post.commentsEnabled !== false);
+  const [isTogglingComments, setIsTogglingComments] = useState(false);
   const ignoreNextCardClickRef = useRef(false);
   const { tapPhase, triggerTap } = usePostLikeTapAnimation();
+
+  const handleToggleComments = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (isTogglingComments) return;
+    const next = !commentsEnabled;
+    setIsTogglingComments(true);
+    try {
+      await setPostCommentsEnabled(post.id, next);
+      setCommentsEnabled(next);
+      onPostUpdated?.({ ...post, commentsEnabled: next });
+      showSuccessToast(next ? "Comentários ativados nesta publicação." : "Comentários desativados nesta publicação.");
+    } catch (e) {
+      showErrorToast(e instanceof Error ? e.message : "Não foi possível alterar os comentários.");
+    } finally {
+      setIsTogglingComments(false);
+    }
+  };
 
   const suppressNextCardOpenFromMenu = () => {
     ignoreNextCardClickRef.current = true;
@@ -343,16 +367,42 @@ function PostCardInner({
           <button
             type="button"
             data-post-ignore-open="true"
-            className={styles.footerItem}
-            aria-label="Abrir comentários da publicação"
+            disabled={!commentsEnabled}
+            className={cn(styles.footerItem, !commentsEnabled && "opacity-60 cursor-not-allowed")}
+            aria-label={commentsEnabled ? "Abrir comentários da publicação" : "Comentários desativados nesta publicação"}
+            title={commentsEnabled ? undefined : "Comentários desativados nesta publicação"}
             onClick={(event) => {
               event.stopPropagation();
+              if (!commentsEnabled) return;
               openPostComments();
             }}
           >
-            <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
+            {commentsEnabled ? (
+              <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
+            ) : (
+              <MessageCircleOff className="size-[1em] stroke-current" strokeWidth={1.75} />
+            )}
             {formatCount(post.commentsCount)}
           </button>
+          {isSuperAdmin ? (
+            <button
+              type="button"
+              data-post-ignore-open="true"
+              disabled={isTogglingComments}
+              className={cn(styles.footerItem, isTogglingComments && "opacity-70 cursor-not-allowed")}
+              aria-label={commentsEnabled ? "Desativar comentários (SuperAdmin)" : "Ativar comentários (SuperAdmin)"}
+              title={commentsEnabled ? "Desativar comentários (SuperAdmin)" : "Ativar comentários (SuperAdmin)"}
+              onClick={handleToggleComments}
+            >
+              {isTogglingComments ? (
+                <Loader2 className="size-[1em] animate-spin" strokeWidth={2} />
+              ) : commentsEnabled ? (
+                <MessageCircleOff className="size-[1em] stroke-current" strokeWidth={1.75} />
+              ) : (
+                <MessageCircle className="size-[1em] stroke-current" strokeWidth={1.75} />
+              )}
+            </button>
+          ) : null}
           <PostShareButton post={post} variant="card" className={styles.footerItem} />
           {communityBoost ? (
             <button

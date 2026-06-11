@@ -5,7 +5,7 @@ import { api, getApiErrorMessage } from "@/lib/api";
 
 export type ReportStatus = "Pending" | "InReview" | "Resolved" | "Rejected";
 
-export type AccountStatus = "Active" | "Banned";
+export type AccountStatus = "Active" | "Banned" | "Suspended";
 
 export interface ReportUserPreview {
   id: string;
@@ -14,6 +14,8 @@ export interface ReportUserPreview {
   avatarUrl?: string | null;
   /** Preenchido pelo backend em contextos administrativos. */
   accountStatus?: AccountStatus | null;
+  /** Preenchido quando accountStatus === "Suspended". */
+  suspendedUntil?: string | null;
 }
 
 export interface ReportTargetPreview {
@@ -125,6 +127,33 @@ export interface BanReportAuthorResult {
 export const BAN_REASON_MIN_LENGTH = 10;
 export const BAN_REASON_MAX_LENGTH = 500;
 
+export interface SuspendUserPayload {
+  reason: string;
+  durationHours: number;
+}
+
+export interface AdminUserAccountStatusResult {
+  userId: number;
+  username: string;
+  displayName: string;
+  accountStatus: AccountStatus;
+  suspendedAt?: string | null;
+  suspendedUntil?: string | null;
+  suspensionReason?: string | null;
+}
+
+export const SUSPENSION_REASON_MIN_LENGTH = 10;
+export const SUSPENSION_REASON_MAX_LENGTH = 500;
+
+/** Opções de duração pré-definidas para a suspensão temporária. */
+export const SUSPENSION_DURATION_OPTIONS: { label: string; hours: number }[] = [
+  { label: "24 horas", hours: 24 },
+  { label: "3 dias", hours: 24 * 3 },
+  { label: "7 dias", hours: 24 * 7 },
+  { label: "15 dias", hours: 24 * 15 },
+  { label: "30 dias", hours: 24 * 30 },
+];
+
 // ─── Service functions ────────────────────────────────────────────────────────
 
 export async function listAdminReports(
@@ -165,6 +194,10 @@ export function isReportUserBanned(user: ReportUserPreview | null | undefined): 
   return user?.accountStatus === "Banned";
 }
 
+export function isReportUserSuspended(user: ReportUserPreview | null | undefined): boolean {
+  return user?.accountStatus === "Suspended";
+}
+
 export function getBanReportAuthorErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
     const data = err.response?.data as { code?: string; error?: string } | undefined;
@@ -196,5 +229,68 @@ export async function banReportAuthor(
     return data;
   } catch (err) {
     throw new Error(getBanReportAuthorErrorMessage(err));
+  }
+}
+
+export function getSuspendUserErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as { code?: string; error?: string } | undefined;
+    if (
+      data?.code === "CANNOT_SUSPEND_SELF" ||
+      data?.code === "CANNOT_SUSPEND_SUPERADMIN"
+    ) {
+      return "Esta conta não pode ser suspensa por esta ação.";
+    }
+    if (data?.code === "ACCOUNT_IS_BANNED") {
+      return "Esta conta está banida e não pode ser suspensa.";
+    }
+    if (err.response?.status === 403) {
+      return "Você não tem permissão para realizar esta ação.";
+    }
+  }
+  return getApiErrorMessage(err, "Não foi possível suspender esta conta.");
+}
+
+export function getReactivateUserErrorMessage(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as { code?: string; error?: string } | undefined;
+    if (data?.code === "ACCOUNT_IS_BANNED") {
+      return "Esta conta está banida. Reverta o banimento primeiro.";
+    }
+    if (err.response?.status === 403) {
+      return "Você não tem permissão para realizar esta ação.";
+    }
+  }
+  return getApiErrorMessage(err, "Não foi possível reativar esta conta.");
+}
+
+export async function suspendUser(
+  userId: number | string,
+  payload: SuspendUserPayload
+): Promise<AdminUserAccountStatusResult> {
+  try {
+    const { data } = await api.post<AdminUserAccountStatusResult>(
+      `/admin/users/${userId}/suspend`,
+      {
+        reason: payload.reason.trim(),
+        durationHours: payload.durationHours,
+      }
+    );
+    return data;
+  } catch (err) {
+    throw new Error(getSuspendUserErrorMessage(err));
+  }
+}
+
+export async function reactivateUser(
+  userId: number | string
+): Promise<AdminUserAccountStatusResult> {
+  try {
+    const { data } = await api.post<AdminUserAccountStatusResult>(
+      `/admin/users/${userId}/reactivate`
+    );
+    return data;
+  } catch (err) {
+    throw new Error(getReactivateUserErrorMessage(err));
   }
 }

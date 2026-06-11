@@ -167,6 +167,7 @@ export function CommunityEditDialog({
           <CommunityAppearanceSection
             formId={formId}
             communityName={name || community.name}
+            communityId={String(community.id)}
             avatarUrl={avatarUrl}
             coverUrl={coverUrl}
             onAvatarChange={setAvatarUrl}
