@@ -94,12 +94,12 @@ export function VerificationDocumentPage() {
             {/* Explicação */}
             <div className="rounded-xl bg-[var(--woody-sand)] px-4 py-3.5 text-sm text-[var(--woody-ink)]/80 leading-relaxed space-y-1.5">
               <p>
-                A Woody é um espaço seguro e confiável. Para confirmar sua identidade, pedimos uma selfie sua segurando o{" "}<strong className="font-semibold">RG</strong> ao lado do rosto, com ambos bem visíveis na imagem.
+                Você gostaria de estar em uma rede social sáfica onde homens pudessem entrar? Nós também não. É por isso que fazemos a verificação por{" "}<strong className="font-semibold">documento</strong>: para proteger a comunidade e garantir que este continue sendo um espaço seguro, e só nosso.
               </p>
               <p className="text-[var(--woody-muted)]">
-                Seu documento será analisado pela nossa equipe e{" "}
-                <strong className="font-medium text-[var(--woody-ink)]/70">descartado após a conclusão da análise.</strong>.
-                Para sua segurança, não armazenamos cópias de documentos.
+                Fique tranquila(e). Depois da análise,{" "}
+                <strong className="font-medium text-[var(--woody-ink)]/70">seu documento é excluído do nosso banco de dados</strong>.
+                Para sua proteção, não armazenamos nenhuma cópia desses documentos.
               </p>
             </div>
 
