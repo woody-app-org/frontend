@@ -35,7 +35,11 @@ function StoryLayerRenderer({
 
   useEffect(() => {
     const v = videoRef.current;
-    if (!v || !isActive || layer.type !== "video") return;
+    if (!v || layer.type !== "video") return;
+    if (!isActive) {
+      v.pause();
+      return;
+    }
     v.currentTime = 0;
     void v.play().catch(() => undefined);
   }, [isActive, layer.type]);
@@ -100,7 +104,7 @@ function StoryLayerRenderer({
       style={style}
       muted={videoMuted}
       loop
-      autoPlay
+      autoPlay={isActive}
       playsInline
     />
   );
@@ -250,7 +254,13 @@ export const StoryViewerSlide = forwardRef<StoryViewerSlideHandle, StoryViewerSl
             onTimeUpdate={(e) => {
               const v = e.currentTarget;
               if (!v.duration || !Number.isFinite(v.duration)) return;
-              onVideoTimeUpdate?.(Math.min(1, v.currentTime / v.duration));
+              const cap = Math.min(v.duration, 30);
+              if (v.currentTime >= cap) {
+                onVideoTimeUpdate?.(1);
+                onVideoEnded?.();
+                return;
+              }
+              onVideoTimeUpdate?.(Math.min(1, v.currentTime / cap));
             }}
             onLoadedMetadata={() => onVideoLoadedMetadata?.()}
           />

@@ -80,7 +80,7 @@ export function RightPanelProfileCard({ user }: RightPanelProfileCardProps) {
             aria-label={`Ver perfil de ${displayName}`}
             className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--woody-nav)]/35 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--woody-card)]"
           >
-            <Avatar className="size-[3.5rem] ring-[2.5px] ring-[var(--woody-card)] shadow-sm">
+            <Avatar className="size-[3.5rem] shadow-sm">
               {avatarUrl ? (
                 <AvatarImage src={avatarUrl} alt={displayName} />
               ) : null}

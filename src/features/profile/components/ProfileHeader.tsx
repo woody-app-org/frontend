@@ -37,7 +37,7 @@ const styles = {
   topRow: "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
   avatarWrap: "-mt-12 shrink-0 sm:-mt-16",
   avatar:
-    "size-24 rounded-full border-[5px] border-[var(--woody-card)] shadow-[0_8px_24px_rgba(10,10,10,0.16)] ring-1 ring-black/[0.04] sm:size-28",
+    "size-24 rounded-full shadow-[0_8px_24px_rgba(10,10,10,0.16)] ring-1 ring-black/[0.04] sm:size-28",
   infoRow:
     "mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start",
   actionsCol: "flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:justify-end",

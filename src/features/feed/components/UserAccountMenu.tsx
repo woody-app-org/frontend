@@ -22,7 +22,7 @@ import { woodyFocus } from "@/lib/woody-ui";
 import { resolvePublicMediaUrl } from "@/lib/api";
 
 const triggerClass =
-  "size-11 md:size-10 flex items-center justify-center rounded-full hover:bg-[var(--woody-nav)]/10 overflow-hidden ring-1 ring-[var(--woody-divider)] shrink-0";
+  "size-11 md:size-10 flex items-center justify-center rounded-full hover:bg-[var(--woody-nav)]/10 overflow-hidden shrink-0";
 
 const avatarImgClass = "size-8 rounded-full object-cover md:size-8";
 
@@ -63,7 +63,7 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
 
   const triggerTone =
     variant === "inverse"
-      ? cn(triggerClass, "text-white ring-white/20 hover:bg-white/10")
+      ? cn(triggerClass, "text-white hover:bg-white/10")
       : triggerClass;
 
   if (!user) {

@@ -31,6 +31,28 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
+/**
+ * Baixa o recurso e devolve uma `blob:` URL local. `<img>`/`<video>` carregados a partir de
+ * uma `blob:` URL são sempre "same-origin" para o canvas, evitando que `captureStream`
+ * produza frames pretos/silenciosos por causa de CORS em respostas com Range (vídeo) ou
+ * de cabeçalhos CORS ausentes/incompletos. Em caso de falha (ex.: CDN externo sem CORS),
+ * devolve a URL original e a exportação segue da forma anterior (com o risco de "tainting").
+ */
+async function toObjectUrl(url: string): Promise<string> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`status ${res.status}`);
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  } catch {
+    return url;
+  }
+}
+
+function revokeIfObjectUrl(url: string) {
+  if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+}
+
 /** Desenha a mídia em "object-contain" centralizado, com escala opcional do story. */
 function drawContain(
   ctx: CanvasRenderingContext2D,
@@ -124,14 +146,17 @@ async function drawLayers(ctx: CanvasRenderingContext2D, layers: StoryLayer[]) {
         Math.max(w, CANVAS_W * 0.4)
       );
     } else if (layer.type === "image" && layer.mediaUrl) {
+      const objUrl = await toObjectUrl(resolvePublicMediaUrl(layer.mediaUrl));
       try {
-        const img = await loadImage(resolvePublicMediaUrl(layer.mediaUrl));
+        const img = await loadImage(objUrl);
         const ratio = Math.min(w / img.naturalWidth, h / img.naturalHeight);
         const dw = img.naturalWidth * ratio;
         const dh = img.naturalHeight * ratio;
         ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
       } catch {
         // Layer de imagem indisponível — segue sem ela em vez de falhar o download inteiro.
+      } finally {
+        revokeIfObjectUrl(objUrl);
       }
     }
     // Layers de vídeo não são compostos no export estático.
@@ -223,15 +248,20 @@ function getAudioContextCtor(): typeof AudioContext | undefined {
  * Cria um `<audio>` oculto com a música do story, posicionado no `startTime`, e
  * conecta a sua saída ao destino de gravação (mesmo que o player esteja mudo).
  */
-function setupMusicTrack(
+async function setupMusicTrack(
   audioCtx: AudioContext,
   dest: MediaStreamAudioDestinationNode,
   music: NonNullable<Story["music"]>
-): { element: HTMLAudioElement; ready: Promise<void> } {
+): Promise<{ element: HTMLAudioElement; ready: Promise<void>; objectUrl: string }> {
+  // CDNs externas (preview da música) muitas vezes não enviam cabeçalhos CORS, o que
+  // deixaria o <audio> "tainted" e silencioso no destino de gravação. Baixar como blob
+  // evita isso (cai de volta para a URL original se o fetch falhar por CORS).
+  const objectUrl = await toObjectUrl(music.previewUrl);
+
   const audio = document.createElement("audio");
   audio.crossOrigin = "anonymous";
   audio.preload = "auto";
-  audio.src = music.previewUrl;
+  audio.src = objectUrl;
   audio.style.display = "none";
   document.body.appendChild(audio);
 
@@ -250,7 +280,7 @@ function setupMusicTrack(
     // Sem o nó de áudio, segue a exportação só com o vídeo/imagem.
   }
 
-  return { element: audio, ready };
+  return { element: audio, ready, objectUrl };
 }
 
 /** Combina (em até) duas streams de áudio num único MediaStreamAudioDestinationNode. */
@@ -275,8 +305,13 @@ async function downloadImageOrTextStory(story: Story, onProgress?: (p: number) =
     frameCtx.fillStyle = "#000000";
     frameCtx.fillRect(0, 0, CANVAS_W, CANVAS_H);
     if (story.mediaUrl) {
-      const img = await loadImage(resolvePublicMediaUrl(story.mediaUrl));
-      drawContain(frameCtx, img, img.naturalWidth, img.naturalHeight, story.contentScale ?? 1);
+      const objUrl = await toObjectUrl(resolvePublicMediaUrl(story.mediaUrl));
+      try {
+        const img = await loadImage(objUrl);
+        drawContain(frameCtx, img, img.naturalWidth, img.naturalHeight, story.contentScale ?? 1);
+      } finally {
+        revokeIfObjectUrl(objUrl);
+      }
     }
   }
   drawOverlayText(frameCtx, story);
@@ -294,12 +329,14 @@ async function downloadImageOrTextStory(story: Story, onProgress?: (p: number) =
   const AudioContextCtor = getAudioContextCtor();
   let audioCtx: AudioContext | null = null;
   let musicEl: HTMLAudioElement | null = null;
+  let musicObjectUrl: string | null = null;
   if (AudioContextCtor && music) {
     try {
       audioCtx = new AudioContextCtor();
       const dest = buildAudioDestination(audioCtx);
-      const track = setupMusicTrack(audioCtx, dest, music);
+      const track = await setupMusicTrack(audioCtx, dest, music);
       musicEl = track.element;
+      musicObjectUrl = track.objectUrl;
       await track.ready;
       dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
     } catch {
@@ -359,6 +396,7 @@ async function downloadImageOrTextStory(story: Story, onProgress?: (p: number) =
       musicEl.pause();
       musicEl.remove();
     }
+    if (musicObjectUrl) revokeIfObjectUrl(musicObjectUrl);
     if (audioCtx) void audioCtx.close().catch(() => undefined);
   }
 }
@@ -369,21 +407,30 @@ async function downloadVideoStory(story: Story, onProgress?: (p: number) => void
     throw new Error("Seu navegador não suporta exportar vídeos.");
   }
 
+  // Baixar como blob evita "tainting" do canvas por CORS em respostas com Range,
+  // que faria captureStream produzir frames pretos/sem áudio.
+  const videoObjectUrl = await toObjectUrl(resolvePublicMediaUrl(story.mediaUrl));
+
   const video = document.createElement("video");
   video.crossOrigin = "anonymous";
   video.playsInline = true;
   video.muted = true;
   video.preload = "auto";
-  video.src = resolvePublicMediaUrl(story.mediaUrl);
+  video.src = videoObjectUrl;
 
-  // Alguns navegadores pausam a decodificação de <video> fora do DOM, o que faz
-  // drawImage capturar sempre o mesmo frame (resultando num "vídeo" estático).
-  // Mantemos o elemento no documento, fora da tela, durante a exportação.
+  // Alguns navegadores pausam/reduzem a decodificação de <video> que está fora da
+  // tela (left: -9999px) ou com tamanho 1x1px, o que faz drawImage capturar sempre
+  // um frame preto/estático. Mantemos o elemento dentro da viewport, com tamanho
+  // normal, mas invisível (opacity 0 + atrás de tudo) para que o navegador continue
+  // decodificando os frames normalmente.
   video.style.position = "fixed";
-  video.style.left = "-9999px";
+  video.style.left = "0";
   video.style.top = "0";
-  video.style.width = "1px";
-  video.style.height = "1px";
+  video.style.width = "360px";
+  video.style.height = "640px";
+  video.style.opacity = "0";
+  video.style.zIndex = "-1";
+  video.style.pointerEvents = "none";
   document.body.appendChild(video);
 
   await new Promise<void>((resolve, reject) => {
@@ -400,6 +447,7 @@ async function downloadVideoStory(story: Story, onProgress?: (p: number) => void
   const AudioContextCtor = getAudioContextCtor();
   let audioCtx: AudioContext | null = null;
   let musicEl: HTMLAudioElement | null = null;
+  let musicObjectUrl: string | null = null;
   if (AudioContextCtor) {
     try {
       audioCtx = new AudioContextCtor();
@@ -407,8 +455,9 @@ async function downloadVideoStory(story: Story, onProgress?: (p: number) => void
       const source = audioCtx.createMediaElementSource(video);
       source.connect(dest);
       if (story.music) {
-        const track = setupMusicTrack(audioCtx, dest, story.music);
+        const track = await setupMusicTrack(audioCtx, dest, story.music);
         musicEl = track.element;
+        musicObjectUrl = track.objectUrl;
         await track.ready;
       }
       dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
@@ -462,14 +511,13 @@ async function downloadVideoStory(story: Story, onProgress?: (p: number) => void
     if (recorder.state !== "inactive") recorder.stop();
   };
 
-  recorder.start(250);
-  drawFrame();
   try {
     await video.play();
   } catch {
-    recorder.stop();
     throw new Error("Não foi possível reproduzir o vídeo para exportação.");
   }
+  recorder.start(250);
+  drawFrame();
   if (musicEl) {
     try {
       await musicEl.play();
@@ -489,6 +537,8 @@ async function downloadVideoStory(story: Story, onProgress?: (p: number) => void
       musicEl.pause();
       musicEl.remove();
     }
+    if (musicObjectUrl) revokeIfObjectUrl(musicObjectUrl);
+    revokeIfObjectUrl(videoObjectUrl);
     if (audioCtx) void audioCtx.close().catch(() => undefined);
   }
 }

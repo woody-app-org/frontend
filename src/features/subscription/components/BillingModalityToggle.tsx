@@ -2,10 +2,11 @@ import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import type { BillingModality } from "../lib/planCatalog";
 
+// Opção "À vista" temporariamente desativada no front. Mantida fora de OPTIONS
+// (lógica de cálculo em planCatalog.ts permanece intacta para reativação futura).
 const OPTIONS: { id: BillingModality; label: string }[] = [
   { id: "monthly", label: "Mensal" },
   { id: "annual", label: "Anual" },
-  { id: "upfront", label: "À vista" },
 ];
 
 export interface BillingModalityToggleProps {

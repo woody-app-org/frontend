@@ -71,7 +71,10 @@ export function StoryViewerMoreMenu({
     }
   };
 
-  const canDownload = story.mediaType !== "shared_post";
+  // Feature de download temporariamente desativada no front. Lógica mantida intacta
+  // (handleDownload, downloadStoryWithWatermark) para reativação futura.
+  const DOWNLOAD_FEATURE_ENABLED = false;
+  const canDownload = DOWNLOAD_FEATURE_ENABLED && story.mediaType !== "shared_post";
 
   if (!canDelete && !canDownload) return null;
 

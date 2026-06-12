@@ -8,10 +8,10 @@ import { readImageAsDataUrlIfSmall } from "@/lib/readImageAsDataUrlIfSmall";
 export const readImageFileAsDataUrlIfSmall = readImageAsDataUrlIfSmall;
 
 /** Alinhado a `InputValidationLimits.PostContentMaxLength` no backend. */
-export const POST_COMPOSER_CONTENT_MAX_LENGTH = 500;
+export const POST_COMPOSER_CONTENT_MAX_LENGTH = 1000;
 
 /** Alinhado a `InputValidationLimits.PostContentMaxLengthPro` no backend (usuárias com benefícios Pro/Max ativos). */
-export const POST_COMPOSER_CONTENT_MAX_LENGTH_PRO = 1000;
+export const POST_COMPOSER_CONTENT_MAX_LENGTH_PRO = 2100;
 
 /** Limite de caracteres do post conforme o plano efetivo da usuária. */
 export function getPostContentMaxLength(isProUser: boolean): number {
