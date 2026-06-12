@@ -8,6 +8,7 @@ import { OnboardingStepHeader } from "../components/OnboardingStepHeader";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 import { ImageCropDialog } from "@/components/media/ImageCropDialog";
+import { prepareImageForCrop } from "@/lib/image/canvasCropImage";
 import {
   PROFILE_IMAGE_ACCEPT_ATTR,
   validateProfileImageForCrop,
@@ -48,9 +49,10 @@ export function OnboardingStepProfilePhoto() {
       return;
     }
     dismissCropSession();
-    const url = URL.createObjectURL(file);
-    setCropSrc(url);
-    setCropOpen(true);
+    void prepareImageForCrop(file).then((url) => {
+      setCropSrc(url);
+      setCropOpen(true);
+    });
   }, [dismissCropSession]);
 
   const processPickedFile = useCallback(

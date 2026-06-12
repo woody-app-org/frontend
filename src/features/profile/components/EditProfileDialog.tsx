@@ -23,6 +23,7 @@ import type { InterestTag, UserProfile } from "../types";
 import { updateProfile, validateProfileUpdatePayload } from "../services/profile.service";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { ImageCropDialog } from "@/components/media/ImageCropDialog";
+import { prepareImageForCrop } from "@/lib/image/canvasCropImage";
 import { uploadImageMedia } from "@/lib/mediaUpload";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import {
@@ -252,9 +253,10 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
     clearFieldErrors();
     setFormError(null);
     dismissBannerCrop();
-    const objectUrl = URL.createObjectURL(file);
-    setAvatarCropSrc(objectUrl);
-    setAvatarCropOpen(true);
+    void prepareImageForCrop(file).then((objectUrl) => {
+      setAvatarCropSrc(objectUrl);
+      setAvatarCropOpen(true);
+    });
   }, [dismissBannerCrop, showAvatarError, clearFieldErrors]);
 
   const handleAvatarCropConfirm = useCallback(
@@ -318,9 +320,10 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSaved }: Edit
       clearFieldErrors();
       setFormError(null);
       dismissAvatarCrop();
-      const objectUrl = URL.createObjectURL(file);
-      setBannerCropSrc(objectUrl);
-      setBannerCropOpen(true);
+      void prepareImageForCrop(file).then((objectUrl) => {
+        setBannerCropSrc(objectUrl);
+        setBannerCropOpen(true);
+      });
     },
     [dismissAvatarCrop, showBannerError, clearFieldErrors]
   );

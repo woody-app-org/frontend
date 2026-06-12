@@ -10,6 +10,60 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+/** Maior dimensão (px) aceita pelo preview de recorte; acima disso a imagem é reduzida. */
+const MAX_CROP_PREVIEW_DIMENSION = 2048;
+
+/**
+ * Prepara o ficheiro escolhido para entrar no `ImageCropDialog`.
+ *
+ * Fotos de câmeras Android costumam vir em resoluções muito altas (4000px+) e/ou
+ * com orientação EXIF. Em alguns navegadores mobile, passar o `blob:` original
+ * direto pro `react-easy-crop` faz o `<img>` interno falhar a decodificação
+ * silenciosamente — o diálogo abre, mas a área de recorte fica em branco.
+ *
+ * Usa `createImageBitmap` (com `imageOrientation: "from-image"`, que já corrige
+ * a rotação EXIF) para redesenhar a imagem num canvas menor quando necessário.
+ * Em navegadores sem suporte, cai de volta no `URL.createObjectURL(file)` original
+ * (comportamento anterior).
+ *
+ * @returns object URL pronto para `imageSrc`; quem chama deve `URL.revokeObjectURL` depois.
+ */
+export async function prepareImageForCrop(file: File): Promise<string> {
+  if (typeof createImageBitmap !== "function") {
+    return URL.createObjectURL(file);
+  }
+
+  let bitmap: ImageBitmap | null = null;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+
+    const { width, height } = bitmap;
+    if (width <= MAX_CROP_PREVIEW_DIMENSION && height <= MAX_CROP_PREVIEW_DIMENSION) {
+      return URL.createObjectURL(file);
+    }
+
+    const scale = MAX_CROP_PREVIEW_DIMENSION / Math.max(width, height);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return URL.createObjectURL(file);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.92)
+    );
+    return blob ? URL.createObjectURL(blob) : URL.createObjectURL(file);
+  } catch {
+    return URL.createObjectURL(file);
+  } finally {
+    bitmap?.close();
+  }
+}
+
 function detectWebpCanvasSupport(): boolean {
   try {
     const c = document.createElement("canvas");

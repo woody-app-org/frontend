@@ -6,6 +6,7 @@ import { woodyFocus } from "@/lib/woody-ui";
 import { resolvePublicMediaUrl } from "@/lib/api";
 import { uploadImageMedia } from "@/lib/mediaUpload";
 import { ImageCropDialog } from "@/components/media/ImageCropDialog";
+import { prepareImageForCrop } from "@/lib/image/canvasCropImage";
 import {
   PROFILE_IMAGE_ACCEPT_ATTR,
   validateProfileImageForCrop,
@@ -91,16 +92,17 @@ export function CommunityAppearanceSection({
         return;
       }
       onFileError(null);
-      const objectUrl = URL.createObjectURL(file);
-      if (kind === "avatar") {
-        dismissCoverCrop();
-        setAvatarCropSrc(objectUrl);
-        setAvatarCropOpen(true);
-      } else {
-        dismissAvatarCrop();
-        setCoverCropSrc(objectUrl);
-        setCoverCropOpen(true);
-      }
+      void prepareImageForCrop(file).then((objectUrl) => {
+        if (kind === "avatar") {
+          dismissCoverCrop();
+          setAvatarCropSrc(objectUrl);
+          setAvatarCropOpen(true);
+        } else {
+          dismissAvatarCrop();
+          setCoverCropSrc(objectUrl);
+          setCoverCropOpen(true);
+        }
+      });
     },
     [dismissAvatarCrop, dismissCoverCrop, onFileError]
   );
