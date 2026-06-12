@@ -234,7 +234,7 @@ export function AdminVerificationListPage() {
       )}
 
       {/* Lista */}
-      <div className="rounded-xl border border-black/10 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-black/10 bg-white shadow-sm overflow-visible">
         {isLoading && items.length === 0 ? (
           <div className="flex h-40 items-center justify-center gap-2 text-sm text-zinc-400">
             <Loader2 className="size-5 animate-spin" aria-hidden />
