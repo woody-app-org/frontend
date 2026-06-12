@@ -94,12 +94,14 @@ export function VerificationDocumentPage() {
             {/* Explicação */}
             <div className="rounded-xl bg-[var(--woody-sand)] px-4 py-3.5 text-sm text-[var(--woody-ink)]/80 leading-relaxed space-y-1.5">
               <p>
-                Você gostaria de estar em uma rede social sáfica onde homens pudessem entrar? Nós também não. É por isso que fazemos a verificação por{" "}<strong className="font-semibold">documento</strong>: para proteger a comunidade e garantir que este continue sendo um espaço seguro, e só nosso.
+                Você gostaria de estar em uma rede social sáfica onde homens pudessem entrar? Nós também não. Por isso, realizamos uma verificação em duas etapas, quando necessário. Na primeira etapa, pedimos que você envie uma selfie em três ângulos diferentes do seu rosto. Caso haja necessidade de validação adicional, poderemos solicitar um documento de identificação.
+              </p>
+              <p>
+                Esse processo é fundamental para proteger nossa comunidade e garantir que este continue sendo um espaço seguro e exclusivamente nosso.
               </p>
               <p className="text-[var(--woody-muted)]">
-                Fique tranquila(e). Depois da análise,{" "}
-                <strong className="font-medium text-[var(--woody-ink)]/70">seu documento é excluído do nosso banco de dados</strong>.
-                Para sua proteção, não armazenamos nenhuma cópia desses documentos.
+                Fique tranquila(e): após a análise,{" "}
+                <strong className="font-medium text-[var(--woody-ink)]/70">suas fotos e documentos são excluídos do nosso banco de dados</strong> automaticamente.
               </p>
             </div>
 
