@@ -97,8 +97,16 @@ export function AdminVerificationListPage() {
   }, [page, filterStatus, filterDateFrom, filterDateTo, loadData]);
 
   const handleApplyFilters = useCallback(() => {
-    setPage(1);
-  }, []);
+    if (page === 1) {
+      void loadData(1, {
+        status: filterStatus || undefined,
+        dateFrom: filterDateFrom || undefined,
+        dateTo: filterDateTo || undefined,
+      });
+    } else {
+      setPage(1);
+    }
+  }, [page, filterStatus, filterDateFrom, filterDateTo, loadData]);
 
   const handleClearFilters = useCallback(() => {
     setFilterStatus("");
