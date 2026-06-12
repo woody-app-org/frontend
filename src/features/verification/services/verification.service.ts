@@ -16,12 +16,14 @@ export async function getVerificationStatus(): Promise<VerificationStatusDto> {
 }
 
 export async function submitVerificationDocument(
-  file: File,
+  files: [File, File, File],
   consentGiven: boolean,
   onProgress?: (pct: number) => void
 ): Promise<VerificationStatusDto> {
   const formData = new FormData();
-  formData.append("File", file);
+  formData.append("File1", files[0]);
+  formData.append("File2", files[1]);
+  formData.append("File3", files[2]);
   formData.append("ConsentGiven", String(consentGiven));
   const { data } = await api.post<VerificationStatusDto>("/verification/document", formData, {
     headers: { "Content-Type": "multipart/form-data" },

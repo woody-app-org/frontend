@@ -11,24 +11,31 @@ import { cn } from "@/lib/utils";
 
 const ACCEPT = "image/jpeg,image/png";
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
+const SLOT_COUNT = 3;
+const SLOT_LABELS = ["Selfie de frente", "Selfie de perfil esquerdo", "Selfie de perfil direito"];
+
+type Slot = { file: File | null; preview: string | null };
+
+const EMPTY_SLOTS: Slot[] = Array.from({ length: SLOT_COUNT }, () => ({ file: null, preview: null }));
 
 export function VerificationDocumentPage() {
   const navigate = useNavigate();
   const { logout, patchUser } = useAuth();
 
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [slots, setSlots] = useState<Slot[]>(EMPTY_SLOTS);
   const [consentChecked, setConsentChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [activeSlot, setActiveSlot] = useState<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const slotIndex = activeSlot;
     const selected = e.target.files?.[0] ?? null;
-    if (!selected) return;
+    if (!selected || slotIndex == null) return;
 
     if (!["image/jpeg", "image/png"].includes(selected.type)) {
       setError("Apenas imagens JPG ou PNG são aceitas.");
@@ -39,37 +46,52 @@ export function VerificationDocumentPage() {
       return;
     }
     setError(null);
-    setFile(selected);
     const url = URL.createObjectURL(selected);
-    setPreview(url);
+    setSlots((prev) => {
+      const next = [...prev];
+      if (next[slotIndex].preview) URL.revokeObjectURL(next[slotIndex].preview!);
+      next[slotIndex] = { file: selected, preview: url };
+      return next;
+    });
+    if (inputRef.current) inputRef.current.value = "";
+  }, [activeSlot]);
+
+  const handleSelectSlot = useCallback((index: number) => {
+    setActiveSlot(index);
+    inputRef.current?.click();
   }, []);
 
-  const handleRemoveFile = useCallback(() => {
-    setFile(null);
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(null);
-    if (inputRef.current) inputRef.current.value = "";
-  }, [preview]);
+  const handleRemoveFile = useCallback((index: number) => {
+    setSlots((prev) => {
+      const next = [...prev];
+      if (next[index].preview) URL.revokeObjectURL(next[index].preview!);
+      next[index] = { file: null, preview: null };
+      return next;
+    });
+  }, []);
+
+  const allFilesSelected = slots.every((s) => s.file != null);
 
   const handleSubmit = useCallback(async () => {
-    if (!file || !consentChecked) return;
+    if (!allFilesSelected || !consentChecked) return;
     setError(null);
     setIsSubmitting(true);
     setUploadProgress(0);
     try {
-      await submitVerificationDocument(file, consentChecked, setUploadProgress);
+      const files = slots.map((s) => s.file!) as [File, File, File];
+      await submitVerificationDocument(files, consentChecked, setUploadProgress);
       patchUser({ verificationStatus: "PendingReview" });
       setSuccess(true);
       setTimeout(() => navigate("/verification/pending", { replace: true }), 1200);
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "Não foi possível enviar o documento. Tente novamente.";
+        err instanceof Error ? err.message : "Não foi possível enviar as fotos. Tente novamente.";
       setError(msg);
       showErrorToast(msg, { id: "verification-upload-error" });
     } finally {
       setIsSubmitting(false);
     }
-  }, [file, consentChecked, navigate, patchUser]);
+  }, [allFilesSelected, consentChecked, slots, navigate, patchUser]);
 
   return (
     <AuthLayout>
@@ -106,54 +128,63 @@ export function VerificationDocumentPage() {
             </div>
 
             {/* Upload */}
-            {!preview ? (
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                className={cn(
-                  "w-full rounded-xl border-2 border-dashed border-black/15 bg-[var(--woody-sand)]/50",
-                  "px-4 py-8 flex flex-col items-center gap-2 text-sm text-[var(--woody-muted)]",
-                  "hover:border-[var(--auth-button)]/50 hover:bg-[var(--auth-button)]/5",
-                  "transition-colors duration-150 cursor-pointer focus-visible:outline-none",
-                  "focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/40"
-                )}
-                aria-label="Selecionar imagem do RG"
-              >
-                <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--auth-button)]/12 text-[var(--auth-button-hover)]">
-                  <FileImage className="size-5" aria-hidden />
-                </div>
-                <span className="font-medium text-[var(--woody-ink)]/70">
-                  Selecionar imagem do RG
-                </span>
-                <span className="text-xs">JPG ou PNG · máx. 8 MB</span>
-              </button>
-            ) : (
-              <div className="relative rounded-xl overflow-hidden border border-black/10 bg-[var(--woody-sand)]">
-                <img
-                  src={preview}
-                  alt="Pré-visualização do documento"
-                  className="w-full max-h-64 object-contain"
-                />
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  disabled={isSubmitting}
-                  className={cn(
-                    "absolute top-2 right-2 flex size-7 items-center justify-center",
-                    "rounded-full bg-white/90 shadow-sm border border-black/10",
-                    "text-[var(--woody-muted)] hover:text-[var(--woody-ink)]",
-                    "transition-colors duration-150 disabled:opacity-50"
+            <div className="space-y-3">
+              {slots.map((slot, index) => (
+                <div key={index}>
+                  <p className="mb-1.5 text-xs font-medium text-[var(--woody-muted)]">
+                    {SLOT_LABELS[index]}
+                  </p>
+                  {!slot.preview ? (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectSlot(index)}
+                      className={cn(
+                        "w-full rounded-xl border-2 border-dashed border-black/15 bg-[var(--woody-sand)]/50",
+                        "px-4 py-5 flex flex-col items-center gap-1.5 text-sm text-[var(--woody-muted)]",
+                        "hover:border-[var(--auth-button)]/50 hover:bg-[var(--auth-button)]/5",
+                        "transition-colors duration-150 cursor-pointer focus-visible:outline-none",
+                        "focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/40"
+                      )}
+                      aria-label={`Selecionar ${SLOT_LABELS[index]}`}
+                    >
+                      <div className="flex size-9 items-center justify-center rounded-xl bg-[var(--auth-button)]/12 text-[var(--auth-button-hover)]">
+                        <FileImage className="size-4" aria-hidden />
+                      </div>
+                      <span className="font-medium text-[var(--woody-ink)]/70">
+                        Selecionar foto
+                      </span>
+                      <span className="text-xs">JPG ou PNG · máx. 8 MB</span>
+                    </button>
+                  ) : (
+                    <div className="relative rounded-xl overflow-hidden border border-black/10 bg-[var(--woody-sand)]">
+                      <img
+                        src={slot.preview}
+                        alt={`Pré-visualização: ${SLOT_LABELS[index]}`}
+                        className="w-full max-h-48 object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(index)}
+                        disabled={isSubmitting}
+                        className={cn(
+                          "absolute top-2 right-2 flex size-7 items-center justify-center",
+                          "rounded-full bg-white/90 shadow-sm border border-black/10",
+                          "text-[var(--woody-muted)] hover:text-[var(--woody-ink)]",
+                          "transition-colors duration-150 disabled:opacity-50"
+                        )}
+                        aria-label="Remover imagem"
+                      >
+                        <X className="size-4" />
+                      </button>
+                      <div className="px-3 py-2 bg-white/80 border-t border-black/8 flex items-center gap-1.5 text-xs text-[var(--woody-muted)]">
+                        <Upload className="size-3.5 shrink-0" aria-hidden />
+                        <span className="truncate">{slot.file?.name}</span>
+                      </div>
+                    </div>
                   )}
-                  aria-label="Remover imagem"
-                >
-                  <X className="size-4" />
-                </button>
-                <div className="px-3 py-2 bg-white/80 border-t border-black/8 flex items-center gap-1.5 text-xs text-[var(--woody-muted)]">
-                  <Upload className="size-3.5 shrink-0" aria-hidden />
-                  <span className="truncate">{file?.name}</span>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
 
             <input
               ref={inputRef}
@@ -161,7 +192,7 @@ export function VerificationDocumentPage() {
               accept={ACCEPT}
               onChange={handleFileChange}
               className="sr-only"
-              aria-label="Arquivo do documento"
+              aria-label="Arquivo da foto de verificação"
             />
 
             {/* Consentimento */}
@@ -198,9 +229,9 @@ export function VerificationDocumentPage() {
                 </div>
               </div>
               <span className="text-sm text-[var(--woody-ink)]/80 leading-snug select-none">
-                Estou ciente de que a imagem será usada{" "}
+                Estou ciente de que as fotos serão usadas{" "}
                 <strong className="font-semibold">apenas para verificação de acesso</strong> à
-                Woody e será descartada após a decisão.
+                Woody e serão descartadas após a decisão.
               </span>
             </label>
 
@@ -218,7 +249,7 @@ export function VerificationDocumentPage() {
             {isSubmitting && uploadProgress > 0 && uploadProgress < 100 && (
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs text-[var(--woody-muted)]">
-                  <span>Enviando documento…</span>
+                  <span>Enviando fotos…</span>
                   <span>{uploadProgress}%</span>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-black/8 overflow-hidden">
@@ -234,7 +265,7 @@ export function VerificationDocumentPage() {
             {success && (
               <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3.5 py-2.5 text-sm text-green-700">
                 <CheckCircle2 className="size-4 shrink-0" aria-hidden />
-                Documento enviado! Redirecionando…
+                Fotos enviadas! Redirecionando…
               </div>
             )}
 
@@ -242,7 +273,7 @@ export function VerificationDocumentPage() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!file || !consentChecked || isSubmitting || success}
+              disabled={!allFilesSelected || !consentChecked || isSubmitting || success}
               className={cn(
                 "w-full h-11 rounded-xl font-semibold text-sm",
                 "inline-flex items-center justify-center gap-2",

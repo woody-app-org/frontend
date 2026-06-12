@@ -26,7 +26,7 @@ export interface AdminVerificationDetailDto {
   avatarUrl?: string | null;
   status: VerificationStatus;
   hasDocument: boolean;
-  documentUrl?: string | null;
+  documentUrls: string[];
   documentSubmittedAt?: string | null;
   reviewedAt?: string | null;
   reviewedByUserId?: number | null;
@@ -80,11 +80,11 @@ export async function getVerificationRequest(id: number): Promise<AdminVerificat
 }
 
 /**
- * Retorna o documento como Blob para uso seguro via `URL.createObjectURL`.
+ * Retorna uma das fotos de verificação (1 a 3) como Blob para uso seguro via `URL.createObjectURL`.
  * Nunca expõe o JWT na URL pública.
  */
-export async function fetchVerificationDocumentBlob(id: number): Promise<Blob> {
-  const { data } = await api.get(`/admin/verification/${id}/document`, {
+export async function fetchVerificationDocumentBlob(id: number, index: number): Promise<Blob> {
+  const { data } = await api.get(`/admin/verification/${id}/document/${index}`, {
     responseType: "blob",
   });
   return data as Blob;

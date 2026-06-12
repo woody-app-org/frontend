@@ -276,12 +276,12 @@ export function AdminVerificationDetailPage() {
           {/* Documento */}
           <div className="rounded-xl border border-black/10 bg-white shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-black/8 bg-zinc-50/50">
-              <h2 className="text-sm font-semibold text-zinc-600">Documento de identidade</h2>
+              <h2 className="text-sm font-semibold text-zinc-600">Fotos de verificação</h2>
             </div>
             <div className="p-5">
               <DocumentViewer
                 verificationId={detail.verificationId}
-                hasDocument={detail.hasDocument}
+                documentCount={detail.documentUrls.length}
               />
             </div>
           </div>
