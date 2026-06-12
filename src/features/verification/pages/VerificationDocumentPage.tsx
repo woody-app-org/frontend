@@ -1,66 +1,34 @@
-import { useState, useRef, useEffect, useCallback, type ChangeEvent } from "react";
+import { useState, useRef, useCallback, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Shield, Upload, X, Loader2, CheckCircle2, FileImage } from "lucide-react";
 import { AuthLayout } from "@/features/auth/components/AuthLayout";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import {
   submitVerificationDocument,
-  getVerificationStatus,
-  resolveVerificationRoute,
 } from "../services/verification.service";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 const ACCEPT = "image/jpeg,image/png";
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
-const SLOT_COUNT = 3;
-const SLOT_LABELS = ["Selfie de frente", "Selfie de perfil esquerdo", "Selfie de perfil direito"];
-
-type Slot = { file: File | null; preview: string | null };
-
-const EMPTY_SLOTS: Slot[] = Array.from({ length: SLOT_COUNT }, () => ({ file: null, preview: null }));
 
 export function VerificationDocumentPage() {
   const navigate = useNavigate();
   const { logout, patchUser } = useAuth();
 
-  const [slots, setSlots] = useState<Slot[]>(EMPTY_SLOTS);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [consentChecked, setConsentChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [activeSlot, setActiveSlot] = useState<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Algumas usuárias ficaram presas nesta tela após um envio que na verdade já
-  // foi aceito pelo servidor (timeout de rede mascarando um 200/409 anterior).
-  // Ao abrir a página, confirmamos o status real e saímos daqui se já não couber.
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const status = await getVerificationStatus();
-        if (cancelled) return;
-        if (status.status !== "PendingDocument" && status.status !== "Rejected") {
-          patchUser({ verificationStatus: status.status });
-          navigate(resolveVerificationRoute(status.status), { replace: true });
-        }
-      } catch {
-        // se a verificação falhar, deixa a usuária na tela normalmente
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [navigate, patchUser]);
-
   const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const slotIndex = activeSlot;
     const selected = e.target.files?.[0] ?? null;
-    if (!selected || slotIndex == null) return;
+    if (!selected) return;
 
     if (!["image/jpeg", "image/png"].includes(selected.type)) {
       setError("Apenas imagens JPG ou PNG são aceitas.");
@@ -71,70 +39,37 @@ export function VerificationDocumentPage() {
       return;
     }
     setError(null);
+    setFile(selected);
     const url = URL.createObjectURL(selected);
-    setSlots((prev) => {
-      const next = [...prev];
-      if (next[slotIndex].preview) URL.revokeObjectURL(next[slotIndex].preview!);
-      next[slotIndex] = { file: selected, preview: url };
-      return next;
-    });
+    setPreview(url);
+  }, []);
+
+  const handleRemoveFile = useCallback(() => {
+    setFile(null);
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(null);
     if (inputRef.current) inputRef.current.value = "";
-  }, [activeSlot]);
-
-  const handleSelectSlot = useCallback((index: number) => {
-    setActiveSlot(index);
-    inputRef.current?.click();
-  }, []);
-
-  const handleRemoveFile = useCallback((index: number) => {
-    setSlots((prev) => {
-      const next = [...prev];
-      if (next[index].preview) URL.revokeObjectURL(next[index].preview!);
-      next[index] = { file: null, preview: null };
-      return next;
-    });
-  }, []);
-
-  const allFilesSelected = slots.every((s) => s.file != null);
+  }, [preview]);
 
   const handleSubmit = useCallback(async () => {
-    if (!allFilesSelected || !consentChecked || isSubmitting) return;
+    if (!file || !consentChecked) return;
     setError(null);
     setIsSubmitting(true);
     setUploadProgress(0);
     try {
-      const files = slots.map((s) => s.file!) as [File, File, File];
-      await submitVerificationDocument(files, consentChecked, setUploadProgress);
+      await submitVerificationDocument(file, consentChecked, setUploadProgress);
       patchUser({ verificationStatus: "PendingReview" });
       setSuccess(true);
       setTimeout(() => navigate("/verification/pending", { replace: true }), 1200);
     } catch (err) {
-      // Em conexões lentas, a 1ª tentativa pode ter sido aceita pelo servidor mesmo que
-      // o cliente não tenha recebido a resposta (timeout/queda de rede). Nesse caso o
-      // reenvio recebe 409 ("estado inválido") — verificamos o status real antes de
-      // mostrar um erro confuso para a usuária.
-      if (axios.isAxiosError(err) && err.response?.status === 409) {
-        try {
-          const status = await getVerificationStatus();
-          if (status.status === "PendingReview" || status.status === "Approved") {
-            patchUser({ verificationStatus: status.status });
-            setSuccess(true);
-            setTimeout(() => navigate("/verification/pending", { replace: true }), 1200);
-            return;
-          }
-        } catch {
-          // ignora falha na verificação e cai no tratamento de erro padrão
-        }
-      }
-
       const msg =
-        err instanceof Error ? err.message : "Não foi possível enviar as fotos. Tente novamente.";
+        err instanceof Error ? err.message : "Não foi possível enviar o documento. Tente novamente.";
       setError(msg);
       showErrorToast(msg, { id: "verification-upload-error" });
     } finally {
       setIsSubmitting(false);
     }
-  }, [allFilesSelected, consentChecked, isSubmitting, slots, navigate, patchUser]);
+  }, [file, consentChecked, navigate, patchUser]);
 
   return (
     <AuthLayout>
@@ -159,7 +94,7 @@ export function VerificationDocumentPage() {
             {/* Explicação */}
             <div className="rounded-xl bg-[var(--woody-sand)] px-4 py-3.5 text-sm text-[var(--woody-ink)]/80 leading-relaxed space-y-1.5">
               <p>
-                Você gostaria de estar em uma rede social sáfica onde homens pudessem entrar? Nós também não. Por isso, realizamos uma verificação em duas etapas, quando necessário. Na primeira etapa, pedimos que você envie uma selfie em três ângulos diferentes do seu rosto. Caso haja necessidade de validação adicional, poderemos solicitar um documento de identificação.
+                Você gostaria de estar em uma rede social sáfica onde homens pudessem entrar? Nós também não. Por isso, realizamos uma verificação em duas etapas, quando necessário. Na primeira etapa, pedimos que você envie uma selfie clara do seu rosto. Caso haja necessidade de validação adicional, poderemos solicitar um documento de identificação.
               </p>
               <p>
                 Esse processo é fundamental para proteger nossa comunidade e garantir que este continue sendo um espaço seguro e exclusivamente nosso.
@@ -171,63 +106,54 @@ export function VerificationDocumentPage() {
             </div>
 
             {/* Upload */}
-            <div className="space-y-3">
-              {slots.map((slot, index) => (
-                <div key={index}>
-                  <p className="mb-1.5 text-xs font-medium text-[var(--woody-muted)]">
-                    {SLOT_LABELS[index]}
-                  </p>
-                  {!slot.preview ? (
-                    <button
-                      type="button"
-                      onClick={() => handleSelectSlot(index)}
-                      className={cn(
-                        "w-full rounded-xl border-2 border-dashed border-black/15 bg-[var(--woody-sand)]/50",
-                        "px-4 py-5 flex flex-col items-center gap-1.5 text-sm text-[var(--woody-muted)]",
-                        "hover:border-[var(--auth-button)]/50 hover:bg-[var(--auth-button)]/5",
-                        "transition-colors duration-150 cursor-pointer focus-visible:outline-none",
-                        "focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/40"
-                      )}
-                      aria-label={`Selecionar ${SLOT_LABELS[index]}`}
-                    >
-                      <div className="flex size-9 items-center justify-center rounded-xl bg-[var(--auth-button)]/12 text-[var(--auth-button-hover)]">
-                        <FileImage className="size-4" aria-hidden />
-                      </div>
-                      <span className="font-medium text-[var(--woody-ink)]/70">
-                        Selecionar foto
-                      </span>
-                      <span className="text-xs">JPG ou PNG · máx. 8 MB</span>
-                    </button>
-                  ) : (
-                    <div className="relative rounded-xl overflow-hidden border border-black/10 bg-[var(--woody-sand)]">
-                      <img
-                        src={slot.preview}
-                        alt={`Pré-visualização: ${SLOT_LABELS[index]}`}
-                        className="w-full max-h-48 object-contain"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFile(index)}
-                        disabled={isSubmitting}
-                        className={cn(
-                          "absolute top-2 right-2 flex size-7 items-center justify-center",
-                          "rounded-full bg-white/90 shadow-sm border border-black/10",
-                          "text-[var(--woody-muted)] hover:text-[var(--woody-ink)]",
-                          "transition-colors duration-150 disabled:opacity-50"
-                        )}
-                        aria-label="Remover imagem"
-                      >
-                        <X className="size-4" />
-                      </button>
-                      <div className="px-3 py-2 bg-white/80 border-t border-black/8 flex items-center gap-1.5 text-xs text-[var(--woody-muted)]">
-                        <Upload className="size-3.5 shrink-0" aria-hidden />
-                        <span className="truncate">{slot.file?.name}</span>
-                      </div>
-                    </div>
-                  )}
+            {!preview ? (
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className={cn(
+                  "w-full rounded-xl border-2 border-dashed border-black/15 bg-[var(--woody-sand)]/50",
+                  "px-4 py-8 flex flex-col items-center gap-2 text-sm text-[var(--woody-muted)]",
+                  "hover:border-[var(--auth-button)]/50 hover:bg-[var(--auth-button)]/5",
+                  "transition-colors duration-150 cursor-pointer focus-visible:outline-none",
+                  "focus-visible:ring-2 focus-visible:ring-[var(--auth-button)]/40"
+                )}
+                aria-label="Selecionar foto"
+              >
+                <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--auth-button)]/12 text-[var(--auth-button-hover)]">
+                  <FileImage className="size-5" aria-hidden />
                 </div>
-              ))}
-            </div>
+                <span className="font-medium text-[var(--woody-ink)]/70">
+                  Selecionar foto
+                </span>
+                <span className="text-xs">JPG ou PNG · máx. 8 MB</span>
+              </button>
+            ) : (
+              <div className="relative rounded-xl overflow-hidden border border-black/10 bg-[var(--woody-sand)]">
+                <img
+                  src={preview}
+                  alt="Pré-visualização da foto"
+                  className="w-full max-h-64 object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveFile}
+                  disabled={isSubmitting}
+                  className={cn(
+                    "absolute top-2 right-2 flex size-7 items-center justify-center",
+                    "rounded-full bg-white/90 shadow-sm border border-black/10",
+                    "text-[var(--woody-muted)] hover:text-[var(--woody-ink)]",
+                    "transition-colors duration-150 disabled:opacity-50"
+                  )}
+                  aria-label="Remover imagem"
+                >
+                  <X className="size-4" />
+                </button>
+                <div className="px-3 py-2 bg-white/80 border-t border-black/8 flex items-center gap-1.5 text-xs text-[var(--woody-muted)]">
+                  <Upload className="size-3.5 shrink-0" aria-hidden />
+                  <span className="truncate">{file?.name}</span>
+                </div>
+              </div>
+            )}
 
             <input
               ref={inputRef}
@@ -235,7 +161,7 @@ export function VerificationDocumentPage() {
               accept={ACCEPT}
               onChange={handleFileChange}
               className="sr-only"
-              aria-label="Arquivo da foto de verificação"
+              aria-label="Arquivo da foto"
             />
 
             {/* Consentimento */}
@@ -272,9 +198,9 @@ export function VerificationDocumentPage() {
                 </div>
               </div>
               <span className="text-sm text-[var(--woody-ink)]/80 leading-snug select-none">
-                Estou ciente de que as fotos serão usadas{" "}
+                Estou ciente de que a foto será usada{" "}
                 <strong className="font-semibold">apenas para verificação de acesso</strong> à
-                Woody e serão descartadas após a decisão.
+                Woody e será descartada após a decisão.
               </span>
             </label>
 
@@ -292,7 +218,7 @@ export function VerificationDocumentPage() {
             {isSubmitting && uploadProgress > 0 && uploadProgress < 100 && (
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs text-[var(--woody-muted)]">
-                  <span>Enviando fotos…</span>
+                  <span>Enviando documento…</span>
                   <span>{uploadProgress}%</span>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-black/8 overflow-hidden">
@@ -308,7 +234,7 @@ export function VerificationDocumentPage() {
             {success && (
               <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3.5 py-2.5 text-sm text-green-700">
                 <CheckCircle2 className="size-4 shrink-0" aria-hidden />
-                Fotos enviadas! Redirecionando…
+                Documento enviado! Redirecionando…
               </div>
             )}
 
@@ -316,7 +242,7 @@ export function VerificationDocumentPage() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!allFilesSelected || !consentChecked || isSubmitting || success}
+              disabled={!file || !consentChecked || isSubmitting || success}
               className={cn(
                 "w-full h-11 rounded-xl font-semibold text-sm",
                 "inline-flex items-center justify-center gap-2",

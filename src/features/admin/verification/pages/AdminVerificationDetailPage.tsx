@@ -277,12 +277,12 @@ export function AdminVerificationDetailPage() {
           {/* Documento */}
           <div className="rounded-xl border border-black/10 bg-white shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-black/8 bg-zinc-50/50">
-              <h2 className="text-sm font-semibold text-zinc-600">Fotos de verificação</h2>
+              <h2 className="text-sm font-semibold text-zinc-600">Documento de identidade</h2>
             </div>
             <div className="p-5">
               <DocumentViewer
                 verificationId={detail.verificationId}
-                documentCount={detail.documentUrls.length}
+                hasDocument={detail.hasDocument}
               />
             </div>
           </div>
@@ -340,7 +340,7 @@ export function AdminVerificationDetailPage() {
               ) : canApproveWithoutDocs ? (
                 <>
                   <p className="text-xs text-zinc-400 text-center pb-1">
-                    Aguardando envio das fotos pela utilizadora.
+                    Aguardando envio do documento pela utilizadora.
                   </p>
                   <button
                     type="button"
@@ -355,7 +355,7 @@ export function AdminVerificationDetailPage() {
                     )}
                   >
                     <CheckCircle2 className="size-4" aria-hidden />
-                    Aprovar mesmo sem fotos
+                    Aprovar mesmo sem documento
                   </button>
                 </>
               ) : !canAct ? (
@@ -427,7 +427,7 @@ export function AdminVerificationDetailPage() {
                 <>
                   {" "}
                   <strong className="font-semibold text-amber-700">
-                    Atenção: esta utilizadora ainda não enviou as fotos de verificação.
+                    Atenção: esta utilizadora ainda não enviou o documento de verificação.
                   </strong>
                 </>
               )}
