@@ -177,6 +177,7 @@ export function AdminVerificationDetailPage() {
 
   const isAlreadyDecided = detail.status === "Approved" || detail.status === "Rejected";
   const canAct = detail.status === "PendingReview";
+  const canApproveWithoutDocs = detail.status === "PendingDocument";
 
   return (
     <FeedLayout showRightPanel={false} wideMain>
@@ -336,11 +337,30 @@ export function AdminVerificationDetailPage() {
                   )}
                   {detail.status === "Approved" ? "Conta aprovada" : "Conta recusada"}
                 </div>
+              ) : canApproveWithoutDocs ? (
+                <>
+                  <p className="text-xs text-zinc-400 text-center pb-1">
+                    Aguardando envio das fotos pela utilizadora.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowApproveDialog(true)}
+                    className={cn(
+                      "w-full h-11 rounded-xl font-semibold text-sm",
+                      "inline-flex items-center justify-center gap-2",
+                      "border border-amber-300 bg-amber-50 text-amber-700",
+                      "hover:bg-amber-100 hover:border-amber-400",
+                      "transition-colors focus-visible:outline-none",
+                      "focus-visible:ring-2 focus-visible:ring-amber-400/40"
+                    )}
+                  >
+                    <CheckCircle2 className="size-4" aria-hidden />
+                    Aprovar mesmo sem fotos
+                  </button>
+                </>
               ) : !canAct ? (
                 <p className="text-sm text-zinc-400 text-center py-2">
-                  {detail.status === "PendingDocument"
-                    ? "Aguardando envio do documento pela utilizadora."
-                    : "Nenhuma ação disponível."}
+                  Nenhuma ação disponível.
                 </p>
               ) : (
                 <>
@@ -403,6 +423,14 @@ export function AdminVerificationDetailPage() {
                 @{detail.username}
               </strong>{" "}
               será aprovada e ela terá acesso imediato à plataforma.
+              {canApproveWithoutDocs && (
+                <>
+                  {" "}
+                  <strong className="font-semibold text-amber-700">
+                    Atenção: esta utilizadora ainda não enviou as fotos de verificação.
+                  </strong>
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end pt-2">
