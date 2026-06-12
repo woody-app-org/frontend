@@ -1,10 +1,13 @@
-import { useState, useRef, useCallback, type ChangeEvent } from "react";
+import { useState, useRef, useEffect, useCallback, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Shield, Upload, X, Loader2, CheckCircle2, FileImage } from "lucide-react";
 import { AuthLayout } from "@/features/auth/components/AuthLayout";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import {
   submitVerificationDocument,
+  getVerificationStatus,
+  resolveVerificationRoute,
 } from "../services/verification.service";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -31,6 +34,28 @@ export function VerificationDocumentPage() {
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Algumas usuárias ficaram presas nesta tela após um envio que na verdade já
+  // foi aceito pelo servidor (timeout de rede mascarando um 200/409 anterior).
+  // Ao abrir a página, confirmamos o status real e saímos daqui se já não couber.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const status = await getVerificationStatus();
+        if (cancelled) return;
+        if (status.status !== "PendingDocument" && status.status !== "Rejected") {
+          patchUser({ verificationStatus: status.status });
+          navigate(resolveVerificationRoute(status.status), { replace: true });
+        }
+      } catch {
+        // se a verificação falhar, deixa a usuária na tela normalmente
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, patchUser]);
 
   const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const slotIndex = activeSlot;
@@ -73,7 +98,7 @@ export function VerificationDocumentPage() {
   const allFilesSelected = slots.every((s) => s.file != null);
 
   const handleSubmit = useCallback(async () => {
-    if (!allFilesSelected || !consentChecked) return;
+    if (!allFilesSelected || !consentChecked || isSubmitting) return;
     setError(null);
     setIsSubmitting(true);
     setUploadProgress(0);
@@ -84,6 +109,24 @@ export function VerificationDocumentPage() {
       setSuccess(true);
       setTimeout(() => navigate("/verification/pending", { replace: true }), 1200);
     } catch (err) {
+      // Em conexões lentas, a 1ª tentativa pode ter sido aceita pelo servidor mesmo que
+      // o cliente não tenha recebido a resposta (timeout/queda de rede). Nesse caso o
+      // reenvio recebe 409 ("estado inválido") — verificamos o status real antes de
+      // mostrar um erro confuso para a usuária.
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        try {
+          const status = await getVerificationStatus();
+          if (status.status === "PendingReview" || status.status === "Approved") {
+            patchUser({ verificationStatus: status.status });
+            setSuccess(true);
+            setTimeout(() => navigate("/verification/pending", { replace: true }), 1200);
+            return;
+          }
+        } catch {
+          // ignora falha na verificação e cai no tratamento de erro padrão
+        }
+      }
+
       const msg =
         err instanceof Error ? err.message : "Não foi possível enviar as fotos. Tente novamente.";
       setError(msg);
@@ -91,7 +134,7 @@ export function VerificationDocumentPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [allFilesSelected, consentChecked, slots, navigate, patchUser]);
+  }, [allFilesSelected, consentChecked, isSubmitting, slots, navigate, patchUser]);
 
   return (
     <AuthLayout>
