@@ -37,10 +37,17 @@ export async function deleteVerificationDocument(): Promise<VerificationStatusDt
   return data;
 }
 
+export async function submitAccessCode(code: string): Promise<VerificationStatusDto> {
+  const { data } = await api.post<VerificationStatusDto>("/verification/access-code", {
+    code: code.trim(),
+  });
+  return data;
+}
+
 /** Rota frontend correspondente ao status de verificação. */
 export function resolveVerificationRoute(status: VerificationStatus | undefined): string {
   if (!status || status === "Approved") return "/feed";
   if (status === "PendingReview") return "/verification/pending";
   if (status === "Rejected") return "/verification/rejected";
-  return "/verification/document";
+  return "/verification/access-choice";
 }

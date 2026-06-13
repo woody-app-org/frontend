@@ -62,6 +62,12 @@ const ResetPasswordPage = lazy(() =>
 );
 
 // Verificação (usado apenas na primeira aprovação)
+const VerificationAccessChoicePage = lazy(() =>
+  import("@/features/verification/pages/VerificationAccessChoicePage").then(m => ({ default: m.VerificationAccessChoicePage }))
+);
+const VerificationAccessCodePage = lazy(() =>
+  import("@/features/verification/pages/VerificationAccessCodePage").then(m => ({ default: m.VerificationAccessCodePage }))
+);
 const VerificationDocumentPage = lazy(() =>
   import("@/features/verification/pages/VerificationDocumentPage").then(m => ({ default: m.VerificationDocumentPage }))
 );
@@ -243,6 +249,22 @@ export const router = createBrowserRouter([
         ],
       },
       { path: "auth/register", element: <Navigate to="/auth/onboarding/1" replace /> },
+      {
+        path: "verification/access-choice",
+        element: (
+          <ProtectedRoute requireVerified={false}>
+            <LazyRouteSuspense><VerificationAccessChoicePage /></LazyRouteSuspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "verification/access-code",
+        element: (
+          <ProtectedRoute requireVerified={false}>
+            <LazyRouteSuspense><VerificationAccessCodePage /></LazyRouteSuspense>
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "verification/document",
         element: (
