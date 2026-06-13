@@ -25,6 +25,9 @@ export function resolveStoryTextBackground(color: string | null | undefined): st
 
 export const STORY_STATIC_DURATION_MS = 6_000;
 
+/** Duração máxima (segundos) de qualquer story — vídeo ou música são cortados aqui. */
+export const STORY_MAX_DURATION_SEC = 30;
+
 /** Compara IDs de utilizadora (API pode devolver string ou número serializado). */
 export function isSameUserId(a: string | null | undefined, b: string | null | undefined): boolean {
   if (a == null || b == null) return false;

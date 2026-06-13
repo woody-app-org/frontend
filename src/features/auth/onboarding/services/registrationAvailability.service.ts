@@ -1,9 +1,8 @@
 import { api, getApiErrorMessage } from "@/lib/api";
 import type { OnboardingAccountFormData } from "../account.validation";
-import { stripCpfDigits } from "../account.validation";
 import { normalizeUsername } from "@/features/auth/lib/usernamePolicy";
 
-export type RegistrationField = "username" | "email" | "cpf";
+export type RegistrationField = "username" | "email";
 
 export type FieldAvailability = {
   available: boolean;
@@ -13,7 +12,6 @@ export type FieldAvailability = {
 export type RegistrationAvailabilityResult = {
   username?: FieldAvailability;
   email?: FieldAvailability;
-  cpf?: FieldAvailability;
 };
 
 type ApiFieldAvailability = {
@@ -24,7 +22,6 @@ type ApiFieldAvailability = {
 type ApiAvailabilityResponse = {
   username?: ApiFieldAvailability;
   email?: ApiFieldAvailability;
-  cpf?: ApiFieldAvailability;
 };
 
 function mapField(raw: ApiFieldAvailability | undefined): FieldAvailability | undefined {
@@ -42,12 +39,10 @@ export async function checkRegistrationAvailability(
     const { data } = await api.post<ApiAvailabilityResponse>("Auth/check-availability", {
       ...(fields.username != null ? { username: normalizeUsername(fields.username) } : {}),
       ...(fields.email != null ? { email: fields.email.trim() } : {}),
-      ...(fields.cpf != null ? { cpf: stripCpfDigits(fields.cpf) } : {}),
     });
     return {
       username: mapField(data.username),
       email: mapField(data.email),
-      cpf: mapField(data.cpf),
     };
   } catch (e) {
     throw new Error(getApiErrorMessage(e, "Não foi possível verificar os dados. Tente novamente."));
@@ -62,7 +57,6 @@ export function collectUnavailableFields(
   const entries: [RegistrationField, FieldAvailability | undefined][] = [
     ["username", result.username],
     ["email", result.email],
-    ["cpf", result.cpf],
   ];
   for (const [field, info] of entries) {
     if (info && !info.available) {

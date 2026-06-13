@@ -62,8 +62,10 @@ export function AdminVerificationListPage() {
   const [filterStatus, setFilterStatus] = useState<VerificationStatus | "">("");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
+  const [filterUsername, setFilterUsername] = useState("");
+  const [usernameInput, setUsernameInput] = useState("");
 
-  const hasActiveFilters = Boolean(filterStatus || filterDateFrom || filterDateTo);
+  const hasActiveFilters = Boolean(filterStatus || filterDateFrom || filterDateTo || filterUsername);
 
   const loadData = useCallback(
     async (targetPage: number, filters: ListVerificationFilters) => {
@@ -93,25 +95,31 @@ export function AdminVerificationListPage() {
       status: filterStatus || undefined,
       dateFrom: filterDateFrom || undefined,
       dateTo: filterDateTo || undefined,
+      username: filterUsername || undefined,
     });
-  }, [page, filterStatus, filterDateFrom, filterDateTo, loadData]);
+  }, [page, filterStatus, filterDateFrom, filterDateTo, filterUsername, loadData]);
 
   const handleApplyFilters = useCallback(() => {
+    const trimmedUsername = usernameInput.trim();
+    setFilterUsername(trimmedUsername);
     if (page === 1) {
       void loadData(1, {
         status: filterStatus || undefined,
         dateFrom: filterDateFrom || undefined,
         dateTo: filterDateTo || undefined,
+        username: trimmedUsername || undefined,
       });
     } else {
       setPage(1);
     }
-  }, [page, filterStatus, filterDateFrom, filterDateTo, loadData]);
+  }, [page, filterStatus, filterDateFrom, filterDateTo, usernameInput, loadData]);
 
   const handleClearFilters = useCallback(() => {
     setFilterStatus("");
     setFilterDateFrom("");
     setFilterDateTo("");
+    setFilterUsername("");
+    setUsernameInput("");
     setPage(1);
   }, []);
 
@@ -120,8 +128,9 @@ export function AdminVerificationListPage() {
       status: filterStatus || undefined,
       dateFrom: filterDateFrom || undefined,
       dateTo: filterDateTo || undefined,
+      username: filterUsername || undefined,
     });
-  }, [page, filterStatus, filterDateFrom, filterDateTo, loadData]);
+  }, [page, filterStatus, filterDateFrom, filterDateTo, filterUsername, loadData]);
 
   return (
     <FeedLayout showRightPanel={false} wideMain>
@@ -156,6 +165,26 @@ export function AdminVerificationListPage() {
       {/* Filtros */}
       <div className="mb-4 rounded-xl border border-black/10 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-end gap-3">
+          {/* Username */}
+          <div className="flex flex-col gap-1 min-w-[200px]">
+            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
+              Usuário
+            </label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-zinc-400" aria-hidden />
+              <input
+                type="text"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleApplyFilters();
+                }}
+                placeholder="Buscar por @username"
+                className="w-full rounded-lg border border-black/15 bg-white py-2 pl-8 pr-3 text-sm text-[var(--woody-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--auth-button)]/35"
+              />
+            </div>
+          </div>
+
           {/* Status */}
           <div className="flex flex-col gap-1 min-w-[160px]">
             <label className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Status</label>

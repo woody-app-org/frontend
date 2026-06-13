@@ -24,6 +24,8 @@ export interface AdminVerificationDetailDto {
   displayName?: string | null;
   email: string;
   avatarUrl?: string | null;
+  socialNetwork?: string | null;
+  socialUsername?: string | null;
   status: VerificationStatus;
   hasDocument: boolean;
   documentUrl?: string | null;
@@ -51,6 +53,7 @@ export interface ListVerificationFilters {
   status?: VerificationStatus | "";
   dateFrom?: string;
   dateTo?: string;
+  username?: string;
   page?: number;
   pageSize?: number;
 }
@@ -67,6 +70,7 @@ export async function listVerificationRequests(
   if (filters.status) params.status = filters.status;
   if (filters.dateFrom) params.dateFrom = filters.dateFrom;
   if (filters.dateTo) params.dateTo = filters.dateTo;
+  if (filters.username) params.username = filters.username;
 
   const { data } = await api.get<AdminVerificationListResponse>("/admin/verification", {
     params,

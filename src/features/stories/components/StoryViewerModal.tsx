@@ -19,6 +19,8 @@ import { StoryRing } from "@/components/ui/StoryRing";
 import { PostLikeIcon } from "@/features/feed/components/PostLikeIcon";
 import { usePostLikeTapAnimation } from "@/features/feed/hooks/usePostLikeTapAnimation";
 import { formatRelativeTimeUtc } from "@/lib/formatRelativeTimeUtc";
+import { resolvePublicMediaUrl } from "@/lib/api";
+import { readVideoDurationSeconds } from "@/lib/readVideoDurationSeconds";
 import { cn } from "@/lib/utils";
 import { woodyFocus } from "@/lib/woody-ui";
 import { usePrefersReducedMotion } from "@/features/landing/motion/usePrefersReducedMotion";
@@ -27,6 +29,7 @@ import {
   filterActiveStories,
   isSameUserId,
   isStoryNotExpired,
+  STORY_MAX_DURATION_SEC,
   STORY_STATIC_DURATION_MS,
 } from "../lib/storyUtils";
 import { useAuth } from "@/features/auth/context/AuthContext";
@@ -269,6 +272,30 @@ export function StoryViewerModal({
     }
   }, [open, loadState, currentStory, advanceStory]);
 
+  // Stories sem vídeo de fundo podem ter um vídeo como camada (layer) — nesse caso o
+  // story deve durar o tempo desse vídeo (até STORY_MAX_DURATION_SEC), em vez do tempo
+  // estático padrão.
+  const [layerVideoDurationSec, setLayerVideoDurationSec] = useState<number | null>(null);
+
+  useEffect(() => {
+    setLayerVideoDurationSec(null);
+    if (!open || !currentStory || currentStory.mediaType === "video") return;
+
+    const videoLayer = (currentStory.layers ?? []).find(
+      (l) => l.type === "video" && l.mediaUrl
+    );
+    if (!videoLayer?.mediaUrl) return;
+
+    let cancelled = false;
+    void readVideoDurationSeconds(resolvePublicMediaUrl(videoLayer.mediaUrl)).then((sec) => {
+      if (!cancelled && sec != null) setLayerVideoDurationSec(sec);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, currentStory]);
+
   useEffect(() => {
     if (staticTimerRef.current) {
       clearInterval(staticTimerRef.current);
@@ -279,9 +306,14 @@ export function StoryViewerModal({
 
     staticStartedRef.current = performance.now();
     const music = currentStory.music;
-    const durationMs = music
-      ? Math.max(STORY_STATIC_DURATION_MS, (30 - (music.startTime ?? 0)) * 1000)
-      : STORY_STATIC_DURATION_MS;
+    const musicDurationMs = music
+      ? Math.min(STORY_MAX_DURATION_SEC, 30 - (music.startTime ?? 0)) * 1000
+      : 0;
+    const layerVideoDurationMs =
+      layerVideoDurationSec != null
+        ? Math.min(layerVideoDurationSec, STORY_MAX_DURATION_SEC) * 1000
+        : 0;
+    const durationMs = Math.max(STORY_STATIC_DURATION_MS, musicDurationMs, layerVideoDurationMs);
     const tickMs = reduceMotion ? 120 : 50;
     staticTimerRef.current = setInterval(() => {
       const elapsed = performance.now() - staticStartedRef.current;
@@ -293,7 +325,7 @@ export function StoryViewerModal({
     return () => {
       if (staticTimerRef.current) clearInterval(staticTimerRef.current);
     };
-  }, [open, currentStory, isPaused, reduceMotion]);
+  }, [open, currentStory, isPaused, reduceMotion, layerVideoDurationSec]);
 
   useEffect(() => {
     if (!open) return;

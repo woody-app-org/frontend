@@ -43,17 +43,6 @@ export const codeInputProps = {
   translate: "no",
 } satisfies NativeInputProps;
 
-/** CPF e campos numéricos formatados (sem alterar lógica de cursor). */
-export const cpfInputProps = {
-  type: "text",
-  inputMode: "numeric",
-  autoComplete: "off",
-  autoCorrect: "off",
-  autoCapitalize: "none",
-  spellCheck: false,
-  translate: "no",
-} satisfies NativeInputProps;
-
 /** Célula OTP — primeira célula com `one-time-code` para autofill SMS (iOS). */
 export function otpCellProps(cellIndex: number): NativeInputProps & { inputMode: "numeric" } {
   return {

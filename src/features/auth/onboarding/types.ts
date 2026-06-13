@@ -2,7 +2,7 @@ import type { OnboardingAccountFormData } from "./account.validation";
 
 /**
  * Rascunho do cadastro entre etapas.
- * Em produção: não persistir senha nem CPF em sessionStorage — usar sessão no servidor após etapa 1.
+ * Em produção: não persistir senha em sessionStorage — usar sessão no servidor após etapa 1.
  *
  * Mapa rápido → API:
  * - `account` → criação de conta / registro

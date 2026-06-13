@@ -83,7 +83,6 @@ export async function registerMock(credentials: RegisterCredentials): Promise<Au
       username: normalizeUsername(credentials.username),
       email: credentials.email.trim(),
       password: credentials.password,
-      cpf: credentials.cpf.trim(),
       birthDate: credentials.birthDate,
       policiesAccepted: credentials.policiesAccepted,
       ...(credentials.avatarUrl ? { avatarUrl: credentials.avatarUrl } : {}),

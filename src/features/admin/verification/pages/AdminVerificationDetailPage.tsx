@@ -10,6 +10,7 @@ import {
   Mail,
   Calendar,
   Hash,
+  AtSign,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -47,6 +48,10 @@ function formatDateLong(iso: string | null | undefined): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function capitalize(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function getUserInitials(name: string | null | undefined, username: string): string {
@@ -238,6 +243,13 @@ export function AdminVerificationDetailPage() {
                   label="ID de verificação"
                   value={`#${detail.verificationId}`}
                 />
+                {detail.socialNetwork && detail.socialUsername && (
+                  <InfoRow
+                    icon={<AtSign className="size-4" />}
+                    label="Rede social"
+                    value={`${capitalize(detail.socialNetwork)} — @${detail.socialUsername}`}
+                  />
+                )}
                 <InfoRow
                   icon={<Calendar className="size-4" />}
                   label="Documento enviado em"

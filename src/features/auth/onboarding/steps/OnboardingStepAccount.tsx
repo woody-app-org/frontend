@@ -12,8 +12,6 @@ import { withPasswordAutofillSync } from "../../lib/passwordAutofillRegistration
 import { PASSWORD_MIN_LENGTH } from "../../constants";
 import {
   onboardingAccountSchema,
-  formatCpfDisplay,
-  stripCpfDigits,
   type OnboardingAccountFormData,
   type OnboardingSocialNetwork,
 } from "../account.validation";
@@ -33,7 +31,7 @@ import { INSTITUTIONAL_PATHS } from "@/features/landing/institutional/routes";
 import { onboardingStyles } from "../uiTokens";
 import { cn } from "@/lib/utils";
 import { isBetaClosed } from "@/config/beta";
-import { codeInputProps, cpfInputProps, identifierInputProps, HandleInput } from "@/components/forms";
+import { codeInputProps, identifierInputProps, HandleInput } from "@/components/forms";
 import { USERNAME_MAX_LENGTH, USERNAME_PERMANENT_EMPHASIS, USERNAME_PERMANENT_LEAD, filterUsernameInput } from "@/features/auth/lib/usernamePolicy";
 
 const SOCIAL_NETWORK_OPTIONS: Array<{
@@ -71,7 +69,6 @@ export function OnboardingStepAccount() {
       username: "",
       email: "",
       password: "",
-      cpf: "",
       birthDate: "",
       socialNetwork: "" as OnboardingSocialNetwork,
       socialUsername: "",
@@ -235,41 +232,15 @@ export function OnboardingStepAccount() {
         <div>
           <p className={onboardingStyles.sectionLabel}>Sobre você</p>
           <div className={onboardingStyles.sectionCard}>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 sm:items-start">
-              <Controller
-                name="cpf"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <AuthInputField
-                    label="CPF"
-                    placeholder="000.000.000-00"
-                    variant="maroon"
-                    {...cpfInputProps}
-                    valid={
-                      !!touchedFields.cpf && !fieldState.error && stripCpfDigits(field.value).length === 11
-                    }
-                    value={formatCpfDisplay(field.value)}
-                    onChange={(e) => field.onChange(stripCpfDigits(e.target.value))}
-                    onBlur={() => {
-                      field.onBlur();
-                      void verifyFieldAvailability("cpf");
-                    }}
-                    name={field.name}
-                    ref={field.ref}
-                    error={fieldState.error?.message}
-                  />
-                )}
-              />
-              <AuthInputField
-                label="Data de nascimento"
-                type="date"
-                autoComplete="bday"
-                variant="maroon"
-                valid={!!touchedFields.birthDate && !errors.birthDate && !!w.birthDate}
-                {...form.register("birthDate")}
-                error={errors.birthDate?.message}
-              />
-            </div>
+            <AuthInputField
+              label="Data de nascimento"
+              type="date"
+              autoComplete="bday"
+              variant="maroon"
+              valid={!!touchedFields.birthDate && !errors.birthDate && !!w.birthDate}
+              {...form.register("birthDate")}
+              error={errors.birthDate?.message}
+            />
           </div>
         </div>
 

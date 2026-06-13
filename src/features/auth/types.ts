@@ -47,8 +47,6 @@ export interface RegisterCredentials {
   username: string;
   email: string;
   password: string;
-  /** Apenas dígitos (11). */
-  cpf: string;
   /** ISO `YYYY-MM-DD`. */
   birthDate: string;
   /** Opcional: URL pública após upload (ex. fluxo fora do onboarding). Não usar data URL. */

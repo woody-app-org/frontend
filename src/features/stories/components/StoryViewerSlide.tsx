@@ -6,7 +6,7 @@ import { resolvePublicMediaUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { SharedPostPreviewCard } from "@/features/messages/components/SharedPostPreviewCard";
 import type { Story, StoryLayer } from "../types";
-import { resolveStoryTextBackground } from "../lib/storyUtils";
+import { resolveStoryTextBackground, STORY_MAX_DURATION_SEC } from "../lib/storyUtils";
 
 const LAYER_FONT_SIZE_CLASS: Record<NonNullable<StoryLayer["fontSize"]>, string> = {
   sm: "text-base",
@@ -254,7 +254,7 @@ export const StoryViewerSlide = forwardRef<StoryViewerSlideHandle, StoryViewerSl
             onTimeUpdate={(e) => {
               const v = e.currentTarget;
               if (!v.duration || !Number.isFinite(v.duration)) return;
-              const cap = Math.min(v.duration, 30);
+              const cap = Math.min(v.duration, STORY_MAX_DURATION_SEC);
               if (v.currentTime >= cap) {
                 onVideoTimeUpdate?.(1);
                 onVideoEnded?.();

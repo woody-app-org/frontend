@@ -23,7 +23,6 @@ export async function persistAccountStep(data: OnboardingAccountFormData): Promi
   const result = await checkRegistrationAvailability({
     username: data.username,
     email: data.email,
-    cpf: data.cpf,
   });
   const conflicts = collectUnavailableFields(result);
   if (Object.keys(conflicts).length > 0) {
