@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LifeBuoy, LogOut, ScrollText, Sparkles, Trash2, User, UserX } from "lucide-react";
+import { LifeBuoy, LogOut, ScrollText, Sparkles, User, UserX } from "lucide-react";
 import { BlockedUsersDialog } from "@/features/users/components/BlockedUsersDialog";
 import { DeleteAccountDialog } from "@/features/auth/components/DeleteAccountDialog";
 import { deleteOwnAccount } from "@/features/auth/services/auth.service";
@@ -169,13 +169,6 @@ export function UserAccountMenu({ className, variant = "surface" }: UserAccountM
           >
             <UserX className="size-4 opacity-80 text-[var(--woody-nav)]" aria-hidden />
             Usuárias bloqueadas
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600 dark:text-red-400 dark:focus:bg-red-950"
-            onClick={() => setDeleteAccountOpen(true)}
-          >
-            <Trash2 className="size-4 opacity-80" aria-hidden />
-            Excluir conta
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-[var(--woody-accent)]/15" />
           <DropdownMenuItem

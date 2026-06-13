@@ -8,6 +8,7 @@ import { ensureFreshAccessToken } from "@/features/auth/authRefresh";
 import {
   getStoredRefreshToken,
   getStoredToken,
+  isTokenExpired,
 } from "@/features/auth/authTokenStorage";
 import { getApiBaseUrl } from "./apiBaseUrl";
 import { showInfoToast } from "./toast";
@@ -72,12 +73,19 @@ function isAuthCredentialsRequest(url: string | undefined): boolean {
   );
 }
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
   if (config.url?.startsWith("/")) {
     config.url = config.url.slice(1);
   }
 
-  const t = getStoredToken();
+  let t = getStoredToken();
+  // Renova proactivamente: endpoints `[AllowAnonymous]` (ex.: listar comentários)
+  // não retornam 401 com token expirado, então o refresh reativo nunca dispara —
+  // o pedido seguiria como anônimo e esconderia "curtido por mim".
+  if (t && isTokenExpired(t) && getStoredRefreshToken()) {
+    const refreshed = await ensureFreshAccessToken();
+    if (refreshed) t = getStoredToken();
+  }
   if (t) {
     config.headers.Authorization = `Bearer ${t}`;
   }
