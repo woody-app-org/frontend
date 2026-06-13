@@ -105,7 +105,7 @@ export function VerificationDocumentPage() {
               </p>
             </div>
 
-            {/* Upload */}
+            {/* Upload d*/}
             {!preview ? (
               <button
                 type="button"
